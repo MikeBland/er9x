@@ -1,6 +1,6 @@
 /*
  * Author - Erez Raviv <erezraviv@gmail.com>
- * 
+ *
  * Based on th9x -> http://code.google.com/p/th9x/
  *
  * This program is free software; you can redistribute it and/or modify
@@ -84,7 +84,7 @@ static void EeFsFlush()
 {
   eeWriteBlockCmp(&eeFs, 0,sizeof(eeFs));
 }
-  
+
 uint16_t EeFsGetFree()
 {
   uint16_t  ret = 0;
@@ -192,7 +192,7 @@ bool EeFsOpen()
 #ifdef SIM
   if(eeFs.version != EEFS_VERS)    printf("bad eeFs.version\n");
   if(eeFs.mySize  != sizeof(eeFs)) printf("bad eeFs.mySize\n");
-#endif  
+#endif
   return eeFs.version == EEFS_VERS && eeFs.mySize  == sizeof(eeFs);
 }
 
@@ -223,14 +223,14 @@ uint16_t EFile::size(){
 uint8_t EFile::openRd(uint8_t i_fileId){
   m_fileId = i_fileId;
   m_pos      = 0;
-  m_currBlk  = eeFs.files[m_fileId].startBlk; 
+  m_currBlk  = eeFs.files[m_fileId].startBlk;
   m_ofs      = 0;
   m_bRlc     = 0;
   m_err      = ERR_NONE;       //error reasons
-  return  eeFs.files[m_fileId].typ; 
+  return  eeFs.files[m_fileId].typ;
 }
 uint8_t EFile::read(uint8_t*buf,uint8_t i_len){
-  uint8_t len = eeFs.files[m_fileId].size - m_pos; 
+  uint8_t len = eeFs.files[m_fileId].size - m_pos;
   if(len < i_len) i_len = len;
   len = i_len;
   while(len)
@@ -253,7 +253,8 @@ uint16_t EFile::readRlc(uint8_t*buf,uint16_t i_len){
       if(read(&m_bRlc,1)!=1) break;
     }
     assert(m_bRlc & 0x7f);
-    uint8_t l=min(m_bRlc&0x7f,(uint8_t)(i_len-i) & 0x7f);
+    uint8_t l=m_bRlc&0x7f;//min(m_bRlc&0x7f,(uint8_t)(i_len-i) & 0x7f);
+    if((uint16_t)l>(i_len-i)) l = (uint8_t)(i_len-i);
     if(m_bRlc&0x80){
       memset(&buf[i],0,l);
     }else{
@@ -304,14 +305,14 @@ uint8_t EFile::write(uint8_t*buf,uint8_t i_len){
 }
 void EFile::create(uint8_t i_fileId, uint8_t typ, uint8_t maxTme10ms){
   openRd(i_fileId); //internal use
-  eeFs.files[i_fileId].typ      = typ; 
-  eeFs.files[i_fileId].size     = 0; 
+  eeFs.files[i_fileId].typ      = typ;
+  eeFs.files[i_fileId].size     = 0;
   m_stopTime10ms = g_tmr10ms + maxTme10ms;
 }
 void EFile::closeTrunc()
 {
   uint8_t fri=0;
-  eeFs.files[m_fileId].size     = m_pos; 
+  eeFs.files[m_fileId].size     = m_pos;
   if(m_currBlk && ( fri = EeFsGetLink(m_currBlk)))    EeFsSetLink(m_currBlk, 0);
   EeFsFlush(); //chained out
 
@@ -347,20 +348,6 @@ uint16_t EFile::writeRlc(uint8_t i_fileId, uint8_t typ,uint8_t*buf,uint16_t i_le
   if(0){
     error:
     i_len = i - (cnt & 0x7f);
-#ifdef SIM
-    switch(m_err){
-      default:
-      case ERR_NONE:
-        assert(!"missing errno");
-        break;  
-      case ERR_FULL:
-        printf("ERROR filesystem overflow! written: %d missing: %d\n",i_len,cnt&0x7f);
-        break;  
-      case ERR_TMO:
-        printf("ERROR filesystem write timeout %d 0ms\n",(int16_t)(m_stopTime10ms - g_tmr10ms));
-        break;  
-    }
-#endif
   }
   closeTrunc();
   return i_len;
@@ -393,20 +380,20 @@ void showfiles()
 {
   printf("------ free: %d\n",EeFsGetFree());
   int8_t err;
-  if((err=EeFsck())) printf("ERROR fsck %d\n",err);    
+  if((err=EeFsck())) printf("ERROR fsck %d\n",err);
   EeFsDump();
   EFile f;
   for(int i=0; i<MAXFILES; i++){
     if(f.open(i)==0) continue;
     printf("file%d %4d ",i,f.size());
-    for(int j=0; j<100; j++){ 
+    for(int j=0; j<100; j++){
       uint8_t buf[2];
       if(f.readRlc(buf,1)==0) break;
       printf("%c",buf[0]);
     }
     printf("\n");
   }
-  
+
 }
 int main()
 {
@@ -416,36 +403,36 @@ int main()
   uint8_t buf[1000];
   //for(int i=0; i<FILES; i++){ f[i].create(i,5); }
 
-  
+
   for(int i=0; i<FILES; i++){
-    for(int j=0; j<10; j++){ 
+    for(int j=0; j<10; j++){
       buf[j*2]=i+'0';
       buf[j*2+1]=j+'a';
     }
     f[i].writeRlc(i,3,buf,15,100);
   }
   //for(int i=0; i<FILES; i++){ f[i].trunc(); }
-  
- 
+
+
   showfiles();
   EFile::rm(3);
   EFile::rm(1);
   EFile::rm(5);
   EFile::rm(6);
   showfiles();
-  
+
   //f[0].create(6,6);
   for(int i=0; i<1000; i++) buf[i]='6';
-  f[0].writeRlc(6,6,buf,255,100);   
-  //f[0].trunc(); 
+  f[0].writeRlc(6,6,buf,255,100);
+  //f[0].trunc();
 
-  f[0].writeRlc(5,5,buf,5,100);   
+  f[0].writeRlc(5,5,buf,5,100);
 
   showfiles();
 
   f[0].open(6);
   //  for(int i=0; i<9; i++){ uint8_t b; f[0].readRlc(&b,1);   }
-//f[0].trunc(); 
+//f[0].trunc();
 
   showfiles();
 }

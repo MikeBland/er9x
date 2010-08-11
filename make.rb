@@ -238,18 +238,16 @@ class Builder
       File.read(stf)=~/VERS\s+(\d+)/
       vers=$1.to_i + 1
 #<url>https://er9x.googlecode.com/svn/trunk</url>
-      info="ER9x Branch"
+      info=`svn info --xml ..`
       if info=~/\.com\/svn\/(.*)<\/url>/
         svnvers += $1
       end
-   #revision="1.1"
       if info=~/revision="(\d+)"/
         svnvers += "-r"+($1.to_i+1).to_s
       end
     rescue
     end
 
-    svnvers="ER9x-r9"
     File.open(stf,"w"){|f|
       t=Time.new
       f.puts t.strftime("#define DATE_STR \"%d.%m.%Y\"")
