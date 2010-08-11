@@ -1,6 +1,6 @@
 /*
  * Author - Erez Raviv <erezraviv@gmail.com>
- * 
+ *
  * Based on th9x -> http://code.google.com/p/th9x/
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,7 +21,7 @@
 //#define EE_VERSION 2
 #define MAX_MODELS 16
 #define MAX_MIXERS 25
-#define MAX_CURVE5 4
+#define MAX_CURVE5 8
 #define MAX_CURVE9 8
 #define MDVERS 1
 
@@ -109,15 +109,16 @@ typedef struct t_ModelData {
   uint8_t   protocol;             // 1
   uint8_t   ppmNCH;               // 1
   char      res[2];               // 2
-  LimitData limitData[NUM_CHNOUT];// 4*8
-  ExpoData  expoData[4];          // 5*4
-  MixData   mixData[MAX_MIXERS];  //0 4*25
-  int8_t    curves5[MAX_CURVE5][5];        // 10
-  int8_t    curves9[MAX_CURVE9][9];        // 18
-  TrimData  trimData[4];          // 3*4
   int8_t    thrTrim;            // 1 Enable Trottle Trim
   int8_t    trimInc;            // Trim Increments
   int8_t    tcutSW;             // Throttle cut switch
+  MixData   mixData[MAX_MIXERS];  //0 4*25
+  TrimData  trimData[4];          // 3*4
+  LimitData limitData[NUM_CHNOUT];// 4*8
+  ExpoData  expoData[4];          // 5*4
+  int8_t    curves5[MAX_CURVE5][5];        // 10
+  int8_t    curves9[MAX_CURVE9][9];        // 18
+
 
 
 } __attribute__((packed)) ModelData; //211

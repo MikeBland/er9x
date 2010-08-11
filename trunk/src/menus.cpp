@@ -1,6 +1,6 @@
 /*
  * Author - Erez Raviv <erezraviv@gmail.com>
- * 
+ *
  * Based on th9x -> http://code.google.com/p/th9x/
  *
  * This program is free software; you can redistribute it and/or modify
@@ -187,7 +187,7 @@ static uint8_t s_curveChan;
 void menuProcCurveOne(uint8_t event) {
   static MState2 mstate2;
   uint8_t x = TITLE("CURVE ");
-  lcd_putcAtt(x, 0, s_curveChan + '1', INVERS);
+  lcd_outdezAtt(x, 0,s_curveChan+1 ,INVERS);
 
   bool    cv9 = s_curveChan >= MAX_CURVE5;
   MSTATE_CHECK0_V((cv9 ? 9 : 5)+1);
@@ -245,13 +245,9 @@ void menuProcCurve(uint8_t event) {
 
   static uint8_t s_pgOfs;
   if(sub<1) s_pgOfs=0;
-  else if((sub-s_pgOfs)>5) s_pgOfs = sub-5;
+  else if((sub-s_pgOfs)>6) s_pgOfs = sub-6;
   else if((sub-s_pgOfs)<0) s_pgOfs = sub;
   if(s_pgOfs<0) s_pgOfs = 0;
-
-  uint8_t s_ltr = MAX_CURVE5-s_pgOfs;
-  if(s_ltr<2) s_ltr=2;
-  if(s_ltr>5) s_ltr=5;
 
   switch (event) {
     case EVT_ENTRY:
@@ -266,25 +262,33 @@ void menuProcCurve(uint8_t event) {
   }
 
   uint8_t y    = 1*FH;
-  for (uint8_t i = 0; i < s_ltr; i++) {
+  uint8_t yd   = 1;
+  uint8_t m    = 0;
+  for (uint8_t i = 0; i < 7; i++) {
     uint8_t k = i + s_pgOfs;
     uint8_t attr = sub == k ? BLINK : 0;
-    lcd_putsAtt(   FW*0, y,PSTR("CV"),attr);
-    lcd_outdezAtt( FW*3, y,k+1 ,attr);
-
     bool    cv9 = k >= MAX_CURVE5;
+
+    if(cv9 && (yd>6)) break;
+    if(yd>7) break;
+    if(!m) m = attr;
+    lcd_putsAtt(   FW*0, y,PSTR("CV"),attr);
+    lcd_outdezAtt( (k<9) ? FW*3 : FW*4-1, y,k+1 ,attr);
+
     int8_t *crv = cv9 ? g_model.curves9[k-MAX_CURVE5] : g_model.curves5[k];
     for (uint8_t j = 0; j < (5); j++) {
       lcd_outdezAtt( j*(3*FW+3) + 7*FW, y, crv[j], 0);
     }
-    y += FH;
+    y += FH;yd++;
     if(cv9){
       for (uint8_t j = 0; j < 4; j++) {
         lcd_outdezAtt( j*(3*FW+3) + 7*FW, y, crv[j+5], 0);
       }
-      y += FH;
+      y += FH;yd++;
     }
   }
+
+  if(!m) s_pgOfs++;
 }
 
 
@@ -401,7 +405,7 @@ void menuProcMixOne(uint8_t event)
   int8_t  sub    = mstate2.m_posVert;
 
 
-#define CURV_STR " - x>0x<0|x|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16c18c19c20" 
+#define CURV_STR " - x>0x<0|x|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16c18c19c20"
   for(uint8_t i=0; i<=7; i++)
   {
     uint8_t y=i*FH+FH;
@@ -1920,7 +1924,7 @@ void perOut(int16_t *chanOut)
           //if((md.curve >= 4) && (md.curve < 8))
           v = intpol(v, md.curve - 4);
       }
-      int32_t dv=(int32_t)v*(md.weight); // 10+1 Bit + 7 = 17+1
+      int32_t dv=(int32_t)v*(md.weight); // 9+1 Bit + 7+1 = 18 bits
       chans[md.destCh-1] += dv; //Mixer output add up to the line (dv + (dv>0 ? 100/2 : -100/2))/(100);
     }
 
@@ -1929,17 +1933,19 @@ void perOut(int16_t *chanOut)
   calcLimitCache();
   for(uint8_t i=0;i<NUM_CHNOUT;i++){
     int16_t v = 0;
-    if(chans[i]) v = (chans[i] + (chans[i]>0 ? 100/2 : -100/2)) / 100; // normalize values?   (chans[i]+50)/100 or (-chans-50)/100
-    chans[i] = v;
+    //if(chans[i]) v = (chans[i] + (chans[i]>0 ? 100/2 : -100/2)) / 100; // normalize values?   (chans[i]+50)/100 or (-chans-50)/100
+    if(chans[i]) v = chans[i] >> 3;  // 18 bits >> 15 bit;
+
 
     // interpolate value with min/max so we get smooth motion from center to stop
     // this limits based on v original values and min=-512, max=512  RESX=512
-    int32_t vv = (v>0) ? (int32_t)v*s_cacheLimitsMax[i]/RESX : (int32_t)-v*s_cacheLimitsMin[i]/RESX;
+    int32_t vv = (v>0) ? (int32_t)v*s_cacheLimitsMax[i]/(RESX*12) : (int32_t)-v*s_cacheLimitsMin[i]/(RESX*12);
     v = (int16_t)vv;    //v *= limit / 512;
 
     //offset after limit ->
     v+=g_model.limitData[i].offset;  //*5; // 512/100
     if(g_model.limitData[i].revert) v=-v;
+    chans[i] = v;
     if(v>RESX)  v =  RESX;
     if(v<-RESX) v = -RESX;// absolute limits - do not go over!
 

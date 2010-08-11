@@ -1,6 +1,6 @@
 /*
  * Author - Erez Raviv <erezraviv@gmail.com>
- * 
+ *
  * Based on th9x -> http://code.google.com/p/th9x/
  *
  * This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
 
 
 EFile theFile;  //used for any file operation
-EFile theFile2; //sometimes we need two files 
+EFile theFile2; //sometimes we need two files
 
 #define FILE_TYP_GENERAL 1
 #define FILE_TYP_MODEL   2
@@ -56,13 +56,20 @@ bool eeLoadGeneral()
   return false;
 }
 
-void modelDefault(uint8_t id)
+void modelDefault(uint8_t id, bool keep_name)
 {
+  char      orig_name[10];
+  memcpy(&orig_name, &g_model.name, 10);
   memset(&g_model,0,sizeof(g_model));
-  strcpy_P(g_model.name,PSTR("MODEL     "));
-  g_model.name[5]='0'+(id+1)/10;
-  g_model.name[6]='0'+(id+1)%10;
-  g_model.mdVers = MDVERS;
+
+  if(keep_name)
+    memcpy(&g_model.name ,&orig_name, 10);
+  else {
+    strcpy_P(g_model.name,PSTR("MODEL     "));
+    g_model.name[5]='0'+(id+1)/10;
+    g_model.name[6]='0'+(id+1)%10;
+    g_model.mdVers = MDVERS;
+  }
   for(uint8_t i= 0; i<4; i++){
     //     0   1   2   3
     //0 1 rud ele thr ail
@@ -114,17 +121,12 @@ void eeLoadModel(uint8_t id)
   if(id<MAX_MODELS)
   {
     theFile.openRd(FILE_MODEL(id));
-    uint16_t sz = theFile.readRlc((uint8_t*)&g_model, sizeof(g_model)); 
+    uint16_t sz = theFile.readRlc((uint8_t*)&g_model, sizeof(g_model));
 
-    if(sz == sizeof(ModelData)) {
-      for(uint8_t i=0; i<4; i++){
-        int16_t val = g_model.trimData[i].trim + g_model.trimData[i].trimDef;
-        g_model.trimData[i].trim = trimRevert(val);
-        g_model.trimData[i].trimDef=0;
-      }
+    if(sz != sizeof(ModelData)) {
+      alert(PSTR("EEprom Data not compatible"));
+      modelDefault(id, true);
     }
-    //else
-    //  modelDefault(id);
   }
 }
 
@@ -152,24 +154,25 @@ bool eeDuplicateModel(uint8_t id)
 }
 void eeReadAll()
 {
-  if(!EeFsOpen()  || 
-     EeFsck() < 0 || 
+  if(!EeFsOpen()  ||
+     EeFsck() < 0 ||
      !eeLoadGeneral()
   )
   {
-#ifdef SIM
-    printf("bad eeprom contents\n");
-#else
     alert(PSTR("Bad EEprom Data"));
-#endif
     EeFsFormat();
+    //alert(PSTR("format ok"));
     generalDefault();
-    theFile.writeRlc(FILE_GENERAL,FILE_TYP_GENERAL,(uint8_t*)&g_eeGeneral, 
-                     sizeof(EEGeneral),200);
+    // alert(PSTR("default ok"));
 
-    modelDefault(0);
-    theFile.writeRlc(FILE_MODEL(0),FILE_TYP_MODEL,(uint8_t*)&g_model, 
-                     sizeof(g_model),200);
+    uint16_t sz = theFile.writeRlc(FILE_GENERAL,FILE_TYP_GENERAL,(uint8_t*)&g_eeGeneral,sizeof(EEGeneral),200);
+    if(sz!=sizeof(EEGeneral)) alert(PSTR("genwrite error"));
+
+    modelDefault(0, false);
+    //alert(PSTR("modef ok"));
+    theFile.writeRlc(FILE_MODEL(0),FILE_TYP_MODEL,(uint8_t*)&g_model,sizeof(g_model),200);
+    alert(PSTR("modwrite ok"));
+
   }
   eeLoadModel(g_eeGeneral.currModel);
 }
@@ -191,9 +194,9 @@ void eeCheck(bool immediately)
   if( !immediately && ((g_tmr10ms - s_eeDirtyTime10ms) < WRITE_DELAY_10MS)) return;
   s_eeDirtyMsk = 0;
   if(msk & EE_GENERAL){
-    if(theFile.writeRlc(FILE_TMP, FILE_TYP_GENERAL, (uint8_t*)&g_eeGeneral, 
+    if(theFile.writeRlc(FILE_TMP, FILE_TYP_GENERAL, (uint8_t*)&g_eeGeneral,
                         sizeof(EEGeneral),20) == sizeof(EEGeneral))
-    {   
+    {
       EFile::swap(FILE_GENERAL,FILE_TMP);
     }else{
       if(theFile.errno()==ERR_TMO){
@@ -209,7 +212,7 @@ void eeCheck(bool immediately)
     //first finish GENERAL, then MODEL !!avoid Toggle effect
   }
   else if(msk & EE_MODEL){
-    if(theFile.writeRlc(FILE_TMP, FILE_TYP_MODEL, (uint8_t*)&g_model, 
+    if(theFile.writeRlc(FILE_TMP, FILE_TYP_MODEL, (uint8_t*)&g_model,
                         sizeof(g_model),20) == sizeof(g_model))
     {
       EFile::swap(FILE_MODEL(g_eeGeneral.currModel),FILE_TMP);
