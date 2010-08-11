@@ -3130,8 +3130,6 @@ _ZZ7per10msvE9crossTrim:
 	.string	"pauseEvents"
 .LASF39:
 	.string	"m_state"
-.LASF79:
-	.string	"/home/erez/mnt/erez/er9x/trunk/OBJS"
 .LASF77:
 	.string	"GNU C++ 4.3.4"
 .LASF29:
@@ -3256,6 +3254,8 @@ _ZZ7per10msvE9crossTrim:
 	.string	"getDbl"
 .LASF10:
 	.string	"prog_uchar"
+.LASF79:
+	.string	"/home/erez/Desktop/er9x/er9x/OBJS"
 .LASF82:
 	.string	"_ZN3Key5stateEv"
 .LASF50:

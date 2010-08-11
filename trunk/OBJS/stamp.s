@@ -20,7 +20,7 @@ __zero_reg__ = 1
 	.type	stamp1, @object
 	.size	stamp1, 19
 stamp1:
-	.string	"VERS: V1.1789-root"
+	.string	"VERS: V1.1790-erez"
 .global	stamp2
 	.type	stamp2, @object
 	.size	stamp2, 17
@@ -30,12 +30,12 @@ stamp2:
 	.type	stamp3, @object
 	.size	stamp3, 15
 stamp3:
-	.string	"TIME: 20:40:58"
+	.string	"TIME: 22:44:30"
 .global	stamp4
 	.type	stamp4, @object
 	.size	stamp4, 15
 stamp4:
-	.string	" SVN: trunk-r3"
+	.string	" SVN: trunk-r5"
 	.text
 .Letext0:
 	.section	.debug_info
@@ -396,7 +396,7 @@ stamp4:
 	.string	"../src/stamp.cpp"
 .LASF0:
 	.string	"signed char"
-.LASF16:
-	.string	"/home/erez/mnt/erez/er9x/trunk/OBJS"
 .LASF14:
 	.string	"GNU C++ 4.3.4"
+.LASF16:
+	.string	"/home/erez/Desktop/er9x/er9x/OBJS"
