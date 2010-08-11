@@ -12,12 +12,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- *
- * TODO
- * More channels (input/output)
- * Select mixer output as mixer input
- * limit menu - fix (V)
- * More curves/More Mixes
  */
 
 #include "er9x.h"
@@ -1933,9 +1927,8 @@ void perOut(int16_t *chanOut)
   calcLimitCache();
   for(uint8_t i=0;i<NUM_CHNOUT;i++){
     int16_t v = 0;
-    //if(chans[i]) v = (chans[i] + (chans[i]>0 ? 100/2 : -100/2)) / 100; // normalize values?   (chans[i]+50)/100 or (-chans-50)/100
     if(chans[i]) v = chans[i] >> 3;  // 18 bits >> 15 bit;
-
+    chans[i] = v >> 5; //Normalize for next loop
 
     // interpolate value with min/max so we get smooth motion from center to stop
     // this limits based on v original values and min=-512, max=512  RESX=512
@@ -1945,7 +1938,6 @@ void perOut(int16_t *chanOut)
     //offset after limit ->
     v+=g_model.limitData[i].offset;  //*5; // 512/100
     if(g_model.limitData[i].revert) v=-v;
-    chans[i] = v;
     if(v>RESX)  v =  RESX;
     if(v<-RESX) v = -RESX;// absolute limits - do not go over!
 

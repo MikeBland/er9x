@@ -29228,8 +29228,8 @@ _ZZ16menuProcCurveOnehE3__c:
 	.string	"menuTabModel"
 .LASF230:
 	.string	"menuProcModel"
-.LASF60:
-	.string	"lightSw"
+.LASF323:
+	.string	"/home/erez/Desktop/er9x/er9x/OBJS"
 .LASF322:
 	.string	"../src/menus.cpp"
 .LASF228:
@@ -29334,8 +29334,8 @@ _ZZ16menuProcCurveOnehE3__c:
 	.string	"EEGeneral"
 .LASF148:
 	.string	"checkIncDecModVar<-0x0000000000000000a, 10>"
-.LASF155:
-	.string	"checkIncDecModVar<0, 19>"
+.LASF60:
+	.string	"lightSw"
 .LASF24:
 	.string	"TRM_LV_DWN"
 .LASF224:
@@ -29468,6 +29468,8 @@ _ZZ16menuProcCurveOnehE3__c:
 	.string	"SW_Trainer"
 .LASF202:
 	.string	"menuProcStatistic"
+.LASF155:
+	.string	"checkIncDecModVar<0, 19>"
 .LASF102:
 	.string	"limitData"
 .LASF168:
@@ -29594,8 +29596,6 @@ _ZZ16menuProcCurveOnehE3__c:
 	.string	"menuProc0"
 .LASF5:
 	.string	"uint16_t"
-.LASF323:
-	.string	"/home/erez/mnt/erez/er9x/trunk/OBJS"
 .LASF197:
 	.string	"tmr_t"
 .LASF236:

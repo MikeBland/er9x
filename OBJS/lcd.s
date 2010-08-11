@@ -6850,8 +6850,6 @@ _ZZ11lcd_putcAtthhchE3dbl:
 	.string	"_delay_us"
 .LASF83:
 	.string	"_Z9lcd_hlinehha"
-.LASF103:
-	.string	"/home/erez/mnt/erez/er9x/trunk/OBJS"
 .LASF101:
 	.string	"GNU C++ 4.3.4"
 .LASF4:
@@ -7006,6 +7004,8 @@ _ZZ11lcd_putcAtthhchE3dbl:
 	.string	"int8_t"
 .LASF12:
 	.string	"prog_uchar"
+.LASF103:
+	.string	"/home/erez/Desktop/er9x/er9x/OBJS"
 .LASF100:
 	.string	"font"
 .LASF89:

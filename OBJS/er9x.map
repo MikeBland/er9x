@@ -705,22 +705,22 @@ LOAD /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a
  .debug_frame   0x00000000000006a0      0x170 src_lcd.o
  .debug_frame   0x0000000000000810       0xa0 src_drivers.o
 
-.debug_str      0x0000000000000000     0x1c44
+.debug_str      0x0000000000000000     0x1c42
  *(.debug_str)
- .debug_str     0x0000000000000000       0xa1 stamp.o
-                                         0xe2 (size before relaxing)
- .debug_str     0x00000000000000a1      0x807 src_er9x.o
-                                        0x93f (size before relaxing)
- .debug_str     0x00000000000008a8      0xa55 src_menus.o
-                                        0xf7d (size before relaxing)
- .debug_str     0x00000000000012fd      0x306 src_pers.o
-                                        0x66a (size before relaxing)
- .debug_str     0x0000000000001603      0x16d src_file.o
-                                        0x3bc (size before relaxing)
- .debug_str     0x0000000000001770      0x309 src_lcd.o
-                                        0x50e (size before relaxing)
- .debug_str     0x0000000000001a79      0x1cb src_drivers.o
-                                        0x3d7 (size before relaxing)
+ .debug_str     0x0000000000000000       0x9f stamp.o
+                                         0xe0 (size before relaxing)
+ .debug_str     0x000000000000009f      0x807 src_er9x.o
+                                        0x93d (size before relaxing)
+ .debug_str     0x00000000000008a6      0xa55 src_menus.o
+                                        0xf7b (size before relaxing)
+ .debug_str     0x00000000000012fb      0x306 src_pers.o
+                                        0x668 (size before relaxing)
+ .debug_str     0x0000000000001601      0x16d src_file.o
+                                        0x3ba (size before relaxing)
+ .debug_str     0x000000000000176e      0x309 src_lcd.o
+                                        0x50c (size before relaxing)
+ .debug_str     0x0000000000001a77      0x1cb src_drivers.o
+                                        0x3d5 (size before relaxing)
 
 .debug_loc      0x0000000000000000     0x4079
  *(.debug_loc)

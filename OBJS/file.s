@@ -6320,8 +6320,6 @@ eeFs:
 	.string	"m_pos"
 .LASF9:
 	.string	"long long unsigned int"
-.LASF79:
-	.string	"/home/erez/mnt/erez/er9x/trunk/OBJS"
 .LASF77:
 	.string	"GNU C++ 4.3.4"
 .LASF8:
@@ -6456,6 +6454,8 @@ eeFs:
 	.string	"EeFsSetLink"
 .LASF12:
 	.string	"m_currBlk"
+.LASF79:
+	.string	"/home/erez/Desktop/er9x/er9x/OBJS"
 .LASF1:
 	.string	"uint8_t"
 .LASF34:

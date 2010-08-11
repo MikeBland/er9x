@@ -10288,8 +10288,8 @@ _ZZ10putsChnRawhhhhE3__c:
 	.string	"thrTrim"
 .LASF145:
 	.string	"kother"
-.LASF216:
-	.string	"/home/erez/mnt/erez/er9x/trunk/OBJS"
+.LASF130:
+	.string	"pulsePol"
 .LASF214:
 	.string	"GNU C++ 4.3.4"
 .LASF31:
@@ -10588,8 +10588,6 @@ _ZZ10putsChnRawhhhhE3__c:
 	.string	"prog_char"
 .LASF0:
 	.string	"int8_t"
-.LASF130:
-	.string	"pulsePol"
 .LASF83:
 	.string	"weight"
 .LASF178:
@@ -10602,8 +10600,8 @@ _ZZ10putsChnRawhhhhE3__c:
 	.string	"checkIncDec_vg"
 .LASF55:
 	.string	"contrast"
-.LASF203:
-	.string	"g_menuStackPtr"
+.LASF216:
+	.string	"/home/erez/Desktop/er9x/er9x/OBJS"
 .LASF79:
 	.string	"t_MixData"
 .LASF96:
@@ -10652,6 +10650,8 @@ _ZZ10putsChnRawhhhhE3__c:
 	.string	"checkIncDec_vm"
 .LASF57:
 	.string	"vBatCalib"
+.LASF203:
+	.string	"g_menuStackPtr"
 .LASF135:
 	.string	"getSwitch"
 .LASF156:
