@@ -1,0 +1,1042 @@
+# 1 "../src/drivers.cpp"
+# 1 "/home/erez/mnt/erez/er9x/trunk/OBJS//"
+# 1 "<built-in>"
+# 1 "<command-line>"
+# 1 "../src/drivers.cpp"
+# 19 "../src/drivers.cpp"
+# 1 "../src/er9x.h" 1
+# 21 "../src/er9x.h"
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/inttypes.h" 1 3
+# 37 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/inttypes.h" 3
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/stdint.h" 1 3
+# 121 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/stdint.h" 3
+typedef int int8_t __attribute__((__mode__(__QI__)));
+typedef unsigned int uint8_t __attribute__((__mode__(__QI__)));
+typedef int int16_t __attribute__ ((__mode__ (__HI__)));
+typedef unsigned int uint16_t __attribute__ ((__mode__ (__HI__)));
+typedef int int32_t __attribute__ ((__mode__ (__SI__)));
+typedef unsigned int uint32_t __attribute__ ((__mode__ (__SI__)));
+
+typedef int int64_t __attribute__((__mode__(__DI__)));
+typedef unsigned int uint64_t __attribute__((__mode__(__DI__)));
+# 142 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/stdint.h" 3
+typedef int16_t intptr_t;
+
+
+
+
+typedef uint16_t uintptr_t;
+# 159 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/stdint.h" 3
+typedef int8_t int_least8_t;
+
+
+
+
+typedef uint8_t uint_least8_t;
+
+
+
+
+typedef int16_t int_least16_t;
+
+
+
+
+typedef uint16_t uint_least16_t;
+
+
+
+
+typedef int32_t int_least32_t;
+
+
+
+
+typedef uint32_t uint_least32_t;
+
+
+
+
+
+
+
+typedef int64_t int_least64_t;
+
+
+
+
+
+
+typedef uint64_t uint_least64_t;
+# 213 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/stdint.h" 3
+typedef int8_t int_fast8_t;
+
+
+
+
+typedef uint8_t uint_fast8_t;
+
+
+
+
+typedef int16_t int_fast16_t;
+
+
+
+
+typedef uint16_t uint_fast16_t;
+
+
+
+
+typedef int32_t int_fast32_t;
+
+
+
+
+typedef uint32_t uint_fast32_t;
+
+
+
+
+
+
+
+typedef int64_t int_fast64_t;
+
+
+
+
+
+
+typedef uint64_t uint_fast64_t;
+# 273 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/stdint.h" 3
+typedef int64_t intmax_t;
+
+
+
+
+typedef uint64_t uintmax_t;
+# 38 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/inttypes.h" 2 3
+# 77 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/inttypes.h" 3
+typedef int32_t int_farptr_t;
+
+
+
+typedef uint32_t uint_farptr_t;
+# 22 "../src/er9x.h" 2
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/string.h" 1 3
+# 45 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/string.h" 3
+# 1 "/usr/lib/gcc/avr/4.3.4/include/stddef.h" 1 3 4
+# 214 "/usr/lib/gcc/avr/4.3.4/include/stddef.h" 3 4
+typedef unsigned int size_t;
+# 46 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/string.h" 2 3
+# 56 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/string.h" 3
+extern "C" {
+# 111 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/string.h" 3
+extern int ffs (int __val) __attribute__((__const__));
+extern int ffsl (long __val) __attribute__((__const__));
+extern int ffsll (long long __val) __attribute__((__const__));
+extern void *memccpy(void *, const void *, int, size_t);
+extern void *memchr(const void *, int, size_t) __attribute__((__pure__));
+extern int memcmp(const void *, const void *, size_t) __attribute__((__pure__));
+extern void *memcpy(void *, const void *, size_t);
+extern void *memmem(const void *, size_t, const void *, size_t) __attribute__((__pure__));
+extern void *memmove(void *, const void *, size_t);
+extern void *memrchr(const void *, int, size_t) __attribute__((__pure__));
+extern void *memset(void *, int, size_t);
+extern char *strcat(char *, const char *);
+extern char *strchr(const char *, int) __attribute__((__pure__));
+extern char *strchrnul(const char *, int) __attribute__((__pure__));
+extern int strcmp(const char *, const char *) __attribute__((__pure__));
+extern char *strcpy(char *, const char *);
+extern int strcasecmp(const char *, const char *) __attribute__((__pure__));
+extern char *strcasestr(const char *, const char *) __attribute__((__pure__));
+extern size_t strcspn(const char *__s, const char *__reject) __attribute__((__pure__));
+extern char *strdup(const char *s1);
+extern size_t strlcat(char *, const char *, size_t);
+extern size_t strlcpy(char *, const char *, size_t);
+extern size_t strlen(const char *) __attribute__((__pure__));
+extern char *strlwr(char *);
+extern char *strncat(char *, const char *, size_t);
+extern int strncmp(const char *, const char *, size_t) __attribute__((__pure__));
+extern char *strncpy(char *, const char *, size_t);
+extern int strncasecmp(const char *, const char *, size_t) __attribute__((__pure__));
+extern size_t strnlen(const char *, size_t) __attribute__((__pure__));
+extern char *strpbrk(const char *__s, const char *__accept) __attribute__((__pure__));
+extern char *strrchr(const char *, int) __attribute__((__pure__));
+extern char *strrev(char *);
+extern char *strsep(char **, const char *);
+extern size_t strspn(const char *__s, const char *__accept) __attribute__((__pure__));
+extern char *strstr(const char *, const char *) __attribute__((__pure__));
+extern char *strtok(char *, const char *);
+extern char *strtok_r(char *, const char *, char **);
+extern char *strupr(char *);
+
+
+}
+# 23 "../src/er9x.h" 2
+
+
+
+
+
+
+# 1 "/usr/lib/gcc/avr/4.3.4/include/stddef.h" 1 3 4
+# 152 "/usr/lib/gcc/avr/4.3.4/include/stddef.h" 3 4
+typedef int ptrdiff_t;
+# 30 "../src/er9x.h" 2
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/io.h" 1 3
+# 99 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/io.h" 3
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/sfr_defs.h" 1 3
+# 100 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/io.h" 2 3
+# 176 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/io.h" 3
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/iom64.h" 1 3
+# 177 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/io.h" 2 3
+# 368 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/io.h" 3
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/portpins.h" 1 3
+# 369 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/io.h" 2 3
+
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/common.h" 1 3
+# 371 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/io.h" 2 3
+
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/version.h" 1 3
+# 373 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/io.h" 2 3
+
+
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/fuse.h" 1 3
+# 234 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/fuse.h" 3
+typedef struct
+{
+    unsigned char low;
+    unsigned char high;
+    unsigned char extended;
+} __fuse_t;
+# 376 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/io.h" 2 3
+
+
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/lock.h" 1 3
+# 379 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/io.h" 2 3
+# 31 "../src/er9x.h" 2
+# 43 "../src/er9x.h"
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/pgmspace.h" 1 3
+# 81 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/pgmspace.h" 3
+# 1 "/usr/lib/gcc/avr/4.3.4/include/stddef.h" 1 3 4
+# 82 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/pgmspace.h" 2 3
+# 106 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/pgmspace.h" 3
+extern "C" {
+# 211 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/pgmspace.h" 3
+typedef void prog_void __attribute__((__progmem__));
+typedef char prog_char __attribute__((__progmem__));
+typedef unsigned char prog_uchar __attribute__((__progmem__));
+
+typedef int8_t prog_int8_t __attribute__((__progmem__));
+typedef uint8_t prog_uint8_t __attribute__((__progmem__));
+typedef int16_t prog_int16_t __attribute__((__progmem__));
+typedef uint16_t prog_uint16_t __attribute__((__progmem__));
+typedef int32_t prog_int32_t __attribute__((__progmem__));
+typedef uint32_t prog_uint32_t __attribute__((__progmem__));
+
+typedef int64_t prog_int64_t __attribute__((__progmem__));
+typedef uint64_t prog_uint64_t __attribute__((__progmem__));
+# 848 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/pgmspace.h" 3
+extern const prog_void * memchr_P(const prog_void *, int __val, size_t __len) __attribute__((__const__));
+extern int memcmp_P(const void *, const prog_void *, size_t) __attribute__((__pure__));
+extern void *memcpy_P(void *, const prog_void *, size_t);
+extern void *memmem_P(const void *, size_t, const prog_void *, size_t) __attribute__((__pure__));
+extern const prog_void * memrchr_P(const prog_void *, int __val, size_t __len) __attribute__((__const__));
+extern char *strcat_P(char *, const prog_char *);
+extern const prog_char * strchr_P(const prog_char *, int __val) __attribute__((__const__));
+extern const prog_char * strchrnul_P(const prog_char *, int __val) __attribute__((__const__));
+extern int strcmp_P(const char *, const prog_char *) __attribute__((__pure__));
+extern char *strcpy_P(char *, const prog_char *);
+extern int strcasecmp_P(const char *, const prog_char *) __attribute__((__pure__));
+extern char *strcasestr_P(const char *, const prog_char *) __attribute__((__pure__));
+extern size_t strcspn_P(const char *__s, const prog_char * __reject) __attribute__((__pure__));
+extern size_t strlcat_P (char *, const prog_char *, size_t );
+extern size_t strlcpy_P (char *, const prog_char *, size_t );
+extern size_t strlen_P(const prog_char *) __attribute__((__const__));
+extern size_t strnlen_P(const prog_char *, size_t) __attribute__((__const__));
+extern int strncmp_P(const char *, const prog_char *, size_t) __attribute__((__pure__));
+extern int strncasecmp_P(const char *, const prog_char *, size_t) __attribute__((__pure__));
+extern char *strncat_P(char *, const prog_char *, size_t);
+extern char *strncpy_P(char *, const prog_char *, size_t);
+extern char *strpbrk_P(const char *__s, const prog_char * __accept) __attribute__((__pure__));
+extern const prog_char * strrchr_P(const prog_char *, int __val) __attribute__((__const__));
+extern char *strsep_P(char **__sp, const prog_char * __delim);
+extern size_t strspn_P(const char *__s, const prog_char * __accept) __attribute__((__pure__));
+extern char *strstr_P(const char *, const prog_char *) __attribute__((__pure__));
+
+
+}
+# 44 "../src/er9x.h" 2
+
+
+
+
+
+
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/eeprom.h" 1 3
+# 336 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/eeprom.h" 3
+# 1 "/usr/lib/gcc/avr/4.3.4/include/stddef.h" 1 3 4
+# 337 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/eeprom.h" 2 3
+# 378 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/eeprom.h" 3
+extern "C" {
+# 423 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/eeprom.h" 3
+uint8_t __eerd_byte_m64 (const uint8_t *__p) __attribute__((__pure__));
+
+
+
+
+uint16_t __eerd_word_m64 (const uint16_t *__p) __attribute__((__pure__));
+
+
+
+
+uint32_t __eerd_dword_m64 (const uint32_t *__p) __attribute__((__pure__));
+
+
+
+
+float __eerd_float_m64 (const float *__p) __attribute__((__pure__));
+
+
+
+
+
+void __eerd_block_m64 (void *__dst, const void *__src, size_t __n);
+
+
+
+
+
+void __eewr_byte_m64 (uint8_t *__p, uint8_t __value);
+
+
+
+
+void __eewr_word_m64 (uint16_t *__p, uint16_t __value);
+
+
+
+
+void __eewr_dword_m64 (uint32_t *__p, uint32_t __value);
+
+
+
+
+void __eewr_float_m64 (float *__p, float __value);
+
+
+
+
+
+void __eewr_block_m64 (const void *__src, void *__dst, size_t __n);
+
+
+
+
+
+void __eeupd_byte_m64 (uint8_t *__p, uint8_t __value);
+
+
+
+
+void __eeupd_word_m64 (uint16_t *__p, uint16_t __value);
+
+
+
+
+void __eeupd_dword_m64 (uint32_t *__p, uint32_t __value);
+
+
+
+
+void __eeupd_float_m64 (float *__p, float __value);
+
+
+
+
+
+void __eeupd_block_m64 (const void *__src, void *__dst, size_t __n);
+# 527 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/eeprom.h" 3
+}
+# 51 "../src/er9x.h" 2
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/sleep.h" 1 3
+# 52 "../src/er9x.h" 2
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/interrupt.h" 1 3
+# 53 "../src/er9x.h" 2
+
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/util/delay.h" 1 3
+# 39 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/util/delay.h" 3
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/util/delay_basic.h" 1 3
+# 65 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/util/delay_basic.h" 3
+static inline void _delay_loop_1(uint8_t __count) __attribute__((always_inline));
+static inline void _delay_loop_2(uint16_t __count) __attribute__((always_inline));
+# 80 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/util/delay_basic.h" 3
+void
+_delay_loop_1(uint8_t __count)
+{
+ __asm__ volatile (
+  "1: dec %0" "\n\t"
+  "brne 1b"
+  : "=r" (__count)
+  : "0" (__count)
+ );
+}
+# 102 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/util/delay_basic.h" 3
+void
+_delay_loop_2(uint16_t __count)
+{
+ __asm__ volatile (
+  "1: sbiw %0,1" "\n\t"
+  "brne 1b"
+  : "=w" (__count)
+  : "0" (__count)
+ );
+}
+# 40 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/util/delay.h" 2 3
+# 79 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/util/delay.h" 3
+static inline void _delay_us(double __us) __attribute__((always_inline));
+static inline void _delay_ms(double __ms) __attribute__((always_inline));
+# 109 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/util/delay.h" 3
+void
+_delay_ms(double __ms)
+{
+ uint16_t __ticks;
+ double __tmp = ((16000000UL) / 4e3) * __ms;
+ if (__tmp < 1.0)
+  __ticks = 1;
+ else if (__tmp > 65535)
+ {
+
+  __ticks = (uint16_t) (__ms * 10.0);
+  while(__ticks)
+  {
+
+   _delay_loop_2(((16000000UL) / 4e3) / 10);
+   __ticks --;
+  }
+  return;
+ }
+ else
+  __ticks = (uint16_t)__tmp;
+ _delay_loop_2(__ticks);
+}
+# 147 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/util/delay.h" 3
+void
+_delay_us(double __us)
+{
+ uint8_t __ticks;
+ double __tmp = ((16000000UL) / 3e6) * __us;
+ if (__tmp < 1.0)
+  __ticks = 1;
+ else if (__tmp > 255)
+ {
+  _delay_ms(__us / 1000.0);
+  return;
+ }
+ else
+  __ticks = (uint8_t)__tmp;
+ _delay_loop_1(__ticks);
+}
+# 55 "../src/er9x.h" 2
+
+# 1 "/usr/lib/gcc/avr/4.3.4/../../../avr/include/avr/wdt.h" 1 3
+# 57 "../src/er9x.h" 2
+
+
+
+# 1 "../src/file.h" 1
+# 26 "../src/file.h"
+bool EeFsOpen();
+int8_t EeFsck();
+void EeFsFormat();
+uint16_t EeFsGetFree();
+
+
+
+class EFile
+{
+  uint8_t m_fileId;
+  uint16_t m_pos;
+  uint8_t m_currBlk;
+  uint8_t m_ofs;
+  uint8_t m_bRlc;
+  uint8_t m_err;
+  uint16_t m_stopTime10ms;
+public:
+
+  static void rm(uint8_t i_fileId);
+
+
+  static void swap(uint8_t i_fileId1,uint8_t i_fileId2);
+
+
+  static bool exists(uint8_t i_fileId);
+
+
+
+  uint8_t openRd(uint8_t i_fileId);
+
+
+
+
+  void create(uint8_t i_fileId, uint8_t typ, uint8_t maxTme10ms);
+
+  void closeTrunc();
+
+
+
+
+  uint16_t writeRlc(uint8_t i_fileId, uint8_t typ,uint8_t*buf,uint16_t i_len, uint8_t maxTme10ms);
+
+  uint8_t read(uint8_t*buf,uint8_t i_len);
+  uint8_t write(uint8_t*buf,uint8_t i_len);
+
+
+  uint16_t size();
+
+  uint16_t readRlc(uint8_t*buf,uint16_t i_len);
+
+  uint8_t errno(){return m_err;}
+};
+# 61 "../src/er9x.h" 2
+# 143 "../src/er9x.h"
+enum EnumKeys {
+  KEY_MENU ,
+  KEY_EXIT ,
+  KEY_DOWN ,
+  KEY_UP ,
+  KEY_RIGHT ,
+  KEY_LEFT ,
+  TRM_LH_DWN ,
+  TRM_LH_UP ,
+  TRM_LV_DWN ,
+  TRM_LV_UP ,
+  TRM_RV_DWN ,
+  TRM_RV_UP ,
+  TRM_RH_DWN ,
+  TRM_RH_UP ,
+
+
+  SW_ThrCt ,
+  SW_RuddDR ,
+  SW_ElevDR ,
+  SW_ID0 ,
+  SW_ID1 ,
+  SW_ID2 ,
+  SW_AileDR ,
+  SW_Gear ,
+  SW_Trainer
+};
+# 210 "../src/er9x.h"
+typedef void (*MenuFuncP)(uint8_t event);
+
+
+void pauseEvents(uint8_t enuk);
+
+uint8_t getEventDbl(uint8_t event);
+
+void killEvents(uint8_t enuk);
+
+bool keyState(EnumKeys enuk);
+
+
+
+uint8_t getEvent();
+
+
+void chainMenu(MenuFuncP newMenu);
+
+void pushMenu(MenuFuncP newMenu);
+
+MenuFuncP lastPopMenu();
+
+
+void popMenu(bool uppermost=false);
+
+
+void alert(const prog_char * s);
+
+void perMain();
+
+
+void per10ms();
+
+void perOut(int16_t *chanOut);
+# 254 "../src/er9x.h"
+bool getSwitch(int8_t swtch, bool nc);
+
+
+
+
+
+
+void putsDrSwitches(uint8_t x,uint8_t y,int8_t swtch,uint8_t att);
+
+void checkMem();
+void checkTHR();
+
+void checkSwitches();
+# 277 "../src/er9x.h"
+bool checkIncDecGen2(uint8_t event, void *i_pval, int16_t i_min, int16_t i_max, uint8_t i_flags);
+
+
+template<int16_t min,int16_t max>
+bool checkIncDecModVar(uint8_t event, void*p, uint8_t flags)
+{
+  return checkIncDecGen2(event, p, min, max, flags);
+}
+
+
+
+int8_t checkIncDec_hm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
+
+int8_t checkIncDec_vm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
+
+int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
+
+int8_t checkIncDec_vg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
+
+extern bool checkIncDec_Ret;
+# 332 "../src/er9x.h"
+template<class t> inline t abs(t a){ return a>0?a:-a; }
+
+template<class t> inline t min(t a, t b){ return a<b?a:b; }
+
+template<class t> inline t max(t a, t b){ return a>b?a:b; }
+template<class t> inline int8_t sgn(t a){ return a>0 ? 1 : (a < 0 ? -1 : 0); }
+
+
+
+
+
+
+void eeWriteBlockCmp(const void *i_pointer_ram, void *i_pointer_eeprom, size_t size);
+void eeDirty(uint8_t msk);
+void eeCheck(bool immediately=false);
+
+void eeReadAll();
+void eeLoadModelName(uint8_t id,char*buf,uint8_t len);
+void eeLoadModel(uint8_t id);
+
+bool eeDuplicateModel(uint8_t id);
+# 364 "../src/er9x.h"
+void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att);
+
+
+
+void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att);
+
+void putsVBat(uint8_t x,uint8_t y,uint8_t att);
+void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2);
+
+
+
+
+
+
+void menuProcLimits(uint8_t event);
+void menuProcMixOne(uint8_t event);
+void menuProcMix(uint8_t event);
+void menuProcCurve(uint8_t event);
+void menuProcTrim(uint8_t event);
+void menuProcExpoOne(uint8_t event);
+void menuProcExpoAll(uint8_t event);
+void menuProcModel(uint8_t event);
+void menuProcDiagCalib(uint8_t event);
+void menuProcDiagAna(uint8_t event);
+void menuProcDiagKeys(uint8_t event);
+void menuProcDiagVers(uint8_t event);
+void menuProcTrainer(uint8_t event);
+void menuProcSetup0(uint8_t event);
+void menuProcSetup1(uint8_t event);
+void menuProcMain(uint8_t event);
+void menuProcModelSelect(uint8_t event);
+
+void menuProcStatistic2(uint8_t event);
+void menuProcStatistic(uint8_t event);
+void menuProc0(uint8_t event);
+
+void setupPulses();
+void setupPulsesPPM();
+void setupPulsesSilver();
+void setupPulsesTracerCtp1009();
+
+extern int16_t intpol(int16_t, uint8_t);
+
+
+extern uint16_t anaIn(uint8_t chan);
+
+
+
+
+
+
+extern uint8_t g_vbat100mV;
+extern volatile uint16_t g_tmr10ms;
+extern volatile uint8_t g_blinkTmr10ms;
+extern uint8_t g_beepCnt;
+extern uint8_t g_beepVal[4];
+extern const __attribute__((__progmem__)) char modi12x3[];
+
+extern uint16_t pulses2MHz[60];
+extern int16_t g_ppmIns[8];
+extern int16_t g_chans512[16];
+
+# 1 "../src/lcd.h" 1
+# 18 "../src/lcd.h"
+# 1 "../src/er9x.h" 1
+# 19 "../src/lcd.h" 2
+# 45 "../src/lcd.h"
+extern unsigned char displayBuf[128*64/8];
+
+extern void lcd_putcAtt(unsigned char x,unsigned char y,const char c,uint8_t mode);
+extern unsigned char lcd_putsAtt(unsigned char x,unsigned char y,const prog_char * s,uint8_t mode);
+extern void lcd_putsnAtt(unsigned char x,unsigned char y,const prog_char * s,unsigned char len,uint8_t mode);
+
+extern void lcd_putc(unsigned char x,unsigned char y,const char c);
+extern void lcd_puts_P(unsigned char x,unsigned char y,const prog_char * s);
+extern void lcd_putsn_P(unsigned char x,unsigned char y,const prog_char * s,unsigned char len);
+extern void lcd_outhex4(unsigned char x,unsigned char y,uint16_t val);
+extern void lcd_outdezAtt(unsigned char x,unsigned char y,int16_t val,uint8_t mode);
+void lcd_outdezNAtt(uint8_t x,uint8_t y,int16_t val,uint8_t mode,uint8_t len);
+
+extern void lcd_outdez(unsigned char x,unsigned char y,int16_t val);
+
+extern void lcd_plot(unsigned char x,unsigned char y);
+extern void lcd_hline(unsigned char x,unsigned char y, signed char w);
+extern void lcd_hlineStip(unsigned char x,unsigned char y, signed char w,uint8_t pat);
+extern void lcd_vline(unsigned char x,unsigned char y, signed char h);
+
+extern void lcd_img_f(unsigned char x,unsigned char y);
+extern void lcd_img(uint8_t i_x,uint8_t i_y,const prog_uchar * imgdat,uint8_t idx,uint8_t mode);
+
+extern void lcd_init();
+extern void lcd_clear();
+extern void refreshDiplay();
+extern void lcdSetRefVolt(unsigned char val);
+# 427 "../src/er9x.h" 2
+extern const char stamp1[];
+extern const char stamp2[];
+extern const char stamp3[];
+extern const char stamp4[];
+# 1 "../src/myeeprom.h" 1
+# 29 "../src/myeeprom.h"
+typedef struct t_TrainerData1 {
+  uint8_t srcChn:3;
+  int8_t swtch:5;
+  int8_t studWeight:6;
+  uint8_t mode:2;
+} __attribute__((packed)) TrainerData1;
+
+typedef struct t_TrainerData {
+  int16_t calib[4];
+  TrainerData1 chanMix[4];
+} __attribute__((packed)) TrainerData;
+
+
+typedef struct t_EEGeneral {
+  uint8_t myVers;
+  int16_t calibMid[4];
+  int16_t calibSpanNeg[4];
+  int16_t calibSpanPos[4];
+  uint16_t chkSum;
+  uint8_t currModel;
+  uint8_t contrast;
+  uint8_t vBatWarn;
+  int8_t vBatCalib;
+  int8_t lightSw;
+  TrainerData trainer;
+  uint8_t view;
+
+
+
+
+  uint8_t warnOpts;
+  uint8_t stickMode;
+} __attribute__((packed)) EEGeneral;
+# 71 "../src/myeeprom.h"
+typedef struct t_ExpoData {
+  int8_t expNorm;
+  int8_t expDr;
+  int8_t drSw;
+  int8_t expNormWeight;
+  int8_t expSwWeight;
+} __attribute__((packed)) ExpoData;
+
+typedef struct t_TrimData {
+  int8_t trim;
+  int16_t trimDef;
+} __attribute__((packed)) TrimData;
+
+typedef struct t_LimitData {
+  int8_t min;
+  int8_t max;
+  bool revert;
+  int16_t offset;
+} __attribute__((packed)) LimitData;
+
+
+typedef struct t_MixData {
+  uint8_t destCh;
+  uint8_t srcRaw:7;
+  uint8_t carryTrim:1;
+  int8_t weight;
+  int8_t swtch;
+  uint8_t curve;
+  uint8_t speedUp:4;
+  uint8_t speedDown:4;
+} __attribute__((packed)) MixData;
+
+
+typedef struct t_ModelData {
+  char name[10];
+  uint8_t mdVers;
+  uint8_t tmrMode;
+  uint16_t tmrVal;
+  uint8_t protocol;
+  uint8_t ppmNCH;
+  char res[2];
+  int8_t thrTrim;
+  int8_t trimInc;
+  int8_t tcutSW;
+  MixData mixData[25];
+  TrimData trimData[4];
+  LimitData limitData[16];
+  ExpoData expoData[4];
+  int8_t curves5[8][5];
+  int8_t curves9[8][9];
+
+
+
+} __attribute__((packed)) ModelData;
+
+
+
+
+
+extern EEGeneral g_eeGeneral;
+extern ModelData g_model;
+# 432 "../src/er9x.h" 2
+
+
+inline void _beep(uint8_t b) {
+  g_beepCnt=b;
+
+
+
+}
+# 20 "../src/drivers.cpp" 2
+
+
+
+
+
+static inline void __attribute__ ((always_inline))
+eeprom_write_byte_cmp (uint8_t dat, uint16_t pointer_eeprom)
+{
+
+  while((*(volatile uint8_t *)((0x1C) + 0x20)) & (1<<1))
+    ;
+  (*(volatile uint16_t *)((0x1E) + 0x20)) = pointer_eeprom;
+
+  (*(volatile uint8_t *)((0x1C) + 0x20)) |= 1<<0;
+  if(dat == (*(volatile uint8_t *)((0x1D) + 0x20))) return;
+
+  (*(volatile uint8_t *)((0x1D) + 0x20)) = dat;
+  uint8_t flags=(*(volatile uint8_t *)((0x3F) + 0x20));
+  __asm__ __volatile__ ("cli" ::);
+  (*(volatile uint8_t *)((0x1C) + 0x20)) |= 1<<2;
+  (*(volatile uint8_t *)((0x1C) + 0x20)) |= 1<<1;
+  (*(volatile uint8_t *)((0x3F) + 0x20)) = flags;
+}
+
+void eeWriteBlockCmp(const void *i_pointer_ram, void *i_pointer_eeprom, size_t size)
+{
+  const char* pointer_ram = (const char*)i_pointer_ram;
+  uint16_t pointer_eeprom = (uint16_t)i_pointer_eeprom;
+  while(size){
+    eeprom_write_byte_cmp(*pointer_ram++,pointer_eeprom++);
+    size--;
+  }
+}
+# 65 "../src/drivers.cpp"
+static uint8_t s_evt;
+void putEvent(uint8_t evt)
+{
+
+
+
+  s_evt = evt;
+}
+uint8_t getEvent()
+{
+  uint8_t evt = s_evt;
+  s_evt=0;
+  return evt;
+}
+
+class Key
+{
+
+
+
+
+
+
+  uint8_t m_vals:2;
+  uint8_t m_dblcnt:2;
+  uint8_t m_cnt;
+  uint8_t m_state;
+public:
+  void input(bool val, EnumKeys enuk);
+  bool state() { return m_vals==0x03; }
+  void pauseEvents() { m_state = 98; m_cnt = 0;}
+  void killEvents() { m_state = 99; m_dblcnt=0; }
+  uint8_t getDbl() { return m_dblcnt; }
+};
+
+
+Key keys[TRM_RH_UP+1];
+void Key::input(bool val, EnumKeys enuk)
+{
+
+  m_vals <<= 1; if(val) m_vals |= 1;
+  m_cnt++;
+
+  if(m_state && m_vals==0){
+    if(m_state!=99) {
+      putEvent(((enuk)| 0x20));
+      if(!( m_state == 16 && m_cnt<16)){
+        m_dblcnt=0;
+      }
+
+    }
+    m_cnt = 0;
+    m_state = 0;
+  }
+  switch(m_state){
+    case 0:
+      if(m_vals==0x03){
+        m_state = 97;
+        if(m_cnt>16) m_dblcnt=0;
+        m_cnt = 0;
+      }
+      break;
+
+    case 97:
+      putEvent(((enuk)| 0x40|0x20));
+      m_dblcnt++;
+      m_state = 16;
+      m_cnt = 0;
+      break;
+    case 16:
+      if(m_cnt == 24) putEvent(((enuk)|0x80));
+
+    case 8:
+    case 4:
+    case 2:
+      if(m_cnt >= 48) {
+        m_state >>= 1;
+        m_cnt = 0;
+      }
+
+    case 1:
+      if( (m_cnt & (m_state-1)) == 0) putEvent(((enuk)| 0x40 ));
+      break;
+
+    case 98:
+      if(m_cnt >= 64) {
+        m_state = 8;
+        m_cnt = 0;
+      }
+      break;
+
+    case 99:
+      break;
+  }
+}
+
+bool keyState(EnumKeys enuk)
+{
+  if(enuk < (int)(sizeof((keys))/sizeof((keys)[0]))) return keys[enuk].state() ? 1 : 0;
+  switch(enuk){
+    case SW_ElevDR : return (*(volatile uint8_t *)((0x01) + 0x20)) & (1<<2);
+    case SW_AileDR : return (*(volatile uint8_t *)((0x01) + 0x20)) & (1<<1);
+    case SW_RuddDR : return (*(volatile uint8_t *)(0x63)) & (1<<0);
+
+
+
+
+    case SW_ID0 : return !((*(volatile uint8_t *)(0x63)) & (1<<3));
+    case SW_ID1 : return ((*(volatile uint8_t *)(0x63)) & (1<<3))&& ((*(volatile uint8_t *)((0x01) + 0x20)) & (1<<6));
+    case SW_ID2 : return !((*(volatile uint8_t *)((0x01) + 0x20)) & (1<<6));
+    case SW_Gear : return (*(volatile uint8_t *)((0x01) + 0x20)) & (1<<4);
+    case SW_ThrCt : return (*(volatile uint8_t *)((0x01) + 0x20)) & (1<<0);
+    case SW_Trainer: return (*(volatile uint8_t *)((0x01) + 0x20)) & (1<<5);
+    default:;
+  }
+  return 0;
+}
+
+void pauseEvents(uint8_t event)
+{
+  event=event & 0x0f;
+  if(event < (int)(sizeof((keys))/sizeof((keys)[0]))) keys[event].pauseEvents();
+}
+void killEvents(uint8_t event)
+{
+  event=event & 0x0f;
+  if(event < (int)(sizeof((keys))/sizeof((keys)[0]))) keys[event].killEvents();
+}
+
+uint8_t getEventDbl(uint8_t event)
+{
+  event=event & 0x0f;
+  if(event < (int)(sizeof((keys))/sizeof((keys)[0]))) return keys[event].getDbl();
+  return 0;
+}
+
+
+volatile uint16_t g_tmr10ms;
+volatile uint8_t g_blinkTmr10ms;
+
+void per10ms()
+{
+  g_tmr10ms++;
+  g_blinkTmr10ms++;
+  uint8_t enuk = KEY_MENU;
+  uint8_t in = ~(*(volatile uint8_t *)((0x16) + 0x20));
+  for(int i=1; i<7; i++)
+  {
+
+    keys[enuk].input(in & (1<<i),(EnumKeys)enuk);
+    ++enuk;
+  }
+  static prog_uchar __attribute__(( section(".progmem.data") )) crossTrim[]={
+    1<<6,
+    1<<7,
+    1<<3,
+    1<<2,
+    1<<5,
+    1<<4,
+    1<<1,
+    1<<0
+  };
+  in = ~(*(volatile uint8_t *)((0x10) + 0x20));
+  for(int i=0; i<8; i++)
+  {
+
+    keys[enuk].input(in & (__extension__({ uint16_t __addr16 = (uint16_t)((uint16_t)(crossTrim+i)); uint8_t __result; __asm__ ( "lpm %0, Z" "\n\t" : "=r" (__result) : "z" (__addr16) ); __result; })),(EnumKeys)enuk);
+    ++enuk;
+  }
+
+
+
+
+
+
+
+}
