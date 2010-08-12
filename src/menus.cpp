@@ -1673,13 +1673,16 @@ void menuProc0(uint8_t event)
         x0 = (i%4*9+3)*FW/2;
         y0 = i/4*FH+40;
         // *1000/512 =   *2 - 24/512
-        lcd_outdezAtt( x0+4*FW , y0, g_chans512[i]*2-g_chans512[i]/21,PREC1 );
+        // *1250/512 =   *2 + 225/512 = x*2+x/2-x/8+x/32-x/512
+#define GPERC(x)  (x*2+x/2-x/8+x/32-x/256)
+        lcd_outdezAtt( x0+4*FW , y0, GPERC(g_chans512[i]),PREC1 ); //-g_chans512[i]/21
         break;
       case 1:
 #define WBAR2 (50/2)
+#define GPERC2(x) GPERC(x/2)
         x0       = i<4 ? 128/4+4 : 128*3/4-4;
         y0       = 38+(i%4)*5;
-        int8_t l = (abs(g_chans512[i])+WBAR2/2) * WBAR2 / 512;
+        int8_t l = (abs(GPERC2(g_chans512[i]))+WBAR2/2) * WBAR2 / 512;
         if(l>WBAR2)  l =  WBAR2;  // prevent bars from going over the end - comment for debugging
 
         lcd_hlineStip(x0-WBAR2,y0,WBAR2*2+1,0x55);
@@ -1937,7 +1940,7 @@ void perOut(int16_t *chanOut)
     if(chans[i]) v = chans[i] >> 3;  // 18 bits >> 15 bit;
 
     int32_t vv = (int32_t)v*123*4 / (RESX*12); //Normalize for next loop - make sure we use the same math as interpolation
-    chans[i] = (int16_t)vv;                    //Not sure why but 122 works better than 125
+    chans[i] = (int16_t)vv;                    //Not sure why but 123 works better than 125
 
     // interpolate value with min/max so we get smooth motion from center to stop
     // this limits based on v original values and min=-512, max=512  RESX=512
