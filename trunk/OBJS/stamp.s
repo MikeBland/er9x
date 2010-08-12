@@ -20,17 +20,17 @@ __zero_reg__ = 1
 	.type	stamp1, @object
 	.size	stamp1, 19
 stamp1:
-	.string	"VERS: V1.1790-erez"
+	.string	"VERS: V1.1801-erez"
 .global	stamp2
 	.type	stamp2, @object
 	.size	stamp2, 17
 stamp2:
-	.string	"DATE: 11.08.2010"
+	.string	"DATE: 12.08.2010"
 .global	stamp3
 	.type	stamp3, @object
 	.size	stamp3, 15
 stamp3:
-	.string	"TIME: 22:44:30"
+	.string	"TIME: 12:05:30"
 .global	stamp4
 	.type	stamp4, @object
 	.size	stamp4, 15
