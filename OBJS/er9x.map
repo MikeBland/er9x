@@ -145,7 +145,7 @@ LOAD /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a
 .rela.plt
  *(.rela.plt)
 
-.text           0x0000000000000000     0x7546
+.text           0x0000000000000000     0x74ba
  *(.vectors)
  .vectors       0x0000000000000000       0x8c /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/crtm64.o
                 0x0000000000000000                __vectors
@@ -280,7 +280,7 @@ LOAD /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a
                 0x00000000000016b0                putsChnRaw(unsigned char, unsigned char, unsigned char, unsigned char)
                 0x00000000000016fa                putsVBat(unsigned char, unsigned char, unsigned char)
                 0x000000000000172c                putsTime(unsigned char, unsigned char, int, unsigned char, unsigned char)
- .text          0x00000000000017cc     0x448e src_menus.o
+ .text          0x00000000000017cc     0x4402 src_menus.o
                 0x00000000000017cc                expou(unsigned int, unsigned int)
                 0x0000000000001878                expo(int, int)
                 0x00000000000018de                char2idx(char)
@@ -288,156 +288,156 @@ LOAD /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a
                 0x000000000000190e                timer(unsigned char)
                 0x0000000000001aba                trace(unsigned char)
                 0x0000000000001b6a                calcLimitCache()
-                0x0000000000001bd0                intpol(int, unsigned char)
-                0x0000000000001cc0                setupPulsesPPM()
-                0x0000000000001d7c                _send_hilo(unsigned int, unsigned int)
-                0x0000000000001d9e                sendBitSilv(unsigned char)
-                0x0000000000001dd6                send2BitsSilv(unsigned char)
-                0x0000000000001e30                setupPulsesSilver()
-                0x0000000000001fca                sendBitTra(unsigned char)
-                0x0000000000002008                sendByteTra(unsigned char)
-                0x0000000000002026                setupPulsesTracerCtp1009()
-                0x0000000000002196                setupPulses()
-                0x00000000000021bc                get_calibrated_stick(unsigned char)
-                0x000000000000223e                perOut(int*)
-                0x00000000000029e8                genMixTab()
-                0x0000000000002af6                menuProcStatistic(unsigned char)
-                0x0000000000002c2e                menuProc0(unsigned char)
-                0x0000000000003178                menuProcStatistic2(unsigned char)
-                0x000000000000326c                editExpoVals(unsigned char, unsigned char, bool, unsigned char, unsigned char, unsigned char)
-                0x00000000000033f0                MState2::check(unsigned char, unsigned char, void (**)(unsigned char), unsigned char, unsigned char*, unsigned char, unsigned char)
-                0x00000000000035e2                menuProcTrainer(unsigned char)
-                0x00000000000038e6                menuProcModel(unsigned char)
-                0x0000000000003ce0                menuProcExpoAll(unsigned char)
-                0x0000000000003e6c                menuProcLimits(unsigned char)
-                0x000000000000422e                MState2::check_v(unsigned char, unsigned char, void (**)(unsigned char), unsigned char, unsigned char)
-                0x0000000000004250                menuProcSetup0(unsigned char)
-                0x00000000000043c2                menuProcSetup1(unsigned char)
-                0x0000000000004564                menuProcDiagVers(unsigned char)
-                0x00000000000045c6                menuProcDiagKeys(unsigned char)
-                0x00000000000046e4                menuProcDiagAna(unsigned char)
-                0x0000000000004804                menuProcDiagCalib(unsigned char)
-                0x0000000000004a36                menuProcModelSelect(unsigned char)
-                0x0000000000004c30                menuProcExpoOne(unsigned char)
-                0x0000000000004f6c                menuProcTrim(unsigned char)
-                0x00000000000050dc                menuProcMix(unsigned char)
-                0x0000000000005438                menuProcCurve(unsigned char)
-                0x00000000000055f0                menuProcCurveOne(unsigned char)
-                0x000000000000586c                menuProcMixOne(unsigned char)
- .text          0x0000000000005c5a      0x4f2 src_pers.o
-                0x0000000000005c5a                trimRevert(int)
-                0x0000000000005c86                eeDirty(unsigned char)
-                0x0000000000005ca8                eeCheck(bool)
-                0x0000000000005d90                eeDuplicateModel(unsigned char)
-                0x0000000000005e30                eeLoadGeneral()
-                0x0000000000005e84                generalDefault()
-                0x0000000000005ed8                eeLoadModelName(unsigned char, char*, unsigned char)
-                0x0000000000005f54                modelDefault(unsigned char, bool)
-                0x0000000000006084                eeLoadModel(unsigned char)
-                0x00000000000060c2                eeReadAll()
- .text          0x000000000000614c      0x898 src_file.o
-                0x000000000000614c                EFile::exists(unsigned char)
-                0x0000000000006164                EFile::size()
-                0x0000000000006180                EFile::openRd(unsigned char)
-                0x00000000000061c2                EFile::create(unsigned char, unsigned char, unsigned char)
-                0x0000000000006268                EeFsGetFree()
-                0x0000000000006288                EFile::read(unsigned char*, unsigned char)
-                0x0000000000006358                EeFsOpen()
-                0x00000000000063b2                EFile::swap(unsigned char, unsigned char)
-                0x000000000000647c                EFile::closeTrunc()
-                0x0000000000006518                EFile::write(unsigned char*, unsigned char)
-                0x0000000000006624                EFile::writeRlc(unsigned char, unsigned char, unsigned char*, unsigned int, unsigned char)
-                0x000000000000678e                EFile::readRlc(unsigned char*, unsigned int)
-                0x000000000000684c                EFile::rm(unsigned char)
-                0x000000000000688e                EeFsFormat()
-                0x00000000000068e8                EeFsck()
- .text          0x00000000000069e4      0x67c src_lcd.o
-                0x00000000000069e4                lcd_clear()
-                0x00000000000069f4                lcd_img(unsigned char, unsigned char, unsigned char const*, unsigned char, unsigned char)
-                0x0000000000006aae                lcd_putcAtt(unsigned char, unsigned char, char, unsigned char)
-                0x0000000000006b98                lcd_putc(unsigned char, unsigned char, char)
-                0x0000000000006ba0                lcd_putsnAtt(unsigned char, unsigned char, char const*, unsigned char, unsigned char)
-                0x0000000000006bf8                lcd_putsn_P(unsigned char, unsigned char, char const*, unsigned char)
-                0x0000000000006c04                lcd_putsAtt(unsigned char, unsigned char, char const*, unsigned char)
-                0x0000000000006c60                lcd_puts_P(unsigned char, unsigned char, char const*)
-                0x0000000000006c68                lcd_outhex4(unsigned char, unsigned char, unsigned int)
-                0x0000000000006cb2                lcd_plot(unsigned char, unsigned char)
-                0x0000000000006cf0                lcd_outdezNAtt(unsigned char, unsigned char, int, unsigned char, unsigned char)
-                0x0000000000006e22                lcd_outdezAtt(unsigned char, unsigned char, int, unsigned char)
-                0x0000000000006e2e                lcd_outdez(unsigned char, unsigned char, int)
-                0x0000000000006e36                lcd_hlineStip(unsigned char, unsigned char, signed char, unsigned char)
-                0x0000000000006e92                lcd_hline(unsigned char, unsigned char, signed char)
-                0x0000000000006e9a                lcd_vline(unsigned char, unsigned char, signed char)
-                0x0000000000006f46                lcdSendCtl(unsigned char)
-                0x0000000000006f58                lcdSendDat(unsigned char)
-                0x0000000000006f6a                delay_1_5us(int)
-                0x0000000000006f84                lcd_init()
-                0x0000000000006ffa                lcdSetRefVolt(unsigned char)
-                0x000000000000700e                refreshDiplay()
- .text          0x0000000000007060      0x358 src_drivers.o
-                0x0000000000007060                eeWriteBlockCmp(void const*, void*, unsigned int)
-                0x0000000000007096                putEvent(unsigned char)
-                0x000000000000709c                getEvent()
-                0x00000000000070a6                Key::input(bool, EnumKeys)
-                0x00000000000071b2                keyState(EnumKeys)
-                0x00000000000072a2                pauseEvents(unsigned char)
-                0x00000000000072c0                killEvents(unsigned char)
-                0x00000000000072e2                getEventDbl(unsigned char)
-                0x0000000000007306                per10ms()
- .text          0x00000000000073b8        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_mulsi3.o)
- .text          0x00000000000073b8        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodhi4.o)
- .text          0x00000000000073b8        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodhi4.o)
- .text          0x00000000000073b8        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodsi4.o)
- .text          0x00000000000073b8        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodsi4.o)
- .text          0x00000000000073b8        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
- .text          0x00000000000073b8        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
- .text          0x00000000000073b8        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
- .text          0x00000000000073b8        0x0 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memcpy_P.o)
- .text          0x00000000000073b8        0x0 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(strcpy_P.o)
- .text          0x00000000000073b8        0x0 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memmove.o)
- .text          0x00000000000073b8        0x0 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memset.o)
- .text          0x00000000000073b8        0x0 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(eerd_block_atmega64.o)
- .text          0x00000000000073b8        0x0 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memcpy.o)
-                0x00000000000073b8                . = ALIGN (0x2)
+                0x0000000000001bc0                intpol(int, unsigned char)
+                0x0000000000001cb0                setupPulsesPPM()
+                0x0000000000001d6c                _send_hilo(unsigned int, unsigned int)
+                0x0000000000001d8e                sendBitSilv(unsigned char)
+                0x0000000000001dc6                send2BitsSilv(unsigned char)
+                0x0000000000001e20                setupPulsesSilver()
+                0x0000000000001fba                sendBitTra(unsigned char)
+                0x0000000000001ff8                sendByteTra(unsigned char)
+                0x0000000000002016                setupPulsesTracerCtp1009()
+                0x0000000000002186                setupPulses()
+                0x00000000000021ac                get_calibrated_stick(unsigned char)
+                0x000000000000222e                perOut(int*)
+                0x000000000000299c                genMixTab()
+                0x0000000000002aaa                menuProcStatistic(unsigned char)
+                0x0000000000002be2                menuProc0(unsigned char)
+                0x00000000000030ec                menuProcStatistic2(unsigned char)
+                0x00000000000031e0                editExpoVals(unsigned char, unsigned char, bool, unsigned char, unsigned char, unsigned char)
+                0x0000000000003364                MState2::check(unsigned char, unsigned char, void (**)(unsigned char), unsigned char, unsigned char*, unsigned char, unsigned char)
+                0x0000000000003556                menuProcTrainer(unsigned char)
+                0x000000000000385a                menuProcModel(unsigned char)
+                0x0000000000003c54                menuProcExpoAll(unsigned char)
+                0x0000000000003de0                menuProcLimits(unsigned char)
+                0x00000000000041a2                MState2::check_v(unsigned char, unsigned char, void (**)(unsigned char), unsigned char, unsigned char)
+                0x00000000000041c4                menuProcSetup0(unsigned char)
+                0x0000000000004336                menuProcSetup1(unsigned char)
+                0x00000000000044d8                menuProcDiagVers(unsigned char)
+                0x000000000000453a                menuProcDiagKeys(unsigned char)
+                0x0000000000004658                menuProcDiagAna(unsigned char)
+                0x0000000000004778                menuProcDiagCalib(unsigned char)
+                0x00000000000049aa                menuProcModelSelect(unsigned char)
+                0x0000000000004ba4                menuProcExpoOne(unsigned char)
+                0x0000000000004ee0                menuProcTrim(unsigned char)
+                0x0000000000005050                menuProcMix(unsigned char)
+                0x00000000000053ac                menuProcCurve(unsigned char)
+                0x0000000000005564                menuProcCurveOne(unsigned char)
+                0x00000000000057e0                menuProcMixOne(unsigned char)
+ .text          0x0000000000005bce      0x4f2 src_pers.o
+                0x0000000000005bce                trimRevert(int)
+                0x0000000000005bfa                eeDirty(unsigned char)
+                0x0000000000005c1c                eeCheck(bool)
+                0x0000000000005d04                eeDuplicateModel(unsigned char)
+                0x0000000000005da4                eeLoadGeneral()
+                0x0000000000005df8                generalDefault()
+                0x0000000000005e4c                eeLoadModelName(unsigned char, char*, unsigned char)
+                0x0000000000005ec8                modelDefault(unsigned char, bool)
+                0x0000000000005ff8                eeLoadModel(unsigned char)
+                0x0000000000006036                eeReadAll()
+ .text          0x00000000000060c0      0x898 src_file.o
+                0x00000000000060c0                EFile::exists(unsigned char)
+                0x00000000000060d8                EFile::size()
+                0x00000000000060f4                EFile::openRd(unsigned char)
+                0x0000000000006136                EFile::create(unsigned char, unsigned char, unsigned char)
+                0x00000000000061dc                EeFsGetFree()
+                0x00000000000061fc                EFile::read(unsigned char*, unsigned char)
+                0x00000000000062cc                EeFsOpen()
+                0x0000000000006326                EFile::swap(unsigned char, unsigned char)
+                0x00000000000063f0                EFile::closeTrunc()
+                0x000000000000648c                EFile::write(unsigned char*, unsigned char)
+                0x0000000000006598                EFile::writeRlc(unsigned char, unsigned char, unsigned char*, unsigned int, unsigned char)
+                0x0000000000006702                EFile::readRlc(unsigned char*, unsigned int)
+                0x00000000000067c0                EFile::rm(unsigned char)
+                0x0000000000006802                EeFsFormat()
+                0x000000000000685c                EeFsck()
+ .text          0x0000000000006958      0x67c src_lcd.o
+                0x0000000000006958                lcd_clear()
+                0x0000000000006968                lcd_img(unsigned char, unsigned char, unsigned char const*, unsigned char, unsigned char)
+                0x0000000000006a22                lcd_putcAtt(unsigned char, unsigned char, char, unsigned char)
+                0x0000000000006b0c                lcd_putc(unsigned char, unsigned char, char)
+                0x0000000000006b14                lcd_putsnAtt(unsigned char, unsigned char, char const*, unsigned char, unsigned char)
+                0x0000000000006b6c                lcd_putsn_P(unsigned char, unsigned char, char const*, unsigned char)
+                0x0000000000006b78                lcd_putsAtt(unsigned char, unsigned char, char const*, unsigned char)
+                0x0000000000006bd4                lcd_puts_P(unsigned char, unsigned char, char const*)
+                0x0000000000006bdc                lcd_outhex4(unsigned char, unsigned char, unsigned int)
+                0x0000000000006c26                lcd_plot(unsigned char, unsigned char)
+                0x0000000000006c64                lcd_outdezNAtt(unsigned char, unsigned char, int, unsigned char, unsigned char)
+                0x0000000000006d96                lcd_outdezAtt(unsigned char, unsigned char, int, unsigned char)
+                0x0000000000006da2                lcd_outdez(unsigned char, unsigned char, int)
+                0x0000000000006daa                lcd_hlineStip(unsigned char, unsigned char, signed char, unsigned char)
+                0x0000000000006e06                lcd_hline(unsigned char, unsigned char, signed char)
+                0x0000000000006e0e                lcd_vline(unsigned char, unsigned char, signed char)
+                0x0000000000006eba                lcdSendCtl(unsigned char)
+                0x0000000000006ecc                lcdSendDat(unsigned char)
+                0x0000000000006ede                delay_1_5us(int)
+                0x0000000000006ef8                lcd_init()
+                0x0000000000006f6e                lcdSetRefVolt(unsigned char)
+                0x0000000000006f82                refreshDiplay()
+ .text          0x0000000000006fd4      0x358 src_drivers.o
+                0x0000000000006fd4                eeWriteBlockCmp(void const*, void*, unsigned int)
+                0x000000000000700a                putEvent(unsigned char)
+                0x0000000000007010                getEvent()
+                0x000000000000701a                Key::input(bool, EnumKeys)
+                0x0000000000007126                keyState(EnumKeys)
+                0x0000000000007216                pauseEvents(unsigned char)
+                0x0000000000007234                killEvents(unsigned char)
+                0x0000000000007256                getEventDbl(unsigned char)
+                0x000000000000727a                per10ms()
+ .text          0x000000000000732c        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_mulsi3.o)
+ .text          0x000000000000732c        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodhi4.o)
+ .text          0x000000000000732c        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodhi4.o)
+ .text          0x000000000000732c        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodsi4.o)
+ .text          0x000000000000732c        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodsi4.o)
+ .text          0x000000000000732c        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+ .text          0x000000000000732c        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+ .text          0x000000000000732c        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+ .text          0x000000000000732c        0x0 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memcpy_P.o)
+ .text          0x000000000000732c        0x0 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(strcpy_P.o)
+ .text          0x000000000000732c        0x0 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memmove.o)
+ .text          0x000000000000732c        0x0 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memset.o)
+ .text          0x000000000000732c        0x0 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(eerd_block_atmega64.o)
+ .text          0x000000000000732c        0x0 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memcpy.o)
+                0x000000000000732c                . = ALIGN (0x2)
  *(.text.*)
- .text.libgcc   0x00000000000073b8       0x3e /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_mulsi3.o)
-                0x00000000000073b8                __mulsi3
- .text.libgcc   0x00000000000073f6       0x28 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodhi4.o)
-                0x00000000000073f6                __udivmodhi4
- .text.libgcc   0x000000000000741e       0x26 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodhi4.o)
-                0x000000000000741e                __divmodhi4
-                0x000000000000741e                _div
- .text.libgcc   0x0000000000007444       0x44 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodsi4.o)
-                0x0000000000007444                __udivmodsi4
- .text.libgcc   0x0000000000007488       0x36 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodsi4.o)
-                0x0000000000007488                __divmodsi4
- .text.libgcc   0x00000000000074be        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
- .text.libgcc   0x00000000000074be        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
- .text.libgcc   0x00000000000074be        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+ .text.libgcc   0x000000000000732c       0x3e /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_mulsi3.o)
+                0x000000000000732c                __mulsi3
+ .text.libgcc   0x000000000000736a       0x28 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodhi4.o)
+                0x000000000000736a                __udivmodhi4
+ .text.libgcc   0x0000000000007392       0x26 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodhi4.o)
+                0x0000000000007392                __divmodhi4
+                0x0000000000007392                _div
+ .text.libgcc   0x00000000000073b8       0x44 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodsi4.o)
+                0x00000000000073b8                __udivmodsi4
+ .text.libgcc   0x00000000000073fc       0x36 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodsi4.o)
+                0x00000000000073fc                __divmodsi4
+ .text.libgcc   0x0000000000007432        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+ .text.libgcc   0x0000000000007432        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+ .text.libgcc   0x0000000000007432        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
  .text.avr-libc
-                0x00000000000074be       0x12 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memcpy_P.o)
-                0x00000000000074be                memcpy_P
+                0x0000000000007432       0x12 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memcpy_P.o)
+                0x0000000000007432                memcpy_P
  .text.avr-libc
-                0x00000000000074d0        0xe /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(strcpy_P.o)
-                0x00000000000074d0                strcpy_P
+                0x0000000000007444        0xe /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(strcpy_P.o)
+                0x0000000000007444                strcpy_P
  .text.avr-libc
-                0x00000000000074de       0x24 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memmove.o)
-                0x00000000000074de                memmove
+                0x0000000000007452       0x24 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memmove.o)
+                0x0000000000007452                memmove
  .text.avr-libc
-                0x0000000000007502        0xe /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memset.o)
-                0x0000000000007502                memset
+                0x0000000000007476        0xe /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memset.o)
+                0x0000000000007476                memset
  .text.avr-libc
-                0x0000000000007510       0x20 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(eerd_block_atmega64.o)
-                0x0000000000007510                __eerd_block_m64
-                0x0000000000007514                __eerd_blraw_m64
+                0x0000000000007484       0x20 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(eerd_block_atmega64.o)
+                0x0000000000007484                __eerd_block_m64
+                0x0000000000007488                __eerd_blraw_m64
  .text.avr-libc
-                0x0000000000007530       0x12 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memcpy.o)
-                0x0000000000007530                memcpy
-                0x0000000000007542                . = ALIGN (0x2)
+                0x00000000000074a4       0x12 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/libc.a(memcpy.o)
+                0x00000000000074a4                memcpy
+                0x00000000000074b6                . = ALIGN (0x2)
  *(.fini9)
- .fini9         0x0000000000007542        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
-                0x0000000000007542                exit
-                0x0000000000007542                _exit
+ .fini9         0x00000000000074b6        0x0 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+                0x00000000000074b6                exit
+                0x00000000000074b6                _exit
  *(.fini9)
  *(.fini8)
  *(.fini8)
@@ -456,11 +456,11 @@ LOAD /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a
  *(.fini1)
  *(.fini1)
  *(.fini0)
- .fini0         0x0000000000007542        0x4 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+ .fini0         0x00000000000074b6        0x4 /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
  *(.fini0)
-                0x0000000000007546                _etext = .
+                0x00000000000074ba                _etext = .
 
-.data           0x0000000000800100       0x1c load address 0x0000000000007546
+.data           0x0000000000800100       0x1c load address 0x00000000000074ba
                 0x0000000000800100                PROVIDE (__data_start, .)
  *(.data)
  .data          0x0000000000800100        0x0 /usr/lib/gcc/avr/4.3.4/../../../avr/lib/avr5/crtm64.o
@@ -560,8 +560,8 @@ LOAD /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a
  *(.bss*)
  *(COMMON)
                 0x0000000000800c03                PROVIDE (__bss_end, .)
-                0x0000000000007546                __data_load_start = LOADADDR (.data)
-                0x0000000000007562                __data_load_end = (__data_load_start + SIZEOF (.data))
+                0x00000000000074ba                __data_load_start = LOADADDR (.data)
+                0x00000000000074d6                __data_load_end = (__data_load_start + SIZEOF (.data))
 
 .noinit         0x0000000000800c03        0x0
                 0x0000000000800c03                PROVIDE (__noinit_start, .)
@@ -666,15 +666,15 @@ LOAD /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a
  .debug_pubnames
                 0x0000000000000ac3       0xc1 src_drivers.o
 
-.debug_info     0x0000000000000000     0x7f23
+.debug_info     0x0000000000000000     0x7f18
  *(.debug_info)
  .debug_info    0x0000000000000000      0x11a stamp.o
  .debug_info    0x000000000000011a     0x168c src_er9x.o
- .debug_info    0x00000000000017a6     0x3c05 src_menus.o
- .debug_info    0x00000000000053ab      0xc14 src_pers.o
- .debug_info    0x0000000000005fbf      0xb92 src_file.o
- .debug_info    0x0000000000006b51      0xd94 src_lcd.o
- .debug_info    0x00000000000078e5      0x63e src_drivers.o
+ .debug_info    0x00000000000017a6     0x3bfa src_menus.o
+ .debug_info    0x00000000000053a0      0xc14 src_pers.o
+ .debug_info    0x0000000000005fb4      0xb92 src_file.o
+ .debug_info    0x0000000000006b46      0xd94 src_lcd.o
+ .debug_info    0x00000000000078da      0x63e src_drivers.o
  *(.gnu.linkonce.wi.*)
 
 .debug_abbrev   0x0000000000000000     0x1477
@@ -687,15 +687,15 @@ LOAD /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a
  .debug_abbrev  0x0000000000000f2a      0x2a2 src_lcd.o
  .debug_abbrev  0x00000000000011cc      0x2ab src_drivers.o
 
-.debug_line     0x0000000000000000     0x463c
+.debug_line     0x0000000000000000     0x462f
  *(.debug_line)
  .debug_line    0x0000000000000000       0x97 stamp.o
  .debug_line    0x0000000000000097      0xb60 src_er9x.o
- .debug_line    0x0000000000000bf7     0x2384 src_menus.o
- .debug_line    0x0000000000002f7b      0x4e2 src_pers.o
- .debug_line    0x000000000000345d      0x6a3 src_file.o
- .debug_line    0x0000000000003b00      0x73f src_lcd.o
- .debug_line    0x000000000000423f      0x3fd src_drivers.o
+ .debug_line    0x0000000000000bf7     0x2377 src_menus.o
+ .debug_line    0x0000000000002f6e      0x4e2 src_pers.o
+ .debug_line    0x0000000000003450      0x6a3 src_file.o
+ .debug_line    0x0000000000003af3      0x73f src_lcd.o
+ .debug_line    0x0000000000004232      0x3fd src_drivers.o
 
 .debug_frame    0x0000000000000000      0x8c0
  *(.debug_frame)
@@ -723,14 +723,14 @@ LOAD /usr/lib/gcc/avr/4.3.4/avr5/libgcc.a
  .debug_str     0x0000000000001aa6      0x1cb src_drivers.o
                                         0x3d5 (size before relaxing)
 
-.debug_loc      0x0000000000000000     0x4061
+.debug_loc      0x0000000000000000     0x4025
  *(.debug_loc)
  .debug_loc     0x0000000000000000      0xc26 src_er9x.o
- .debug_loc     0x0000000000000c26     0x1d8e src_menus.o
- .debug_loc     0x00000000000029b4      0x2e2 src_pers.o
- .debug_loc     0x0000000000002c96      0x7fe src_file.o
- .debug_loc     0x0000000000003494      0x9f1 src_lcd.o
- .debug_loc     0x0000000000003e85      0x1dc src_drivers.o
+ .debug_loc     0x0000000000000c26     0x1d52 src_menus.o
+ .debug_loc     0x0000000000002978      0x2e2 src_pers.o
+ .debug_loc     0x0000000000002c5a      0x7fe src_file.o
+ .debug_loc     0x0000000000003458      0x9f1 src_lcd.o
+ .debug_loc     0x0000000000003e49      0x1dc src_drivers.o
 
 .debug_macinfo
  *(.debug_macinfo)

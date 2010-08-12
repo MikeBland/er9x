@@ -219,6 +219,7 @@ void menuProcCurveOne(uint8_t event) {
 #define RESXu   512u
 #define RESXul  512ul
 #define RESKul  100ul
+#define RESX_PLUS_TRIM (RESX+128)
 
   for (uint8_t xv = 0; xv < WCHART * 2; xv++) {
     uint16_t yv = intpol(xv * (RESXu / WCHART) - RESXu, s_curveChan) / (RESXu
@@ -1672,10 +1673,9 @@ void menuProc0(uint8_t event)
       case 0:
         x0 = (i%4*9+3)*FW/2;
         y0 = i/4*FH+40;
-        // *1000/512 =   *2 - 24/512
-        // *1250/512 =   *2 + 225/512 = x*2+x/2-x/8+x/32-x/512
-#define GPERC(x)  (x*2+x/2-x/8+x/32-x/256)
-        lcd_outdezAtt( x0+4*FW , y0, GPERC(g_chans512[i]),PREC1 ); //-g_chans512[i]/21
+        // *1000/512 = x*2 - x/16 + x/64  
+#define GPERC(x)  (x*2 - x/16 + x/64)
+        lcd_outdezAtt( x0+4*FW , y0, GPERC(g_chans512[i]),PREC1 );
         break;
       case 1:
 #define WBAR2 (50/2)
@@ -1700,6 +1700,7 @@ void menuProc0(uint8_t event)
 
 }
 
+
 static int16_t s_cacheLimitsMin[NUM_CHNOUT];
 static int16_t s_cacheLimitsMax[NUM_CHNOUT];
 void calcLimitCache()
@@ -1711,9 +1712,9 @@ void calcLimitCache()
   s_limitCacheOk = true;
   for(uint8_t i=0; i<NUM_CHNOUT; i++){
     int16_t v = g_model.limitData[i].min-100;
-    s_cacheLimitsMin[i] = v*4;//  min = -125    5*v + v/8 ; // *512/100 ~  *(5 1/8)
+    s_cacheLimitsMin[i] = v;//  min = -125    5*v + v/8 ; // *512/100 ~  *(5 1/8)
     v = g_model.limitData[i].max+100;
-    s_cacheLimitsMax[i] = v*4;//  max = 125     5*v + v/8 ; // *512/100 ~  *(5 1/8)
+    s_cacheLimitsMax[i] = v;//  max = 125     5*v + v/8 ; // *512/100 ~  *(5 1/8)
   }
 }
 
@@ -1936,22 +1937,25 @@ void perOut(int16_t *chanOut)
   //limit + revert loop
   calcLimitCache();
   for(uint8_t i=0;i<NUM_CHNOUT;i++){
-    int16_t v = 0;
-    if(chans[i]) v = chans[i] >> 3;  // 18 bits >> 15 bit;
-
-    int32_t vv = (int32_t)v*123*4 / (RESX*12); //Normalize for next loop - make sure we use the same math as interpolation
-    chans[i] = (int16_t)vv;                    //Not sure why but 123 works better than 125
-
+    // chans[i] holds data from mixer.   chans[i] = v*weight => 512*100
+    // later we multiply by the limit (up to 100) and then we need to normalize
+    // at the end chans[i] = chans[i]/100 =>  -512..512
     // interpolate value with min/max so we get smooth motion from center to stop
     // this limits based on v original values and min=-512, max=512  RESX=512
-    vv = (v>0) ? (int32_t)v*s_cacheLimitsMax[i]/(RESX*12) : (int32_t)-v*s_cacheLimitsMin[i]/(RESX*12);
-    v = (int16_t)vv;    //v *= limit / 512;
+
+    int16_t v = 0;
+    if(chans[i]){
+       v = (chans[i]>0) ? 
+            chans[i]*s_cacheLimitsMax[i]/10000: 
+           -chans[i]*s_cacheLimitsMin[i]/10000;
+       chans[i] = chans[i]/100;
+    }
 
     //offset after limit ->
-    v+=g_model.limitData[i].offset;  //*5; // 512/100
+    v+=g_model.limitData[i].offset;  
     if(g_model.limitData[i].revert) v=-v;
-    if(v>RESX)  v =  RESX;
-    if(v<-RESX) v = -RESX;// absolute limits - do not go over!
+    if(v> RESX_PLUS_TRIM) v =  RESX_PLUS_TRIM;
+    if(v<-RESX_PLUS_TRIM) v = -RESX_PLUS_TRIM;// absolute limits - do not go over!
 
     cli();
     chanOut[i] = v; //copy consistent word to int-level
