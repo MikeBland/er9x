@@ -1744,6 +1744,20 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
   return erg / 50; // 100*D5/RESX;
 }
 
+int16_t get_calibrated_stick(uint8_t i)
+{
+    int16_t v = anaIn(i);
+    v -= g_eeGeneral.calibMid[i];
+    v  =  v * (int32_t)RESX /  (max((int16_t)100,
+                                    (v>0 ?
+                                     g_eeGeneral.calibSpanPos[i] :
+                                     g_eeGeneral.calibSpanNeg[i])));
+
+    if(v <= -RESX) v = -RESX;
+    if(v >=  RESX) v =  RESX;
+    return v;
+}
+
 uint16_t pulses2MHz[60];
 
 
@@ -1758,15 +1772,7 @@ void perOut(int16_t *chanOut)
 
     //Normalization  [0..1024] ->   [-512..512]
 
-    int16_t v= anaIn(i);
-    v -= g_eeGeneral.calibMid[i];
-    v  =  v * (int32_t)RESX /  (max((int16_t)100,
-                                    (v>0 ?
-                                     g_eeGeneral.calibSpanPos[i] :
-                                     g_eeGeneral.calibSpanNeg[i])));
-
-    if(v <= -RESX) v = -RESX;
-    if(v >=  RESX) v =  RESX;
+    int16_t v = get_calibrated_stick(i);
     anaCalib[i] = v; //for show in expo
 
     v  = expo(v,
@@ -1804,9 +1810,9 @@ void perOut(int16_t *chanOut)
     //trim
     trimA[i] = (vv==2*RESX) ? g_model.trimData[i].trim : (int16_t)vv; //    if throttle trim -> trim low end
     trimA[i] += g_model.trimData[i].trimDef;
-    if(getSwitch(g_model.tcutSW,false) && ((2-(g_eeGeneral.stickMode&1)) == i)){
+    if(getSwitch(g_model.tcutSW,false) && ((2-(g_eeGeneral.stickMode&1)) == i)){ //tcut pressed
       v=-RESX;
-      trimA[i] = 0;
+      trimA[i] = -125; //trim to max negative
     }
     anas[i] = v; //10+1 Bit
   }
@@ -1840,7 +1846,6 @@ void perOut(int16_t *chanOut)
 
       int16_t v;
       v = !getSwitch(md.swtch,1) ? (md.srcRaw == 9 ? -512 : 0) : anas[md.srcRaw-1];
-      if((md.carryTrim==0) && (md.srcRaw>0) && (md.srcRaw<=4)) v += trimA[md.srcRaw-1];  //  0 = Trim ON  =  Default
 
       if (md.speedUp || md.speedDown)
       {
@@ -1915,9 +1920,11 @@ void perOut(int16_t *chanOut)
           break;
         case 3: v = abs(v);      break; //ABS
         default:
-          //if((md.curve >= 4) && (md.curve < 8))
+          //if((md.curve >= 4) && (md.curve < max_curves5+max_curves9))
           v = intpol(v, md.curve - 4);
       }
+
+      if((md.carryTrim==0) && (md.srcRaw>0) && (md.srcRaw<=4)) v += trimA[md.srcRaw-1];  //  0 = Trim ON  =  Default
       int32_t dv=(int32_t)v*(md.weight); // 9+1 Bit + 7+1 = 18 bits
       chans[md.destCh-1] += dv; //Mixer output add up to the line (dv + (dv>0 ? 100/2 : -100/2))/(100);
     }
@@ -1928,11 +1935,13 @@ void perOut(int16_t *chanOut)
   for(uint8_t i=0;i<NUM_CHNOUT;i++){
     int16_t v = 0;
     if(chans[i]) v = chans[i] >> 3;  // 18 bits >> 15 bit;
-    chans[i] = v >> 5; //Normalize for next loop
+
+    int32_t vv = (int32_t)v*123*4 / (RESX*12); //Normalize for next loop - make sure we use the same math as interpolation
+    chans[i] = (int16_t)vv;                    //Not sure why but 122 works better than 125
 
     // interpolate value with min/max so we get smooth motion from center to stop
     // this limits based on v original values and min=-512, max=512  RESX=512
-    int32_t vv = (v>0) ? (int32_t)v*s_cacheLimitsMax[i]/(RESX*12) : (int32_t)-v*s_cacheLimitsMin[i]/(RESX*12);
+    vv = (v>0) ? (int32_t)v*s_cacheLimitsMax[i]/(RESX*12) : (int32_t)-v*s_cacheLimitsMin[i]/(RESX*12);
     v = (int16_t)vv;    //v *= limit / 512;
 
     //offset after limit ->
