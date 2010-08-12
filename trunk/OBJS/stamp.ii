@@ -836,5 +836,5 @@ inline void _beep(uint8_t b) {
 
 const char __attribute__(( section(".progmem.data") )) stamp1[] = "VERS: V" "1" "." "1801-erez";
 const char __attribute__(( section(".progmem.data") )) stamp2[] = "DATE: " "12.08.2010";
-const char __attribute__(( section(".progmem.data") )) stamp3[] = "TIME: " "12:05:30";
-const char __attribute__(( section(".progmem.data") )) stamp4[] = " SVN: " "trunk-r5";
+const char __attribute__(( section(".progmem.data") )) stamp3[] = "TIME: " "14:23:58";
+const char __attribute__(( section(".progmem.data") )) stamp4[] = " SVN: " "trunk-r7";

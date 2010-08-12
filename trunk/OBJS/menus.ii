@@ -2421,13 +2421,16 @@ void menuProc0(uint8_t event)
         x0 = (i%4*9+3)*6/2;
         y0 = i/4*8 +40;
 
-        lcd_outdezAtt( x0+4*6 , y0, g_chans512[i]*2-g_chans512[i]/21,0x20 );
+
+
+        lcd_outdezAtt( x0+4*6 , y0, (g_chans512[i]*2+g_chans512[i]/2-g_chans512[i]/8+g_chans512[i]/32-g_chans512[i]/256),0x20 );
         break;
       case 1:
 
+
         x0 = i<4 ? 128/4+4 : 128*3/4-4;
         y0 = 38+(i%4)*5;
-        int8_t l = (abs(g_chans512[i])+(50/2)/2) * (50/2) / 512;
+        int8_t l = (abs((g_chans512[i]/2*2+g_chans512[i]/2/2-g_chans512[i]/2/8+g_chans512[i]/2/32-g_chans512[i]/2/256))+(50/2)/2) * (50/2) / 512;
         if(l>(50/2)) l = (50/2);
 
         lcd_hlineStip(x0-(50/2),y0,(50/2)*2+1,0x55);
@@ -2597,7 +2600,7 @@ void perOut(int16_t *chanOut)
 
       if (md.speedUp || md.speedDown)
       {
-# 1873 "../src/menus.cpp"
+# 1876 "../src/menus.cpp"
         static prog_uint8_t __attribute__(( section(".progmem.data") )) dlt_t[]={18,13,9,6,4,3,2,3,1,2,1,1,1,1,1};
         static prog_uint8_t __attribute__(( section(".progmem.data") )) tmr_t[]={ 1, 1,1,1,1,1,1,2,1,3,2,3,4,6,9};
         int16_t diff = v - act[i];
@@ -2685,7 +2688,7 @@ void perOut(int16_t *chanOut)
 
 
 }
-# 1969 "../src/menus.cpp"
+# 1972 "../src/menus.cpp"
 void setupPulses()
 {
   switch(g_model.protocol)
@@ -2742,7 +2745,7 @@ void send2BitsSilv(uint8_t val)
 {
   sendBitSilv(val&2);sendBitSilv(val&1);
 }
-# 2037 "../src/menus.cpp"
+# 2040 "../src/menus.cpp"
 void setupPulsesSilver()
 {
   int8_t chan=1;
@@ -2790,7 +2793,7 @@ void setupPulsesSilver()
 
 
 }
-# 2122 "../src/menus.cpp"
+# 2125 "../src/menus.cpp"
 void sendBitTra(uint8_t val)
 {
   if(val) _send_hilo( (400u*2)*1 , (400u*2)*2 );

@@ -30,12 +30,12 @@ stamp2:
 	.type	stamp3, @object
 	.size	stamp3, 15
 stamp3:
-	.string	"TIME: 12:05:30"
+	.string	"TIME: 14:23:58"
 .global	stamp4
 	.type	stamp4, @object
 	.size	stamp4, 15
 stamp4:
-	.string	" SVN: trunk-r5"
+	.string	" SVN: trunk-r7"
 	.text
 .Letext0:
 	.section	.debug_info

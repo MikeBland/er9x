@@ -1,6 +1,6 @@
 /*
  * Author - Erez Raviv <erezraviv@gmail.com>
- * 
+ *
  * Based on th9x -> http://code.google.com/p/th9x/
  *
  * This program is free software; you can redistribute it and/or modify
@@ -479,7 +479,7 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
   static uint16_t *pulsePtr = pulses2MHz;
 
   uint8_t i = 0;
-  while((TCNT1L < 10) && (++i < 50))  // Timer zu schnell auslesen funktioniert nicht, deshalb i
+  while((TCNT1L < 10) && (++i < 50))  // Timer does not read too fast, so i
     ;
   uint16_t dt=TCNT1;//-OCR1A;
 
@@ -491,8 +491,8 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
     PORTB &= ~(1<<OUT_B_PPM);
     pulsePol = 1;
   }
-  g_tmr1Latency_max = max(dt,g_tmr1Latency_max);    // max hat Sprung, deshalb unterschiedlich lang
-  g_tmr1Latency_min = min(dt,g_tmr1Latency_min);    // min hat Sprung, deshalb unterschiedlich lang
+  g_tmr1Latency_max = max(dt,g_tmr1Latency_max);    // max has leap, therefore vary in length
+  g_tmr1Latency_min = min(dt,g_tmr1Latency_min);    // min has leap, therefore vary in length
 
   OCR1A  = *pulsePtr++;
 
