@@ -1,6 +1,6 @@
 /*
  * Author - Erez Raviv <erezraviv@gmail.com>
- * 
+ *
  * Based on th9x -> http://code.google.com/p/th9x/
  *
  * This program is free software; you can redistribute it and/or modify
@@ -28,7 +28,7 @@
 #include "er9x.h"
 
 
-uint8_t displayBuf[DISPLAY_W*DISPLAY_H/8]; 
+uint8_t displayBuf[DISPLAY_W*DISPLAY_H/8];
 #define DISPLAY_END (displayBuf+sizeof(displayBuf))
 #include "font.lbm"
 #define font_5x8_x20_x7f (font+3)
@@ -53,7 +53,7 @@ void lcd_img(uint8_t i_x,uint8_t i_y,const prog_uchar * imgdat,uint8_t idx,uint8
     for(uint8_t x=0; x < w; x++){
       uint8_t b = pgm_read_byte(q++);
       *p++ = inv ? ~b : b;
-    }     
+    }
   }
 }
 
@@ -62,7 +62,7 @@ void lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
 {
   uint8_t *p    = &displayBuf[ y / 8 * DISPLAY_W + x ];
   //uint8_t *pmax = &displayBuf[ DISPLAY_H/8 * DISPLAY_W ];
-  
+
   prog_uchar    *q = &font_5x8_x20_x7f[ + (c-0x20)*5];
   bool         inv = (mode & INVERS) ? true : (mode & BLINK ? BLINK_ON_PHASE : false);
   if(mode&DBLSIZE)
@@ -262,8 +262,8 @@ void lcd_init()
 
   PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_RES);  //LCD_RES
   delay_1us();
-  delay_1us();//    f520	call	0xf4ce	delay_1us() ; 0x0xf4ce
-  PORTC_LCD_CTRL |= (1<<OUT_C_LCD_RES); //  f524	sbi	0x15, 2	IOADR-PORTC_LCD_CTRL; 21           1
+  delay_1us();//    f520  call  0xf4ce  delay_1us() ; 0x0xf4ce
+  PORTC_LCD_CTRL |= (1<<OUT_C_LCD_RES); //  f524  sbi 0x15, 2 IOADR-PORTC_LCD_CTRL; 21           1
   delay_1_5us(1500);
   lcdSendCtl(0xe2); //Initialize the internal functions
   lcdSendCtl(0xae); //DON = 0: display OFF
@@ -272,7 +272,7 @@ void lcd_init()
   lcdSendCtl(0xA4); //EON = 0: normal display. non-entire
   lcdSendCtl(0xA2); // Select LCD bias=0
   lcdSendCtl(0xC0); //SHL = 0: normal direction (COM1->COM64)
-  lcdSendCtl(0x2F); //Control power circuit operation VC=VR=VF=1 
+  lcdSendCtl(0x2F); //Control power circuit operation VC=VR=VF=1
   lcdSendCtl(0x25); //Select int resistance ratio R2 R1 R0 =5
   lcdSendCtl(0x81); //Set reference voltage Mode
   lcdSendCtl(0x22); // 24 SV5 SV4 SV3 SV2 SV1 SV0 = 0x18
@@ -287,7 +287,7 @@ void lcdSetRefVolt(uint8_t val)
 
 void refreshDiplay()
 {
-  uint8_t *p=displayBuf; 
+  uint8_t *p=displayBuf;
   for(uint8_t y=0; y < 8; y++) {
     lcdSendCtl(0x04);
     lcdSendCtl(0x10); //column addr 0

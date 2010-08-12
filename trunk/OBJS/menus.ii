@@ -1021,7 +1021,7 @@ void menuProcCurveOne(uint8_t event) {
       eeDirty(2);
     }
   }
-# 223 "../src/menus.cpp"
+# 224 "../src/menus.cpp"
   for (uint8_t xv = 0; xv < 32 * 2; xv++) {
     uint16_t yv = intpol(xv * (512u / 32) - 512u, s_curveChan) / (512u
                                                                       / 32);
@@ -1252,7 +1252,7 @@ void menuProcMixOne(uint8_t event)
     }
   }
 }
-# 464 "../src/menus.cpp"
+# 465 "../src/menus.cpp"
 struct MixTab{
   bool showCh:1;
   bool hasDat:1;
@@ -1453,7 +1453,7 @@ uint16_t expou(uint16_t x, uint16_t k)
 
   return ((unsigned long)x*x*x/0x10000*k/(512ul*512ul/0x10000) + (100ul -k)*x+100ul/2)/100ul;
 }
-# 672 "../src/menus.cpp"
+# 673 "../src/menus.cpp"
 int16_t expo(int16_t x, int16_t k)
 {
   if(k == 0) return x;
@@ -1467,7 +1467,7 @@ int16_t expo(int16_t x, int16_t k)
   }
   return neg? -y:y;
 }
-# 723 "../src/menus.cpp"
+# 724 "../src/menus.cpp"
 static uint8_t s_expoChan;
 
 void editExpoVals(uint8_t event,uint8_t which,bool edit,uint8_t x, uint8_t y, uint8_t chn)
@@ -2422,15 +2422,14 @@ void menuProc0(uint8_t event)
         y0 = i/4*8 +40;
 
 
-
-        lcd_outdezAtt( x0+4*6 , y0, (g_chans512[i]*2+g_chans512[i]/2-g_chans512[i]/8+g_chans512[i]/32-g_chans512[i]/256),0x20 );
+        lcd_outdezAtt( x0+4*6 , y0, (g_chans512[i]*2 - g_chans512[i]/16 + g_chans512[i]/64),0x20 );
         break;
       case 1:
 
 
         x0 = i<4 ? 128/4+4 : 128*3/4-4;
         y0 = 38+(i%4)*5;
-        int8_t l = (abs((g_chans512[i]/2*2+g_chans512[i]/2/2-g_chans512[i]/2/8+g_chans512[i]/2/32-g_chans512[i]/2/256))+(50/2)/2) * (50/2) / 512;
+        int8_t l = (abs((g_chans512[i]/2*2 - g_chans512[i]/2/16 + g_chans512[i]/2/64))+(50/2)/2) * (50/2) / 512;
         if(l>(50/2)) l = (50/2);
 
         lcd_hlineStip(x0-(50/2),y0,(50/2)*2+1,0x55);
@@ -2448,6 +2447,7 @@ void menuProc0(uint8_t event)
 
 }
 
+
 static int16_t s_cacheLimitsMin[16];
 static int16_t s_cacheLimitsMax[16];
 void calcLimitCache()
@@ -2459,9 +2459,9 @@ void calcLimitCache()
   s_limitCacheOk = true;
   for(uint8_t i=0; i<16; i++){
     int16_t v = g_model.limitData[i].min-100;
-    s_cacheLimitsMin[i] = v*4;
+    s_cacheLimitsMin[i] = v;
     v = g_model.limitData[i].max+100;
-    s_cacheLimitsMax[i] = v*4;
+    s_cacheLimitsMax[i] = v;
   }
 }
 
@@ -2600,7 +2600,7 @@ void perOut(int16_t *chanOut)
 
       if (md.speedUp || md.speedDown)
       {
-# 1876 "../src/menus.cpp"
+# 1877 "../src/menus.cpp"
         static prog_uint8_t __attribute__(( section(".progmem.data") )) dlt_t[]={18,13,9,6,4,3,2,3,1,2,1,1,1,1,1};
         static prog_uint8_t __attribute__(( section(".progmem.data") )) tmr_t[]={ 1, 1,1,1,1,1,1,2,1,3,2,3,4,6,9};
         int16_t diff = v - act[i];
@@ -2664,22 +2664,25 @@ void perOut(int16_t *chanOut)
 
   calcLimitCache();
   for(uint8_t i=0;i<16;i++){
+
+
+
+
+
+
     int16_t v = 0;
-    if(chans[i]) v = chans[i] >> 3;
-
-    int32_t vv = (int32_t)v*123*4 / (512*12);
-    chans[i] = (int16_t)vv;
-
-
-
-    vv = (v>0) ? (int32_t)v*s_cacheLimitsMax[i]/(512*12) : (int32_t)-v*s_cacheLimitsMin[i]/(512*12);
-    v = (int16_t)vv;
+    if(chans[i]){
+       v = (chans[i]>0) ?
+            chans[i]*s_cacheLimitsMax[i]/10000:
+           -chans[i]*s_cacheLimitsMin[i]/10000;
+       chans[i] = chans[i]/100;
+    }
 
 
     v+=g_model.limitData[i].offset;
     if(g_model.limitData[i].revert) v=-v;
-    if(v>512) v = 512;
-    if(v<-512) v = -512;
+    if(v> (512 +128)) v = (512 +128);
+    if(v<-(512 +128)) v = -(512 +128);
 
     __asm__ __volatile__ ("cli" ::);
     chanOut[i] = v;
@@ -2688,7 +2691,7 @@ void perOut(int16_t *chanOut)
 
 
 }
-# 1972 "../src/menus.cpp"
+# 1976 "../src/menus.cpp"
 void setupPulses()
 {
   switch(g_model.protocol)
@@ -2745,7 +2748,7 @@ void send2BitsSilv(uint8_t val)
 {
   sendBitSilv(val&2);sendBitSilv(val&1);
 }
-# 2040 "../src/menus.cpp"
+# 2044 "../src/menus.cpp"
 void setupPulsesSilver()
 {
   int8_t chan=1;
@@ -2793,7 +2796,7 @@ void setupPulsesSilver()
 
 
 }
-# 2125 "../src/menus.cpp"
+# 2129 "../src/menus.cpp"
 void sendBitTra(uint8_t val)
 {
   if(val) _send_hilo( (400u*2)*1 , (400u*2)*2 );
