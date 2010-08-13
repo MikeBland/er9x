@@ -178,24 +178,24 @@ uint8_t checkTrim(uint8_t event)
   {
     //LH_DWN LH_UP LV_DWN LV_UP RV_DWN RV_UP RH_DWN RH_UP
     uint8_t idx = k/2;
-    int8_t  v = (s==0) ? (abs(g_model.trimData[idx].trim)/4)+1 : s;
+    int8_t  v = (s==0) ? (abs(g_model.trim[idx])/4)+1 : s;
     bool thro = (((2-(g_eeGeneral.stickMode&1)) == idx) && (g_model.thrTrim==1));
     if (thro) v = 4; // if throttle trim and trim trottle then step=4
-    int16_t x = (k&1) ? g_model.trimData[idx].trim + v : g_model.trimData[idx].trim - v;   // positive = k&1
+    int16_t x = (k&1) ? g_model.trim[idx] + v : g_model.trim[idx] - v;   // positive = k&1
 
-    if(((x==0)  ||  ((x>=0) != (g_model.trimData[idx].trim>=0))) && (!thro) && (g_model.trimData[idx].trim!=0)){
-      g_model.trimData[idx].trim=0;
+    if(((x==0)  ||  ((x>=0) != (g_model.trim[idx]>=0))) && (!thro) && (g_model.trim[idx]!=0)){
+      g_model.trim[idx]=0;
       killEvents(event);
       beepWarn();
     }
     else if(x>=-125 && x<=125){
-    g_model.trimData[idx].trim = (int8_t)x;
+    g_model.trim[idx] = (int8_t)x;
     STORE_MODELVARS;
         beepKey();
     }
     else
     {
-    g_model.trimData[idx].trim = (x>0) ? 125 : -125;
+    g_model.trim[idx] = (x>0) ? 125 : -125;
     STORE_MODELVARS;
         beepWarn();
     }
@@ -369,14 +369,18 @@ void popMenu(bool uppermost)
     alert(PSTR("menuStack underflow"));
   }
 }
+
+extern MenuFuncP lastMenu;
 void chainMenu(MenuFuncP newMenu)
 {
+  lastMenu = newMenu;
   g_menuStack[g_menuStackPtr] = newMenu;
   (*newMenu)(EVT_ENTRY);
   beepKey();
 }
 void pushMenu(MenuFuncP newMenu)
 {
+  lastMenu = newMenu;
   g_menuStackPtr++;
   if(g_menuStackPtr >= DIM(g_menuStack))
   {

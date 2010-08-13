@@ -56,37 +56,18 @@ bool eeLoadGeneral()
   return false;
 }
 
-void modelDefault(uint8_t id, bool keep_name)
+void modelDefault(uint8_t id)
 {
-  char      orig_name[10];
-  memcpy(&orig_name, &g_model.name, 10);
-  memset(&g_model,0,sizeof(g_model));
-
-  if(keep_name)
-    memcpy(&g_model.name ,&orig_name, 10);
-  else {
-    strcpy_P(g_model.name,PSTR("MODEL     "));
-    g_model.name[5]='0'+(id+1)/10;
-    g_model.name[6]='0'+(id+1)%10;
-    g_model.mdVers = MDVERS;
-  }
+  memset(&g_model, 0, sizeof(g_model));
+  strcpy_P(g_model.name,PSTR("MODEL     "));
+  g_model.name[5]='0'+(id+1)/10;
+  g_model.name[6]='0'+(id+1)%10;
+  g_model.mdVers = MDVERS;
+  
   for(uint8_t i= 0; i<4; i++){
-    //     0   1   2   3
-    //0 1 rud ele thr ail
-    //1 2 rud thr ele ail
-    //2 3 ail ele thr rud
-    //3 4 ail thr ele rud
     g_model.mixData[i].destCh = i+1;
     g_model.mixData[i].srcRaw = i+1;
     g_model.mixData[i].weight = 100;
-  }
-  if(g_eeGeneral.stickMode & 1){
-    g_model.mixData[1].srcRaw = 3;
-    g_model.mixData[2].srcRaw = 2;
-  }
-  if(g_eeGeneral.stickMode & 2){
-    g_model.mixData[0].srcRaw = 4;
-    g_model.mixData[3].srcRaw = 1;
   }
 }
 void eeLoadModelName(uint8_t id,char*buf,uint8_t len)
@@ -115,6 +96,38 @@ int8_t trimRevert(int16_t val)
   return neg ? -idx : idx;
 }
 
+void load_ver9(uint8_t id)
+{
+  ModelData_r9 g_model_r9;
+  theFile.openRd(FILE_MODEL(id));
+  uint16_t sz = theFile.readRlc((uint8_t*)&g_model_r9, sizeof(g_model_r9));
+  
+  modelDefault(id);
+  if(sz != sizeof(ModelData_r9)) return;
+  
+  g_model.thrTrim = g_model_r9.thrTrim;
+  g_model.trimInc = g_model_r9.trimInc;
+  g_model.tcutSW  = g_model_r9.tcutSW;
+  
+  memcpy(&g_model,           &g_model_r9,           16);
+  memcpy(&g_model.mixData,   &g_model_r9.mixData,   sizeof(MixData)*MAX_MIXERS);
+  memcpy(&g_model.limitData, &g_model_r9.limitData, sizeof(LimitData)*NUM_CHNOUT);
+  memcpy(&g_model.curves5,   &g_model_r9.curves5,   (MAX_CURVE5*5)+(MAX_CURVE9*9));
+
+  
+  for (uint8_t i=0; i<4; i++){
+    g_model.trim[i] = g_model_r9.trimData[i].trim;
+    g_model.expoData[i].drSw     = g_model_r9.expoData[i].drSw;
+    g_model.expoData[i].expNormR = g_model_r9.expoData[i].expNorm;
+    g_model.expoData[i].expNormL = g_model_r9.expoData[i].expNorm;
+    g_model.expoData[i].expDrR   = g_model_r9.expoData[i].expDr;
+    g_model.expoData[i].expDrL   = g_model_r9.expoData[i].expDr;
+    g_model.expoData[i].expNormWeightR = g_model_r9.expoData[i].expNormWeight;
+    g_model.expoData[i].expNormWeightL = g_model_r9.expoData[i].expNormWeight;
+    g_model.expoData[i].expSwWeightR   = g_model_r9.expoData[i].expSwWeight;
+    g_model.expoData[i].expSwWeightL   = g_model_r9.expoData[i].expSwWeight;
+  }
+}
 
 void eeLoadModel(uint8_t id)
 {
@@ -122,10 +135,14 @@ void eeLoadModel(uint8_t id)
   {
     theFile.openRd(FILE_MODEL(id));
     uint16_t sz = theFile.readRlc((uint8_t*)&g_model, sizeof(g_model));
-
-    if(sz != sizeof(ModelData)) {
-      alert(PSTR("EEprom Data not compatible"));
-      modelDefault(id, true);
+    
+    switch (g_model.mdVers){
+      case MDVERS_r9:
+        load_ver9(id);
+        break;
+      default:
+        if(sz != sizeof(ModelData)) modelDefault(id);
+        break;
     }
   }
 }
@@ -168,10 +185,10 @@ void eeReadAll()
     uint16_t sz = theFile.writeRlc(FILE_GENERAL,FILE_TYP_GENERAL,(uint8_t*)&g_eeGeneral,sizeof(EEGeneral),200);
     if(sz!=sizeof(EEGeneral)) alert(PSTR("genwrite error"));
 
-    modelDefault(0, false);
+    modelDefault(0);
     //alert(PSTR("modef ok"));
     theFile.writeRlc(FILE_MODEL(0),FILE_TYP_MODEL,(uint8_t*)&g_model,sizeof(g_model),200);
-    alert(PSTR("modwrite ok"));
+    //alert(PSTR("modwrite ok"));
 
   }
   eeLoadModel(g_eeGeneral.currModel);

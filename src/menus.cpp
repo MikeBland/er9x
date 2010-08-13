@@ -22,6 +22,7 @@
 
 static int16_t anaCalib[4];
 int16_t g_chans512[NUM_CHNOUT];
+
 //static TrainerData g_trainer;
 
 //sticks
@@ -33,7 +34,6 @@ MenuFuncP_PROGMEM APM menuTabModel[] = {
   menuProcModel,
   menuProcExpoAll,
   menuProcMix,
-  menuProcTrim,
   menuProcLimits,
   menuProcCurve
 };
@@ -47,6 +47,9 @@ MenuFuncP_PROGMEM APM menuTabDiag[] = {
   menuProcDiagAna,
   menuProcDiagCalib
 };
+
+MenuFuncP lastMenu = menuProcModelSelect;
+
 
 //#define PARR8(args...) (__extension__({static prog_uint8_t APM __c[] = args;&__c[0];}))
 struct MState2
@@ -235,7 +238,7 @@ void menuProcCurveOne(uint8_t event) {
 void menuProcCurve(uint8_t event) {
   static MState2 mstate2;
   TITLE("CURVE");
-  MSTATE_CHECK_V(7,menuTabModel,MAX_CURVE5+MAX_CURVE9+1);
+  MSTATE_CHECK_V(6,menuTabModel,MAX_CURVE5+MAX_CURVE9+1);
   int8_t  sub    = mstate2.m_posVert - 1;
 
   static uint8_t s_pgOfs;
@@ -297,7 +300,7 @@ void menuProcLimits(uint8_t event)
   static bool swVal[NUM_CHNOUT];
   TITLE("LIMITS");
   MSTATE_TAB = { 4,4};
-  MSTATE_CHECK_VxH(6,menuTabModel,(8+g_model.ppmNCH*2)+1);
+  MSTATE_CHECK_VxH(5,menuTabModel,(8+g_model.ppmNCH*2)+1);
 
   int8_t  sub    = mstate2.m_posVert - 1;
   uint8_t subSub = mstate2.m_posHorz + 1;
@@ -313,9 +316,6 @@ void menuProcLimits(uint8_t event)
       s_pgOfs = 0;
       break;
     case EVT_KEY_FIRST(KEY_MENU):
-      // TODO - record stick position (g_chans512) and write to subtrm, min, max
-      // chan = sub - s_pgOfs
-      // subSub = [0,1,2,3] -> [subt, min, max, nc]
       int16_t v = g_chans512[sub - s_pgOfs];
       LimitData *ld = &g_model.limitData[sub - s_pgOfs];
       switch (subSub)
@@ -611,52 +611,6 @@ void menuProcMix(uint8_t event)
 
 }
 
-
-void menuProcTrim(uint8_t event)
-{
-  static MState2 mstate2;
-  TITLE("TRIM");
-  MSTATE_CHECK_V(5,menuTabModel,4+1);
-  int8_t  sub    = mstate2.m_posVert - 1;
-
-  switch(event)
-  {
-    case  EVT_KEY_FIRST(KEY_LEFT):
-    case  EVT_KEY_REPT(KEY_LEFT):
-      if(sub>=0)
-      {
-        g_model.trimData[sub].trimDef = 0;
-        STORE_MODELVARS;
-        beepKey();
-      }
-      break;
-    case  EVT_KEY_FIRST(KEY_RIGHT):
-    case  EVT_KEY_REPT(KEY_RIGHT):
-      if(sub>=0)
-      {
-    int16_t x = g_model.trimData[sub].trimDef + g_model.trimData[sub].trim;
-    if(x>RESX)  x=RESX;
-    if(x<-RESX) x=-RESX;
-        g_model.trimData[sub].trimDef = x;
-        g_model.trimData[sub].trim     = 0;
-        STORE_MODELVARS;
-        beepKey();
-      }
-      break;
-  }
-  lcd_puts_P( 6*FW, 1*FH,PSTR("Trim  Base"));
-  for(uint8_t i=0; i<4; i++)
-  {
-    uint8_t y=i*FH+16;
-    uint8_t attr = sub==i ? BLINK : 0;
-    putsChnRaw(0,y,i+1,0);//attr);
-    lcd_outdezAtt( 8*FW, y, g_model.trimData[i].trim, attr );
-    lcd_outdezAtt(14*FW, y, g_model.trimData[i].trimDef, attr );
-  }
-  lcd_puts_P(0,FH*7,PSTR(" -> Balance  <- Clr"));
-}
-
-
 uint16_t expou(uint16_t x, uint16_t k)
 {
   // k*x*x*x + (1-k)*x
@@ -729,24 +683,24 @@ void editExpoVals(uint8_t event,uint8_t which,bool edit,uint8_t x, uint8_t y, ui
   switch(which)
   {
     case 0:
-      lcd_outdezAtt(x, y, g_model.expoData[chn].expNorm, invBlk);
-      if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expNorm,-100, 100);
+      lcd_outdezAtt(x, y, g_model.expoData[chn].expNormR, invBlk);
+      if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expNormR,-100, 100);
       break;
     case 1:
-      lcd_outdezAtt(x, y, g_model.expoData[chn].expNormWeight+100, invBlk);
-      if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expNormWeight, -100, 0);
+      lcd_outdezAtt(x, y, g_model.expoData[chn].expNormWeightR+100, invBlk);
+      if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expNormWeightR, -100, 0);
       break;
     case 2:
       putsDrSwitches(x,y,g_model.expoData[chn].drSw,invBlk);
       if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].drSw,0,MAX_DRSWITCH);
       break;
     case 3:
-      lcd_outdezAtt(x, y, g_model.expoData[chn].expDr, invBlk);
-      if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expDr,-100, 100);
+      lcd_outdezAtt(x, y, g_model.expoData[chn].expDrR, invBlk);
+      if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expDrR,-100, 100);
       break;
     case 4:
-      lcd_outdezAtt(x, y, g_model.expoData[chn].expSwWeight+100, invBlk);
-      if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expSwWeight, -100, 0);
+      lcd_outdezAtt(x, y, g_model.expoData[chn].expSwWeightR+100, invBlk);
+      if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expSwWeightR, -100, 0);
       break;
   }
 }
@@ -790,12 +744,12 @@ void menuProcExpoOne(uint8_t event)
   if(sub<=1){
     //CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[s_expoChan].expNorm,-100, 100);
     // invBlk = BLINK;
-    kView  = g_model.expoData[s_expoChan].expNorm;
-    wView  = g_model.expoData[s_expoChan].expNormWeight+100;
+    kView  = g_model.expoData[s_expoChan].expNormR;
+    wView  = g_model.expoData[s_expoChan].expNormWeightR+100;
   }else{
     if(sub<=3){
-      kView =g_model.expoData[s_expoChan].expDr;
-      wView =g_model.expoData[s_expoChan].expSwWeight+100;
+      kView =g_model.expoData[s_expoChan].expDrR;
+      wView =g_model.expoData[s_expoChan].expSwWeightR+100;
     }
   }
 
@@ -990,7 +944,7 @@ void menuProcModelSelect(uint8_t event)
   TITLE("MODELSEL");
   lcd_puts_P(     10*FW, 0, PSTR("free"));
   lcd_outdezAtt(  18*FW, 0, EeFsGetFree(),0);
-  lcd_putsAtt(128-FW*3,0,PSTR("1/7"),INVERS);
+  lcd_putsAtt(128-FW*3,0,PSTR("1/6"),INVERS);
   int8_t subOld  = mstate2.m_posVert;
   MSTATE_CHECK0_V(MAX_MODELS);
   int8_t  sub    = mstate2.m_posVert;
@@ -1016,6 +970,7 @@ void menuProcModelSelect(uint8_t event)
       }
       //case EXIT handled in checkExit
       if(event==EVT_KEY_FIRST(KEY_RIGHT))  chainMenu(menuProcModel);
+      if(event==EVT_KEY_FIRST(KEY_EXIT))  pushMenu(menuProcModelSelect);
       break;
     case  EVT_KEY_FIRST(KEY_MENU):
       s_editMode = true;
@@ -1047,10 +1002,16 @@ void menuProcModelSelect(uint8_t event)
   for(uint8_t i=0; i<6; i++){
     uint8_t y=(i+2)*FH;
     uint8_t k=i+s_pgOfs;
-    lcd_outdezNAtt(  2*FW, y, k+1, ((sub==k) ? (s_editMode ? INVERS : BLINK ) : 0) + LEADING0,2);
+    lcd_outdezNAtt(  3*FW, y, k+1, ((sub==k) ? (s_editMode ? INVERS : BLINK ) : 0) + LEADING0,2);
     static char buf[sizeof(g_model.name)+5];
-    eeLoadModelName(k,buf,sizeof(buf));
-    lcd_putsnAtt(  3*FW, y, buf,sizeof(buf),BSS_NO_INV|((sub==k) ? (s_editMode ? BLINK : 0 ) : 0));
+    if(k==g_eeGeneral.currModel){
+      memcpy(&buf,g_model.name,sizeof(g_model.name));
+      lcd_putcAtt(1,  y,'*',0);
+    }
+    else
+      eeLoadModelName(k,buf,sizeof(buf));
+    
+    lcd_putsnAtt(  4*FW, y, buf,sizeof(buf),BSS_NO_INV|((sub==k) ? (s_editMode ? BLINK : 0 ) : 0));
   }
 
 }
@@ -1161,7 +1122,6 @@ void menuProcDiagKeys(uint8_t event)
   static MState2 mstate2;
   TITLE("DIAG");
   MSTATE_CHECK_V(5,menuTabDiag,1);
-
   uint8_t x;
 
   x=7*FW;
@@ -1202,7 +1162,6 @@ void menuProcDiagVers(uint8_t event)
   static MState2 mstate2;
   TITLE("VERSION");
   MSTATE_CHECK_V(4,menuTabDiag,1);
-
   lcd_puts_P(0, 2*FH,stamp4 );
   lcd_puts_P(0, 3*FH,stamp1 );
   lcd_puts_P(0, 4*FH,stamp2 );
@@ -1533,14 +1492,7 @@ void menuProc0(uint8_t event)
   switch(event)
   {
     case  EVT_KEY_LONG(KEY_MENU):
-      switch(sub){
-        case 0:
-          pushMenu(menuProcSetup0);
-          break;
-        case 1:
-          pushMenu(menuProcModelSelect);//menuProcModel);
-          break;
-      }
+      pushMenu(lastMenu);
       killEvents(event);
       break;
     case EVT_KEY_FIRST(KEY_RIGHT):
@@ -1638,7 +1590,7 @@ void menuProc0(uint8_t event)
     static uint8_t vert[4] = {0,1,1,0};
     uint8_t xm,ym;
     xm=x[i];
-    int8_t val = max((int8_t)-(TL+1),min((int8_t)(TL+1),(int8_t)(g_model.trimData[i].trim/4)));
+    int8_t val = max((int8_t)-(TL+1),min((int8_t)(TL+1),(int8_t)(g_model.trim[i]/4)));
     if(vert[i]){
       ym=31;
       lcd_vline(xm,   ym-TL, TL*2);
@@ -1762,12 +1714,12 @@ void perOut(int16_t *chanOut)
 
     v  = expo(v,
               getSwitch(g_model.expoData[i].drSw,0) ?
-              g_model.expoData[i].expDr           :
-              g_model.expoData[i].expNorm
+              g_model.expoData[i].expDrR           :
+              g_model.expoData[i].expNormR
     );
     int32_t x = (int32_t)v * (getSwitch(g_model.expoData[i].drSw,0) ?
-                              g_model.expoData[i].expSwWeight+100 :
-                              g_model.expoData[i].expNormWeight+100) / 100;
+                              g_model.expoData[i].expSwWeightR+100 :
+                              g_model.expoData[i].expNormWeightR+100) / 100;
     v = (int16_t)x;
 
     TrainerData1*  td = &g_eeGeneral.trainer.chanMix[i];
@@ -1789,12 +1741,11 @@ void perOut(int16_t *chanOut)
     if((2-(g_eeGeneral.stickMode&1)) == i)  //stickMode=0123 -> thr=2121
     {
       trace((v+512) / 32); //trace thr 0..32  (/32)
-      if (g_model.thrTrim==1) vv = (int32_t)g_model.trimData[i].trim*(RESX-v)/(2*RESX);
+      if (g_model.thrTrim==1) vv = (int32_t)g_model.trim[i]*(RESX-v)/(2*RESX);
     }
 
     //trim
-    trimA[i] = (vv==2*RESX) ? g_model.trimData[i].trim : (int16_t)vv; //    if throttle trim -> trim low end
-    trimA[i] += g_model.trimData[i].trimDef;
+    trimA[i] = (vv==2*RESX) ? g_model.trim[i] : (int16_t)vv; //    if throttle trim -> trim low end
     if(getSwitch(g_model.tcutSW,false) && ((2-(g_eeGeneral.stickMode&1)) == i)){ //tcut pressed
       v=-RESX;
       trimA[i] = -125; //trim to max negative
