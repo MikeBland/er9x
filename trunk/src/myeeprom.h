@@ -23,7 +23,12 @@
 #define MAX_MIXERS 25
 #define MAX_CURVE5 8
 #define MAX_CURVE9 8
-#define MDVERS 1
+#define MDVERS_r9 1
+#define MDVERS 2
+
+
+// eeprom ver <9 => mdvers == 1
+// eeprom ver >9 => mdvers ==2
 
 
 typedef struct t_TrainerData1 {
@@ -37,7 +42,6 @@ typedef struct t_TrainerData {
   int16_t       calib[4];
   TrainerData1  chanMix[4];
 } __attribute__((packed)) TrainerData; //
-
 
 typedef struct t_EEGeneral {
   uint8_t   myVers;
@@ -69,17 +73,17 @@ typedef struct t_EEGeneral {
 
 
 typedef struct t_ExpoData {
-  int8_t  expNorm;
-  int8_t  expDr;
+  int8_t  expNormR;
+  int8_t  expNormL;
+  int8_t  expDrR;
+  int8_t  expDrL;
   int8_t  drSw;
-  int8_t  expNormWeight;
-  int8_t  expSwWeight;
+  int8_t  expNormWeightR;
+  int8_t  expNormWeightL;
+  int8_t  expSwWeightR;
+  int8_t  expSwWeightL;
 } __attribute__((packed)) ExpoData;
 
-typedef struct t_TrimData {
-  int8_t  trim;    //quadratisch
-  int16_t trimDef;
-} __attribute__((packed)) TrimData;
 
 typedef struct t_LimitData {
   int8_t  min;
@@ -108,23 +112,61 @@ typedef struct t_ModelData {
   uint16_t  tmrVal;               // 2
   uint8_t   protocol;             // 1
   uint8_t   ppmNCH;               // 1
+  int8_t    thrTrim;            // 1 Enable Trottle Trim
+  int8_t    trimInc;            // Trim Increments
+  int8_t    tcutSW;             // Throttle cut switch
+  char      res[5];               // 5
+  MixData   mixData[MAX_MIXERS];  //0 4*25
+  LimitData limitData[NUM_CHNOUT];// 4*8
+  ExpoData  expoData[4];          // 5*4
+  int8_t    trim[4];          // 3*4
+  int8_t    curves5[MAX_CURVE5][5];        // 10
+  int8_t    curves9[MAX_CURVE9][9];        // 18
+} __attribute__((packed)) ModelData; //211
+
+
+
+#define TOTAL_EEPROM_USAGE (sizeof(ModelData)*MAX_MODELS + sizeof(EEGeneral))
+
+//===================================================
+// Previous versions
+//===================================================
+// r9 - mdvers == 1
+typedef struct t_ExpoData_r9 {
+  int8_t  expNorm;
+  int8_t  expDr;
+  int8_t  drSw;
+  int8_t  expNormWeight;
+  int8_t  expSwWeight;
+} __attribute__((packed)) ExpoData_r9;
+
+typedef struct t_TrimData_r9 {
+  int8_t  trim;    //quadratisch
+  int16_t trimDef;
+} __attribute__((packed)) TrimData_r9;
+
+
+typedef struct t_ModelData_r9 {
+  char      name[10];             // 10 must be first for eeLoadModelName
+  uint8_t   mdVers;               // 1
+  uint8_t   tmrMode;              // 1
+  uint16_t  tmrVal;               // 2
+  uint8_t   protocol;             // 1
+  uint8_t   ppmNCH;               // 1
   char      res[2];               // 2
   int8_t    thrTrim;            // 1 Enable Trottle Trim
   int8_t    trimInc;            // Trim Increments
   int8_t    tcutSW;             // Throttle cut switch
   MixData   mixData[MAX_MIXERS];  //0 4*25
-  TrimData  trimData[4];          // 3*4
+  TrimData_r9  trimData[4];          // 3*4
   LimitData limitData[NUM_CHNOUT];// 4*8
-  ExpoData  expoData[4];          // 5*4
+  ExpoData_r9  expoData[4];          // 5*4
   int8_t    curves5[MAX_CURVE5][5];        // 10
   int8_t    curves9[MAX_CURVE9][9];        // 18
 
+} __attribute__((packed)) ModelData_r9; //211
 
 
-} __attribute__((packed)) ModelData; //211
-
-
-#define TOTAL_EEPROM_USAGE (sizeof(ModelData)*MAX_MODELS + sizeof(EEGeneral))
 
 
 extern EEGeneral g_eeGeneral;
