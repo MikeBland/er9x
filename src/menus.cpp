@@ -1701,25 +1701,6 @@ void menuProc0(uint8_t event)
 }
 
 
-static int16_t s_cacheLimitsMin[NUM_CHNOUT];
-static int16_t s_cacheLimitsMax[NUM_CHNOUT];
-void calcLimitCache()
-{
-  if(s_limitCacheOk) return;
-#ifdef SIM
-  printf("calc limit cache\n");
-#endif
-  s_limitCacheOk = true;
-  for(uint8_t i=0; i<NUM_CHNOUT; i++){
-    int16_t v = g_model.limitData[i].min-100;
-    s_cacheLimitsMin[i] = v;//  min = -125    5*v + v/8 ; // *512/100 ~  *(5 1/8)
-    v = g_model.limitData[i].max+100;
-    s_cacheLimitsMax[i] = v;//  max = 125     5*v + v/8 ; // *512/100 ~  *(5 1/8)
-  }
-}
-
-
-
 
 int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 100
 {
@@ -1935,7 +1916,6 @@ void perOut(int16_t *chanOut)
 
 
   //limit + revert loop
-  calcLimitCache();
   for(uint8_t i=0;i<NUM_CHNOUT;i++){
     // chans[i] holds data from mixer.   chans[i] = v*weight => 512*100
     // later we multiply by the limit (up to 100) and then we need to normalize
@@ -1946,8 +1926,8 @@ void perOut(int16_t *chanOut)
     int16_t v = 0;
     if(chans[i]){
        v = (chans[i]>0) ? 
-            chans[i]*s_cacheLimitsMax[i]/10000: 
-           -chans[i]*s_cacheLimitsMin[i]/10000;
+            chans[i]*(g_model.limitData[i].max+100)/10000: 
+           -chans[i]*(g_model.limitData[i].min-100)/10000;
        chans[i] = chans[i]/100;
     }
 
