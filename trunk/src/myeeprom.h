@@ -68,19 +68,23 @@ typedef struct t_EEGeneral {
 
 
 
-#define DR_NORM   0
-#define DR_DRON   1
+#define DR_HIGH   0
+#define DR_MID    1
+#define DR_LOW    2
 #define DR_EXPO   0
 #define DR_WEIGHT 1
 #define DR_RIGHT  0
 #define DR_LEFT   1
-#define DR_DRSW   2
+#define DR_DRSW1  99
+#define DR_DRSW2  98
+
 //eeprom modelspec
-//expo[2][2][2] //[Norm/Dr][expo/weight][R/L]
+//expo[3][2][2] //[Norm/Dr][expo/weight][R/L]
 
 typedef struct t_ExpoData {
-  int8_t  expo[2][2][2];
-  int8_t  drSw;
+  int8_t  expo[3][2][2];
+  int8_t  drSw1;
+  int8_t  drSw2;
 } __attribute__((packed)) ExpoData;
 
 

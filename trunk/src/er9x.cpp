@@ -90,9 +90,9 @@ void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
 bool getSwitch(int8_t swtch, bool nc)
 {
   switch(swtch){
-    case  0:            return nc;
-    case  MAX_DRSWITCH: return true;
-    case -MAX_DRSWITCH: return false;
+    case  0:            return  nc;
+    case  MAX_DRSWITCH: return  true;
+    case -MAX_DRSWITCH: return  false;
   }
   if(swtch<0) return ! keyState((EnumKeys)(SW_BASE-swtch-1));
   return               keyState((EnumKeys)(SW_BASE+swtch-1));
