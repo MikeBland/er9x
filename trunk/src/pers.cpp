@@ -118,16 +118,42 @@ void load_ver9(uint8_t id)
   for (uint8_t i=0; i<4; i++){
     g_model.trim[i] = g_model_r9.trimData[i].trim;
     g_model.expoData[i].drSw     = g_model_r9.expoData[i].drSw;
-    g_model.expoData[i].expNormR = g_model_r9.expoData[i].expNorm;
-    g_model.expoData[i].expNormL = g_model_r9.expoData[i].expNorm;
-    g_model.expoData[i].expDrR   = g_model_r9.expoData[i].expDr;
-    g_model.expoData[i].expDrL   = g_model_r9.expoData[i].expDr;
-    g_model.expoData[i].expNormWeightR = g_model_r9.expoData[i].expNormWeight;
-    g_model.expoData[i].expNormWeightL = g_model_r9.expoData[i].expNormWeight;
-    g_model.expoData[i].expSwWeightR   = g_model_r9.expoData[i].expSwWeight;
-    g_model.expoData[i].expSwWeightL   = g_model_r9.expoData[i].expSwWeight;
+    g_model.expoData[i].expo[DR_NORM][DR_EXPO][DR_RIGHT]   = g_model_r9.expoData[i].expNorm;
+    g_model.expoData[i].expo[DR_NORM][DR_EXPO][DR_LEFT]    = g_model_r9.expoData[i].expNorm;
+    g_model.expoData[i].expo[DR_DRON][DR_EXPO][DR_RIGHT]   = g_model_r9.expoData[i].expDr;
+    g_model.expoData[i].expo[DR_DRON][DR_EXPO][DR_LEFT]    = g_model_r9.expoData[i].expDr;
+    g_model.expoData[i].expo[DR_NORM][DR_WEIGHT][DR_RIGHT] = g_model_r9.expoData[i].expNormWeight;
+    g_model.expoData[i].expo[DR_NORM][DR_WEIGHT][DR_LEFT]  = g_model_r9.expoData[i].expNormWeight;
+    g_model.expoData[i].expo[DR_DRON][DR_WEIGHT][DR_RIGHT] = g_model_r9.expoData[i].expSwWeight;
+    g_model.expoData[i].expo[DR_DRON][DR_WEIGHT][DR_LEFT]  = g_model_r9.expoData[i].expSwWeight;
   }
 }
+
+void load_ver14(uint8_t id)
+{
+  ModelData_r14 g_model_r14;
+  theFile.openRd(FILE_MODEL(id));
+  uint16_t sz = theFile.readRlc((uint8_t*)&g_model_r14, sizeof(g_model_r14));
+  
+  //modelDefault(id);
+  if(sz != sizeof(ModelData_r14)) return;
+  
+  //memcpy(&g_model, &g_model_r14, min(sizeof(g_model_r14),sizeof(g_model)));
+  g_model.mdVers = MDVERS;
+  
+  for (uint8_t i=0; i<4; i++){
+    g_model.expoData[i].drSw     = g_model_r14.expoData[i].drSw;
+    g_model.expoData[i].expo[DR_NORM][DR_EXPO][DR_RIGHT]   = g_model_r14.expoData[i].expNormR;
+    g_model.expoData[i].expo[DR_NORM][DR_EXPO][DR_LEFT]    = g_model_r14.expoData[i].expNormL;
+    g_model.expoData[i].expo[DR_DRON][DR_EXPO][DR_RIGHT]   = g_model_r14.expoData[i].expDrR;
+    g_model.expoData[i].expo[DR_DRON][DR_EXPO][DR_LEFT]    = g_model_r14.expoData[i].expDrL;
+    g_model.expoData[i].expo[DR_NORM][DR_WEIGHT][DR_RIGHT] = g_model_r14.expoData[i].expNormWeightR;
+    g_model.expoData[i].expo[DR_NORM][DR_WEIGHT][DR_LEFT]  = g_model_r14.expoData[i].expNormWeightL;
+    g_model.expoData[i].expo[DR_DRON][DR_WEIGHT][DR_RIGHT] = g_model_r14.expoData[i].expSwWeightR;
+    g_model.expoData[i].expo[DR_DRON][DR_WEIGHT][DR_LEFT]  = g_model_r14.expoData[i].expSwWeightL;
+  }
+}
+
 
 void eeLoadModel(uint8_t id)
 {
@@ -139,6 +165,9 @@ void eeLoadModel(uint8_t id)
     switch (g_model.mdVers){
       case MDVERS_r9:
         load_ver9(id);
+        break;
+      case MDVERS_r14:
+        load_ver14(id);
         break;
       default:
         if(sz != sizeof(ModelData)) modelDefault(id);
