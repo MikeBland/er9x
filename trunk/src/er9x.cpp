@@ -451,7 +451,7 @@ void perMain()
           0,0, 0,  0, //quiet
           0,1,30,100, //silent
           1,1,30,100, //normal
-          4,4,50,150, //for motor
+          1,4,50,150, //for motor
         };
         memcpy_P(g_beepVal,beepTab+4*BEEP_VAL,4);
           //g_beepVal = BEEP_VAL;
