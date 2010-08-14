@@ -162,6 +162,7 @@ void alert(const prog_char * s)
   lcd_puts_P(0,4*FW,s);
   lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
   refreshDiplay();
+  lcdSetRefVolt(g_eeGeneral.contrast);
   beepErr();
   while(1)
   {
