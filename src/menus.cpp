@@ -17,10 +17,7 @@
 #include "er9x.h"
 
 
-
-
-
-static int16_t anaCalib[4];
+static int16_t calibratedStick[4];
 int16_t g_chans512[NUM_CHNOUT];
 
 //static TrainerData g_trainer;
@@ -181,6 +178,7 @@ MState2 mstate2;
 
 static uint8_t s_curveChan;
 
+
 void menuProcCurveOne(uint8_t event) {
   static MState2 mstate2;
   uint8_t x = TITLE("CURVE ");
@@ -234,6 +232,8 @@ void menuProcCurveOne(uint8_t event) {
   }
   lcd_vline(X0, Y0 - WCHART, WCHART * 2);
 }
+
+
 
 void menuProcCurve(uint8_t event) {
   static MState2 mstate2;
@@ -344,6 +344,7 @@ void menuProcLimits(uint8_t event)
       int16_t v = (ld->revert) ? -ld->offset : ld->offset;
       if((g_chans512[k] - v) >  25) swVal[k] = (true==ld->revert);// Switch to raw inputs?  - remove trim!
       if((g_chans512[k] - v) < -25) swVal[k] = (false==ld->revert);
+      lcd_putcAtt(12*FW+FW/2, y, (swVal[k] ? '<' : '>'),0);
       //lcd_outdezAtt(  21*FW , y, (g_chans512[k] - v),   0);
 
       switch(j)
@@ -677,30 +678,30 @@ int16_t  Expo::expo(int16_t x)
 
 static uint8_t s_expoChan;
 
-void editExpoVals(uint8_t event,uint8_t which,bool edit,uint8_t x, uint8_t y, uint8_t chn)
+void editExpoVals(uint8_t event,uint8_t which,bool edit,uint8_t x, uint8_t y, uint8_t chn, bool stkR)
 {
   uint8_t  invBlk = edit ? BLINK : 0;
   switch(which)
   {
     case 0:
-      lcd_outdezAtt(x, y, g_model.expoData[chn].expNormR, invBlk);
-      if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expNormR,-100, 100);
+      lcd_outdezAtt(x, y, (stkR ? g_model.expoData[chn].expNormR : g_model.expoData[chn].expNormL), invBlk);
+      if(edit) CHECK_INCDEC_H_MODELVAR(event,(stkR ? g_model.expoData[chn].expNormR : g_model.expoData[chn].expNormL),-100, 100);
       break;
     case 1:
-      lcd_outdezAtt(x, y, g_model.expoData[chn].expNormWeightR+100, invBlk);
-      if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expNormWeightR, -100, 0);
+      lcd_outdezAtt(x, y, (stkR ? g_model.expoData[chn].expNormWeightR+100 : g_model.expoData[chn].expNormWeightL+100), invBlk);
+      if(edit) CHECK_INCDEC_H_MODELVAR(event,(stkR ? g_model.expoData[chn].expNormWeightR : g_model.expoData[chn].expNormWeightL), -100, 0);
       break;
     case 2:
       putsDrSwitches(x,y,g_model.expoData[chn].drSw,invBlk);
       if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].drSw,0,MAX_DRSWITCH);
       break;
     case 3:
-      lcd_outdezAtt(x, y, g_model.expoData[chn].expDrR, invBlk);
-      if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expDrR,-100, 100);
+      lcd_outdezAtt(x, y, (stkR ? g_model.expoData[chn].expDrR : g_model.expoData[chn].expDrL), invBlk);
+      if(edit) CHECK_INCDEC_H_MODELVAR(event,(stkR ? g_model.expoData[chn].expDrR : g_model.expoData[chn].expDrL),-100, 100);
       break;
     case 4:
-      lcd_outdezAtt(x, y, g_model.expoData[chn].expSwWeightR+100, invBlk);
-      if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expSwWeightR, -100, 0);
+      lcd_outdezAtt(x, y, (stkR ? g_model.expoData[chn].expSwWeightR+100 : g_model.expoData[chn].expSwWeightL+100), invBlk);
+      if(edit) CHECK_INCDEC_H_MODELVAR(event,(stkR ? g_model.expoData[chn].expSwWeightR : g_model.expoData[chn].expSwWeightL), -100, 0);
       break;
   }
 }
@@ -708,6 +709,7 @@ void editExpoVals(uint8_t event,uint8_t which,bool edit,uint8_t x, uint8_t y, ui
 void menuProcExpoOne(uint8_t event)
 {
   static MState2 mstate2;
+  static bool stkVal;
   uint8_t x=TITLE("EXPO/DR ");
   putsChnRaw(x,0,s_expoChan+1,0);
   MSTATE_CHECK0_V(5);
@@ -716,62 +718,76 @@ void menuProcExpoOne(uint8_t event)
   //uint8_t  invBlk = 0;
   uint8_t  y = 16;
 
-
+  if(calibratedStick[s_expoChan]> 25) stkVal = true;
+  if(calibratedStick[s_expoChan]<-25) stkVal = false;
+  //lcd_putcAtt(10*FW, y, stkVal ? '>' : '<',0);
+  
   lcd_puts_P(0,y,PSTR("Expo"));
-  editExpoVals(event,0,sub==0,9*FW, y,s_expoChan);
+  editExpoVals(event,0,sub==0,9*FW, y,s_expoChan, stkVal);
   y+=FH;
 
   lcd_puts_P(0,y,PSTR("Weight"));
-  editExpoVals(event,1,sub==1,9*FW, y,s_expoChan);
+  editExpoVals(event,1,sub==1,9*FW, y,s_expoChan, stkVal);
   y+=FH;
   y+=FH;
 
   lcd_puts_P(0,y,PSTR("DrSw"));
-  editExpoVals(event,2,sub==2,5*FW, y,s_expoChan);
+  editExpoVals(event,2,sub==2,5*FW, y,s_expoChan, stkVal);
   y+=FH;
 
   lcd_puts_P(0,y,PSTR("DrExp"));
-  editExpoVals(event,3,sub==3,9*FW, y,s_expoChan);
+  editExpoVals(event,3,sub==3,9*FW, y,s_expoChan, stkVal);
   y+=FH;
 
   lcd_puts_P(0,y,PSTR("Weight"));
-  editExpoVals(event,4,sub==4,9*FW, y,s_expoChan);
+  editExpoVals(event,4,sub==4,9*FW, y,s_expoChan, stkVal);
   y+=FH;
 
 
-  int8_t   kView  = 0;
-  int8_t   wView  = 0;
+  int8_t   kViewR  = 0;
+  int8_t   kViewL  = 0;
+  int8_t   wViewR  = 0;
+  int8_t   wViewL  = 0;
   if(sub<=1){
-    //CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[s_expoChan].expNorm,-100, 100);
-    // invBlk = BLINK;
-    kView  = g_model.expoData[s_expoChan].expNormR;
-    wView  = g_model.expoData[s_expoChan].expNormWeightR+100;
+    kViewR  = g_model.expoData[s_expoChan].expNormR;
+    kViewL  = g_model.expoData[s_expoChan].expNormL;
+    wViewR  = g_model.expoData[s_expoChan].expNormWeightR+100;
+    wViewL  = g_model.expoData[s_expoChan].expNormWeightL+100;
   }else{
     if(sub<=3){
-      kView =g_model.expoData[s_expoChan].expDrR;
-      wView =g_model.expoData[s_expoChan].expSwWeightR+100;
+      kViewR =g_model.expoData[s_expoChan].expDrR;
+      kViewL =g_model.expoData[s_expoChan].expDrL;
+      wViewR =g_model.expoData[s_expoChan].expSwWeightR+100;
+      wViewL =g_model.expoData[s_expoChan].expSwWeightL+100;
     }
   }
 
 #define WCHART 32
 #define X0     (128-WCHART-2)
 #define Y0     32
+        
   for(uint8_t xv=0;xv<WCHART;xv++)
   {
-    uint16_t yv=expo(xv*(RESXu/WCHART),kView) / (RESXu/WCHART);
-    yv = (yv * wView)/100;
-    lcd_plot(X0+xv, Y0-yv);
-    lcd_plot(X0-xv, Y0+yv);
-    if((xv&3) == 0){
-      lcd_plot(X0+xv, Y0+0);
-      lcd_plot(X0-xv, Y0+0);
-      lcd_plot(X0  , Y0+xv);
-      lcd_plot(X0  , Y0-xv);
+    uint16_t yv=expo(xv*(RESXu/WCHART),kViewR) / (RESXu/WCHART);
+    yv = (yv * wViewR)/100;
+    lcd_plot(X0+xv, Y0-yv);     
+    if((xv&3) == 0){            
+      lcd_plot(X0+xv, Y0+0);    
+      lcd_plot(X0  , Y0+xv);    
     }
+    
+    yv=expo(xv*(RESXu/WCHART),kViewL) / (RESXu/WCHART);
+    yv = (yv * wViewL)/100;
+    lcd_plot(X0-xv, Y0+yv);       
+    if((xv&3) == 0){            
+      lcd_plot(X0-xv, Y0+0);    
+      lcd_plot(X0  , Y0-xv);    
+    }
+
   }
-  int16_t x512  = anaCalib[s_expoChan];
-  int16_t y512  = expo(x512,kView);
-  y512 = y512 * (wView / 4)/(100 / 4);
+  int16_t x512  = calibratedStick[s_expoChan];
+  int16_t y512  = expo(x512,(x512>0 ? kViewR : kViewL));
+  y512 = y512 * ((x512>0 ? wViewR : wViewL) / 4)/(100 / 4);
 
   lcd_vline(X0+x512/(RESXu/WCHART), Y0-WCHART,WCHART*2);
   lcd_hline(X0-WCHART,             Y0-y512/(RESXu/WCHART),WCHART*2);
@@ -779,12 +795,13 @@ void menuProcExpoOne(uint8_t event)
   lcd_outdezAtt( 14*FW, 1*FH,y512*25/((signed) RESXu/4), 0 );
   //dy/dx
 
-  int16_t dy  = x512>0 ? y512-expo(x512-20,kView) : expo(x512+20,kView)-y512;
+  int16_t dy  = x512>0 ? y512-expo(x512-20,(x512>0 ? kViewR : kViewL)) : expo(x512+20,(x512>0 ? kViewR : kViewL))-y512;
   lcd_outdezNAtt(14*FW, 2*FH,   dy*(100/20), LEADING0|PREC2,3);
 }
 void menuProcExpoAll(uint8_t event)
 {
   static MState2 mstate2;
+  static bool stkVal[4];
   TITLE("EXPO/DR");
   MSTATE_TAB = {5,5};
   MSTATE_CHECK_VxH(3,menuTabModel,4+1);
@@ -804,14 +821,20 @@ void menuProcExpoAll(uint8_t event)
   lcd_puts_P( 4*FW, 1*FH,PSTR("exp  % sw  exp  %"));
   for(uint8_t i=0; i<4; i++)
   {
+    if(calibratedStick[i]> 25) stkVal[i] = true;
+    if(calibratedStick[i]<-25) stkVal[i] = false;
+    
     uint8_t y=(i+2)*FH;
     putsChnRaw( 0, y,i+1,0);
-    editExpoVals(event,0,sub==i && subHor==0, 6*FW, y,i);
-    editExpoVals(event,1,sub==i && subHor==1,10*FW, y,i);
-    editExpoVals(event,2,sub==i && subHor==2,10*FW, y,i);
+    editExpoVals(event,0,sub==i && subHor==0, 7*FW, y,i,stkVal[i]);
+    editExpoVals(event,1,sub==i && subHor==1,10*FW, y,i,stkVal[i]);
+    editExpoVals(event,2,sub==i && subHor==2,10*FW, y,i,stkVal[i]);
+    lcd_putcAtt(10*FW, y, (stkVal[i] ? '>' : '<'),0);
+    
+    
     if(g_model.expoData[i].drSw){
-      editExpoVals(event,3,sub==i && subHor==3,17*FW, y,i);
-      editExpoVals(event,4,sub==i && subHor==4,21*FW, y,i);
+      editExpoVals(event,3,sub==i && subHor==3,17*FW, y,i,stkVal[i]);
+      editExpoVals(event,4,sub==i && subHor==4,21*FW, y,i,stkVal[i]);
     }else{
       if(sub==i && subHor>=3) mstate2.m_posHorz=2;
     }
@@ -1681,20 +1704,6 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
   return erg / 50; // 100*D5/RESX;
 }
 
-int16_t get_calibrated_stick(uint8_t i)
-{
-    int16_t v = anaIn(i);
-    v -= g_eeGeneral.calibMid[i];
-    v  =  v * (int32_t)RESX /  (max((int16_t)100,
-                                    (v>0 ?
-                                     g_eeGeneral.calibSpanPos[i] :
-                                     g_eeGeneral.calibSpanNeg[i])));
-
-    if(v <= -RESX) v = -RESX;
-    if(v >=  RESX) v =  RESX;
-    return v;
-}
-
 uint16_t pulses2MHz[60];
 
 
@@ -1709,17 +1718,24 @@ void perOut(int16_t *chanOut)
 
     //Normalization  [0..1024] ->   [-512..512]
 
-    int16_t v = get_calibrated_stick(i);
-    anaCalib[i] = v; //for show in expo
+    int16_t v = anaIn(i);
+    v -= g_eeGeneral.calibMid[i];
+    v  =  v * (int32_t)RESX /  (max((int16_t)100,
+                                    (v>0 ?
+                                     g_eeGeneral.calibSpanPos[i] :
+                                     g_eeGeneral.calibSpanNeg[i])));
+
+    if(v <= -RESX) v = -RESX;
+    if(v >=  RESX) v =  RESX;
+    calibratedStick[i] = v; //for show in expo
 
     v  = expo(v,
               getSwitch(g_model.expoData[i].drSw,0) ?
-              g_model.expoData[i].expDrR           :
-              g_model.expoData[i].expNormR
-    );
+              (v>0 ? g_model.expoData[i].expDrR   : g_model.expoData[i].expDrL)    :
+              (v>0 ? g_model.expoData[i].expNormR : g_model.expoData[i].expNormL) );
     int32_t x = (int32_t)v * (getSwitch(g_model.expoData[i].drSw,0) ?
-                              g_model.expoData[i].expSwWeightR+100 :
-                              g_model.expoData[i].expNormWeightR+100) / 100;
+                       (v>0 ? g_model.expoData[i].expSwWeightR   : g_model.expoData[i].expSwWeightL  )+100 :
+                       (v>0 ? g_model.expoData[i].expNormWeightR : g_model.expoData[i].expNormWeightL)+100) / 100;
     v = (int16_t)x;
 
     TrainerData1*  td = &g_eeGeneral.trainer.chanMix[i];
