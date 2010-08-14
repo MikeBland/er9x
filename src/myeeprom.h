@@ -23,8 +23,9 @@
 #define MAX_MIXERS 25
 #define MAX_CURVE5 8
 #define MAX_CURVE9 8
-#define MDVERS_r9 1
-#define MDVERS 2
+#define MDVERS_r9  1
+#define MDVERS_r14 2
+#define MDVERS     3
 
 
 // eeprom ver <9 => mdvers == 1
@@ -67,21 +68,19 @@ typedef struct t_EEGeneral {
 
 
 
-
-
+#define DR_NORM   0
+#define DR_DRON   1
+#define DR_EXPO   0
+#define DR_WEIGHT 1
+#define DR_RIGHT  0
+#define DR_LEFT   1
+#define DR_DRSW   2
 //eeprom modelspec
-
+//expo[2][2][2] //[Norm/Dr][expo/weight][R/L]
 
 typedef struct t_ExpoData {
-  int8_t  expNormR;
-  int8_t  expNormL;
-  int8_t  expDrR;
-  int8_t  expDrL;
+  int8_t  expo[2][2][2];
   int8_t  drSw;
-  int8_t  expNormWeightR;
-  int8_t  expNormWeightL;
-  int8_t  expSwWeightR;
-  int8_t  expSwWeightL;
 } __attribute__((packed)) ExpoData;
 
 
@@ -131,6 +130,40 @@ typedef struct t_ModelData {
 //===================================================
 // Previous versions
 //===================================================
+// r14 - mdvers == 2
+typedef struct t_ExpoData_r14 {
+  int8_t  expNormR;
+  int8_t  expNormL;
+  int8_t  expDrR;
+  int8_t  expDrL;
+  int8_t  drSw;
+  int8_t  expNormWeightR;
+  int8_t  expNormWeightL;
+  int8_t  expSwWeightR;
+  int8_t  expSwWeightL;
+} __attribute__((packed)) ExpoData_r14;
+
+typedef struct t_ModelData_r14 {
+  char      name[10];             // 10 must be first for eeLoadModelName
+  uint8_t   mdVers;               // 1
+  uint8_t   tmrMode;              // 1
+  uint16_t  tmrVal;               // 2
+  uint8_t   protocol;             // 1
+  uint8_t   ppmNCH;               // 1
+  int8_t    thrTrim;            // 1 Enable Trottle Trim
+  int8_t    trimInc;            // Trim Increments
+  int8_t    tcutSW;             // Throttle cut switch
+  char      res[5];               // 5
+  MixData   mixData[MAX_MIXERS];  //0 4*25
+  LimitData limitData[NUM_CHNOUT];// 4*8
+  ExpoData_r14  expoData[4];          // 5*4
+  int8_t    trim[4];          // 3*4
+  int8_t    curves5[MAX_CURVE5][5];        // 10
+  int8_t    curves9[MAX_CURVE9][9];        // 18
+} __attribute__((packed)) ModelData_r14; //211
+
+
+
 // r9 - mdvers == 1
 typedef struct t_ExpoData_r9 {
   int8_t  expNorm;
