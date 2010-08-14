@@ -16,7 +16,12 @@
 
 #include "er9x.h"
 
-#define IS_THROTTLE(x) ((2-(g_eeGeneral.stickMode&1)) == x)
+#define IS_THROTTLE(x)  ((2-(g_eeGeneral.stickMode&1)) == x)
+#define GET_DR_STATE(x) (!getSwitch(g_model.expoData[x].drSw1,0) ?   \
+                          DR_HIGH :                                  \
+                          !getSwitch(g_model.expoData[x].drSw2,0)?   \
+                          DR_MID : DR_LOW);
+
 
 static int16_t calibratedStick[4];
 int16_t g_chans512[NUM_CHNOUT];
@@ -683,9 +688,13 @@ void editExpoVals(uint8_t event,bool edit,uint8_t x, uint8_t y, uint8_t chn, uin
 {
   uint8_t  invBlk = edit ? BLINK : 0;
   
-  if(which==DR_DRSW) {
-    putsDrSwitches(x,y,g_model.expoData[chn].drSw,invBlk);
-    if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].drSw,0,MAX_DRSWITCH);
+  if(which==DR_DRSW1) {
+    putsDrSwitches(x,y,g_model.expoData[chn].drSw1,invBlk);
+    if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].drSw1,-MAX_DRSWITCH,MAX_DRSWITCH);
+  }
+  else if(which==DR_DRSW2) {
+    putsDrSwitches(x,y,g_model.expoData[chn].drSw2,invBlk);
+    if(edit) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].drSw2,-MAX_DRSWITCH,MAX_DRSWITCH);
   }
   else 
     if(exWt==DR_EXPO){
@@ -704,10 +713,10 @@ void menuProcExpoOne(uint8_t event)
   static uint8_t stkVal;
   uint8_t x=TITLE("EXPO/DR ");
   putsChnRaw(x,0,s_expoChan+1,0);
-  MSTATE_CHECK0_V(3);
+  MSTATE_CHECK0_V(4);
   int8_t  sub    = mstate2.m_posVert;
 
-  uint8_t expoDrOn = getSwitch(g_model.expoData[s_expoChan].drSw,0) ? DR_DRON : DR_NORM;
+  uint8_t expoDrOn = GET_DR_STATE(s_expoChan);
   uint8_t  y = 16;
 
   if(calibratedStick[s_expoChan]> 25) stkVal = DR_RIGHT;
@@ -720,10 +729,23 @@ void menuProcExpoOne(uint8_t event)
   lcd_puts_P(0,y,PSTR("Weight"));
   editExpoVals(event,sub==1,9*FW, y,s_expoChan, expoDrOn ,DR_WEIGHT,stkVal);
   y+=FH;
-  lcd_puts_P(0,y,PSTR("DrSw"));
-  editExpoVals(event,sub==2,5*FW, y,s_expoChan, DR_DRSW , 0,0);
+  lcd_puts_P(0,y,PSTR("DrSw1"));
+  editExpoVals(event,sub==2,5*FW, y,s_expoChan, DR_DRSW1 , 0,0);
   y+=FH;
-  lcd_puts_P(0,y,(expoDrOn==DR_DRON ? PSTR("Dr ON") : PSTR("Normal")));
+  lcd_puts_P(0,y,PSTR("DrSw2"));
+  editExpoVals(event,sub==3,5*FW, y,s_expoChan, DR_DRSW2 , 0,0);
+  y+=FH;
+  switch (expoDrOn) {
+    case DR_MID:
+      lcd_puts_P(0,y,PSTR("DR Mid"));
+      break;
+    case DR_LOW:
+      lcd_puts_P(0,y,PSTR("DR Low"));
+      break;
+    default: // DR_HIGH:
+      lcd_puts_P(0,y,PSTR("DR High"));
+      break;
+  }
   y+=FH;
 
 
@@ -795,7 +817,7 @@ void menuProcExpoAll(uint8_t event)
   static MState2 mstate2;
   static uint8_t stkVal[4];
   TITLE("EXPO/DR");
-  MSTATE_TAB = {5,3};
+  MSTATE_TAB = {5,4};
   MSTATE_CHECK_VxH(3,menuTabModel,4+1);
   int8_t  sub    = mstate2.m_posVert - 1;
   int8_t  subHor = mstate2.m_posHorz;
@@ -810,21 +832,32 @@ void menuProcExpoAll(uint8_t event)
       break;
   }
 
-  lcd_puts_P( 4*FW, 1*FH,PSTR("exp   %   sw"));
+  lcd_puts_P( 4*FW-FW/2, 1*FH,PSTR("exp  %  sw1 sw2"));
   for(uint8_t i=0; i<4; i++)
   {
-    uint8_t expoDrOn = getSwitch(g_model.expoData[i].drSw,0) ? DR_DRON : DR_NORM ;
+    uint8_t expoDrOn = GET_DR_STATE(i);
     if(calibratedStick[i]> 25) stkVal[i] = DR_RIGHT;
     if(calibratedStick[i]<-25) stkVal[i] = DR_LEFT;
     if(IS_THROTTLE(i)) stkVal[i]         = DR_RIGHT;
     
     uint8_t y=(i+2)*FH;
     putsChnRaw( 0, y,i+1,0);
-    editExpoVals(event,sub==i && subHor==0, 7*FW, y,i,expoDrOn,DR_EXPO,stkVal[i]);
-    editExpoVals(event,sub==i && subHor==1,11*FW, y,i,expoDrOn,DR_WEIGHT,stkVal[i]);
-    editExpoVals(event,sub==i && subHor==2,12*FW, y,i,DR_DRSW,0,0);
-    lcd_putcAtt(11*FW+FW/2, y, (stkVal[i] ? '<' : '>'),0);
-    lcd_puts_P( 16*FW+FW/2, y,(expoDrOn ? PSTR("Dr") : PSTR("Norm")));
+    editExpoVals(event,sub==i && subHor==0, 7*FW-FW/2, y,i,expoDrOn,DR_EXPO,stkVal[i]);
+    editExpoVals(event,sub==i && subHor==1, 9*FW+FW/2,      y,i,expoDrOn,DR_WEIGHT,stkVal[i]);
+    editExpoVals(event,sub==i && subHor==2,10*FW+FW/2,      y,i,DR_DRSW1,0,0);
+    editExpoVals(event,sub==i && subHor==3,14*FW+FW/2,      y,i,DR_DRSW2,0,0);
+    lcd_putcAtt(9*FW+FW/2, y, (stkVal[i] ? '<' : '>'),0);
+    switch (expoDrOn) {
+    case DR_MID:
+      lcd_putcAtt(19*FW+FW/2,y,'M',0);
+      break;
+    case DR_LOW:
+      lcd_putcAtt(19*FW+FW/2,y,'L',0);
+      break;
+    default: // DR_HIGH:
+      lcd_putcAtt(19*FW+FW/2,y,'H',0);
+      break;
+    }
     
     /*
     if(g_model.expoData[i].drSw){
@@ -1723,7 +1756,7 @@ void perOut(int16_t *chanOut)
     if(v >=  RESX) v =  RESX;
     calibratedStick[i] = v; //for show in expo
 
-    uint8_t expoDrOn = getSwitch(g_model.expoData[i].drSw,0) ? DR_DRON : DR_NORM;
+    uint8_t expoDrOn = GET_DR_STATE(i);
     uint8_t stkDir = v>0 ? DR_RIGHT : DR_LEFT;
         
     if(IS_THROTTLE(i)){
