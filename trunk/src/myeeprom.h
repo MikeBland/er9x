@@ -110,22 +110,23 @@ typedef struct t_MixData {
 
 typedef struct t_ModelData {
   char      name[10];             // 10 must be first for eeLoadModelName
-  uint8_t   mdVers;               // 1
-  uint8_t   tmrMode;              // 1
-  uint16_t  tmrVal;               // 2
-  uint8_t   protocol;             // 1
-  uint8_t   ppmNCH;               // 1
-  int8_t    thrTrim;            // 1 Enable Trottle Trim
-  int8_t    trimInc;            // Trim Increments
-  int8_t    tcutSW;             // Throttle cut switch
-  char      res[5];               // 5
-  MixData   mixData[MAX_MIXERS];  //0 4*25
-  LimitData limitData[NUM_CHNOUT];// 4*8
-  ExpoData  expoData[4];          // 5*4
-  int8_t    trim[4];          // 3*4
-  int8_t    curves5[MAX_CURVE5][5];        // 10
-  int8_t    curves9[MAX_CURVE9][9];        // 18
-} __attribute__((packed)) ModelData; //211
+  uint8_t   mdVers;
+  uint8_t   tmrMode;
+  uint16_t  tmrVal;
+  uint8_t   protocol;
+  uint8_t   ppmNCH;
+  int8_t    thrTrim:4;            // Enable Throttle Trim
+  int8_t    thrExpo:4;            // Enable Throttle Expo
+  int8_t    trimInc;              // Trim Increments
+  int8_t    tcutSW;               // Throttle cut switch
+  char      res[5];
+  MixData   mixData[MAX_MIXERS];
+  LimitData limitData[NUM_CHNOUT];
+  ExpoData  expoData[4];
+  int8_t    trim[4];
+  int8_t    curves5[MAX_CURVE5][5];
+  int8_t    curves9[MAX_CURVE9][9];
+} __attribute__((packed)) ModelData;
 
 
 
