@@ -119,12 +119,12 @@ void load_ver9(uint8_t id)
     g_model.expoData[i].drSw1     = g_model_r9.expoData[i].drSw;
     g_model.expoData[i].expo[DR_HIGH][DR_EXPO][DR_RIGHT]   = g_model_r9.expoData[i].expNorm;
     g_model.expoData[i].expo[DR_HIGH][DR_EXPO][DR_LEFT]    = g_model_r9.expoData[i].expNorm;
-    g_model.expoData[i].expo[DR_LOW][DR_EXPO][DR_RIGHT]   = g_model_r9.expoData[i].expDr;
-    g_model.expoData[i].expo[DR_LOW][DR_EXPO][DR_LEFT]    = g_model_r9.expoData[i].expDr;
+    g_model.expoData[i].expo[DR_MID][DR_EXPO][DR_RIGHT]   = g_model_r9.expoData[i].expDr;
+    g_model.expoData[i].expo[DR_MID][DR_EXPO][DR_LEFT]    = g_model_r9.expoData[i].expDr;
     g_model.expoData[i].expo[DR_HIGH][DR_WEIGHT][DR_RIGHT] = g_model_r9.expoData[i].expNormWeight;
     g_model.expoData[i].expo[DR_HIGH][DR_WEIGHT][DR_LEFT]  = g_model_r9.expoData[i].expNormWeight;
-    g_model.expoData[i].expo[DR_LOW][DR_WEIGHT][DR_RIGHT] = g_model_r9.expoData[i].expSwWeight;
-    g_model.expoData[i].expo[DR_LOW][DR_WEIGHT][DR_LEFT]  = g_model_r9.expoData[i].expSwWeight;
+    g_model.expoData[i].expo[DR_MID][DR_WEIGHT][DR_RIGHT] = g_model_r9.expoData[i].expSwWeight;
+    g_model.expoData[i].expo[DR_MID][DR_WEIGHT][DR_LEFT]  = g_model_r9.expoData[i].expSwWeight;
   }
   g_model.mdVers = MDVERS;
 }
