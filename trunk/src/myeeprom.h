@@ -101,8 +101,9 @@ typedef struct t_MixData {
   uint8_t srcRaw:7; //0=off   1..8      ,X1-X4
   uint8_t carryTrim:1;
   int8_t  weight;
-  int8_t  swtch;
-  uint8_t curve; //0=symmetrisch 1=no neg 2=no pos
+  int8_t  swtch:6;
+  uint8_t curve:5;           //0=symmetrisch 1=no neg 2=no pos
+  uint8_t startDelay:5;
   uint8_t speedUp:4;         // Servogeschwindigkeit aus Tabelle (10ms Cycle)
   uint8_t speedDown:4;      // 0 nichts
 } __attribute__((packed)) MixData;

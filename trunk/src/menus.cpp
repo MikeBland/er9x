@@ -403,12 +403,12 @@ void menuProcMixOne(uint8_t event)
   MixData *md2 = &g_model.mixData[s_currMixIdx];
   //lcd_putsAtt(x*FW, 0,PSTR("Dest->"),0);
   putsChn(x+1*FW,0,md2->destCh,0);
-  MSTATE_CHECK0_V(8);
+  MSTATE_CHECK0_V(9);
   int8_t  sub    = mstate2.m_posVert;
 
 
 #define CURV_STR " - x>0x<0|x|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16c18c19c20"
-  for(uint8_t i=0; i<=7; i++)
+  for(uint8_t i=0; i<9; i++)
   {
     uint8_t y=i*FH+FH;
     uint8_t attr = sub==i ? BLINK : 0;
@@ -426,24 +426,28 @@ void menuProcMixOne(uint8_t event)
         if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->carryTrim, 0,1);
         break;
       case 3:   lcd_putsnAtt( FW*9,y,PSTR(CURV_STR)+md2->curve*3,3,attr);
-        if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->curve, 0,MAX_CURVE5+MAX_CURVE9+4-1); //!! bitfield
+        if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->curve, 0,MAX_CURVE5+MAX_CURVE9+4-1); //!! bitfield
         if(attr && md2->curve>=4 && event==EVT_KEY_FIRST(KEY_MENU)){
           s_curveChan = md2->curve-4;
           pushMenu(menuProcCurveOne);
         }
         break;
       case 4:   putsDrSwitches(8*FW,  y,md2->swtch,attr);
-        if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->swtch, -MAX_DRSWITCH, MAX_DRSWITCH); //!! bitfield
+        if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->swtch, -MAX_DRSWITCH, MAX_DRSWITCH); //!! bitfield
         break;
-      case 5:   lcd_putcAtt(9*FW, y, '<',0);
-        lcd_outdezAtt(FW*12,y,md2->speedDown,attr);
+      case 5:   lcd_putcAtt(9*FW, y, 'P',0);
+        lcd_outdezAtt(FW*12,y,md2->startDelay,attr);
+        if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->startDelay, 0,15); //!! bitfield
+        break;  
+      case 6:   lcd_putsAtt(12*FW, y-FH, PSTR(",D"),0);
+        lcd_outdezAtt(FW*16,y-FH,md2->speedDown,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->speedDown, 0,15); //!! bitfield
         break;
-      case 6:   lcd_putcAtt(13*FW, y-FH, '>',0);
-        lcd_outdezAtt(FW*16,y-FH,md2->speedUp,attr);
+      case 7:   lcd_putsAtt(16*FW, y-2*FH, PSTR(",U"),0);
+        lcd_outdezAtt(FW*20,y-2*FH,md2->speedUp,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->speedUp, 0,15); //!! bitfield
         break;
-      case 7:   lcd_putsAtt(  FW*3,y-FH,PSTR("DELETE MIX [MENU]"),attr);
+      case 8:   lcd_putsAtt(  2*FW,y-2*FH,PSTR("DELETE MIX [MENU]"),attr);
         if(attr && event==EVT_KEY_FIRST(KEY_MENU)){
           memmove(
             &g_model.mixData[s_currMixIdx],
@@ -899,7 +903,7 @@ void menuProcModel(uint8_t event)
 
   uint8_t y = 1*FH;
   static uint8_t s_pgOfs;
-  if(sub<1) s_pgOfs=0;
+  if(sub<2) s_pgOfs=0;
   else if((sub-s_pgOfs)>7) s_pgOfs = sub-7;
   else if((sub-s_pgOfs)<0) s_pgOfs = sub;
   if(s_pgOfs<0) s_pgOfs = 0;
@@ -956,7 +960,7 @@ void menuProcModel(uint8_t event)
   }
 
   if(RANGE_PM(8)){
-    lcd_putsAtt(    0, y, PSTR(" DELETE MODEL [MENU]"),sub==8?BLINK:0);
+    lcd_putsAtt(    1*FW, y, PSTR("DELETE MODEL [MENU]"),sub==8?BLINK:0);
     y+=FH;
   }
 
@@ -1660,11 +1664,11 @@ void menuProc0(uint8_t event)
 
 
   uint8_t x=FW*2;
-  lcd_putsAtt(x,0*FH,PSTR("ER9x"),sub==0 ? INVERS : 0);
+  lcd_putsAtt(x,0*FH,PSTR("ER9x"),INVERS);
   lcd_putsnAtt(x,1*FH,PSTR("Exp ExF Fine Med Crse")+4*g_model.trimInc,4, 0);
   lcd_putsnAtt(x,2*FH,PSTR("    TTrm")+4*g_model.thrTrim,4, 0);
 
-  lcd_putsnAtt(x+ 5*FW,   0*FH, g_model.name ,sizeof(g_model.name),sub==1 ? BSS_INVERS : BSS_NO_INV);
+  lcd_putsnAtt(x+ 5*FW,   0*FH, g_model.name ,sizeof(g_model.name),BSS_NO_INV);
 
   lcd_puts_P(  x+ 5*FW,   1*FH,    PSTR("BAT"));
   putsVBat(x+ 8*FW,1*FH, g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0);
