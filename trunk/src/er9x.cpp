@@ -69,7 +69,7 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 {
   // !! todo NUM_CHN !!
-  lcd_putsnAtt(x,y,PSTR("    CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"
+  lcd_putsnAtt(x,y,PSTR(" -  CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"
                         "CH17CH18CH19CH20CH21CH22CH23CH24CH25CH26CH27CH28CH29CH30")+4*idx1,4,att);
 }
 

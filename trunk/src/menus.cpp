@@ -443,8 +443,7 @@ void menuProcMixOne(uint8_t event)
         lcd_outdezAtt(FW*16,y-FH,md2->speedUp,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->speedUp, 0,15); //!! bitfield
         break;
-      case 7:   lcd_putsAtt(  FW*3,y-FH,PSTR("RM"),attr);
-                lcd_puts_P(  FW*6,y-FH,PSTR("remove [Menu]"));
+      case 7:   lcd_putsAtt(  FW*3,y-FH,PSTR("DELETE MIX [MENU]"),attr);
         if(attr && event==EVT_KEY_FIRST(KEY_MENU)){
           memmove(
             &g_model.mixData[s_currMixIdx],
@@ -893,7 +892,7 @@ void menuProcModel(uint8_t event)
   static MState2 mstate2;
   uint8_t x=TITLE("SETUP ");
   lcd_outdezNAtt(x+2*FW,0,g_eeGeneral.currModel+1,INVERS+LEADING0,2);
-  MSTATE_TAB = { 1,sizeof(g_model.name),3,1,1,1,1,3,1};
+  MSTATE_TAB = { 1,sizeof(g_model.name),3,1,1,1,2,3,1};
   MSTATE_CHECK_VxH(2,menuTabModel,9);
   int8_t  sub    = mstate2.m_posVert;
   uint8_t subSub = mstate2.m_posHorz+1;
@@ -939,7 +938,8 @@ void menuProcModel(uint8_t event)
 
   if(RANGE_PM(6)){
     lcd_putsAtt(    0,    y, PSTR("TCut SW"),0);
-    putsDrSwitches( 9*FW, y, g_model.tcutSW,(sub==6 ? BLINK:0));
+    putsDrSwitches( 9*FW, y, g_model.tcutSW,(sub==6 && subSub==1 ? BLINK:0));
+    putsChn(       14*FW, y, g_model.tcutTarget,(sub==6 && subSub==2 ? BLINK:0));
     y+=FH;
   }
   
@@ -1005,7 +1005,14 @@ void menuProcModel(uint8_t event)
       CHECK_INCDEC_H_MODELVAR(event,g_model.trimInc,0,4);
       break;
     case 6:
-      CHECK_INCDEC_H_MODELVAR( event, g_model.tcutSW, -MAX_DRSWITCH, MAX_DRSWITCH);
+      switch (subSub) {
+        case 1:
+          CHECK_INCDEC_H_MODELVAR( event, g_model.tcutSW, -MAX_DRSWITCH, MAX_DRSWITCH);
+          break;
+        case 2:
+          CHECK_INCDEC_H_MODELVAR( event, g_model.tcutTarget, 0,NUM_CHNOUT);
+          break;
+      }
       break;
     case 7:
       switch(subSub)
@@ -1825,15 +1832,15 @@ void perOut(int16_t *chanOut)
     if(IS_THROTTLE(i))  //stickMode=0123 -> thr=2121
     {
       trace((v+512) / 32); //trace thr 0..32  (/32)
-      if (g_model.thrTrim==1) vv = (int32_t)g_model.trim[i]*(RESX-v)/(2*RESX);
+      if(g_model.thrTrim==1) vv = (int32_t)g_model.trim[i]*(RESX-v)/(2*RESX);      
+      if(getSwitch(g_model.tcutSW,0) && !g_model.tcutTarget) {   //tcut pressed - no target
+        vv = -125;
+        v = -RESX;
+      }
     }
 
     //trim
     trimA[i] = (vv==2*RESX) ? g_model.trim[i] : (int16_t)vv; //    if throttle trim -> trim low end
-    if(getSwitch(g_model.tcutSW,false) && (IS_THROTTLE(i))){ //tcut pressed
-      v=-RESX;
-      trimA[i] = -125; //trim to max negative
-    }
     anas[i] = v; //10+1 Bit
   }
   for(uint8_t i=4;i<7;i++){
@@ -1949,6 +1956,8 @@ void perOut(int16_t *chanOut)
       chans[md.destCh-1] += dv; //Mixer output add up to the line (dv + (dv>0 ? 100/2 : -100/2))/(100);
     }
 
+  //Throttle Cut
+  if(getSwitch(g_model.tcutSW,0) && g_model.tcutTarget) chans[g_model.tcutTarget-1] = -((RESXul+125)*100); // 512+128*100 tcut pressed with target
 
   //limit + revert loop
   for(uint8_t i=0;i<NUM_CHNOUT;i++){
