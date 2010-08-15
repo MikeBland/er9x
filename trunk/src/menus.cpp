@@ -893,7 +893,7 @@ void menuProcModel(uint8_t event)
   static MState2 mstate2;
   uint8_t x=TITLE("SETUP ");
   lcd_outdezNAtt(x+2*FW,0,g_eeGeneral.currModel+1,INVERS+LEADING0,2);
-  MSTATE_TAB = { 1,sizeof(g_model.name),2,3,1,1,1,1,1};
+  MSTATE_TAB = { 1,sizeof(g_model.name),3,1,1,1,1,3,1};
   MSTATE_CHECK_VxH(2,menuTabModel,9);
   int8_t  sub    = mstate2.m_posVert;
   uint8_t subSub = mstate2.m_posHorz+1;
@@ -905,56 +905,58 @@ void menuProcModel(uint8_t event)
   else if((sub-s_pgOfs)<0) s_pgOfs = sub;
   if(s_pgOfs<0) s_pgOfs = 0;
 
-#define RANGE_PM(x)  ((y<(8*FH)) && (s_pgOfs>=(x-1)))
+#define RANGE_PM(x)  ((y<(8*FH)) && (s_pgOfs<=(x-1)))
   if(RANGE_PM(1)){
     lcd_putsAtt(    0,    y, PSTR("Name"),sub==1 && subSub==0 ? BLINK:0);
     lcd_putsnAtt(  10*FW, y, g_model.name ,sizeof(g_model.name),BSS_NO_INV);
     y+=FH;
   }
-
+  
   if(RANGE_PM(2)){
-    lcd_putsAtt(    0,    y, PSTR("Proto"),0);//sub==2 ? INVERS:0);
-    lcd_putsnAtt(  10*FW, y, PSTR(PROT_STR)+PROT_STR_LEN*g_model.protocol,PROT_STR_LEN,
-                  (sub==2 && subSub==1 ? BLINK:0));
-    if(!g_model.protocol)
-      lcd_putsnAtt(  14*FW, y, PSTR("8CH 10CH12CH14CH16CH")+4*g_model.ppmNCH,4,(sub==2 && subSub==2 ? BLINK:0));
+    lcd_putsAtt(    0,    y, PSTR("Timer"),sub==2 && subSub==0 ? BLINK:0);
+    putsTime(       9*FW, y, g_model.tmrVal,(sub==2 && subSub==1 ? BLINK:0),(sub==2 && subSub==2 ? BLINK:0) );
+    lcd_putsnAtt(  16*FW, y, PSTR("OFF ABS THR THR%")+4*g_model.tmrMode,4,(sub==2 && subSub==3 ? BLINK:0));
     y+=FH;
   }
 
   if(RANGE_PM(3)){
-    lcd_putsAtt(    0,    y, PSTR("Timer"),sub==3 && subSub==0 ? BLINK:0);
-    putsTime(       9*FW, y, g_model.tmrVal,(sub==3 && subSub==1 ? BLINK:0),(sub==3 && subSub==2 ? BLINK:0) );
-    lcd_putsnAtt(  16*FW, y, PSTR("OFF ABS THR THR%")+4*g_model.tmrMode,4,(sub==3 && subSub==3 ? BLINK:0));
+    lcd_putsAtt(    0,    y, PSTR("T-Trim"),0);
+    lcd_putsnAtt(  10*FW, y, PSTR("OFFON ")+3*g_model.thrTrim,3,(sub==3 ? BLINK:0));
     y+=FH;
   }
 
   if(RANGE_PM(4)){
-    lcd_putsAtt(    0,    y, PSTR("T-Trim"),0);
-    lcd_putsnAtt(  10*FW, y, PSTR("OFFON ")+3*g_model.thrTrim,3,(sub==4 ? BLINK:0));
+    lcd_putsAtt(    0,    y, PSTR("T-Expo"),0);
+    lcd_putsnAtt(  10*FW, y, PSTR("OFFON ")+3*g_model.thrExpo,3,(sub==4 ? BLINK:0));
     y+=FH;
   }
 
   if(RANGE_PM(5)){
-    lcd_putsAtt(    0,    y, PSTR("T-Expo"),0);
-    lcd_putsnAtt(  10*FW, y, PSTR("OFFON ")+3*g_model.thrExpo,3,(sub==5 ? BLINK:0));
+    lcd_putsAtt(    0,    y, PSTR("Trim Inc"),0);
+    lcd_putsnAtt(  10*FW, y, PSTR("Exp   ExFineFine  MediumCoarse")+6*g_model.trimInc,6,(sub==5 ? BLINK:0));
     y+=FH;
   }
 
   if(RANGE_PM(6)){
-    lcd_putsAtt(    0,    y, PSTR("Trim Inc"),0);
-    lcd_putsnAtt(  10*FW, y, PSTR("Exp   ExFineFine  MediumCoarse")+6*g_model.trimInc,6,(sub==6 ? BLINK:0));
+    lcd_putsAtt(    0,    y, PSTR("TCut SW"),0);
+    putsDrSwitches( 9*FW, y, g_model.tcutSW,(sub==6 ? BLINK:0));
     y+=FH;
   }
-
+  
   if(RANGE_PM(7)){
-    lcd_putsAtt(    0,    y, PSTR("TCut SW"),0);
-    putsDrSwitches( 9*FW, y, g_model.tcutSW,(sub==7 ? BLINK:0));
+    lcd_putsAtt(    0,    y, PSTR("Proto"),0);//sub==2 ? INVERS:0);
+    lcd_putsnAtt(  6*FW, y, PSTR(PROT_STR)+PROT_STR_LEN*g_model.protocol,PROT_STR_LEN,
+                  (sub==7 && subSub==1 ? BLINK:0));
+    if(!g_model.protocol) {
+      lcd_putsnAtt(  10*FW, y, PSTR("4CH 6CH 8CH 10CH12CH14CH16CH")+4*(g_model.ppmNCH+2),4,(sub==7 && subSub==2 ? BLINK:0));
+      lcd_putsAtt(    17*FW,    y, PSTR("msec"),0);
+      lcd_outdezAtt(  17*FW, y,  (g_model.ppmDelay*50)+300, (sub==7 && subSub==3 ? BLINK:0));
+    }
     y+=FH;
   }
 
   if(RANGE_PM(8)){
-    lcd_putsAtt(    0, y, PSTR("RM"),sub==8?BLINK:0);
-    lcd_puts_P(  FW*6, y, PSTR("remove [MENU]"));
+    lcd_putsAtt(    0, y, PSTR(" DELETE MODEL [MENU]"),sub==8?BLINK:0);
     y+=FH;
   }
 
@@ -971,17 +973,6 @@ void menuProcModel(uint8_t event)
       }
       break;
     case 2:
-      switch(subSub)
-      {
-        case 1:
-          CHECK_INCDEC_H_MODELVAR(event,g_model.protocol,0,PROT_MAX);
-          break;
-        case 2:
-          CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,0,4);
-          break;
-      }
-      break;
-    case 3:
       switch(subSub)
       {
         case 1:
@@ -1002,20 +993,33 @@ void menuProcModel(uint8_t event)
         case 3:
           CHECK_INCDEC_H_MODELVAR_BF( event,g_model.tmrMode ,0,3);
           break;
-
       }
       break;
-    case 4:
+    case 3:
       CHECK_INCDEC_H_MODELVAR_BF(event,g_model.thrTrim,0,1);
       break;
-    case 5:
+    case 4:
       CHECK_INCDEC_H_MODELVAR_BF(event,g_model.thrExpo,0,1);
       break;
-    case 6:
+    case 5:
       CHECK_INCDEC_H_MODELVAR(event,g_model.trimInc,0,4);
       break;
-    case 7:
+    case 6:
       CHECK_INCDEC_H_MODELVAR( event, g_model.tcutSW, -MAX_DRSWITCH, MAX_DRSWITCH);
+      break;
+    case 7:
+      switch(subSub)
+      {
+        case 1:
+          CHECK_INCDEC_H_MODELVAR(event,g_model.protocol,0,PROT_MAX);
+          break;
+        case 2:
+          CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,-2,4);
+          break;
+        case 3:
+          CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
+          break;
+      }
       break;
     case 8:
       if(event==EVT_KEY_LONG(KEY_MENU)){
@@ -2014,10 +2018,10 @@ void setupPulsesPPM()
     int16_t v = g_chans512[i];
     v = 2*v - v/21 + 1200*2; // 24/512 = 3/64 ~ 1/21
     rest-=v;//chans[i];
-    pulses2MHz[j++]=300*2;
+    pulses2MHz[j++]=(g_model.ppmDelay*50+300)*2;
     pulses2MHz[j++]=v;
   }
-  pulses2MHz[j++]=300*2;
+  pulses2MHz[j++]=(g_model.ppmDelay*50+300)*2;
   pulses2MHz[j++]=rest;
   pulses2MHz[j++]=0;
 
