@@ -20,12 +20,13 @@
 //eeprom data
 //#define EE_VERSION 2
 #define MAX_MODELS 16
-#define MAX_MIXERS 25
+#define MAX_MIXERS 32
 #define MAX_CURVE5 8
 #define MAX_CURVE9 8
 #define MDVERS_r9  1
 #define MDVERS_r14 2
-#define MDVERS     3
+#define MDVERS_r22 3
+#define MDVERS     4
 
 
 // eeprom ver <9 => mdvers == 1
@@ -95,17 +96,22 @@ typedef struct t_LimitData {
   int16_t  offset;
 } __attribute__((packed)) LimitData;
 
+#define MLTPX_ADD  0
+#define MLTPX_MUL  1
+#define MLTPX_REP  2
 
 typedef struct t_MixData {
-  uint8_t destCh; //        1..NUM_CHNOUT,X1-X4
-  uint8_t srcRaw:7; //0=off   1..8      ,X1-X4
-  uint8_t carryTrim:1;
+  uint8_t destCh;            //        1..NUM_CHNOUT
+  uint8_t srcRaw;            //
   int8_t  weight;
-  int8_t  swtch:6;
-  uint8_t curve:5;           //0=symmetrisch 1=no neg 2=no pos
-  uint8_t startDelay:5;
+  int8_t  swtch;
+  uint8_t curve;             //0=symmetrisch 1=no neg 2=no pos
+  uint8_t startDelay;
   uint8_t speedUp:4;         // Servogeschwindigkeit aus Tabelle (10ms Cycle)
-  uint8_t speedDown:4;      // 0 nichts
+  uint8_t speedDown:4;       // 0 nichts
+  uint8_t carryTrim:1;
+  uint8_t mltpx:3;           // multiplex method 0=+ 1=* 2=replace
+  uint8_t boolres:4;
 } __attribute__((packed)) MixData;
 
 
@@ -138,6 +144,42 @@ typedef struct t_ModelData {
 //===================================================
 // Previous versions
 //===================================================
+// r22 - mdvers == 3
+typedef struct t_MixData_r22 {
+  uint8_t destCh; //        1..NUM_CHNOUT,X1-X4
+  uint8_t srcRaw:7; //0=off   1..8      ,X1-X4
+  uint8_t carryTrim:1;
+  int8_t  weight;
+  int8_t  swtch:6;
+  uint8_t curve:5;           //0=symmetrisch 1=no neg 2=no pos
+  uint8_t startDelay:5;
+  uint8_t speedUp:4;         // Servogeschwindigkeit aus Tabelle (10ms Cycle)
+  uint8_t speedDown:4;      // 0 nichts
+} __attribute__((packed)) MixData_r22;
+
+
+typedef struct t_ModelData_r22 {
+  char      name[10];             // 10 must be first for eeLoadModelName
+  uint8_t   mdVers;
+  uint8_t   tmrMode;
+  uint16_t  tmrVal;
+  uint8_t   protocol;
+  int8_t    ppmNCH;
+  int8_t    thrTrim:4;            // Enable Throttle Trim
+  int8_t    thrExpo:4;            // Enable Throttle Expo
+  int8_t    trimInc;              // Trim Increments
+  int8_t    tcutSW;               // Throttle cut switch
+  int8_t    ppmDelay;
+  int8_t    tcutTarget;
+  char      res[3];
+  MixData_r22   mixData[25];
+  LimitData limitData[16];
+  ExpoData  expoData[4];
+  int8_t    trim[4];
+  int8_t    curves5[8][5];
+  int8_t    curves9[8][9];
+} __attribute__((packed)) ModelData_r22;
+
 // r14 - mdvers == 2
 typedef struct t_ExpoData_r14 {
   int8_t  expNormR;
@@ -162,12 +204,12 @@ typedef struct t_ModelData_r14 {
   int8_t    trimInc;            // Trim Increments
   int8_t    tcutSW;             // Throttle cut switch
   char      res[5];               // 5
-  MixData   mixData[MAX_MIXERS];  //0 4*25
-  LimitData limitData[NUM_CHNOUT];// 4*8
+  MixData   mixData[25];  //0 4*25
+  LimitData limitData[16];// 4*8
   ExpoData_r14  expoData[4];          // 5*4
   int8_t    trim[4];          // 3*4
-  int8_t    curves5[MAX_CURVE5][5];        // 10
-  int8_t    curves9[MAX_CURVE9][9];        // 18
+  int8_t    curves5[8][5];        // 10
+  int8_t    curves9[8][9];        // 18
 } __attribute__((packed)) ModelData_r14; //211
 
 
@@ -198,12 +240,12 @@ typedef struct t_ModelData_r9 {
   int8_t    thrTrim;            // 1 Enable Trottle Trim
   int8_t    trimInc;            // Trim Increments
   int8_t    tcutSW;             // Throttle cut switch
-  MixData   mixData[MAX_MIXERS];  //0 4*25
+  MixData   mixData[25];  //0 4*25
   TrimData_r9  trimData[4];          // 3*4
-  LimitData limitData[NUM_CHNOUT];// 4*8
+  LimitData limitData[16];// 4*8
   ExpoData_r9  expoData[4];          // 5*4
-  int8_t    curves5[MAX_CURVE5][5];        // 10
-  int8_t    curves9[MAX_CURVE9][9];        // 18
+  int8_t    curves5[8][5];        // 10
+  int8_t    curves9[8][9];        // 18
 
 } __attribute__((packed)) ModelData_r9; //211
 

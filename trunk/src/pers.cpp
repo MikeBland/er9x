@@ -138,6 +138,7 @@ void load_ver14(uint8_t id)
   modelDefault(id);
   if(sz != sizeof(ModelData_r14)) return;
   
+  memcpy(&g_model, &g_model_r14, 25);
   memcpy(&g_model.trim, &g_model_r14.trim, (4+MAX_CURVE5*5+MAX_CURVE9*9));
   memset(&g_model.expoData, 0, sizeof(ExpoData));
   
@@ -151,6 +152,36 @@ void load_ver14(uint8_t id)
     g_model.expoData[i].expo[DR_HIGH][DR_WEIGHT][DR_LEFT]  = g_model_r14.expoData[i].expNormWeightL;
     g_model.expoData[i].expo[DR_MID][DR_WEIGHT][DR_RIGHT] = g_model_r14.expoData[i].expSwWeightR;
     g_model.expoData[i].expo[DR_MID][DR_WEIGHT][DR_LEFT]  = g_model_r14.expoData[i].expSwWeightL;
+  }
+  
+  g_model.mdVers = MDVERS;
+}
+
+void load_ver22(uint8_t id)
+{
+  ModelData_r22 g_model_r22;
+  theFile.openRd(FILE_MODEL(id));
+  uint16_t sz = theFile.readRlc((uint8_t*)&g_model_r22, sizeof(g_model_r22));
+  
+  modelDefault(id);
+  if(sz != sizeof(ModelData_r22)) return;
+  
+  memcpy(&g_model, &g_model_r22, 25);
+  memcpy(&g_model.limitData, &g_model_r22.limitData, sizeof(g_model_r22.limitData)+  \
+                                                     sizeof(g_model_r22.expoData)+   \
+                                                     sizeof(g_model_r22.trim)+       \
+                                                     sizeof(g_model_r22.curves5)+    \
+                                                     sizeof(g_model_r22.curves9));
+                                                     
+  for(uint8_t i=0;i<25;i++){
+    g_model.mixData[i].destCh    = g_model_r22.mixData[i].destCh;
+    g_model.mixData[i].srcRaw    = g_model_r22.mixData[i].srcRaw;
+    g_model.mixData[i].carryTrim = g_model_r22.mixData[i].carryTrim;
+    g_model.mixData[i].weight    = g_model_r22.mixData[i].weight;
+    g_model.mixData[i].swtch     = g_model_r22.mixData[i].swtch;
+    g_model.mixData[i].curve     = g_model_r22.mixData[i].curve;
+    g_model.mixData[i].speedUp   = g_model_r22.mixData[i].speedUp;
+    g_model.mixData[i].speedDown = g_model_r22.mixData[i].speedDown;
   }
   
   g_model.mdVers = MDVERS;
@@ -170,6 +201,9 @@ void eeLoadModel(uint8_t id)
         break;
       case MDVERS_r14:
         load_ver14(id);
+        break;
+      case MDVERS_r22:
+        load_ver22(id);
         break;
       default:
         if(sz != sizeof(ModelData)) modelDefault(id);
