@@ -423,8 +423,8 @@ void menuProcMixOne(uint8_t event)
   MixData *md2 = &g_model.mixData[s_currMixIdx];
   //lcd_putsAtt(x*FW, 0,PSTR("Dest->"),0);
   putsChn(x+1*FW,0,md2->destCh,0);
-  MSTATE_TAB = { 1,1,1,1,1,1,3,1};
-  MSTATE_CHECK0_VxH(8);
+  MSTATE_TAB = { 1,1,1,1,1,1,1,2,1};
+  MSTATE_CHECK0_VxH(9);
   int8_t  sub    = mstate2.m_posVert;
   uint8_t subSub = mstate2.m_posHorz+1;
 
@@ -473,24 +473,25 @@ void menuProcMixOne(uint8_t event)
         lcd_putsnAtt(9*FW, y,PSTR("Add     MultiplyReplace ")+8*md2->mltpx,8,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->mltpx, 0, 2); //!! bitfield
         break;
-      case 6:         
-        attr = (sub==i && subSub==1) ? BLINK : 0;
-        lcd_putsAtt(  2*FW,y,PSTR("Timing"),0);
-        lcd_putcAtt(9*FW, y, 'P',0);
-        lcd_outdezAtt(FW*12,y,md2->startDelay,attr);
+      case 6:
+        lcd_putsAtt(  2*FW,y,PSTR("Delay"),0);
+        lcd_outdezAtt(11*FW,y,md2->startDelay,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->startDelay, 0,15); //!! bitfield
+        break;
+      case 7:         
+        lcd_putsAtt(  2*FW,y,PSTR("Slow"),0);
         
-        attr = (sub==i && subSub==2) ? BLINK : 0;
-        lcd_putsAtt(12*FW, y, PSTR(",D"),0);
-        lcd_outdezAtt(FW*16,y,md2->speedDown,attr);
+        attr = (sub==i && subSub==1) ? BLINK : 0;
+        lcd_putsAtt(9*FW, y, PSTR("Dn"),0);
+        lcd_outdezAtt(FW*14,y,md2->speedDown,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->speedDown, 0,15); //!! bitfield
         
-        attr = (sub==i && subSub==3) ? BLINK : 0;
-        lcd_putsAtt(16*FW, y, PSTR(",U"),0);
+        attr = (sub==i && subSub==2) ? BLINK : 0;
+        lcd_putsAtt(15*FW, y, PSTR("Up"),0);
         lcd_outdezAtt(FW*20,y,md2->speedUp,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->speedUp, 0,15); //!! bitfield
         break;
-      case 7:   lcd_putsAtt(  2*FW,y,PSTR("DELETE MIX [MENU]"),attr);
+      case 8:   lcd_putsAtt(  2*FW,y,PSTR("DELETE MIX [MENU]"),attr);
         if(attr && event==EVT_KEY_FIRST(KEY_MENU)){
           memmove(
             &g_model.mixData[s_currMixIdx],
@@ -617,6 +618,7 @@ void menuProcMix(uint8_t event)
     if(s_mixTab[k].hasDat){ //show data
       MixData *md2=&md[s_mixTab[k].editIdx];
       uint8_t attr = sub==s_mixTab[k].selDat ? BLINK : 0;
+      if(!s_mixTab[k].showCh) lcd_putsnAtt(   3*FW, y, PSTR("+*R")+1*md2->mltpx,1,0);
       lcd_outdezAtt(  7*FW+FW/2, y, md2->weight,attr);
       lcd_putcAtt(    7*FW+FW/2, y, '%',0);
       putsChnRaw(     9*FW, y, md2->srcRaw,0);
@@ -1985,19 +1987,17 @@ void perOut(int16_t *chanOut)
           v = intpol(v, md.curve - 4);
       }
 
-      int32_t dv = 0;
+      int32_t dv = (int32_t)v*(md.weight);
       if((md.carryTrim==0) && (md.srcRaw>0) && (md.srcRaw<=4)) v += trimA[md.srcRaw-1];  //  0 = Trim ON  =  Default
       switch(md.mltpx){
         case MLTPX_REP:
-          dv=(int32_t)v*(md.weight);
           chans[md.destCh-1] = dv;
           break;
         case MLTPX_MUL:
-          dv=(int32_t)v*chans[md.destCh-1]*(md.weight);
-          chans[md.destCh-1] = dv/(100*RESXl);
+          chans[md.destCh-1] *= dv/100l;
+          chans[md.destCh-1] /= RESXl;
           break;
         default:  // MLTPX_ADD
-          dv=(int32_t)v*(md.weight); // 9+1 Bit + 7+1 = 18 bits
           chans[md.destCh-1] += dv; //Mixer output add up to the line (dv + (dv>0 ? 100/2 : -100/2))/(100);
           break;
       }
