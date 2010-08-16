@@ -1993,8 +1993,8 @@ void perOut(int16_t *chanOut)
           chans[md.destCh-1] = dv;
           break;
         case MLTPX_MUL:
-          dv=(int32_t)v*chans[md.destCh-1];
-          chans[md.destCh-1] = dv/RESXl;
+          dv=(int32_t)v*chans[md.destCh-1]*(md.weight);
+          chans[md.destCh-1] = dv/(100*RESXl);
           break;
         default:  // MLTPX_ADD
           dv=(int32_t)v*(md.weight); // 9+1 Bit + 7+1 = 18 bits
