@@ -16,7 +16,7 @@
 
 #include "er9x.h"
 
-#define IS_THROTTLE(x)  ((2-(g_eeGeneral.stickMode&1)) == x)
+#define IS_THROTTLE(x)  (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4))
 #define GET_DR_STATE(x) (!getSwitch(g_model.expoData[x].drSw1,0) ?   \
                           DR_HIGH :                                  \
                           !getSwitch(g_model.expoData[x].drSw2,0)?   \
@@ -306,8 +306,11 @@ void menuProcLimits(uint8_t event)
   static bool swVal[NUM_CHNOUT];
   TITLE("LIMITS");
   MSTATE_TAB = { 4,4};
-  MSTATE_CHECK_VxH(5,menuTabModel,(8+g_model.ppmNCH*2)+1);
+  uint8_t numChs = (8+g_model.ppmNCH*2);
+  MSTATE_CHECK_VxH(5,menuTabModel,numChs+2);
 
+  uint8_t y = 0;
+  uint8_t k = 0;
   int8_t  sub    = mstate2.m_posVert - 1;
   uint8_t subSub = mstate2.m_posHorz + 1;
   static uint8_t s_pgOfs;
@@ -323,26 +326,20 @@ void menuProcLimits(uint8_t event)
       break;
     case EVT_KEY_FIRST(KEY_MENU):
       int16_t v = g_chans512[sub - s_pgOfs];
-      LimitData *ld = &g_model.limitData[sub - s_pgOfs];
-      switch (subSub)
-      {
+      LimitData *ld = &g_model.limitData[sub];
+      switch (subSub) {
         case 1:
-      ld->offset = (ld->revert) ? -v : v;
-      LIMITS_DIRTY;
-      break;
-    case 2:
-      //ld->min = (int32_t)v * 125 / RESX;
-      //if(ld->revert) ld->min=-ld->min;
-      //ld->min +=  100;
-      break;
+          ld->offset = (ld->revert) ? -v : v;
+          LIMITS_DIRTY;
+          break;
       }
       break;
   }
   lcd_puts_P( 4*FW, 1*FH,PSTR("subT min  max inv"));
   for(uint8_t i=0; i<6; i++){
-    uint8_t y=(i+2)*FH;
-    uint8_t k=i+s_pgOfs;
-    //if(k>NUM_CHNOUT) break;
+    y=(i+2)*FH;
+    k=i+s_pgOfs;
+    if(k==numChs) break;
     LimitData *ld = &g_model.limitData[k];
     for(uint8_t j=0; j<=4;j++){
       uint8_t attr = ((sub==k && subSub==j) ? BLINK : 0);
@@ -387,6 +384,28 @@ void menuProcLimits(uint8_t event)
           }
           break;
       }
+    }
+  }
+  if(k==numChs){
+    //last line available - add the "copy trim menu" line
+    uint8_t attr = (sub==numChs) ? BLINK : 0;
+    lcd_putsAtt(  3*FW,y,PSTR("COPY TRIM [MENU]"),attr);
+    if(attr && event==EVT_KEY_FIRST(KEY_MENU)){ //if highlighted and menu pressed - copy trims
+      for(uint8_t i=0; i<NUM_CHNOUT; i++){
+        int16_t v = g_chans512[i];
+        LimitData *ld = &g_model.limitData[i];
+        
+        bool contThr = false;                 // Contains Throttle
+        for(uint8_t j=0;j<MAX_MIXERS;j++){    // Scan all mixes
+          MixData &md = g_model.mixData[j];
+          if((md.destCh==0) || (md.destCh>NUM_CHNOUT) || contThr) break; // if no dest, dest error or contains then exit
+          contThr = contThr || (IS_THROTTLE(md.srcRaw-1) && (md.destCh==(i+1)));
+        }
+        if(!contThr) ld->offset = (ld->revert) ? -v : v;
+      }
+      for(uint8_t i=0; i<4; i++)
+        if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
+      LIMITS_DIRTY;
     }
   }
 }
@@ -438,7 +457,7 @@ void menuProcMixOne(uint8_t event)
       case 5:   lcd_putcAtt(9*FW, y, 'P',0);
         lcd_outdezAtt(FW*12,y,md2->startDelay,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->startDelay, 0,15); //!! bitfield
-        break;  
+        break;
       case 6:   lcd_putsAtt(12*FW, y-FH, PSTR(",D"),0);
         lcd_outdezAtt(FW*16,y-FH,md2->speedDown,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->speedDown, 0,15); //!! bitfield
@@ -847,9 +866,9 @@ void menuProcExpoAll(uint8_t event)
     uint8_t y=(i+2)*FH;
     putsChnRaw( 0, y,i+1,0);
     editExpoVals(event,sub==i && subHor==0, 7*FW-FW/2, y,i,expoDrOn,DR_EXPO,stkVal[i]);
-    editExpoVals(event,sub==i && subHor==1, 9*FW+FW/2,      y,i,expoDrOn,DR_WEIGHT,stkVal[i]);
-    editExpoVals(event,sub==i && subHor==2,10*FW+FW/2,      y,i,DR_DRSW1,0,0);
-    editExpoVals(event,sub==i && subHor==3,14*FW+FW/2,      y,i,DR_DRSW2,0,0);
+    editExpoVals(event,sub==i && subHor==1, 9*FW+FW/2, y,i,expoDrOn,DR_WEIGHT,stkVal[i]);
+    editExpoVals(event,sub==i && subHor==2,10*FW+FW/2, y,i,DR_DRSW1,0,0);
+    editExpoVals(event,sub==i && subHor==3,14*FW+FW/2, y,i,DR_DRSW2,0,0);
     lcd_putcAtt(9*FW+FW/2, y, (stkVal[i] ? '<' : '>'),0);
     switch (expoDrOn) {
     case DR_MID:
@@ -914,7 +933,7 @@ void menuProcModel(uint8_t event)
     lcd_putsnAtt(  10*FW, y, g_model.name ,sizeof(g_model.name),BSS_NO_INV);
     y+=FH;
   }
-  
+
   if(RANGE_PM(2)){
     lcd_putsAtt(    0,    y, PSTR("Timer"),sub==2 && subSub==0 ? BLINK:0);
     putsTime(       9*FW, y, g_model.tmrVal,(sub==2 && subSub==1 ? BLINK:0),(sub==2 && subSub==2 ? BLINK:0) );
@@ -946,14 +965,14 @@ void menuProcModel(uint8_t event)
     putsChn(       14*FW, y, g_model.tcutTarget,(sub==6 && subSub==2 ? BLINK:0));
     y+=FH;
   }
-  
+
   if(RANGE_PM(7)){
     lcd_putsAtt(    0,    y, PSTR("Proto"),0);//sub==2 ? INVERS:0);
     lcd_putsnAtt(  6*FW, y, PSTR(PROT_STR)+PROT_STR_LEN*g_model.protocol,PROT_STR_LEN,
                   (sub==7 && subSub==1 ? BLINK:0));
     if(!g_model.protocol) {
       lcd_putsnAtt(  10*FW, y, PSTR("4CH 6CH 8CH 10CH12CH14CH16CH")+4*(g_model.ppmNCH+2),4,(sub==7 && subSub==2 ? BLINK:0));
-      lcd_putsAtt(    17*FW,    y, PSTR("msec"),0);
+      lcd_putsAtt(    17*FW,    y, PSTR("uSec"),0);
       lcd_outdezAtt(  17*FW, y,  (g_model.ppmDelay*50)+300, (sub==7 && subSub==3 ? BLINK:0));
     }
     y+=FH;
@@ -1583,15 +1602,15 @@ extern volatile uint16_t captureRing[16];
 
 void menuProc0(uint8_t event)
 {
-#ifdef SIM
-  sprintf(g_title,"M0");
-#endif
   static uint8_t   sub;
   static MenuFuncP s_lastPopMenu[2];
 
   switch(event)
   {
-    case  EVT_KEY_LONG(KEY_MENU):
+    case  EVT_KEY_LONG(KEY_MENU):// go to last menu
+      //if(lastMenu==menuProcExpoOne)  pushMenu(menuProcExpoAll);
+      //if(lastMenu==menuProcMixOne)   pushMenu(menuProcMix);
+      //if(lastMenu==menuProcCurveOne) pushMenu(menuProcCurve);
       pushMenu(lastMenu);
       killEvents(event);
       break;
@@ -1836,7 +1855,7 @@ void perOut(int16_t *chanOut)
     if(IS_THROTTLE(i))  //stickMode=0123 -> thr=2121
     {
       trace((v+512) / 32); //trace thr 0..32  (/32)
-      if(g_model.thrTrim==1) vv = (int32_t)g_model.trim[i]*(RESX-v)/(2*RESX);      
+      if(g_model.thrTrim==1) vv = (int32_t)g_model.trim[i]*(RESX-v)/(2*RESX);
       if(getSwitch(g_model.tcutSW,0) && !g_model.tcutTarget) {   //tcut pressed - no target
         vv = -125;
         v = -RESX;
