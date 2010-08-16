@@ -227,6 +227,7 @@ void menuProcCurveOne(uint8_t event) {
 #define RESX    512
 #define RESXu   512u
 #define RESXul  512ul
+#define RESXl   512l
 #define RESKul  100ul
 #define RESX_PLUS_TRIM (RESX+128)
 
@@ -1993,7 +1994,7 @@ void perOut(int16_t *chanOut)
           break;
         case MLTPX_MUL:
           dv=(int32_t)v*chans[md.destCh-1];
-          chans[md.destCh-1] = dv/RESXul;
+          chans[md.destCh-1] = dv/RESXl;
           break;
         default:  // MLTPX_ADD
           dv=(int32_t)v*(md.weight); // 9+1 Bit + 7+1 = 18 bits
