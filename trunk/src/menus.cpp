@@ -423,7 +423,7 @@ void menuProcMixOne(uint8_t event)
   MixData *md2 = &g_model.mixData[s_currMixIdx];
   //lcd_putsAtt(x*FW, 0,PSTR("Dest->"),0);
   putsChn(x+1*FW,0,md2->destCh,0);
-  MSTATE_TAB = { 1,1,1,1,1,1,1,2,1};
+  MSTATE_TAB = { 1,1,1,1,1,1,2,2,1};
   MSTATE_CHECK0_VxH(9);
   int8_t  sub    = mstate2.m_posVert;
   uint8_t subSub = mstate2.m_posHorz+1;
@@ -475,8 +475,18 @@ void menuProcMixOne(uint8_t event)
         break;
       case 6:
         lcd_putsAtt(  2*FW,y,PSTR("Delay"),0);
-        lcd_outdezAtt(11*FW,y,md2->startDelay,attr);
-        if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->startDelay, 0,15); //!! bitfield
+
+        attr = (sub==i && subSub==1) ? BLINK : 0;
+        lcd_putsAtt(9*FW, y, PSTR("Dn"),0);
+        lcd_outdezAtt(FW*14,y,md2->delayDown,attr);
+        if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->delayDown, 0,15); //!! bitfield
+
+        attr = (sub==i && subSub==2) ? BLINK : 0;
+        lcd_putsAtt(15*FW, y, PSTR("Up"),0);
+        lcd_outdezAtt(FW*20,y,md2->delayUp,attr);
+        if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->delayUp, 0,15); //!! bitfield
+        break;
+
         break;
       case 7:
         lcd_putsAtt(  2*FW,y,PSTR("Slow"),0);
@@ -1894,24 +1904,27 @@ void perOut(int16_t *chanOut)
     for(uint8_t i=0;i<MAX_MIXERS;i++){
       MixData &md = g_model.mixData[i];
 
-      static uint8_t timer[MAX_MIXERS];
-      static int16_t act  [MAX_MIXERS];
+      static int16_t sDelay[MAX_MIXERS];
+      static uint8_t timer [MAX_MIXERS];
+      static int16_t act   [MAX_MIXERS];
 
       if((md.destCh==0) || (md.destCh>NUM_CHNOUT)) break;
 
       //Notice 0 = NC switch means not used -> always on line
 
-      if( !getSwitch(md.swtch,1) &&
-          md.srcRaw != 8         && //MAX
-          md.srcRaw != 9            //FUL
-      )
-        continue;     // Off line if not src == MAX or FULL
+      int16_t v  = 0;
+      if(!getSwitch(md.swtch,1)){
+        if(md.srcRaw!=8 && md.srcRaw!=9) continue;// if not MAX or FULL - next loop
+        if(md.mltpx==MLTPX_REP && md.srcRaw==8) continue; // if MAX and switch is off and REPLACE then off
+        v = (md.srcRaw == 9 ? -512 : 0); // switch is off and it is either MAX=0 or FULL=-512
+      }
+      else
+        v = anas[md.srcRaw-1]; //Switch is on. MAX=FULL=512 or value.
 
-      int16_t v;
-      bool swtch = getSwitch(md.swtch,1);
-      v = !swtch ? (md.srcRaw == 9 ? -512 : 0) : anas[md.srcRaw-1];
+      //int16_t v = !swtchOn ? (md.srcRaw == 9 ? -512 : 0) : anas[md.srcRaw-1];
 
-      if (md.speedUp || md.speedDown)
+
+      if (md.speedUp || md.speedDown || md.delayUp || md.delayDown)
       {
         /*
     dt=[ 1, 1,1,1,1,1,1,2,1,3,2,3,4,6,9];dx=[18,13,9,6,4,3,2,3,1,2,1,1,1,1,1]
@@ -1934,25 +1947,48 @@ void perOut(int16_t *chanOut)
          */
         //                                                   1 1 1 1 1 1
         //                                1  2 3 4 5 6 7 8 9 0 1 2 3 4 5
-        static prog_uint8_t APM dlt_t[]={18,13,9,6,4,3,2,3,1,2,1,1,1,1,1};
-        static prog_uint8_t APM tmr_t[]={ 1, 1,1,1,1,1,1,2,1,3,2,3,4,6,9};
-        int16_t     diff     = v - act[i];
+
+        int16_t diff = v-act[i];
+
+        //set up delay
+        // act[i] = start value.
+
+        if(!diff && md.delayUp   && !getSwitch(md.swtch,0)) sDelay[i] = -md.delayUp    * 100;
+        if(!diff && md.delayDown &&  getSwitch(md.swtch,0)) sDelay[i] =  md.delayDown  * 100;
+          //sDelay[i] = -md.delayUp  * 128;  // countUP
+          //sDelay[i] = md.delayDown * 128;  // countDown
+
+
+        // perform delay
+        if(sDelay[i]>0) {
+          sDelay[i]--;
+          diff = 0;// Counting Down
+        }
+        if(sDelay[i]<0) {
+          sDelay[i]++;
+          diff = 0;// Counting Up
+        }
+
+
+        static prog_uint8_t APM tdx_t[]={18,13,9,6,4,3,2,3,1,2,1,1,1,1,1};
+        static prog_uint8_t APM tdt_t[]={ 1, 1,1,1,1,1,1,2,1,3,2,3,4,6,9};
+
         if(diff){
           uint8_t   speed    = (diff > 0) ? md.speedUp : md.speedDown;
           if(speed){
-            uint8_t timerend = pgm_read_byte(&tmr_t[speed-1]);
-            int8_t  dlt      = pgm_read_byte(&dlt_t[speed-1]);
-            dlt              = min((int16_t)dlt, abs(diff)) ;
-            if(diff < 0) dlt = -dlt;
+            uint8_t tdt = pgm_read_byte(&tdt_t[speed-1]);  // get dt
+            int8_t  tdx = pgm_read_byte(&tdx_t[speed-1]);  // get dx
+            tdx         = min((int16_t)tdx, abs(diff)) ;   //
+            if(diff < 0) tdx = -tdx;
 
             if (--timer[i] != 0)
             {
-              if (timer[i] > timerend) timer[i] = timerend;
+              if (timer[i] > tdt) timer[i] = tdt;
             }
             else
             {
-              act[i]        += dlt;
-              timer[i]       = timerend;
+              act[i]        += tdx;
+              timer[i]       = tdt;
             }
           }else{
             act[i]   = v;
@@ -1961,6 +1997,7 @@ void perOut(int16_t *chanOut)
         }
         v = act[i];
       }
+
       switch(md.curve){
         case 0:
           break;
@@ -1990,21 +2027,21 @@ void perOut(int16_t *chanOut)
 
       if((md.carryTrim==0) && (md.srcRaw>0) && (md.srcRaw<=4)) v += trimA[md.srcRaw-1];  //  0 = Trim ON  =  Default
 
-      if (swtch) {
-        int32_t dv = (int32_t)v*(md.weight);
-        switch(md.mltpx){
-          case MLTPX_REP:
-            chans[md.destCh-1] = dv;
-            break;
-          case MLTPX_MUL:
-            chans[md.destCh-1] *= dv/100l;
-            chans[md.destCh-1] /= RESXl;
-            break;
-          default:  // MLTPX_ADD
-            chans[md.destCh-1] += dv; //Mixer output add up to the line (dv + (dv>0 ? 100/2 : -100/2))/(100);
-            break;
+
+      int32_t dv = (int32_t)v*(md.weight);
+      switch(md.mltpx){
+        case MLTPX_REP:
+          chans[md.destCh-1] = dv;
+          break;
+        case MLTPX_MUL:
+          chans[md.destCh-1] *= dv/100l;
+          chans[md.destCh-1] /= RESXl;
+          break;
+        default:  // MLTPX_ADD
+          chans[md.destCh-1] += dv; //Mixer output add up to the line (dv + (dv>0 ? 100/2 : -100/2))/(100);
+          break;
         }
-      }
+
     }
 
   //Throttle Cut
