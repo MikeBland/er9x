@@ -395,7 +395,7 @@ void menuProcLimits(uint8_t event)
       for(uint8_t i=0; i<NUM_CHNOUT; i++){
         int16_t v = g_chans512[i];
         LimitData *ld = &g_model.limitData[i];
-        
+
         bool contThr = false;                 // Contains Throttle
         for(uint8_t j=0;j<MAX_MIXERS;j++){    // Scan all mixes
           MixData &md = g_model.mixData[j];
@@ -439,23 +439,23 @@ void menuProcMixOne(uint8_t event)
     uint8_t i=(y/FH)+s_pgOfs-1;
     uint8_t attr = sub==i ? BLINK : 0;
     switch(i){
-      case 0: 
-        lcd_putsAtt(  2*FW,y,PSTR("Source"),0);  
+      case 0:
+        lcd_putsAtt(  2*FW,y,PSTR("Source"),0);
         putsChnRaw(   FW*9,y,md2->srcRaw,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->srcRaw, 1,NUM_XCHNRAW); //!! bitfield
         break;
       case 1:
-        lcd_putsAtt(  2*FW,y,PSTR("Weight"),0);   
+        lcd_putsAtt(  2*FW,y,PSTR("Weight"),0);
         lcd_outdezAtt(FW*11 + FW/2,y,md2->weight,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->weight, -125,125);
         break;
-      case 2: 
+      case 2:
         lcd_putsAtt(  2*FW,y,PSTR("Trim"),0);
         lcd_putsnAtt(FW*9,y, PSTR("ON OFF")+3*md2->carryTrim,3,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->carryTrim, 0,1);
         break;
       case 3:
-        lcd_putsAtt(  2*FW,y,PSTR("Curves"),0); 
+        lcd_putsAtt(  2*FW,y,PSTR("Curves"),0);
         lcd_putsnAtt( FW*9,y,PSTR(CURV_STR)+md2->curve*3,3,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->curve, 0,MAX_CURVE5+MAX_CURVE9+4-1); //!! bitfield
         if(attr && md2->curve>=4 && event==EVT_KEY_FIRST(KEY_MENU)){
@@ -463,7 +463,7 @@ void menuProcMixOne(uint8_t event)
           pushMenu(menuProcCurveOne);
         }
         break;
-      case 4:    
+      case 4:
         lcd_putsAtt(  2*FW,y,PSTR("Switch"),0);
         putsDrSwitches(8*FW,  y,md2->swtch,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->swtch, -MAX_DRSWITCH, MAX_DRSWITCH); //!! bitfield
@@ -478,14 +478,14 @@ void menuProcMixOne(uint8_t event)
         lcd_outdezAtt(11*FW,y,md2->startDelay,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->startDelay, 0,15); //!! bitfield
         break;
-      case 7:         
+      case 7:
         lcd_putsAtt(  2*FW,y,PSTR("Slow"),0);
-        
+
         attr = (sub==i && subSub==1) ? BLINK : 0;
         lcd_putsAtt(9*FW, y, PSTR("Dn"),0);
         lcd_outdezAtt(FW*14,y,md2->speedDown,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->speedDown, 0,15); //!! bitfield
-        
+
         attr = (sub==i && subSub==2) ? BLINK : 0;
         lcd_putsAtt(15*FW, y, PSTR("Up"),0);
         lcd_outdezAtt(FW*20,y,md2->speedUp,attr);
@@ -1908,7 +1908,8 @@ void perOut(int16_t *chanOut)
         continue;     // Off line if not src == MAX or FULL
 
       int16_t v;
-      v = !getSwitch(md.swtch,1) ? (md.srcRaw == 9 ? -512 : 0) : anas[md.srcRaw-1];
+      bool swtch = getSwitch(md.swtch,1);
+      v = !swtch ? (md.srcRaw == 9 ? -512 : 0) : anas[md.srcRaw-1];
 
       if (md.speedUp || md.speedDown)
       {
@@ -1987,19 +1988,22 @@ void perOut(int16_t *chanOut)
           v = intpol(v, md.curve - 4);
       }
 
-      int32_t dv = (int32_t)v*(md.weight);
       if((md.carryTrim==0) && (md.srcRaw>0) && (md.srcRaw<=4)) v += trimA[md.srcRaw-1];  //  0 = Trim ON  =  Default
-      switch(md.mltpx){
-        case MLTPX_REP:
-          chans[md.destCh-1] = dv;
-          break;
-        case MLTPX_MUL:
-          chans[md.destCh-1] *= dv/100l;
-          chans[md.destCh-1] /= RESXl;
-          break;
-        default:  // MLTPX_ADD
-          chans[md.destCh-1] += dv; //Mixer output add up to the line (dv + (dv>0 ? 100/2 : -100/2))/(100);
-          break;
+
+      if (swtch) {
+        int32_t dv = (int32_t)v*(md.weight);
+        switch(md.mltpx){
+          case MLTPX_REP:
+            chans[md.destCh-1] = dv;
+            break;
+          case MLTPX_MUL:
+            chans[md.destCh-1] *= dv/100l;
+            chans[md.destCh-1] /= RESXl;
+            break;
+          default:  // MLTPX_ADD
+            chans[md.destCh-1] += dv; //Mixer output add up to the line (dv + (dv>0 ? 100/2 : -100/2))/(100);
+            break;
+        }
       }
     }
 
