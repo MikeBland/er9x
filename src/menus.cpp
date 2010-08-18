@@ -635,7 +635,12 @@ void menuProcMix(uint8_t event)
       //if(md2->carryTrim==0)lcd_putcAtt(12*FW+1, y, 'T',0);
       if(md2->swtch)putsDrSwitches( 13*FW, y, md2->swtch,0);
       if(md2->curve)lcd_putsnAtt(   17*FW, y, PSTR(CURV_STR)+md2->curve*3,3,0);
-      if(md2->speedDown || md2->speedUp)lcd_putcAtt(20*FW+1, y, 's',0);
+
+      bool bs = (md2->speedDown || md2->speedUp);
+      bool bd = (md2->delayUp || md2->delayDown);
+      char cs = (bs && bd) ? '*' : (bs ? 'S' : 'D');
+      if(bs || bd) lcd_putcAtt(20*FW+1, y, cs,0);
+
       if(attr == BLINK){ //handle dat is selected
         CHECK_INCDEC_H_MODELVAR( event, md2->weight, -125,125);
         s_currMixIdx     = s_mixTab[k].editIdx;
@@ -1899,13 +1904,13 @@ void perOut(int16_t *chanOut)
 
   memset(chans,0,sizeof(chans));        // All outputs to 0
 
-  //mixer loop
 
+    //========== MIXER LOOP ===============
     for(uint8_t i=0;i<MAX_MIXERS;i++){
       MixData &md = g_model.mixData[i];
 
       static int16_t sDelay[MAX_MIXERS];
-      static uint8_t timer [MAX_MIXERS];
+      static int16_t sSlow [MAX_MIXERS];
       static int16_t act   [MAX_MIXERS];
 
       if((md.destCh==0) || (md.destCh>NUM_CHNOUT)) break;
@@ -1921,83 +1926,35 @@ void perOut(int16_t *chanOut)
       else
         v = anas[md.srcRaw-1]; //Switch is on. MAX=FULL=512 or value.
 
-      //int16_t v = !swtchOn ? (md.srcRaw == 9 ? -512 : 0) : anas[md.srcRaw-1];
-
-
-      if (md.speedUp || md.speedDown || md.delayUp || md.delayDown)
+      //========== DELAY and PAUSE ===============
+      if ((md.speedUp || md.speedDown || md.delayUp || md.delayDown) && md.swtch)  // there are delay values and a switch
       {
-        /*
-    dt=[ 1, 1,1,1,1,1,1,2,1,3,2,3,4,6,9];dx=[18,13,9,6,4,3,2,3,1,2,1,1,1,1,1]
-    rp=1; 15.times{|i| r=dx[i]*100.0/(dt[i]); printf("%2d: rate=%4d i/s full=%5.1fs %3.1f\n",i+1,r,1024.0/r,rp/r);rp=r}
- 1: rate=1800 i/s full=  0.6s 0.0
- 2: rate=1300 i/s full=  0.8s 1.4
- 3: rate= 900 i/s full=  1.1s 1.4
- 4: rate= 600 i/s full=  1.7s 1.5
- 5: rate= 400 i/s full=  2.6s 1.5
- 6: rate= 300 i/s full=  3.4s 1.3
- 7: rate= 200 i/s full=  5.1s 1.5
- 8: rate= 150 i/s full=  6.8s 1.3
- 9: rate= 100 i/s full= 10.2s 1.5
-10: rate=  66 i/s full= 15.4s 1.5
-11: rate=  50 i/s full= 20.5s 1.3
-12: rate=  33 i/s full= 30.7s 1.5
-13: rate=  25 i/s full= 41.0s 1.3
-14: rate=  16 i/s full= 61.4s 1.5
-15: rate=  11 i/s full= 92.2s 1.5
-         */
-        //                                                   1 1 1 1 1 1
-        //                                1  2 3 4 5 6 7 8 9 0 1 2 3 4 5
+        if(!sDelay[i] && !sSlow[i]) act[i] = v;
 
         int16_t diff = v-act[i];
+        bool swtch = getSwitch(md.swtch,0);
 
-        //set up delay
-        // act[i] = start value.
-
-        if(!diff && md.delayUp   && !getSwitch(md.swtch,0)) sDelay[i] = -md.delayUp    * 100;
-        if(!diff && md.delayDown &&  getSwitch(md.swtch,0)) sDelay[i] =  md.delayDown  * 100;
-          //sDelay[i] = -md.delayUp  * 128;  // countUP
-          //sDelay[i] = md.delayDown * 128;  // countDown
-
-
-        // perform delay
-        if(sDelay[i]>0) {
+        if(!diff)     //set up delay
+          sDelay[i] = (swtch ? md.delayUp : md.delayDown) * 100;
+        else if(sDelay[i]){        // perform delay
           sDelay[i]--;
-          diff = 0;// Counting Down
-        }
-        if(sDelay[i]<0) {
-          sDelay[i]++;
-          diff = 0;// Counting Up
+          diff = 0;
+          v = act[i];
         }
 
-
-        static prog_uint8_t APM tdx_t[]={18,13,9,6,4,3,2,3,1,2,1,1,1,1,1};
-        static prog_uint8_t APM tdt_t[]={ 1, 1,1,1,1,1,1,2,1,3,2,3,4,6,9};
-
-        if(diff){
-          uint8_t   speed    = (diff > 0) ? md.speedUp : md.speedDown;
-          if(speed){
-            uint8_t tdt = pgm_read_byte(&tdt_t[speed-1]);  // get dt
-            int8_t  tdx = pgm_read_byte(&tdx_t[speed-1]);  // get dx
-            tdx         = min((int16_t)tdx, abs(diff)) ;   //
-            if(diff < 0) tdx = -tdx;
-
-            if (--timer[i] != 0)
-            {
-              if (timer[i] > tdt) timer[i] = tdt;
-            }
-            else
-            {
-              act[i]        += tdx;
-              timer[i]       = tdt;
-            }
-          }else{
-            act[i]   = v;
-            timer[i] = 0;
-          }
+        if(!diff)    //set up slow
+          sSlow[i] = (swtch ? md.speedUp : -md.speedDown) * 100;
+        else if(sSlow[i]) {       //perform slow
+          bool dirPos = sSlow[i]>0;
+          sSlow[i] += dirPos ? -1 : 1;
+          if(sSlow[i])
+            v -= (int16_t)(((int32_t)diff*sSlow[i])/(100*(dirPos ? md.speedUp : md.speedDown)));
+          else
+            act[i] = v;
         }
-        v = act[i];
       }
 
+      //========== CURVES ===============
       switch(md.curve){
         case 0:
           break;
@@ -2025,9 +1982,11 @@ void perOut(int16_t *chanOut)
           v = intpol(v, md.curve - 4);
       }
 
+      //========== TCUT ===============
       if((md.carryTrim==0) && (md.srcRaw>0) && (md.srcRaw<=4)) v += trimA[md.srcRaw-1];  //  0 = Trim ON  =  Default
 
 
+      //========== LIMITS ===============
       int32_t dv = (int32_t)v*(md.weight);
       switch(md.mltpx){
         case MLTPX_REP:
