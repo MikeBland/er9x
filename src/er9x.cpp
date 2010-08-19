@@ -28,8 +28,7 @@ mode4 ail thr ele rud
 EEGeneral  g_eeGeneral;
 ModelData  g_model;
 
-
-
+bool warble = false;
 
 const prog_char APM modi12x3[]=
   "RUD ELE THR AIL "
@@ -187,18 +186,21 @@ uint8_t checkTrim(uint8_t event)
     if(((x==0)  ||  ((x>=0) != (g_model.trim[idx]>=0))) && (!thro) && (g_model.trim[idx]!=0)){
       g_model.trim[idx]=0;
       killEvents(event);
+      warble = false;
       beepWarn();
     }
-    else if(x>=-125 && x<=125){
-    g_model.trim[idx] = (int8_t)x;
-    STORE_MODELVARS;
-        beepKey();
+    else if(x>-125 && x<125){
+      g_model.trim[idx] = (int8_t)x;
+      STORE_MODELVARS;
+      warble = true;
+      beepWarn1();//beepKey();
     }
     else
     {
-    g_model.trim[idx] = (x>0) ? 125 : -125;
-    STORE_MODELVARS;
-        beepWarn();
+      g_model.trim[idx] = (x>0) ? 125 : -125;
+      STORE_MODELVARS;
+      warble = false;
+      beepWarn();
     }
 
     return 0;
@@ -441,7 +443,7 @@ void perMain()
         static uint8_t s_batCheck;
         s_batCheck+=32;
         if(s_batCheck==0 && g_vbat100mV < g_eeGeneral.vBatWarn){
-          beepWarn();
+          beepErr();
         }
       }
       break;
@@ -451,7 +453,7 @@ void perMain()
           0,0, 0,  0, //quiet
           0,1,30,100, //silent
           1,1,30,100, //normal
-          1,4,50,150, //for motor
+          1,1,50,150, //for motor
         };
         memcpy_P(g_beepVal,beepTab+4*BEEP_VAL,4);
           //g_beepVal = BEEP_VAL;
@@ -608,9 +610,15 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
   OCR0 = OCR0 + 156;
   if(g_beepCnt){
     g_beepCnt--;
-    PORTE |=  (1<<OUT_E_BUZZER);
+    static bool warbleC;
+    warbleC = warble && !warbleC;
+    if(warbleC)
+      PORTE &= ~(1<<OUT_E_BUZZER);//buzzer off
+    else
+      PORTE |=  (1<<OUT_E_BUZZER);//buzzer on
   }else{
     PORTE &= ~(1<<OUT_E_BUZZER);
+    warble = false;
   }
   per10ms();
   heartbeat |= HEART_TIMER10ms;
