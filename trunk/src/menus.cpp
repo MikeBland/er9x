@@ -1412,9 +1412,9 @@ void menuProcSetup0(uint8_t event)
 {
   static MState2 mstate2;
   TITLE("SETUP BASIC");
-  MSTATE_CHECK_V(1,menuTabDiag,1+4);
+  MSTATE_CHECK_V(1,menuTabDiag,1+5);
   int8_t  sub    = mstate2.m_posVert-1 ;
-  uint8_t y=2*FH;
+  uint8_t y=FH;
   lcd_outdezAtt(4*FW,y,g_eeGeneral.contrast,sub==0 ? BLINK : 0);
   if(sub==0){
     CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.contrast, 20, 45);
@@ -1444,7 +1444,7 @@ void menuProcSetup0(uint8_t event)
   lcd_puts_P( 6*FW, y,PSTR("LIGHT"));
 
 
-  y+=2*FH;
+  y+=FH*2;
   lcd_putsAtt( 1*FW, y, PSTR("Mode"),0);//sub==3?INVERS:0);
   lcd_putcAtt( 3*FW, y+FH, '1'+g_eeGeneral.stickMode,sub==4?BLINK:0);
   for(uint8_t i=0; i<4; i++)
