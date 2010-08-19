@@ -439,7 +439,7 @@ inline void _beep(uint8_t b) {
 }
 
 /// Erzeugt einen kurzen beep
-#define beepKey()   _beep(g_beepVal[0])
+#define beepKey()   warble = true;_beep(g_beepVal[0])
 #define beepWarn1() _beep(g_beepVal[1])
 /// Erzeugt einen langen beep
 #define beepWarn() _beep(g_beepVal[2])

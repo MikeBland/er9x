@@ -28,6 +28,8 @@ static uint8_t s_pgOfs;
 
 int16_t g_chans512[NUM_CHNOUT];
 
+extern bool warble;
+
 //static TrainerData g_trainer;
 
 //sticks
@@ -1837,7 +1839,6 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
 
 uint16_t pulses2MHz[60];
 
-
 void perOut(int16_t *chanOut)
 {
   static int16_t  anas  [NUM_XCHNRAW];
@@ -1855,7 +1856,7 @@ void perOut(int16_t *chanOut)
       inacSum = tsum;
       inacCounter=0;
     }                                                //   s  m 10min  - using 97 instead of 100 for accuracy
-    if(inacCounter>((uint32_t)g_eeGeneral.inactivityTimer*97*60*10)) beepWarn();
+    if(inacCounter>((uint32_t)g_eeGeneral.inactivityTimer*97*60*10)) beepErr();
   }
 
   for(uint8_t i=0;i<4;i++){        // calc Sticks
