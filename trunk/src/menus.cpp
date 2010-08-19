@@ -1427,9 +1427,16 @@ void menuProcSetup0(uint8_t event)
   }
   lcd_puts_P( 4*FW, y,PSTR("V BAT WARNING"));
   y+=FH;
-
-  putsDrSwitches(0*FW,y,g_eeGeneral.lightSw,sub==2 ? BLINK : 0);
+  
+  lcd_outdezAtt(4*FW,y,g_eeGeneral.inactivityTimer*10,(sub==2 ? BLINK : 0));
   if(sub==2){
+    CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.inactivityTimer, 0, 30); //5-10V
+  }
+  lcd_puts_P( 4*FW, y,PSTR("m Inactivity Alrm"));
+  y+=FH;
+
+  putsDrSwitches(0*FW,y,g_eeGeneral.lightSw,sub==3 ? BLINK : 0);
+  if(sub==3){
     CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightSw, -MAX_DRSWITCH, MAX_DRSWITCH); //5-10V
   }
   lcd_puts_P( 6*FW, y,PSTR("LIGHT"));
@@ -1437,13 +1444,13 @@ void menuProcSetup0(uint8_t event)
 
   y+=2*FH;
   lcd_putsAtt( 1*FW, y, PSTR("Mode"),0);//sub==3?INVERS:0);
-  lcd_putcAtt( 3*FW, y+FH, '1'+g_eeGeneral.stickMode,sub==3?BLINK:0);
+  lcd_putcAtt( 3*FW, y+FH, '1'+g_eeGeneral.stickMode,sub==4?BLINK:0);
   for(uint8_t i=0; i<4; i++)
   {
     lcd_img(    (6+4*i)*FW, y,   sticks,i,0);
     putsChnRaw( (6+4*i)*FW, y+FH,i+1,0);//sub==3?BLINK:0);
   }
-  if(sub==3){
+  if(sub==4){
     CHECK_INCDEC_H_GENVAR(event,g_eeGeneral.stickMode,0,3);
   }
 }
@@ -1833,10 +1840,23 @@ uint16_t pulses2MHz[60];
 
 void perOut(int16_t *chanOut)
 {
-  static int16_t anas     [NUM_XCHNRAW];
-  static int32_t chans    [NUM_CHNOUT];          // Outputs + intermidiates
+  static int16_t  anas  [NUM_XCHNRAW];
+  static int32_t  chans [NUM_CHNOUT];          // Outputs + intermidiates
+  static uint32_t inacCounter;
+  static uint16_t inacSum;
 
          int16_t trimA    [4];
+
+  if(g_eeGeneral.inactivityTimer) {
+    inacCounter++;
+    uint16_t tsum = 0;
+    for(uint8_t i=0;i<4;i++) tsum += anas[i]/4;//div 4 -> reduce sensitivity
+    if(tsum!=inacSum){
+      inacSum = tsum;
+      inacCounter=0;
+    }                                                //   s  m 10min  - using 97 instead of 100 for accuracy
+    if(inacCounter>((uint32_t)g_eeGeneral.inactivityTimer*97*60*10)) beepWarn();
+  }
 
   for(uint8_t i=0;i<4;i++){        // calc Sticks
 
@@ -1927,30 +1947,28 @@ void perOut(int16_t *chanOut)
         v = anas[md.srcRaw-1]; //Switch is on. MAX=FULL=512 or value.
 
       //========== DELAY and PAUSE ===============
-      if ((md.speedUp || md.speedDown || md.delayUp || md.delayDown) && md.swtch)  // there are delay values and a switch
+      if (md.speedUp || md.speedDown || md.delayUp || md.delayDown)  // there are delay values
       {
         if(!sDelay[i] && !sSlow[i]) act[i] = v;
 
         int16_t diff = v-act[i];
         bool swtch = getSwitch(md.swtch,0);
 
-        if(!diff)     //set up delay
-          sDelay[i] = (swtch ? md.delayUp : md.delayDown) * 100;
-        else if(sDelay[i]){        // perform delay
-          sDelay[i]--;
-          diff = 0;
-          v = act[i];
+        if(!diff){     //set up delay
+          sDelay[i] = (swtch ? md.delayUp :  md.delayDown) * 100;
+          sSlow[i]  = (swtch ? md.speedUp : -md.speedDown) * 100;
         }
-
-        if(!diff)    //set up slow
-          sSlow[i] = (swtch ? md.speedUp : -md.speedDown) * 100;
-        else if(sSlow[i]) {       //perform slow
-          bool dirPos = sSlow[i]>0;
-          sSlow[i] += dirPos ? -1 : 1;
-          if(sSlow[i])
-            v -= (int16_t)(((int32_t)diff*sSlow[i])/(100*(dirPos ? md.speedUp : md.speedDown)));
-          else
-            act[i] = v;
+        else {
+          if(sDelay[i]){        // perform delay
+            sDelay[i]--;
+            v = act[i];
+          }
+          else if(sSlow[i]) {       //perform slow
+            bool dirPos = sSlow[i]>0;
+            sSlow[i] += dirPos ? -1 : 1;
+            v -= (int16_t)(((int32_t)diff*abs(sSlow[i]))/(100*(dirPos ? md.speedUp : md.speedDown)));
+            //v = sSlow[i];
+          }
         }
       }
 
@@ -1978,7 +1996,6 @@ void perOut(int16_t *chanOut)
           break;
         case 3: v = abs(v);      break; //ABS
         default:
-          //if((md.curve >= 4) && (md.curve < max_curves5+max_curves9))
           v = intpol(v, md.curve - 4);
       }
 

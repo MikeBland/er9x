@@ -64,6 +64,7 @@ typedef struct t_EEGeneral {
 #define BEEP_VAL ( (g_eeGeneral.warnOpts & 0x18) >>3 )
   uint8_t   warnOpts; //bitset for several warnings
   uint8_t   stickMode;
+  uint8_t   inactivityTimer;
 } __attribute__((packed)) EEGeneral;
 
 
