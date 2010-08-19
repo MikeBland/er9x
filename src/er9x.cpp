@@ -441,7 +441,7 @@ void perMain()
         static uint8_t s_batCheck;
         s_batCheck+=32;
         if(s_batCheck==0 && g_vbat100mV < g_eeGeneral.vBatWarn){
-          beepWarn1();
+          beepWarn();
         }
       }
       break;
