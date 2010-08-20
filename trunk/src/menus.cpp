@@ -1930,10 +1930,6 @@ void perOut(int16_t *chanOut)
     for(uint8_t i=0;i<MAX_MIXERS;i++){
       MixData &md = g_model.mixData[i];
 
-      static int16_t sDelay[MAX_MIXERS];
-      static int16_t sSlow [MAX_MIXERS];
-      static int16_t act   [MAX_MIXERS];
-
       if((md.destCh==0) || (md.destCh>NUM_CHNOUT)) break;
 
       //Notice 0 = NC switch means not used -> always on line
@@ -1950,28 +1946,31 @@ void perOut(int16_t *chanOut)
       //========== DELAY and PAUSE ===============
       if (md.speedUp || md.speedDown || md.delayUp || md.delayDown)  // there are delay values
       {
-        if(!sDelay[i] && !sSlow[i]) act[i] = v;
+        
+        static int16_t sDelay[MAX_MIXERS];
+        static int16_t act   [MAX_MIXERS];
+        static bool    swtch [MAX_MIXERS];
 
-        int16_t diff = v-act[i];
-        bool swtch = getSwitch(md.swtch,0);
-
-        if(!diff){     //set up delay
-          sDelay[i] = (swtch ? md.delayUp :  md.delayDown) * 100;
-          sSlow[i]  = (swtch ? md.speedUp : -md.speedDown) * 100;
-        }
-        else {
-          if(sDelay[i]){        // perform delay
+        int16_t diff = v-act[i]/32;
+        if(abs(diff)<4) diff=0;
+        if(diff>0) swtch[i] = true;
+        if(diff<0) swtch[i] = false;
+  
+        if(!diff)     //set up delay
+          sDelay[i] = (swtch[i] ? md.delayUp :  md.delayDown) * 100;
+        else if(sDelay[i]){ // perform delay
             sDelay[i]--;
-            v = act[i];
+            v = act[i]/32;
+            diff = 0;
           }
-          else if(sSlow[i]) {       //perform slow
-            bool dirPos = sSlow[i]>0;
-            sSlow[i] += dirPos ? -1 : 1;
-            v -= (int16_t)(((int32_t)diff*abs(sSlow[i]))/(100*(dirPos ? md.speedUp : md.speedDown)));
-            //v = sSlow[i];
-          }
+          
+        if(diff && (md.speedUp || md.speedDown)){
+          //rate = steps/sec => 32*1024/100*md.speedUp/Down
+          act[i] += diff>0 ? (32768)/((int16_t)100*md.speedUp) : -(32768)/((int16_t)100*md.speedDown);
+          v = act[i]/32;
         }
       }
+
 
       //========== CURVES ===============
       switch(md.curve){
