@@ -1921,7 +1921,8 @@ void perOut(int16_t *chanOut)
   }
   anas[7] = 512;     // MAX
   anas[8] = 512;     // FULL
-  for(uint8_t i=9;i<NUM_XCHNRAW;i++)  anas[i] = chans[i-9]; //other mixes previous outputs
+  for(uint8_t i=9;i<(9+NUM_PPM);i++)          anas[i] = g_ppmIns[i-9];      //add ppm channels
+  for(uint8_t i=9+NUM_PPM;i<NUM_XCHNRAW;i++)  anas[i] = chans[i-9-NUM_PPM]; //other mixes previous outputs
 
   memset(chans,0,sizeof(chans));        // All outputs to 0
 
@@ -1970,8 +1971,6 @@ void perOut(int16_t *chanOut)
           v = act[i]/32;
         }
       }
-
-
       //========== CURVES ===============
       switch(md.curve){
         case 0:
