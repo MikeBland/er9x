@@ -58,13 +58,15 @@ typedef struct t_EEGeneral {
   int8_t    lightSw;
   TrainerData trainer;
   uint8_t   view;     //index of subview in main scrren
-#define WARN_THR (!(g_eeGeneral.warnOpts & 0x01))
-#define WARN_SW  (!(g_eeGeneral.warnOpts & 0x02))
-#define WARN_MEM (!(g_eeGeneral.warnOpts & 0x04))
-#define BEEP_VAL ( (g_eeGeneral.warnOpts & 0x18) >>3 )
+#define WARN_THR     (!(g_eeGeneral.warnOpts & 0x01))
+#define WARN_THR_REV (!(g_eeGeneral.warnOpts & 0x20))
+#define WARN_SW      (!(g_eeGeneral.warnOpts & 0x02))
+#define WARN_MEM     (!(g_eeGeneral.warnOpts & 0x04))
+#define BEEP_VAL     ( (g_eeGeneral.warnOpts & 0x18) >>3 )
   uint8_t   warnOpts; //bitset for several warnings
   uint8_t   stickMode;
   uint8_t   inactivityTimer;
+  uint8_t   throttleReversed;
 } __attribute__((packed)) EEGeneral;
 
 
@@ -127,10 +129,10 @@ typedef struct t_ModelData {
   int8_t    thrTrim:4;            // Enable Throttle Trim
   int8_t    thrExpo:4;            // Enable Throttle Expo
   int8_t    trimInc;              // Trim Increments
-  int8_t    tcutSW;               // Throttle cut switch
+  //int8_t    tcutSW;               // Throttle cut switch
   int8_t    ppmDelay;
-  int8_t    tcutTarget;
-  char      res[3];
+  //int8_t    tcutTarget;
+  char      res[5];
   MixData   mixData[MAX_MIXERS];
   LimitData limitData[NUM_CHNOUT];
   ExpoData  expoData[4];

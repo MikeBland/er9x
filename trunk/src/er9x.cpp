@@ -120,9 +120,12 @@ void checkTHR()
 
   int16_t lowLim = g_eeGeneral.calibMid[thrchn] - g_eeGeneral.calibSpanNeg[thrchn] +
     g_eeGeneral.calibSpanNeg[thrchn]/8;
+    
+  int16_t highLim = g_eeGeneral.calibMid[thrchn] + g_eeGeneral.calibSpanPos[thrchn] -
+    g_eeGeneral.calibSpanPos[thrchn]/8;
   //  v -= g_eeGeneral.calibMid[thrchn];
   //v  = v * (512/8) / (max(40,g_eeGeneral.calibSpan[thrchn]/8));
-  if(v > lowLim)
+  if(((v>lowLim) && !g_eeGeneral.throttleReversed) || ((v<highLim) && g_eeGeneral.throttleReversed))
   {
     alert(PSTR("THR not idle"));
   }

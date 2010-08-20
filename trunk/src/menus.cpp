@@ -947,8 +947,8 @@ void menuProcModel(uint8_t event)
   static MState2 mstate2;
   uint8_t x=TITLE("SETUP ");
   lcd_outdezNAtt(x+2*FW,0,g_eeGeneral.currModel+1,INVERS+LEADING0,2);
-  MSTATE_TAB = { 1,sizeof(g_model.name),3,1,1,1,2,3,1};
-  MSTATE_CHECK_VxH(2,menuTabModel,9);
+  MSTATE_TAB = { 1,sizeof(g_model.name),3,1,1,1,3,1};
+  MSTATE_CHECK_VxH(2,menuTabModel,8);
   int8_t  sub    = mstate2.m_posVert;
   uint8_t subSub = mstate2.m_posHorz+1;
 
@@ -991,26 +991,19 @@ void menuProcModel(uint8_t event)
   }
 
   if(RANGE_PM(6)){
-    lcd_putsAtt(    0,    y, PSTR("TCut SW"),0);
-    putsDrSwitches( 9*FW, y, g_model.tcutSW,(sub==6 && subSub==1 ? BLINK:0));
-    putsChn(       14*FW, y, g_model.tcutTarget,(sub==6 && subSub==2 ? BLINK:0));
-    y+=FH;
-  }
-
-  if(RANGE_PM(7)){
     lcd_putsAtt(    0,    y, PSTR("Proto"),0);//sub==2 ? INVERS:0);
     lcd_putsnAtt(  6*FW, y, PSTR(PROT_STR)+PROT_STR_LEN*g_model.protocol,PROT_STR_LEN,
-                  (sub==7 && subSub==1 ? BLINK:0));
+                  (sub==6 && subSub==1 ? BLINK:0));
     if(!g_model.protocol) {
-      lcd_putsnAtt(  10*FW, y, PSTR("4CH 6CH 8CH 10CH12CH14CH16CH")+4*(g_model.ppmNCH+2),4,(sub==7 && subSub==2 ? BLINK:0));
+      lcd_putsnAtt(  10*FW, y, PSTR("4CH 6CH 8CH 10CH12CH14CH16CH")+4*(g_model.ppmNCH+2),4,(sub==6 && subSub==2 ? BLINK:0));
       lcd_putsAtt(    17*FW,    y, PSTR("uSec"),0);
-      lcd_outdezAtt(  17*FW, y,  (g_model.ppmDelay*50)+300, (sub==7 && subSub==3 ? BLINK:0));
+      lcd_outdezAtt(  17*FW, y,  (g_model.ppmDelay*50)+300, (sub==6 && subSub==3 ? BLINK:0));
     }
     y+=FH;
   }
 
-  if(RANGE_PM(8)){
-    lcd_putsAtt(    1*FW, y, PSTR("DELETE MODEL [MENU]"),sub==8?BLINK:0);
+  if(RANGE_PM(7)){
+    lcd_putsAtt(    1*FW, y, PSTR("DELETE MODEL [MENU]"),sub==7?BLINK:0);
     y+=FH;
   }
 
@@ -1059,16 +1052,6 @@ void menuProcModel(uint8_t event)
       CHECK_INCDEC_H_MODELVAR(event,g_model.trimInc,0,4);
       break;
     case 6:
-      switch (subSub) {
-        case 1:
-          CHECK_INCDEC_H_MODELVAR( event, g_model.tcutSW, -MAX_DRSWITCH, MAX_DRSWITCH);
-          break;
-        case 2:
-          CHECK_INCDEC_H_MODELVAR( event, g_model.tcutTarget, 0,NUM_CHNOUT);
-          break;
-      }
-      break;
-    case 7:
       switch(subSub)
       {
         case 1:
@@ -1082,7 +1065,7 @@ void menuProcModel(uint8_t event)
           break;
       }
       break;
-    case 8:
+    case 7:
       if(event==EVT_KEY_LONG(KEY_MENU)){
         killEvents(event);
         EFile::rm(FILE_MODEL(g_eeGeneral.currModel)); //delete file
@@ -1412,7 +1395,7 @@ void menuProcSetup0(uint8_t event)
 {
   static MState2 mstate2;
   TITLE("SETUP BASIC");
-  MSTATE_CHECK_V(1,menuTabDiag,1+5);
+  MSTATE_CHECK_V(1,menuTabDiag,1+6);
   int8_t  sub    = mstate2.m_posVert-1 ;
   uint8_t y=FH;
   lcd_outdezAtt(4*FW,y,g_eeGeneral.contrast,sub==0 ? BLINK : 0);
@@ -1432,27 +1415,34 @@ void menuProcSetup0(uint8_t event)
   
   lcd_outdezAtt(4*FW,y,g_eeGeneral.inactivityTimer*10,(sub==2 ? BLINK : 0));
   if(sub==2){
-    CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.inactivityTimer, 0, 30); //5-10V
+    CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.inactivityTimer, 0, 30); //0..300minutes
   }
   lcd_puts_P( 4*FW, y,PSTR("m Inactivity Alrm"));
   y+=FH;
-
-  putsDrSwitches(0*FW,y,g_eeGeneral.lightSw,sub==3 ? BLINK : 0);
+  
+  lcd_putsnAtt(1*FW, y, PSTR("OFF ON")+3*g_eeGeneral.throttleReversed,3,(sub==3 ? BLINK:0));
   if(sub==3){
+    CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.throttleReversed, 0, 1); 
+  }
+  lcd_puts_P( 6*FW, y,PSTR("Throttle Rev"));
+  y+=FH;
+
+  putsDrSwitches(0*FW,y,g_eeGeneral.lightSw,sub==4 ? BLINK : 0);
+  if(sub==4){
     CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightSw, -MAX_DRSWITCH, MAX_DRSWITCH); //5-10V
   }
   lcd_puts_P( 6*FW, y,PSTR("LIGHT"));
 
 
-  y+=FH*2;
+  y+=FH;
   lcd_putsAtt( 1*FW, y, PSTR("Mode"),0);//sub==3?INVERS:0);
-  lcd_putcAtt( 3*FW, y+FH, '1'+g_eeGeneral.stickMode,sub==4?BLINK:0);
+  lcd_putcAtt( 3*FW, y+FH, '1'+g_eeGeneral.stickMode,sub==5?BLINK:0);
   for(uint8_t i=0; i<4; i++)
   {
     lcd_img(    (6+4*i)*FW, y,   sticks,i,0);
     putsChnRaw( (6+4*i)*FW, y+FH,i+1,0);//sub==3?BLINK:0);
   }
-  if(sub==4){
+  if(sub==5){
     CHECK_INCDEC_H_GENVAR(event,g_eeGeneral.stickMode,0,3);
   }
 }
@@ -1905,10 +1895,6 @@ void perOut(int16_t *chanOut)
     {
       trace((v+512) / 32); //trace thr 0..32  (/32)
       if(g_model.thrTrim==1) vv = (int32_t)g_model.trim[i]*(RESX-v)/(2*RESX);
-      if(getSwitch(g_model.tcutSW,0) && !g_model.tcutTarget) {   //tcut pressed - no target
-        vv = -125;
-        v = -RESX;
-      }
     }
 
     //trim
@@ -1998,11 +1984,10 @@ void perOut(int16_t *chanOut)
           v = intpol(v, md.curve - 4);
       }
 
-      //========== TCUT ===============
+      //========== TRIM ===============
       if((md.carryTrim==0) && (md.srcRaw>0) && (md.srcRaw<=4)) v += trimA[md.srcRaw-1];  //  0 = Trim ON  =  Default
 
-
-      //========== LIMITS ===============
+      //========== MULTIPLEX ===============
       int32_t dv = (int32_t)v*(md.weight);
       switch(md.mltpx){
         case MLTPX_REP:
@@ -2016,13 +2001,9 @@ void perOut(int16_t *chanOut)
           chans[md.destCh-1] += dv; //Mixer output add up to the line (dv + (dv>0 ? 100/2 : -100/2))/(100);
           break;
         }
-
     }
 
-  //Throttle Cut
-  if(getSwitch(g_model.tcutSW,0) && g_model.tcutTarget) chans[g_model.tcutTarget-1] = -((RESXul+125)*100); // 512+128*100 tcut pressed with target
-
-  //limit + revert loop
+  //========== LIMITS ===============
   for(uint8_t i=0;i<NUM_CHNOUT;i++){
     // chans[i] holds data from mixer.   chans[i] = v*weight => 512*100
     // later we multiply by the limit (up to 100) and then we need to normalize
@@ -2038,11 +2019,19 @@ void perOut(int16_t *chanOut)
        chans[i] = chans[i]/100;
     }
 
-    //offset after limit ->
+    //offset before final limit ->
     v+=g_model.limitData[i].offset;
-    if(g_model.limitData[i].revert) v=-v;
-    if(v> RESX_PLUS_TRIM) v =  RESX_PLUS_TRIM;
-    if(v<-RESX_PLUS_TRIM) v = -RESX_PLUS_TRIM;// absolute limits - do not go over!
+    
+    //impose hard limits 
+    //100->512 => 100*5 + 100/8 = 500 + 12.5
+    int16_t lim_p = g_model.limitData[i].max+100;
+    int16_t lim_n = g_model.limitData[i].min-100;
+    lim_p = lim_p*5+lim_p/8;
+    lim_n = lim_n*5+lim_n/8;
+    if(v>lim_p) v = lim_p;
+    if(v<lim_n) v = lim_n;// absolute limits - do not go over!
+
+    if(g_model.limitData[i].revert) v=-v;// finally do the reverse.
 
     cli();
     chanOut[i] = v; //copy consistent word to int-level

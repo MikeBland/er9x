@@ -36,7 +36,8 @@ uint8_t displayBuf[DISPLAY_W*DISPLAY_H/8];
 #define BITMASK(bit) (1<<(bit))
 void lcd_clear()
 {
-  for(unsigned i=0; i<sizeof(displayBuf); i++) displayBuf[i]=0;
+  //for(unsigned i=0; i<sizeof(displayBuf); i++) displayBuf[i]=0;
+  memset(displayBuf, 0, sizeof(displayBuf));
 }
 
 

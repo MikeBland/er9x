@@ -49,7 +49,7 @@ bool eeLoadGeneral()
   theFile.openRd(FILE_GENERAL);
   uint8_t sz = theFile.readRlc((uint8_t*)&g_eeGeneral, sizeof(EEGeneral));
   uint16_t sum=0;
-  if(((sz == sizeof(EEGeneral)) || (sz == sizeof(EEGeneral)-1)) && g_eeGeneral.myVers == 2){
+  if(((sz == sizeof(EEGeneral)) || (sz == sizeof(EEGeneral)-1) || (sz == sizeof(EEGeneral)-2)) && g_eeGeneral.myVers == 2){
     for(int i=0; i<12;i++) sum+=g_eeGeneral.calibMid[i];
     return g_eeGeneral.chkSum == sum;
   }
