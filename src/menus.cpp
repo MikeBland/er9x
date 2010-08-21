@@ -1741,7 +1741,7 @@ void menuProc0(uint8_t event)
       ym=31;
       lcd_vline(xm,   ym-TL, TL*2);
 
-      if(((g_eeGeneral.stickMode&1) != (i&1)) || !(g_model.thrTrim==1)){
+      if(((g_eeGeneral.stickMode&1) != (i&1)) || !(g_model.thrTrim)){
         lcd_vline(xm-1, ym-1,  3);
         lcd_vline(xm+1, ym-1,  3);
       }
@@ -1829,7 +1829,7 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
 
 uint16_t pulses2MHz[60];
 
-void perOut(int16_t *chanOut)
+void perOut(int16_t *chanOut, bool init)
 {
   static int16_t  anas  [NUM_XCHNRAW];
   static int32_t  chans [NUM_CHNOUT];          // Outputs + intermidiates
@@ -1837,7 +1837,7 @@ void perOut(int16_t *chanOut)
   static uint16_t inacSum;
 
          int16_t trimA    [4];
-
+         
   if(g_eeGeneral.inactivityTimer) {
     inacCounter++;
     uint16_t tsum = 0;
@@ -1894,7 +1894,14 @@ void perOut(int16_t *chanOut)
     if(IS_THROTTLE(i))  //stickMode=0123 -> thr=2121
     {
       trace((v+512) / 32); //trace thr 0..32  (/32)
-      if(g_model.thrTrim==1) vv = (int32_t)g_model.trim[i]*(RESX-v)/(2*RESX);
+      //throttle trim:  
+      //v -> -512..512
+      //trim[i] -> -125..125
+      //512-v -> 0..1024 (normal)
+      //v+512 -> 1024..0 (reversed) 
+      if(g_model.thrTrim) vv = (g_eeGeneral.throttleReversed) ? 
+                               (int32_t)g_model.trim[i]*(RESX+v)/(2*RESX) :
+                               (int32_t)g_model.trim[i]*(RESX-v)/(2*RESX);
     }
 
     //trim
@@ -1937,6 +1944,8 @@ void perOut(int16_t *chanOut)
         static int16_t sDelay[MAX_MIXERS];
         static int16_t act   [MAX_MIXERS];
         static bool    swtch [MAX_MIXERS];
+        
+        if(init) act[i]=v*32;
 
         int16_t diff = v-act[i]/32;
         if(abs(diff)<4) diff=0;

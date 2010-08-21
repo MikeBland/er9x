@@ -240,7 +240,7 @@ void    perMain();
 /// wie z.B. einlesen aller Eingaenge, Entprellung, Key-Repeat..
 void    per10ms();
 /// Erzeugt periodisch alle Outputs ausser Bildschirmausgaben.
-void perOut(int16_t *chanOut);
+void perOut(int16_t *chanOut, bool init);
 ///   Liefert den Zustand des Switches 'swtch'. Die Numerierung erfolgt ab 1
 ///   (1=SW_ON, 2=SW_ThrCt, 10=SW_Trainer). 0 Bedeutet not conected.
 ///   Negative Werte  erzeugen invertierte Ergebnisse.
