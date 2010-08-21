@@ -182,7 +182,7 @@ uint8_t checkTrim(uint8_t event)
     //LH_DWN LH_UP LV_DWN LV_UP RV_DWN RV_UP RH_DWN RH_UP
     uint8_t idx = k/2;
     int8_t  v = (s==0) ? (abs(g_model.trim[idx])/4)+1 : s;
-    bool thro = (((2-(g_eeGeneral.stickMode&1)) == idx) && (g_model.thrTrim==1));
+    bool thro = (((2-(g_eeGeneral.stickMode&1)) == idx) && (g_model.thrTrim));
     if (thro) v = 4; // if throttle trim and trim trottle then step=4
     int16_t x = (k&1) ? g_model.trim[idx] + v : g_model.trim[idx] - v;   // positive = k&1
 
@@ -408,7 +408,7 @@ void evalCaptures();
 
 void perMain()
 {
-  perOut(g_chans512);
+  perOut(g_chans512,false);
   eeCheck();
 
   lcd_clear();
@@ -717,6 +717,7 @@ int main(void)
   checkSwitches();
   setupPulses();
   wdt_enable(WDTO_500MS);
+  perOut(g_chans512, true);
 
   lcdSetRefVolt(g_eeGeneral.contrast);
   TIMSK |= (1<<OCIE1A); // Pulse generator enable immediately before mainloop
