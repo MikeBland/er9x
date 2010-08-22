@@ -1,5 +1,7 @@
 /*
- * Author	Thomas Husterer <thus1@t-online.de>
+ * Author - Erez Raviv <erezraviv@gmail.com>
+ *
+ * Based on th9x -> http://code.google.com/p/th9x/
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -9,7 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
+ *
  */
 #ifndef lcd_h
 #define lcd_h
