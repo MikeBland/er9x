@@ -120,7 +120,7 @@ void checkTHR()
 
   int16_t lowLim = g_eeGeneral.calibMid[thrchn] - g_eeGeneral.calibSpanNeg[thrchn] +
     g_eeGeneral.calibSpanNeg[thrchn]/8;
-    
+
   int16_t highLim = g_eeGeneral.calibMid[thrchn] + g_eeGeneral.calibSpanPos[thrchn] -
     g_eeGeneral.calibSpanPos[thrchn]/8;
   //  v -= g_eeGeneral.calibMid[thrchn];
@@ -171,6 +171,31 @@ void alert(const prog_char * s)
     if(IS_KEY_BREAK(getEvent()))   return;  //wait for key release
   }
 }
+
+bool question(const prog_char * s)
+{
+  lcd_clear();
+  //lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
+  lcd_puts_P(0,3*FW,s);
+  lcd_puts_P(3*FW,5*FH,PSTR(" YES      NO  "));
+  lcd_puts_P(3*FW,6*FH,PSTR("[MENU]  [EXIT]"));
+  refreshDiplay();
+  lcdSetRefVolt(g_eeGeneral.contrast);
+  beepErr();
+  while(1)
+  {
+    switch(getEvent())
+      {
+      case EVT_KEY_FIRST(KEY_MENU):
+        return true;
+        break;
+      case EVT_KEY_FIRST(KEY_EXIT):
+        return false;
+        break;
+      }
+  }
+}
+
 uint8_t checkTrim(uint8_t event)
 {
   int8_t  k = (event & EVT_KEY_MASK) - TRM_BASE;

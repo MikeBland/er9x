@@ -1,5 +1,7 @@
 /*
- * Author	Thomas Husterer <thus1@t-online.de>
+ * Author - Erez Raviv <erezraviv@gmail.com>
+ *
+ * Based on th9x -> http://code.google.com/p/th9x/
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -9,10 +11,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
-
- This file contains any code to immediatley access the hardware except 
- initialisation and interrupt handling (this is in th9x.cpp).
-
+ *
  */
 
 
@@ -53,7 +52,7 @@ void eeWriteBlockCmp(const void *i_pointer_ram, void *i_pointer_eeprom, size_t s
 
 //inline uint16_t anaIn(uint8_t chan)
 //{
-//  //                     ana-in:   3 1 2 0 4 5 6 7          
+//  //                     ana-in:   3 1 2 0 4 5 6 7
 //  static prog_char APM crossAna[]={4,2,3,1,5,6,7,0}; // wenn schon Tabelle, dann muss sich auch lohnen
 //  return s_ana[pgm_read_byte(crossAna+chan)] / 4;
 //}
@@ -100,7 +99,7 @@ public:
 
 Key keys[NUM_KEYS];
 void Key::input(bool val, EnumKeys enuk)
-{       
+{
   //  uint8_t old=m_vals;
   m_vals <<= 1;  if(val) m_vals |= 1; //portbit einschieben
   m_cnt++;
@@ -117,7 +116,7 @@ void Key::input(bool val, EnumKeys enuk)
     m_state = KSTATE_OFF;
   }
   switch(m_state){
-    case KSTATE_OFF: 
+    case KSTATE_OFF:
       if(m_vals==FFVAL){ //gerade eben sprung auf ff
         m_state = KSTATE_START;
         if(m_cnt>16) m_dblcnt=0; //pause zu lang fuer double
@@ -125,28 +124,28 @@ void Key::input(bool val, EnumKeys enuk)
       }
       break;
       //fallthrough
-    case KSTATE_START: 
+    case KSTATE_START:
       putEvent(EVT_KEY_FIRST(enuk));
       m_dblcnt++;
       m_state   = 16;
       m_cnt     = 0;
       break;
-    case 16: 
+    case 16:
       if(m_cnt == 24)        putEvent(EVT_KEY_LONG(enuk));
       //fallthrough
-    case 8: 
-    case 4: 
-    case 2: 
+    case 8:
+    case 4:
+    case 2:
       if(m_cnt >= 48)  { //3 6 12 24 48 pulses in every 480ms
         m_state >>= 1;
         m_cnt     = 0;
       }
       //fallthrough
-    case 1: 
+    case 1:
       if( (m_cnt & (m_state-1)) == 0)  putEvent(EVT_KEY_REPT(enuk));
       break;
 
-    case KSTATE_PAUSE: //pause 
+    case KSTATE_PAUSE: //pause
       if(m_cnt >= 64)      {
         m_state = 8;
         m_cnt   = 0;
