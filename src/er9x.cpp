@@ -172,27 +172,23 @@ void alert(const prog_char * s)
   }
 }
 
-bool question(const prog_char * s)
+uint8_t question(const prog_char * s)
 {
   lcd_clear();
   //lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
-  lcd_puts_P(0,3*FW,s);
+  lcd_putsAtt(0,2*FH,s,0);
   lcd_puts_P(3*FW,5*FH,PSTR(" YES      NO  "));
   lcd_puts_P(3*FW,6*FH,PSTR("[MENU]  [EXIT]"));
   refreshDiplay();
   lcdSetRefVolt(g_eeGeneral.contrast);
-  beepErr();
+  beepWarn();
+  while(getEvent());
+  while(!IS_KEY_BREAK(getEvent()));
   while(1)
   {
-    switch(getEvent())
-      {
-      case EVT_KEY_FIRST(KEY_MENU):
-        return true;
-        break;
-      case EVT_KEY_FIRST(KEY_EXIT):
-        return false;
-        break;
-      }
+    if(EVT_KEY_FIRST(getEvent())==KEY_MENU)   return true;
+    if(EVT_KEY_FIRST(getEvent())==KEY_EXIT)   return false;
+    //if(IS_KEY_BREAK(getEvent()))   return 0;  //wait for key release
   }
 }
 

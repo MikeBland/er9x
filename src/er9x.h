@@ -234,6 +234,7 @@ void    popMenu(bool uppermost=false);
 /// Gibt Alarm Maske auf lcd aus.
 /// Die Maske wird so lange angezeigt bis eine beliebige Taste gedrueckt wird.
 void    alert(const prog_char * s);
+uint8_t question(const prog_char * s);
 /// periodisches Hauptprogramm
 void    perMain();
 /// Bearbeitet alle zeitkritischen Jobs.
@@ -392,6 +393,7 @@ void menuProcSetup0(uint8_t event);
 void menuProcSetup1(uint8_t event);
 void menuProcMain(uint8_t event);
 void menuProcModelSelect(uint8_t event);
+
 
 void menuProcStatistic2(uint8_t event);
 void menuProcStatistic(uint8_t event);
