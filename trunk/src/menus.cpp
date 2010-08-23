@@ -345,7 +345,7 @@ void menuProcLimits(uint8_t event)
       mstate2.m_posHorz = -1;
       break;
     case EVT_KEY_FIRST(KEY_MENU):
-      if(sub>0) s_editMode = !s_editMode;
+      if(sub>=0) s_editMode = !s_editMode;
       break;
     case EVT_KEY_LONG(KEY_MENU):
       int16_t v = g_chans512[sub - s_pgOfs];
@@ -925,7 +925,7 @@ void menuProcExpoAll(uint8_t event)
       mstate2.m_posHorz = -1;
       break;
     case EVT_KEY_FIRST(KEY_MENU):
-      if(sub>0) s_editMode = !s_editMode;
+      if(sub>=0) s_editMode = !s_editMode;
       break;
     case EVT_KEY_LONG(KEY_MENU):
       if(sub>=0){
@@ -1018,7 +1018,6 @@ void menuProcModel(uint8_t event)
       break;
   }
   
-    
 
     lcd_putsAtt(    0,    y, PSTR("Name"),0);
     //lcd_putsnAtt(  10*FW, y, g_model.name , sizeof(g_model.name) ,sub==1 ? (s_editMode ? 0 : INVERS) : 0);
