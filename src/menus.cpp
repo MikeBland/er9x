@@ -34,7 +34,7 @@
 
 static int16_t calibratedStick[4];
 static uint8_t s_pgOfs;
-static uint8_t s_editMode;
+       uint8_t s_editMode;
 
 int16_t g_chans512[NUM_CHNOUT];
 
@@ -144,44 +144,35 @@ void MState2::check(uint8_t event,  uint8_t curr,MenuFuncP *menuTab, uint8_t men
         init();BLINK_SYNC;
       }
       break;
-    case EVT_KEY_BREAK(KEY_DOWN)://EVT_KEY_BREAK(KEY_DOWN): //inc
+    
+    case EVT_KEY_REPT(KEY_RIGHT):  //inc
+      if(m_posHorz==maxcol) break;
+    case EVT_KEY_FIRST(KEY_RIGHT)://inc
       if(!horTab || s_editMode)break;
-      INC(m_posVert,maxrow);
-      m_posHorz=min(m_posHorz,maxcol);
-      BLINK_SYNC;
-      break;
-    case EVT_KEY_BREAK(KEY_RIGHT)://EVT_KEY_LONG(KEY_DOWN):  //inc
-      if(!horTab || s_editMode)break;
-      killEvents(event);
       INC(m_posHorz,maxcol);
       BLINK_SYNC;
       break;
 
+    case EVT_KEY_REPT(KEY_LEFT):  //dec
+      if(m_posHorz==0) break;
+    case EVT_KEY_FIRST(KEY_LEFT)://dec
+      if(!horTab || s_editMode)break;
+      DEC(m_posHorz,maxcol);
+      BLINK_SYNC;
+      break;
+      
     case EVT_KEY_REPT(KEY_DOWN):  //inc
       if(m_posVert==maxrow) break;
     case EVT_KEY_FIRST(KEY_DOWN): //inc
-      if(horTab || s_editMode)break;
+      if(s_editMode)break;
       INC(m_posVert,maxrow);
-      BLINK_SYNC;
-      break;
-
-    case EVT_KEY_BREAK(KEY_UP):   //dec
-      if(!horTab || s_editMode)break;
-      DEC(m_posVert,maxrow);
-      m_posHorz=min(m_posHorz,maxcol);
-      BLINK_SYNC;
-      break;
-    case EVT_KEY_BREAK(KEY_LEFT)://EVT_KEY_LONG(KEY_UP):   //dec
-      if(!horTab || s_editMode)break;
-      killEvents(event);
-      DEC(m_posHorz,maxcol);
       BLINK_SYNC;
       break;
 
     case EVT_KEY_REPT(KEY_UP):  //dec
       if(m_posVert==0) break;
     case EVT_KEY_FIRST(KEY_UP): //dec
-      if(horTab || s_editMode)break;
+      if(s_editMode)break;
       DEC(m_posVert,maxrow);
       BLINK_SYNC;
       break;
@@ -342,7 +333,7 @@ void menuProcLimits(uint8_t event)
     case EVT_ENTRY:
       s_pgOfs = 0;
       s_editMode = false;
-      mstate2.m_posHorz = -1;
+      //mstate2.m_posHorz = -1;
       break;
     case EVT_KEY_FIRST(KEY_MENU):
       if(sub>=0) s_editMode = !s_editMode;
@@ -922,7 +913,7 @@ void menuProcExpoAll(uint8_t event)
   {
     case EVT_ENTRY:
       s_editMode = false;
-      mstate2.m_posHorz = -1;
+      //mstate2.m_posHorz = -1;
       break;
     case EVT_KEY_FIRST(KEY_MENU):
       if(sub>=0) s_editMode = !s_editMode;
@@ -939,17 +930,31 @@ void menuProcExpoAll(uint8_t event)
   for(uint8_t i=0; i<4; i++)
   {
     uint8_t expoDrOn = GET_DR_STATE(i);
+    uint8_t valsEqual = (g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][DR_LEFT]==g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][DR_RIGHT]) &&
+                        (g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_LEFT]==g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_RIGHT]);
+    uint8_t stickCentred = (abs(calibratedStick[i])<=25) && valsEqual; 
     if(calibratedStick[i]> 25) stkVal[i] = DR_RIGHT;
     if(calibratedStick[i]<-25) stkVal[i] = DR_LEFT;
-    if(IS_THROTTLE(i) && g_model.thrExpo) stkVal[i] = DR_RIGHT;
+    if(IS_THROTTLE(i) && g_model.thrExpo) {
+      stkVal[i] = DR_RIGHT;
+      stickCentred = true;
+    }
 
     uint8_t y=(i+2)*FH;
     putsChnRaw( 0, y,i+1,0);
+    uint8_t stkOp = (stkVal[i] == DR_RIGHT) ? DR_LEFT : DR_RIGHT;
+    
     editExpoVals(event,false,s_editMode,sub==i && subHor==0, 7*FW-FW/2, y,i,expoDrOn,DR_EXPO,stkVal[i]);
+    if(sub==i && subHor==0 && s_editMode && stickCentred) 
+      CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkOp],-100, 100);
+      
     editExpoVals(event,false,s_editMode,sub==i && subHor==1, 9*FW+FW/2, y,i,expoDrOn,DR_WEIGHT,stkVal[i]);
+    if(sub==i && subHor==1 && s_editMode && stickCentred) 
+      CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][stkOp],-100, 0);
+      
     editExpoVals(event,false,s_editMode,sub==i && subHor==2,10*FW+FW/2, y,i,DR_DRSW1,0,0);
     editExpoVals(event,false,s_editMode,sub==i && subHor==3,14*FW+FW/2, y,i,DR_DRSW2,0,0);
-    lcd_putcAtt(9*FW+FW/2, y, (stkVal[i] ? '<' : '>'),0);
+    lcd_putcAtt(9*FW+FW/2 + (stickCentred ? 1 : 0), y, stickCentred ? '|' : (stkVal[i] ? '<' : '>'),0);
     switch (expoDrOn) {
     case DR_MID:
       lcd_putcAtt(19*FW+FW/2,y,'M',0);
@@ -1010,10 +1015,16 @@ void menuProcModel(uint8_t event)
     case EVT_KEY_FIRST(KEY_MENU):
       s_editMode = (sub==1) ? !s_editMode : false;
       break;
-    case EVT_KEY_FIRST(KEY_UP):
+    case EVT_KEY_FIRST(KEY_LEFT):
       if(sub==1 && subSub>1) subSub--;
       break;
-    case EVT_KEY_FIRST(KEY_DOWN):
+    case EVT_KEY_FIRST(KEY_RIGHT):
+      if(sub==1 && subSub<sizeof(g_model.name)) subSub++;
+      break;
+    case EVT_KEY_REPT(KEY_LEFT):
+      if(sub==1 && subSub>1) subSub--;
+      break;
+    case EVT_KEY_REPT(KEY_RIGHT):
       if(sub==1 && subSub<sizeof(g_model.name)) subSub++;
       break;
   }
@@ -1024,8 +1035,10 @@ void menuProcModel(uint8_t event)
     for(uint8_t i=0;i<sizeof(g_model.name);i++)  
       lcd_putcAtt((10+i)*FW,  y,g_model.name[i],sub==1 ? (s_editMode ? 0 : INVERS) : 0);
     if(sub==1 && s_editMode){
+        
         char v = char2idx(g_model.name[subSub-1]);
-        CHECK_INCDEC_H_MODELVAR_BF( event,v ,0,NUMCHARS-1);
+        if(event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_FIRST(KEY_UP) || event==EVT_KEY_REPT(KEY_DOWN) || event==EVT_KEY_REPT(KEY_UP))
+           CHECK_INCDEC_H_MODELVAR_BF( event,v ,0,NUMCHARS-1);
         v = idx2char(v);
         g_model.name[subSub-1]=v;
         lcd_putcAtt((10+subSub-1)*FW, 1*FH, v,INVERS);
@@ -1348,7 +1361,7 @@ void menuProcTrainer(uint8_t event)
   {
     case EVT_ENTRY:
       s_editMode = false;
-      mstate2.m_posHorz = -1;
+      //mstate2.m_posHorz = -1;
       break;
     case EVT_KEY_FIRST(KEY_MENU):
       if(sub>=0 && sub<4) s_editMode = !s_editMode;
@@ -1810,6 +1823,8 @@ void menuProc0(uint8_t event)
   for(uint8_t i=0; i<8; i++)
   {
     uint8_t x0,y0;
+    int16_t val = g_chans512[i];
+    //val += g_model.limitData[i].revert ? g_model.limitData[i].offset : -g_model.limitData[i].offset;
     switch(g_eeGeneral.view)
     {
       case 0:
@@ -1817,14 +1832,14 @@ void menuProc0(uint8_t event)
         y0 = i/4*FH+40;
         // *1000/512 = x*2 - x/16 + x/64
 #define GPERC(x)  (x*2 - x/16 + x/64)
-        lcd_outdezAtt( x0+4*FW , y0, GPERC(g_chans512[i]),PREC1 );
+        lcd_outdezAtt( x0+4*FW , y0, GPERC(val),PREC1 );
         break;
       case 1:
 #define WBAR2 (50/2)
 #define GPERC2(x) GPERC(x/2)
         x0       = i<4 ? 128/4+4 : 128*3/4-4;
         y0       = 38+(i%4)*5;
-        int8_t l = (abs(GPERC2(g_chans512[i]))+WBAR2/2) * WBAR2 / 512;
+        int8_t l = (abs(GPERC2(val))+WBAR2/2) * WBAR2 / 512;
         if(l>WBAR2)  l =  WBAR2;  // prevent bars from going over the end - comment for debugging
 
         lcd_hlineStip(x0-WBAR2,y0,WBAR2*2+1,0x55);

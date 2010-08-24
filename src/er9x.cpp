@@ -250,11 +250,11 @@ bool checkIncDecGen2(uint8_t event, void *i_pval, int16_t i_min, int16_t i_max, 
     kmi=hlp;
     event=EVT_KEY_FIRST(EVT_KEY_MASK & event);
   }
-  if(event==EVT_KEY_FIRST(kpl) || event== EVT_KEY_REPT(kpl)) {
+  if(event==EVT_KEY_FIRST(kpl) || event== EVT_KEY_REPT(kpl) || (s_editMode && (event==EVT_KEY_FIRST(KEY_UP) || event== EVT_KEY_REPT(KEY_UP))) ) {
     newval++;
     beepKey();
     kother=kmi;
-  }else if(event==EVT_KEY_FIRST(kmi) || event== EVT_KEY_REPT(kmi)) {
+  }else if(event==EVT_KEY_FIRST(kmi) || event== EVT_KEY_REPT(kmi) || (s_editMode && (event==EVT_KEY_FIRST(KEY_DOWN) || event== EVT_KEY_REPT(KEY_DOWN))) ) {
     newval--;
     beepKey();
     kother=kpl;
