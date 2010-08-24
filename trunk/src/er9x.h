@@ -295,6 +295,7 @@ int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 int8_t checkIncDec_vg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 
 extern bool    checkIncDec_Ret;//global helper vars
+extern uint8_t s_editMode;     //global editmode
 
 #define _FL_SIZE2     4
 #define _FL_VERT      8
