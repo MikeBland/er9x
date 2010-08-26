@@ -10,17 +10,17 @@
  * Trim bars that show the position of the trims.
 
 
-===Press Down/Up===
+===Down/Up===
 Change between value bars and numerical representation.
 
-===Press Long Down/Up===
+===Long Down/Up===
 Statistics screens
 
-===Press Long Right===
+===Long Right===
 Model Select/Setup
 
-===Press Long Left===
+===Long Left===
 Radio Setup
 
-===Press Long Menu===
+===Long Menu===
 Last Menu
