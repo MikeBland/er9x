@@ -14,3 +14,9 @@ Setup basic variables for model.
     # Fine - 2 steps
     # Medium - 4 steps
     # Coarse - 8 steps
+ * Trim Sw - Trim Switch.  Selects a switch that when triggered will copy current control setup to subtrim.  Essentialy zeroing the trims.
+ * Protocol - With PPM there are 2 options:
+    # Xch - sets the number of output channels.
+    # ch spacing - Sets the wait between channel pulses.  Increase if servo jitters.
+ * TRIM->subTRIM - Press Long MENU to copy trim values to the subtrims.
+ * DELETE MODEL - Press Long MENU to delete current model. 
