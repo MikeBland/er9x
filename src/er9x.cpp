@@ -68,7 +68,7 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 {
   // !! todo NUM_CHN !!
-  lcd_putsnAtt(x,y,PSTR(" -  CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"
+  lcd_putsnAtt(x,y,PSTR("--- CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"
                         "CH17CH18CH19CH20CH21CH22CH23CH24CH25CH26CH27CH28CH29CH30")+4*idx1,4,att);
 }
 
@@ -79,7 +79,7 @@ void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
 {
   switch(idx1){
-    case  0:            lcd_putsAtt(x+FW,y,PSTR(" - "),att);return;
+    case  0:            lcd_putsAtt(x+FW,y,PSTR("---"),att);return;
     case  MAX_DRSWITCH: lcd_putsAtt(x+FW,y,PSTR("ON "),att);return;
     case -MAX_DRSWITCH: lcd_putsAtt(x+FW,y,PSTR("OFF"),att);return;
   }
@@ -264,6 +264,13 @@ bool checkIncDecGen2(uint8_t event, void *i_pval, int16_t i_min, int16_t i_max, 
     killEvents(kmi);
     killEvents(kpl);
   }
+  /*
+  //change values based on P1
+   static int16_t p1val;
+   int16_t diff = p1val-anaIn(4);
+   if(!diff) newval += diff;
+   p1val = anaIn(4);
+   */
 
 
   if(newval>i_max)

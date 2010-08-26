@@ -310,6 +310,70 @@ void menuProcCurve(uint8_t event) {
 static bool  s_limitCacheOk;
 #define LIMITS_DIRTY s_limitCacheOk=false
 
+void copyTrims()  // copy trims to subTrim
+{
+  int32_t tms[NUM_CHNOUT]; 
+  memset(tms,0,sizeof(tms));
+  
+  for(uint8_t i=0;i<MAX_MIXERS;i++){
+      MixData &md = g_model.mixData[i];
+      if((md.destCh==0) || (md.destCh>NUM_CHNOUT)) break;
+      if(!getSwitch(md.swtch,1)){
+        if(md.srcRaw!=8 && md.srcRaw!=9) continue;// if not MAX or FULL - next loop
+        if(md.mltpx==MLTPX_REP && md.srcRaw==8) continue; // if MAX and switch is off and REPLACE then off
+      }
+
+      //========== TRIM ===============
+      int32_t dv = 0;
+      if((md.carryTrim==0) && (md.srcRaw>0) && (md.srcRaw<=4) && (!IS_THROTTLE(md.srcRaw) || !g_model.thrTrim)) 
+        dv = (int32_t)g_model.trim[md.srcRaw-1]*md.weight;  //  0 = Trim ON  =  Default
+
+      //========== MULTIPLEX ===============
+      switch(md.mltpx){
+        case MLTPX_REP:
+          tms[md.destCh-1] = dv;
+          break;
+        case MLTPX_MUL:
+          tms[md.destCh-1] *= dv/100l;
+          tms[md.destCh-1] /= RESXl;
+          break;
+        default:  // MLTPX_ADD
+          tms[md.destCh-1] += dv; //Mixer output add up to the line (dv + (dv>0 ? 100/2 : -100/2))/(100);
+          break;
+        }
+    }
+    
+  for(uint8_t i=0;i<NUM_CHNOUT;i++)
+       g_model.limitData[i].offset += (tms[i]>0) ?
+            tms[i]*(g_model.limitData[i].max+100)/10000:
+           -tms[i]*(g_model.limitData[i].min-100)/10000;
+     
+   
+  for(uint8_t i=0; i<4; i++) 
+    if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
+  LIMITS_DIRTY;
+  beepWarn();
+}
+
+void doTrimSw() // copy state of 3 primary to subtrim
+{
+      for(uint8_t i=0; i<NUM_CHNOUT; i++){
+        int16_t v = g_chans512[i];
+        LimitData *ld = &g_model.limitData[i];
+
+        bool contThr = false;                 // Contains Throttle
+        for(uint8_t j=0;j<MAX_MIXERS;j++){    // Scan all mixes
+          MixData &md = g_model.mixData[j];
+          if((md.destCh==0) || (md.destCh>NUM_CHNOUT) || contThr) break; // if no dest, dest error or contains then exit
+          contThr = contThr || (IS_THROTTLE(md.srcRaw-1) && (md.destCh==(i+1)));
+        }
+        if(!contThr) ld->offset = (ld->revert) ? -v : v;
+      }
+      for(uint8_t i=0; i<4; i++)
+        if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
+      LIMITS_DIRTY;
+}
+
 void menuProcLimits(uint8_t event)
 {
   static MState2 mstate2;
@@ -361,7 +425,7 @@ void menuProcLimits(uint8_t event)
       int16_t v = (ld->revert) ? -ld->offset : ld->offset;
       if((g_chans512[k] - v) >  25) swVal[k] = (true==ld->revert);// Switch to raw inputs?  - remove trim!
       if((g_chans512[k] - v) < -25) swVal[k] = (false==ld->revert);
-      lcd_putcAtt(12*FW+FW/2, y, (swVal[k] ? '<' : '>'),0);
+      lcd_putcAtt(12*FW+FW/2, y, (swVal[k] ? 127 : 126),0); //'<' : '>'
       //lcd_outdezAtt(  21*FW , y, (g_chans512[k] - v),   0);
 
       switch(j)
@@ -392,7 +456,7 @@ void menuProcLimits(uint8_t event)
           }
           break;
         case 4:
-          lcd_putsnAtt(   18*FW, y, PSTR(" - INV")+ld->revert*3,3,attr);
+          lcd_putsnAtt(   18*FW, y, PSTR("---INV")+ld->revert*3,3,attr);
           if(attr && s_editMode) {
             CHECK_INCDEC_H_MODELVAR_BF( event, ld->revert,    0,1);
           }
@@ -404,23 +468,10 @@ void menuProcLimits(uint8_t event)
     //last line available - add the "copy trim menu" line
     uint8_t attr = (sub==numChs) ? INVERS : 0;
     lcd_putsAtt(  3*FW,y,PSTR("COPY TRIM [MENU]"),attr);
-    if(attr && event==EVT_KEY_FIRST(KEY_MENU)){ //if highlighted and menu pressed - copy trims
+    if(attr && event==EVT_KEY_LONG(KEY_MENU)) {
       s_editMode = false;
-      for(uint8_t i=0; i<NUM_CHNOUT; i++){
-        int16_t v = g_chans512[i];
-        LimitData *ld = &g_model.limitData[i];
-
-        bool contThr = false;                 // Contains Throttle
-        for(uint8_t j=0;j<MAX_MIXERS;j++){    // Scan all mixes
-          MixData &md = g_model.mixData[j];
-          if((md.destCh==0) || (md.destCh>NUM_CHNOUT) || contThr) break; // if no dest, dest error or contains then exit
-          contThr = contThr || (IS_THROTTLE(md.srcRaw-1) && (md.destCh==(i+1)));
-        }
-        if(!contThr) ld->offset = (ld->revert) ? -v : v;
-      }
-      for(uint8_t i=0; i<4; i++)
-        if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
-      LIMITS_DIRTY;
+      killEvents(event);
+      copyTrims(); //if highlighted and menu pressed - copy trims
     }
   }
 }
@@ -468,7 +519,7 @@ void menuProcMixOne(uint8_t event)
   else if((sub-s_pgOfs)<0) s_pgOfs = sub;
   if(s_pgOfs<0) s_pgOfs = 0;
 
-#define CURV_STR " - x>0x<0|x|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
+#define CURV_STR "---x>0x<0|x|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
   for(uint8_t y=FH; y<8*FH; y+=FH)
   {
     uint8_t i=(y/FH)+s_pgOfs-1;
@@ -932,7 +983,7 @@ void menuProcExpoAll(uint8_t event)
     uint8_t expoDrOn = GET_DR_STATE(i);
     uint8_t valsEqual = (g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][DR_LEFT]==g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][DR_RIGHT]) &&
                         (g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_LEFT]==g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_RIGHT]);
-    uint8_t stickCentred = (abs(calibratedStick[i])<=25) && valsEqual; 
+    uint8_t stickCentred = (abs(calibratedStick[i])<=25) && valsEqual;
     if(calibratedStick[i]> 25) stkVal[i] = DR_RIGHT;
     if(calibratedStick[i]<-25) stkVal[i] = DR_LEFT;
     if(IS_THROTTLE(i) && g_model.thrExpo) {
@@ -954,7 +1005,7 @@ void menuProcExpoAll(uint8_t event)
       
     editExpoVals(event,false,s_editMode,sub==i && subHor==2,10*FW+FW/2, y,i,DR_DRSW1,0,0);
     editExpoVals(event,false,s_editMode,sub==i && subHor==3,14*FW+FW/2, y,i,DR_DRSW2,0,0);
-    lcd_putcAtt(9*FW+FW/2 + (stickCentred ? 1 : 0), y, stickCentred ? '|' : (stkVal[i] ? '<' : '>'),0);
+    lcd_putcAtt(9*FW+FW/2 + ((!stkVal[i] && !stickCentred) ? 2 : 1 ), y, stickCentred ? '-' : (stkVal[i] ? 127 : 126),0);//'|' : (stkVal[i] ? '<' : '>'),0);
     switch (expoDrOn) {
     case DR_MID:
       lcd_putcAtt(19*FW+FW/2,y,'M',0);
@@ -1000,12 +1051,19 @@ void menuProcModel(uint8_t event)
   static MState2 mstate2;
   uint8_t x=TITLE("SETUP ");
   lcd_outdezNAtt(x+2*FW,0,g_eeGeneral.currModel+1,INVERS+LEADING0,2);
-  MSTATE_TAB = { 1,sizeof(g_model.name),1,1,1,1,1,1,1,1,1,1};
-  MSTATE_CHECK_VxH(2,menuTabModel,12);
+  MSTATE_TAB = { 1,sizeof(g_model.name),3,1,1,1,1,3,1,1};
+  MSTATE_CHECK_VxH(2,menuTabModel,10);
   int8_t  sub    = mstate2.m_posVert;
   static uint8_t  subSub;
 
+  
+  if(sub<1) s_pgOfs=0;
+  else if((sub-s_pgOfs)>7) s_pgOfs = sub-7;
+  else if((sub-s_pgOfs)<1) s_pgOfs = sub-1;
+  if(s_pgOfs<0) s_pgOfs = 0;
+  
   uint8_t y = 1*FH;
+
   
   switch(event){
     case EVT_ENTRY:
@@ -1013,25 +1071,24 @@ void menuProcModel(uint8_t event)
       subSub=1;
       break;
     case EVT_KEY_FIRST(KEY_MENU):
-      s_editMode = (sub==1) ? !s_editMode : false;
-      break;
-    case EVT_KEY_FIRST(KEY_LEFT):
-      if(sub==1 && subSub>1) subSub--;
-      break;
-    case EVT_KEY_FIRST(KEY_RIGHT):
-      if(sub==1 && subSub<sizeof(g_model.name)) subSub++;
+      s_editMode = (sub==1 || sub==2 || sub==7) ? !s_editMode : false;
       break;
     case EVT_KEY_REPT(KEY_LEFT):
+    case EVT_KEY_FIRST(KEY_LEFT):
       if(sub==1 && subSub>1) subSub--;
+      if(sub==2 && subSub>1 && !s_editMode) subSub--;
+      if(sub==7 && subSub>1 && !s_editMode) subSub--;
       break;
     case EVT_KEY_REPT(KEY_RIGHT):
+    case EVT_KEY_FIRST(KEY_RIGHT):
       if(sub==1 && subSub<sizeof(g_model.name)) subSub++;
+      if(sub==2 && subSub<3 && !s_editMode) subSub++;
+      if(sub==7 && subSub<3 && !s_editMode && !g_model.protocol) subSub++;
       break;
   }
   
-
+  if(s_pgOfs<1) {
     lcd_putsAtt(    0,    y, PSTR("Name"),0);
-    //lcd_putsnAtt(  10*FW, y, g_model.name , sizeof(g_model.name) ,sub==1 ? (s_editMode ? 0 : INVERS) : 0);
     for(uint8_t i=0;i<sizeof(g_model.name);i++)  
       lcd_putcAtt((10+i)*FW,  y,g_model.name[i],sub==1 ? (s_editMode ? 0 : INVERS) : 0);
     if(sub==1 && s_editMode){
@@ -1043,21 +1100,23 @@ void menuProcModel(uint8_t event)
         g_model.name[subSub-1]=v;
         lcd_putcAtt((10+subSub-1)*FW, 1*FH, v,INVERS);
     }
-    y+=FH;
+    if((y+=FH)>8*FH) return;
+  }
 
-
+  if(s_pgOfs<2) {
     lcd_putsAtt(    0,    y, PSTR("Timer"),0);
-    putsTime(       9*FW, y, g_model.tmrVal,(sub==2  ? INVERS:0),(sub==3 ? INVERS:0) );
-    lcd_putsnAtt(  16*FW, y, PSTR("OFF ABS THR THR%")+4*g_model.tmrMode,4,(sub==4? INVERS:0));
-    switch (sub) {
-       case 2:
+    putsTime(       9*FW, y, g_model.tmrVal,(sub==2 && subSub==1 ? (s_editMode ? BLINK : INVERS):0),(sub==2 && subSub==2 ? (s_editMode ? BLINK : INVERS):0) );
+    lcd_putsnAtt(  16*FW, y, PSTR("OFF ABS THR THR%")+4*g_model.tmrMode,4,(sub==2 && subSub==3? (s_editMode ? BLINK : INVERS):0));
+    if(sub==2 && s_editMode)
+      switch (subSub) {
+       case 1:
           {
           int8_t min=g_model.tmrVal/60;
           CHECK_INCDEC_H_MODELVAR_BF( event,min ,0,59);
           g_model.tmrVal = g_model.tmrVal%60 + min*60;
          break;
           }
-        case 3:
+        case 2:
           {
           int8_t sec=g_model.tmrVal%60;
           sec -= checkIncDec_hm( event,sec+2 ,1,62)-2;
@@ -1065,60 +1124,89 @@ void menuProcModel(uint8_t event)
           if((int16_t)g_model.tmrVal < 0) g_model.tmrVal=0;
           break;
           }
-        case 4:
+        case 3:
           CHECK_INCDEC_H_MODELVAR_BF( event,g_model.tmrMode ,0,3);
           break;
-    }
-    y+=FH;
+      }
+    if((y+=FH)>8*FH) return;
+  }
     
-
+  if(s_pgOfs<3) {
     lcd_putsAtt(    0,    y, PSTR("T-Trim"),0);
-    lcd_putsnAtt(  10*FW, y, PSTR("OFFON ")+3*g_model.thrTrim,3,(sub==5 ? INVERS:0));
-    if(sub==5) CHECK_INCDEC_H_MODELVAR_BF(event,g_model.thrTrim,0,1);
-    y+=FH;
+    lcd_putsnAtt(  10*FW, y, PSTR("OFFON ")+3*g_model.thrTrim,3,(sub==3 ? INVERS:0));
+    if(sub==3) CHECK_INCDEC_H_MODELVAR_BF(event,g_model.thrTrim,0,1);
+    if((y+=FH)>8*FH) return;
+  }
     
-
+  if(s_pgOfs<4) {
     lcd_putsAtt(    0,    y, PSTR("T-Expo"),0);
-    lcd_putsnAtt(  10*FW, y, PSTR("OFFON ")+3*g_model.thrExpo,3,(sub==6 ? INVERS:0));
-    if(sub==6) CHECK_INCDEC_H_MODELVAR_BF(event,g_model.thrExpo,0,1);
-    y+=FH;
+    lcd_putsnAtt(  10*FW, y, PSTR("OFFON ")+3*g_model.thrExpo,3,(sub==4 ? INVERS:0));
+    if(sub==4) CHECK_INCDEC_H_MODELVAR_BF(event,g_model.thrExpo,0,1);
+    if((y+=FH)>8*FH) return;
+  }
     
-
+  if(s_pgOfs<5) {
     lcd_putsAtt(    0,    y, PSTR("Trim Inc"),0);
-    lcd_putsnAtt(  10*FW, y, PSTR("Exp   ExFineFine  MediumCoarse")+6*g_model.trimInc,6,(sub==7 ? INVERS:0));
-    if(sub==7) CHECK_INCDEC_H_MODELVAR(event,g_model.trimInc,0,4);
-    y+=FH;
+    lcd_putsnAtt(  10*FW, y, PSTR("Exp   ExFineFine  MediumCoarse")+6*g_model.trimInc,6,(sub==5 ? INVERS:0));
+    if(sub==5) CHECK_INCDEC_H_MODELVAR(event,g_model.trimInc,0,4);
+    if((y+=FH)>8*FH) return;
+  }
+  
+  if(s_pgOfs<6) {
+    lcd_putsAtt(    0,    y, PSTR("Trim Sw"),0);
+    //lcd_putsnAtt(  10*FW, y, PSTR("Exp   ExFineFine  MediumCoarse")+6*g_model.trimInc,6,(sub==6 ? INVERS:0));
+    putsDrSwitches(9*FW,y,g_model.trimSw,sub==6 ? INVERS:0);
+    if(sub==6) CHECK_INCDEC_H_MODELVAR(event,g_model.trimSw,-MAX_DRSWITCH, MAX_DRSWITCH);
+    if((y+=FH)>8*FH) return;
+  }
 
-
+  if(s_pgOfs<7) {
     lcd_putsAtt(    0,    y, PSTR("Proto"),0);//sub==2 ? INVERS:0);
     lcd_putsnAtt(  6*FW, y, PSTR(PROT_STR)+PROT_STR_LEN*g_model.protocol,PROT_STR_LEN,
-                  (sub==8 ? INVERS:0));
-    lcd_putsnAtt(  10*FW, y, PSTR("4CH 6CH 8CH 10CH12CH14CH16CH")+4*(g_model.ppmNCH+2),4,(sub==9  ? INVERS:0));
-    lcd_putsAtt(    17*FW,    y, PSTR("uSec"),0);
-    lcd_outdezAtt(  17*FW, y,  (g_model.ppmDelay*50)+300, (sub==10  ? INVERS:0));
-    switch (sub){
-      case 8:
-          CHECK_INCDEC_H_MODELVAR(event,g_model.protocol,0,PROT_MAX);
-          break;
-      case 9:
-          CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,-2,4);
-          break;
-      case 10:
-          CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
-          break;
+                  (sub==7 && subSub==1 ? (s_editMode ? BLINK : INVERS):0));
+    if(!g_model.protocol) {
+      lcd_putsnAtt(  10*FW, y, PSTR("4CH 6CH 8CH 10CH12CH14CH16CH")+4*(g_model.ppmNCH+2),4,(sub==7 && subSub==2  ? (s_editMode ? BLINK : INVERS):0));
+      lcd_putsAtt(    17*FW,    y, PSTR("uSec"),0);
+      lcd_outdezAtt(  17*FW, y,  (g_model.ppmDelay*50)+300, (sub==7 && subSub==3 ? (s_editMode ? BLINK : INVERS):0));
     }
-    y+=FH;
+    if(sub==7 && s_editMode) 
+      switch (subSub){
+        case 1:
+            CHECK_INCDEC_H_MODELVAR(event,g_model.protocol,0,PROT_MAX);
+            break;
+        case 2:
+            CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,-2,4);
+            break;
+        case 3:
+            CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
+            break;
+      }
+    if((y+=FH)>8*FH) return;
+  }
  
-    lcd_putsAtt(    1*FW, y, PSTR("DELETE MODEL [MENU]"),sub==11?INVERS:0);
-    if(sub==11 && event==EVT_KEY_FIRST(KEY_MENU)){
+  if(s_pgOfs<8) {
+    lcd_putsAtt(0*FW, y, PSTR("TRIM->subTRIM  [MENU]"),sub==8?INVERS:0);
+    if(sub==8 && event==EVT_KEY_LONG(KEY_MENU)){
+        s_editMode = false;
+        killEvents(event);
+        copyTrims();
+    }
+    if((y+=FH)>8*FH) return;
+  }
+ 
+  if(s_pgOfs<9) {
+    lcd_putsAtt(0*FW, y, PSTR("DELETE MODEL   [MENU]"),sub==9?INVERS:0);
+    if(sub==9 && event==EVT_KEY_LONG(KEY_MENU)){
+        s_editMode = false;
         killEvents(event);
         //if(question(PSTR("Delete Model?"))){
           EFile::rm(FILE_MODEL(g_eeGeneral.currModel)); //delete file
           eeLoadModel(g_eeGeneral.currModel); //load default values
           chainMenu(menuProcModelSelect);
-        //}
+        //
     }
-    y+=FH;
+    if((y+=FH)>8*FH) return;
+  }
 }
 
 
@@ -1696,6 +1784,8 @@ void menuProc0(uint8_t event)
       //if(lastMenu==menuProcMixOne)   pushMenu(menuProcMix);
       //if(lastMenu==menuProcCurveOne) pushMenu(menuProcCurve);
       pushMenu(lastMenu);
+      //copyTrims();
+      //beepWarn();
       killEvents(event);
       break;
     case EVT_KEY_FIRST(KEY_RIGHT):
@@ -1894,8 +1984,13 @@ void perOut(int16_t *chanOut, bool init)
   static int32_t  chans [NUM_CHNOUT];          // Outputs + intermidiates
   static uint32_t inacCounter;
   static uint16_t inacSum;
+  static uint8_t  trimSwLock;
+  
+         int16_t  trimA    [4];
 
-         int16_t trimA    [4];
+         
+  if(getSwitch(g_model.trimSw,0) && !trimSwLock) doTrimSw();
+  trimSwLock = getSwitch(g_model.trimSw,0);
 
   if(g_eeGeneral.inactivityTimer) {
     inacCounter++;
@@ -1973,7 +2068,7 @@ void perOut(int16_t *chanOut, bool init)
   }
   anas[7] = 512;     // MAX
   anas[8] = 512;     // FULL
-  for(uint8_t i=9;i<(9+NUM_PPM);i++)          anas[i] = g_ppmIns[i-9];      //add ppm channels
+  for(uint8_t i=9;i<(9+NUM_PPM);i++)          anas[i] = g_ppmIns[i-9] - g_eeGeneral.trainer.calib[i-9]; //add ppm channels
   for(uint8_t i=9+NUM_PPM;i<NUM_XCHNRAW;i++)  anas[i] = chans[i-9-NUM_PPM]; //other mixes previous outputs
 
   memset(chans,0,sizeof(chans));        // All outputs to 0
