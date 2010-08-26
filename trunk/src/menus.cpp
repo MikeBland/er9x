@@ -1218,12 +1218,13 @@ void menuProcModelSelect(uint8_t event)
   int8_t subOld  = mstate2.m_posVert;
   MSTATE_CHECK0_V(MAX_MODELS);
   int8_t  sub    = mstate2.m_posVert;
+  static uint8_t sel_editMode;
   switch(event)
   {
     //case  EVT_KEY_FIRST(KEY_MENU):
     case  EVT_KEY_FIRST(KEY_EXIT):
-      if(s_editMode){
-        s_editMode = false;
+      if(sel_editMode){
+        sel_editMode = false;
         beepKey();
         killEvents(event);
         break;
@@ -1242,27 +1243,27 @@ void menuProcModelSelect(uint8_t event)
       if(event==EVT_KEY_FIRST(KEY_EXIT))  pushMenu(menuProcModelSelect);
       break;
     case  EVT_KEY_FIRST(KEY_MENU):
-      s_editMode = true;
+      sel_editMode = true;
       beepKey();
       break;
     case  EVT_KEY_LONG(KEY_MENU):
-      if(s_editMode){
+      if(sel_editMode){
         if(eeDuplicateModel(sub)) {
           beepKey();
-          s_editMode = false;
+          sel_editMode = false;
         }
-        else                      beepWarn();
+        else beepWarn();
       }
       break;
 
     case EVT_ENTRY:
-      s_editMode = false;
+      sel_editMode = false;
 
       mstate2.m_posVert = g_eeGeneral.currModel;
       eeCheck(true); //force writing of current model data before this is changed
       break;
   }
-  if(s_editMode && subOld!=sub){
+  if(sel_editMode && subOld!=sub){
     EFile::swap(FILE_MODEL(subOld),FILE_MODEL(sub));
   }
 
@@ -1271,11 +1272,11 @@ void menuProcModelSelect(uint8_t event)
   for(uint8_t i=0; i<6; i++){
     uint8_t y=(i+2)*FH;
     uint8_t k=i+s_pgOfs;
-    lcd_outdezNAtt(  3*FW, y, k+1, ((sub==k) ? (s_editMode ? INVERS : BLINK ) : 0) + LEADING0,2);
+    lcd_outdezNAtt(  3*FW, y, k+1, ((sub==k) ? INVERS : 0) + LEADING0,2);
     static char buf[sizeof(g_model.name)+5];
     if(k==g_eeGeneral.currModel) lcd_putcAtt(1,  y,'*',0);
     eeLoadModelName(k,buf,sizeof(buf));
-    lcd_putsnAtt(  4*FW, y, buf,sizeof(buf),BSS_NO_INV|((sub==k) ? (s_editMode ? INVERS : 0 ) : 0));
+    lcd_putsnAtt(  4*FW, y, buf,sizeof(buf),BSS_NO_INV|((sub==k) ? (sel_editMode ? INVERS : 0 ) : 0));
   }
 
 }
