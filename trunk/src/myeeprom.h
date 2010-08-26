@@ -129,10 +129,9 @@ typedef struct t_ModelData {
   int8_t    thrTrim:4;            // Enable Throttle Trim
   int8_t    thrExpo:4;            // Enable Throttle Expo
   int8_t    trimInc;              // Trim Increments
-  //int8_t    tcutSW;               // Throttle cut switch
   int8_t    ppmDelay;
-  //int8_t    tcutTarget;
-  char      res[5];
+  int8_t    trimSw;
+  char      res[4];
   MixData   mixData[MAX_MIXERS];
   LimitData limitData[NUM_CHNOUT];
   ExpoData  expoData[4];
