@@ -310,7 +310,7 @@ void menuProcCurve(uint8_t event) {
 static bool  s_limitCacheOk;
 #define LIMITS_DIRTY s_limitCacheOk=false
 
-void copyTrims()  // copy trims to subTrim
+void copyTrims(uint8_t event)  // copy trims to subTrim
 {
   int32_t tms[NUM_CHNOUT]; 
   memset(tms,0,sizeof(tms));
@@ -352,6 +352,8 @@ void copyTrims()  // copy trims to subTrim
   for(uint8_t i=0; i<4; i++) 
     if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
   LIMITS_DIRTY;
+  
+  killEvents(event);
   beepWarn();
 }
 
@@ -470,8 +472,7 @@ void menuProcLimits(uint8_t event)
     lcd_putsAtt(  3*FW,y,PSTR("COPY TRIM [MENU]"),attr);
     if(attr && event==EVT_KEY_LONG(KEY_MENU)) {
       s_editMode = false;
-      killEvents(event);
-      copyTrims(); //if highlighted and menu pressed - copy trims
+      copyTrims(event); //if highlighted and menu pressed - copy trims
     }
   }
 }
@@ -1089,10 +1090,8 @@ void menuProcModel(uint8_t event)
   
   if(s_pgOfs<1) {
     lcd_putsAtt(    0,    y, PSTR("Name"),0);
-    for(uint8_t i=0;i<sizeof(g_model.name);i++)  
-      lcd_putcAtt((10+i)*FW,  y,g_model.name[i],sub==1 ? (s_editMode ? 0 : INVERS) : 0);
-    if(sub==1 && s_editMode){
-        
+    lcd_putsnAtt(10*FW,   y, g_model.name ,sizeof(g_model.name),BSS_NO_INV | (sub==1 ? (s_editMode ? 0 : INVERS) : 0));
+    if(sub==1 && s_editMode){        
         char v = char2idx(g_model.name[subSub-1]);
         if(event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_FIRST(KEY_UP) || event==EVT_KEY_REPT(KEY_DOWN) || event==EVT_KEY_REPT(KEY_UP))
            CHECK_INCDEC_H_MODELVAR_BF( event,v ,0,NUMCHARS-1);
@@ -1188,8 +1187,7 @@ void menuProcModel(uint8_t event)
     lcd_putsAtt(0*FW, y, PSTR("TRIM->subTRIM  [MENU]"),sub==8?INVERS:0);
     if(sub==8 && event==EVT_KEY_LONG(KEY_MENU)){
         s_editMode = false;
-        killEvents(event);
-        copyTrims();
+        copyTrims(event);
     }
     if((y+=FH)>8*FH) return;
   }
@@ -1374,7 +1372,7 @@ void menuProcDiagAna(uint8_t event)
         //lcd_outdez(17*FW, y, (v-g_eeGeneral.calibMid[i])*50/ max(1,g_eeGeneral.calibSpan[i]/2));
     }
     if(i==7){
-      putsVBat(13*FW,y,sub==1 ? INVERS : 0);
+      putsVBat(13*FW,y,false,sub==1 ? INVERS : 0);
     }
   }
   if(sub==1){
@@ -1780,12 +1778,7 @@ void menuProc0(uint8_t event)
   switch(event)
   {
     case  EVT_KEY_LONG(KEY_MENU):// go to last menu
-      //if(lastMenu==menuProcExpoOne)  pushMenu(menuProcExpoAll);
-      //if(lastMenu==menuProcMixOne)   pushMenu(menuProcMix);
-      //if(lastMenu==menuProcCurveOne) pushMenu(menuProcCurve);
       pushMenu(lastMenu);
-      //copyTrims();
-      //beepWarn();
       killEvents(event);
       break;
     case EVT_KEY_FIRST(KEY_RIGHT):
@@ -1818,10 +1811,16 @@ void menuProc0(uint8_t event)
       break;
 #define MAX_VIEWS 2
     case EVT_KEY_BREAK(KEY_UP):
-      g_eeGeneral.view += 2;
+      g_eeGeneral.view++;
+      if(g_eeGeneral.view>=MAX_VIEWS) g_eeGeneral.view=0;
+      eeDirty(EE_GENERAL);
+      beepKey();
+      break;
     case EVT_KEY_BREAK(KEY_DOWN):
-      g_eeGeneral.view += MAX_VIEWS-1;
-      g_eeGeneral.view %= MAX_VIEWS;
+      if(g_eeGeneral.view>0) 
+        g_eeGeneral.view--;
+      else
+        g_eeGeneral.view = MAX_VIEWS-1;
       eeDirty(EE_GENERAL);
       beepKey();
       break;
@@ -1857,23 +1856,33 @@ void menuProc0(uint8_t event)
 
 
   uint8_t x=FW*2;
-  lcd_putsAtt(x,0*FH,PSTR("ER9x"),INVERS);
-  lcd_putsnAtt(x,1*FH,PSTR("Exp ExF Fine Med Crse")+4*g_model.trimInc,4, 0);
-  lcd_putsnAtt(x,2*FH,PSTR("    TTrm")+4*g_model.thrTrim,4, 0);
-
-  lcd_putsnAtt(x+ 5*FW,   0*FH, g_model.name ,sizeof(g_model.name),BSS_NO_INV);
-
-  lcd_puts_P(  x+ 5*FW,   1*FH,    PSTR("BAT"));
-  putsVBat(x+ 8*FW,1*FH, g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0);
-
-  //if(g_model.tmrMode != TMRMODE_NONE){
+    //lcd_putsAtt(x,0*FH,PSTR("ER9x"),INVERS);
+    //lcd_putsnAtt(x,1*FH,PSTR("Exp ExF Fine Med Crse")+4*g_model.trimInc,4, 0);
+    //lcd_putsnAtt(x,2*FH,PSTR("    TTrm")+4*g_model.thrTrim,4, 0);
+    //lcd_putsnAtt(x+ 5*FW,   0*FH, g_model.name ,sizeof(g_model.name),BSS_NO_INV);
+    //lcd_puts_P(  x+ 5*FW,   1*FH,    PSTR("BAT"));
+    //putsVBat(x+ 8*FW,1*FH,false, g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0);
+  
+    uint8_t att = (g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0) | DBLSIZE;
+    for(uint8_t i=0;i<sizeof(g_model.name);i++)
+      lcd_putcAtt(x+i*2*FW-i, 0*FH, g_model.name[i],DBLSIZE);
+    putsVBat(x,2*FH,true, att);
+    lcd_putcAtt(x+5*FW, 3*FH, 'V',0);
+    lcd_hline(x+3*FW,4*FH-4,2);
+    lcd_hline(x+3*FW,4*FH-3,2);
+    
+    
+  
   if(s_timerState != TMR_OFF){
-    //int16_t tmr = g_model.tmrVal - s_timeCum16/16;
     uint8_t att = DBLSIZE | (s_timerState==TMR_BEEPING ? BLINK : 0);
-    //putsTime( x+8*FW, FH*2, tmr, att,att);
-    putsTime( x+8*FW, FH*2, s_timerVal, att,att);
-    lcd_putsnAtt(   x+ 5*FW, FH*2, PSTR("TME THR THR%")-4+4*g_model.tmrMode,4,0);
+    putsTime(x+9*FW, FH*2, s_timerVal, att,att);
+    lcd_putsnAtt(x+7*FW, FH*3, PSTR(" TME THRTHR%")-4+4*g_model.tmrMode,4,0);
   }
+  
+  lcd_putsnAtt(x+5*FW,2*FH,PSTR("ExpExFFneMedCrs")+3*g_model.trimInc,3, 0);
+  lcd_putsnAtt(x+8*FW,2*FH,PSTR("   TTm")+3*g_model.thrTrim,3, 0);
+  
+  
   //trim sliders
   for(uint8_t i=0; i<4; i++)
   {

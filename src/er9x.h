@@ -369,7 +369,7 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att);
 /// Schreibt [CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8] aufs lcd
 void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att);
 /// Schreibt die Batteriespannung aufs lcd
-void putsVBat(uint8_t x,uint8_t y,uint8_t att);
+void putsVBat(uint8_t x,uint8_t y,uint8_t hideV,uint8_t att);
 void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2);
 
 #define SUB_MODE_V     1
