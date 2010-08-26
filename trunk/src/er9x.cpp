@@ -49,10 +49,10 @@ void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
   x += (att&DBLSIZE) ? FWNUM*5-1 : FWNUM*4-2;
   lcd_outdezNAtt(x, y, abs(tme)%60,LEADING0+att2,2);
 }
-void putsVBat(uint8_t x,uint8_t y,uint8_t att)
+void putsVBat(uint8_t x,uint8_t y,uint8_t hideV,uint8_t att)
 {
   //att |= g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0;
-  lcd_putcAtt(   x+ 4*FW,   y,    'V',att);
+  if(!hideV) lcd_putcAtt(   x+ 4*FW,   y,    'V',att);
   lcd_outdezAtt( x+ 4*FW,   y,    g_vbat100mV,att|PREC1);
 }
 void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
@@ -448,9 +448,7 @@ void perMain()
     PORTG &= ~(1<<OUT_G_SIM_CTL); // 0=ppm out
   }else{
     PORTG |=  (1<<OUT_G_SIM_CTL); // 1=ppm-in
-#ifndef SIM
     evalCaptures();
-#endif
   }
   switch( g_tmr10ms & 0x1f ) { //alle 10ms*32
     case 1:
