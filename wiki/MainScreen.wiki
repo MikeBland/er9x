@@ -1,0 +1,12 @@
+===Main Screen===
+*Visible:*
+ * Model name
+ * Battery voltage
+ * Timer
+ * Timer actuation (Time, Throttle, Throttle%)
+ * Trim increments (Exponential, Extra fine, Fine, Medium, Coarse)
+ * Throttle trim (on/off)
+ * Value bars that show the output of the first 8 channels.
+ * Trim bars that show the position of the trims.
+
+
