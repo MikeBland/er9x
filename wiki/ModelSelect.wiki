@@ -1,2 +1,22 @@
 =MODELSEL 1/6=
 Select/Copy/Move Model memory
+
+===Up/Down===
+Move up/Down
+
+===Menu===
+Highlight Model memory.  
+Moving up/down will move memory.
+Pressing Exit will remove highlight.
+
+===Menu Long===
+Copy highlighted model to last slot.
+
+===Right===
+Load and Edit Model
+
+===Exit===
+Load Model
+
+===Exit Long===
+Load Model and back to main screen
