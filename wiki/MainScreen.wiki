@@ -1,4 +1,4 @@
-===Main Screen===
+=Main Screen=
 *Visible:*
  * Model name
  * Battery voltage
@@ -10,3 +10,17 @@
  * Trim bars that show the position of the trims.
 
 
+===Press Down/Up===
+Change between value bars and numerical representation.
+
+===Press Long Down/Up===
+Statistics screens
+
+===Press Long Right===
+Model Select/Setup
+
+===Press Long Left===
+Radio Setup
+
+===Press Long Menu===
+Last Menu
