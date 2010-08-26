@@ -10,3 +10,6 @@ Timers:
 
 ===STAT2===
 Latency timers
+
+===Press Down/Up/Exit===
+Goto STAT/STAT2 or back to Main Screen
