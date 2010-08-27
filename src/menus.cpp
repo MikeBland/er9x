@@ -310,54 +310,7 @@ void menuProcCurve(uint8_t event) {
 static bool  s_limitCacheOk;
 #define LIMITS_DIRTY s_limitCacheOk=false
 
-void copyTrims(uint8_t event)  // copy trims to subTrim
-{
-  int32_t tms[NUM_CHNOUT]; 
-  memset(tms,0,sizeof(tms));
-  
-  for(uint8_t i=0;i<MAX_MIXERS;i++){
-      MixData &md = g_model.mixData[i];
-      if((md.destCh==0) || (md.destCh>NUM_CHNOUT)) break;
-      if(!getSwitch(md.swtch,1)){
-        if(md.srcRaw!=8 && md.srcRaw!=9) continue;// if not MAX or FULL - next loop
-        if(md.mltpx==MLTPX_REP && md.srcRaw==8) continue; // if MAX and switch is off and REPLACE then off
-      }
-
-      //========== TRIM ===============
-      int32_t dv = 0;
-      if((md.carryTrim==0) && (md.srcRaw>0) && (md.srcRaw<=4) && (!IS_THROTTLE(md.srcRaw) || !g_model.thrTrim)) 
-        dv = (int32_t)g_model.trim[md.srcRaw-1]*md.weight;  //  0 = Trim ON  =  Default
-
-      //========== MULTIPLEX ===============
-      switch(md.mltpx){
-        case MLTPX_REP:
-          tms[md.destCh-1] = dv;
-          break;
-        case MLTPX_MUL:
-          tms[md.destCh-1] *= dv/100l;
-          tms[md.destCh-1] /= RESXl;
-          break;
-        default:  // MLTPX_ADD
-          tms[md.destCh-1] += dv; //Mixer output add up to the line (dv + (dv>0 ? 100/2 : -100/2))/(100);
-          break;
-        }
-    }
-    
-  for(uint8_t i=0;i<NUM_CHNOUT;i++)
-       g_model.limitData[i].offset += (tms[i]>0) ?
-            tms[i]*(g_model.limitData[i].max+100)/10000:
-           -tms[i]*(g_model.limitData[i].min-100)/10000;
-     
-   
-  for(uint8_t i=0; i<4; i++) 
-    if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
-  LIMITS_DIRTY;
-  
-  killEvents(event);
-  beepWarn();
-}
-
-void doTrimSw() // copy state of 3 primary to subtrim
+void setStickCenter() // copy state of 3 primary to subtrim
 {
       for(uint8_t i=0; i<NUM_CHNOUT; i++){
         int16_t v = g_chans512[i];
@@ -374,6 +327,7 @@ void doTrimSw() // copy state of 3 primary to subtrim
       for(uint8_t i=0; i<4; i++)
         if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
       LIMITS_DIRTY;
+      beepWarn1();
 }
 
 void menuProcLimits(uint8_t event)
@@ -472,7 +426,8 @@ void menuProcLimits(uint8_t event)
     lcd_putsAtt(  3*FW,y,PSTR("COPY TRIM [MENU]"),attr);
     if(attr && event==EVT_KEY_LONG(KEY_MENU)) {
       s_editMode = false;
-      copyTrims(event); //if highlighted and menu pressed - copy trims
+      killEvents(event);
+      setStickCenter(); //if highlighted and menu pressed - copy trims
     }
   }
 }
@@ -1055,8 +1010,7 @@ void menuProcModel(uint8_t event)
   MSTATE_TAB = { 1,sizeof(g_model.name),3,1,1,1,1,3,1,1};
   MSTATE_CHECK_VxH(2,menuTabModel,10);
   int8_t  sub    = mstate2.m_posVert;
-  static uint8_t  subSub;
-
+  uint8_t subSub = mstate2.m_posHorz + 1;
   
   if(sub<1) s_pgOfs=0;
   else if((sub-s_pgOfs)>7) s_pgOfs = sub-7;
@@ -1064,27 +1018,27 @@ void menuProcModel(uint8_t event)
   if(s_pgOfs<0) s_pgOfs = 0;
   
   uint8_t y = 1*FH;
-
   
   switch(event){
     case EVT_ENTRY:
       s_editMode = false;
-      subSub=1;
       break;
     case EVT_KEY_FIRST(KEY_MENU):
       s_editMode = (sub==1 || sub==2 || sub==7) ? !s_editMode : false;
       break;
     case EVT_KEY_REPT(KEY_LEFT):
     case EVT_KEY_FIRST(KEY_LEFT):
-      if(sub==1 && subSub>1) subSub--;
-      if(sub==2 && subSub>1 && !s_editMode) subSub--;
-      if(sub==7 && subSub>1 && !s_editMode) subSub--;
+      if(sub==1 && subSub>1 && s_editMode) mstate2.m_posHorz--;
       break;
     case EVT_KEY_REPT(KEY_RIGHT):
     case EVT_KEY_FIRST(KEY_RIGHT):
-      if(sub==1 && subSub<sizeof(g_model.name)) subSub++;
-      if(sub==2 && subSub<3 && !s_editMode) subSub++;
-      if(sub==7 && subSub<3 && !s_editMode && !g_model.protocol) subSub++;
+      if(sub==1 && subSub<sizeof(g_model.name) && s_editMode) mstate2.m_posHorz++;
+      break;
+    case EVT_KEY_REPT(KEY_UP):
+    case EVT_KEY_FIRST(KEY_UP):
+    case EVT_KEY_REPT(KEY_DOWN):
+    case EVT_KEY_FIRST(KEY_DOWN):
+      if (!s_editMode) mstate2.m_posHorz = 0;
       break;
   }
   
@@ -1187,7 +1141,8 @@ void menuProcModel(uint8_t event)
     lcd_putsAtt(0*FW, y, PSTR("TRIM->subTRIM  [MENU]"),sub==8?INVERS:0);
     if(sub==8 && event==EVT_KEY_LONG(KEY_MENU)){
         s_editMode = false;
-        copyTrims(event);
+        killEvents(event);
+        setStickCenter();
     }
     if((y+=FH)>8*FH) return;
   }
@@ -1775,6 +1730,7 @@ void menuProc0(uint8_t event)
 {
   static uint8_t   sub;
   static MenuFuncP s_lastPopMenu[2];
+  static uint8_t trimSwLock;
 
   switch(event)
   {
@@ -1852,9 +1808,12 @@ void menuProc0(uint8_t event)
       killEvents(KEY_EXIT);
       killEvents(KEY_UP);
       killEvents(KEY_DOWN);
+      trimSwLock = true;
       break;
   }
 
+  if(getSwitch(g_model.trimSw,0) && !trimSwLock) setStickCenter();
+  trimSwLock = getSwitch(g_model.trimSw,0);
 
   uint8_t x=FW*2;
     //lcd_putsAtt(x,0*FH,PSTR("ER9x"),INVERS);
@@ -1866,7 +1825,7 @@ void menuProc0(uint8_t event)
   
     uint8_t att = (g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0) | DBLSIZE;
     for(uint8_t i=0;i<sizeof(g_model.name);i++)
-      lcd_putcAtt(x+i*2*FW-i, 0*FH, g_model.name[i],DBLSIZE);
+      lcd_putcAtt(x+i*2*FW-i-2, 0*FH, g_model.name[i],DBLSIZE);
     putsVBat(x,2*FH,true, att);
     lcd_putcAtt(x+5*FW, 3*FH, 'V',0);
     lcd_hline(x+3*FW,4*FH-4,2);
@@ -1994,13 +1953,8 @@ void perOut(int16_t *chanOut, bool init)
   static int32_t  chans [NUM_CHNOUT];          // Outputs + intermidiates
   static uint32_t inacCounter;
   static uint16_t inacSum;
-  static uint8_t  trimSwLock;
   
          int16_t  trimA    [4];
-
-         
-  if(getSwitch(g_model.trimSw,0) && !trimSwLock) doTrimSw();
-  trimSwLock = getSwitch(g_model.trimSw,0);
 
   if(g_eeGeneral.inactivityTimer) {
     inacCounter++;
@@ -2063,9 +2017,10 @@ void perOut(int16_t *chanOut, bool init)
       //trim[i] -> -125..125
       //512-v -> 0..1024 (normal)
       //v+512 -> 1024..0 (reversed)
+      // multiply by 2 to get more range
       if(g_model.thrTrim) vv = (g_eeGeneral.throttleReversed) ?
-                               (int32_t)g_model.trim[i]*(RESX+v)/(2*RESX) :
-                               (int32_t)g_model.trim[i]*(RESX-v)/(2*RESX);
+                               ((int32_t)g_model.trim[i]-125)*(RESX+v)/(2*RESX) :
+                               ((int32_t)g_model.trim[i]+125)*(RESX-v)/(2*RESX);
     }
 
     //trim
@@ -2185,25 +2140,21 @@ void perOut(int16_t *chanOut, bool init)
     // this limits based on v original values and min=-512, max=512  RESX=512
 
     int16_t v = 0;
+    int16_t lim_p = g_model.limitData[i].max+100;
+    int16_t lim_n = g_model.limitData[i].min-100;
+    
     if(chans[i]){
-       v = (chans[i]>0) ?
-            chans[i]*(g_model.limitData[i].max+100)/10000:
-           -chans[i]*(g_model.limitData[i].min-100)/10000;
+       v = (chans[i]>0) ? chans[i]*lim_p/10000 : -chans[i]*lim_n/10000;
        chans[i] = chans[i]/100;
     }
 
-    //offset before final limit ->
-    v+=g_model.limitData[i].offset;
-
     //impose hard limits
-    //100->512 => 100*5 + 100/8 = 500 + 12.5
-    int16_t lim_p = g_model.limitData[i].max+100;
-    int16_t lim_n = g_model.limitData[i].min-100;
-    lim_p = lim_p*5+lim_p/8;
-    lim_n = lim_n*5+lim_n/8;
+    lim_p = lim_p*5 + lim_p/8;
+    lim_n = lim_n*5 + lim_n/8;
     if(v>lim_p) v = lim_p;
     if(v<lim_n) v = lim_n;// absolute limits - do not go over!
-
+    
+    v+=g_model.limitData[i].offset;      //offset after limit.
     if(g_model.limitData[i].revert) v=-v;// finally do the reverse.
 
     cli();
