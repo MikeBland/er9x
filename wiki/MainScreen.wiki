@@ -9,18 +9,20 @@
  * Value bars that show the output of the first 8 channels.
  * Trim bars that show the position of the trims.
 
+----
+==Key presses==
 
-===Down/Up===
-Change between value bars and numerical representation.
+*Down/Up*
+   Change between value bars and numerical representation.
 
-===Long Down/Up===
-Statistics screens
+*Long Down/Up*
+   Statistics screens
 
-===Long Right===
-Model Select/Setup
+*Long Right*
+   Model Select/Setup
 
-===Long Left===
-Radio Setup
+*Long Left*
+   Radio Setup
 
-===Long Menu===
-Last Menu
+*Long Menu*
+   Last Menu
