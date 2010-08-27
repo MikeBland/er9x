@@ -1614,7 +1614,7 @@ void timer(uint8_t val)
     static int16_t last_tmr;
     if(last_tmr != s_timerVal){
       last_tmr   = s_timerVal;
-      beepWarn1();
+      beepWarn();
     }
   }
 }
@@ -1826,21 +1826,19 @@ void menuProc0(uint8_t event)
     uint8_t att = (g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0) | DBLSIZE;
     for(uint8_t i=0;i<sizeof(g_model.name);i++)
       lcd_putcAtt(x+i*2*FW-i-2, 0*FH, g_model.name[i],DBLSIZE);
-    putsVBat(x,2*FH,true, att);
-    lcd_putcAtt(x+5*FW, 3*FH, 'V',0);
-    lcd_hline(x+3*FW,4*FH-4,2);
-    lcd_hline(x+3*FW,4*FH-3,2);
+    putsVBat(x-1*FW,2*FH,true, att);
+    lcd_putcAtt(x+4*FW, 3*FH, 'V',0);
+    lcd_hline(x+2*FW,4*FH-4,2);
+    lcd_hline(x+2*FW,4*FH-3,2);
     
-    
-  
   if(s_timerState != TMR_OFF){
     uint8_t att = DBLSIZE | (s_timerState==TMR_BEEPING ? BLINK : 0);
     putsTime(x+9*FW, FH*2, s_timerVal, att,att);
-    lcd_putsnAtt(x+7*FW, FH*3, PSTR(" TME THRTHR%")-4+4*g_model.tmrMode,4,0);
+    lcd_putsnAtt(x+7*FW-FW/2, FH*3, PSTR(" TME THRTHR%")-4+4*g_model.tmrMode,4,0);
   }
-  
-  lcd_putsnAtt(x+5*FW,2*FH,PSTR("ExpExFFneMedCrs")+3*g_model.trimInc,3, 0);
-  lcd_putsnAtt(x+8*FW,2*FH,PSTR("   TTm")+3*g_model.thrTrim,3, 0);
+
+  lcd_putsnAtt(x+4*FW,     2*FH,PSTR("ExpExFFneMedCrs")+3*g_model.trimInc,3, 0);
+  lcd_putsnAtt(x+8*FW-FW/2,2*FH,PSTR("   TTm")+3*g_model.thrTrim,3, 0);
   
   
   //trim sliders
