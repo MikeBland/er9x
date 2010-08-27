@@ -7,8 +7,8 @@ Select/Copy/Move Model memory
     Move up/Down
 
 *Menu*
-    Highlight Model memory.  
-    Moving up/down will move memory.
+    Highlight Model memory.  <br>
+    Moving up/down will move memory.<br>
     Pressing Exit will remove highlight.
 
 *Menu Long*
