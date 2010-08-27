@@ -11,5 +11,7 @@ Timers:
 ===STAT2===
 Latency timers
 
-===Down/Up/Exit===
-Goto STAT/STAT2 or back to Main Screen
+----
+==Key Presses==
+*Down/Up/Exit*
+    Goto STAT/STAT2 or back to Main Screen
