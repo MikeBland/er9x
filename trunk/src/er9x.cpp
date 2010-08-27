@@ -190,6 +190,16 @@ uint8_t question(const prog_char * s)
   }
 }
 
+
+#define RPT_TRIM(x) ( x==EVT_KEY_REPT(TRM_LH_DWN) || \
+                      x==EVT_KEY_REPT(TRM_LH_UP)  || \
+                      x==EVT_KEY_REPT(TRM_LV_DWN) || \
+                      x==EVT_KEY_REPT(TRM_LV_UP)  || \
+                      x==EVT_KEY_REPT(TRM_RV_DWN) || \
+                      x==EVT_KEY_REPT(TRM_RV_UP)  || \
+                      x==EVT_KEY_REPT(TRM_RH_DWN) || \
+                      x==EVT_KEY_REPT(TRM_RH_UP) )
+  
 uint8_t checkTrim(uint8_t event)
 {
   int8_t  k = (event & EVT_KEY_MASK) - TRM_BASE;
@@ -214,7 +224,7 @@ uint8_t checkTrim(uint8_t event)
     else if(x>-125 && x<125){
       g_model.trim[idx] = (int8_t)x;
       STORE_MODELVARS;
-      warble = true;
+      if(RPT_TRIM(event)) warble = true;
       beepWarn1();//beepKey();
     }
     else
