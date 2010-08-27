@@ -146,8 +146,6 @@ void checkSwitches()
   pushMenu(menuProcDiagKeys);
 }
 
-
-
 MenuFuncP g_menuStack[5]
 #ifdef SIM
  = {menuProc0};
