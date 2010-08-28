@@ -1068,7 +1068,12 @@ void menuProcModel(uint8_t event)
   if(s_pgOfs<2) {
     lcd_putsAtt(    0,    y, PSTR("Timer"),0);
     putsTime(       9*FW, y, g_model.tmrVal,(sub==2 && subSub==1 ? (s_editMode ? BLINK : INVERS):0),(sub==2 && subSub==2 ? (s_editMode ? BLINK : INVERS):0) );
-    lcd_putsnAtt(  16*FW, y, PSTR("OFF ABS THR THR%")+4*g_model.tmrMode,4,(sub==2 && subSub==3? (s_editMode ? BLINK : INVERS):0));
+    uint8_t attr = (sub==2 && subSub==3? (s_editMode ? BLINK : INVERS):0);
+    if(g_model.tmrMode<4 && g_model.tmrMode>=0)
+      lcd_putsnAtt(  16*FW, y, PSTR("OFFABSTHSTH%")+3*g_model.tmrMode,3,attr);
+    else
+      putsDrSwitches(15*FW,y,g_model.tmrMode>0 ? g_model.tmrMode-3 : g_model.tmrMode,attr);
+      
     if(sub==2 && s_editMode)
       switch (subSub) {
        case 1:
@@ -1087,7 +1092,7 @@ void menuProcModel(uint8_t event)
           break;
           }
         case 3:
-          CHECK_INCDEC_H_MODELVAR_BF( event,g_model.tmrMode ,0,3);
+          CHECK_INCDEC_H_MODELVAR_BF( event,g_model.tmrMode ,-MAX_DRSWITCH,3+MAX_DRSWITCH);
           break;
       }
     if((y+=FH)>8*FH) return;
@@ -1557,6 +1562,7 @@ void menuProcSetup0(uint8_t event)
 
 uint16_t s_timeCumTot;
 uint16_t s_timeCumAbs;  //laufzeit in 1/16 sec
+uint16_t s_timeCumSw;  //laufzeit in 1/16 sec
 uint16_t s_timeCumThr;  //gewichtete laufzeit in 1/16 sec
 uint16_t s_timeCum16ThrP; //gewichtete laufzeit in 1/16 sec
 uint8_t  s_timerState;
@@ -1581,6 +1587,7 @@ void timer(uint8_t val)
 
   s_timeCumTot           += 1;
   s_timeCumAbs           += 1;
+  s_timeCumSw            += getSwitch(g_model.tmrMode>0 ? g_model.tmrMode-3 : g_model.tmrMode, 0) ? 1 : 0;
   if(val) s_timeCumThr   += 1;
   s_timeCum16ThrP        += val/2;
 
@@ -1601,6 +1608,9 @@ void timer(uint8_t val)
     case TMRMODE_ABS:
       s_timerVal -= s_timeCumAbs;
       //s_timeCum16 += 16;
+      break;
+    default: //switch
+      s_timerVal -= s_timeCumSw;
       break;
   }
   switch(s_timerState)
@@ -1703,14 +1713,16 @@ void menuProcStatistic(uint8_t event)
 
   lcd_puts_P(  1*FW, FH*1, PSTR("TME"));
   putsTime(    4*FW, FH*1, s_timeCumAbs, 0, 0);
-  lcd_puts_P( 17*FW, FH*1, PSTR("TOT"));
-  putsTime(   10*FW, FH*1, s_timeCumTot,      0, 0);
+  lcd_puts_P( 17*FW, FH*1, PSTR("TSW"));
+  putsTime(   10*FW, FH*1, s_timeCumSw,      0, 0);
 
-  lcd_puts_P(  1*FW, FH*2, PSTR("THR"));
+  lcd_puts_P(  1*FW, FH*2, PSTR("THS"));
   putsTime(    4*FW, FH*2, s_timeCumThr, 0, 0);
-  lcd_puts_P( 17*FW, FH*2, PSTR("THR%"));
+  lcd_puts_P( 17*FW, FH*2, PSTR("TH%"));
   putsTime(   10*FW, FH*2, s_timeCum16ThrP/16, 0, 0);
-
+  
+  lcd_puts_P( 17*FW, FH*0, PSTR("TOT"));
+  putsTime(   10*FW, FH*0, s_timeCumTot, 0, 0);
 
   uint16_t traceRd = s_traceCnt>MAXTRACE ? s_traceWr : 0;
   uint8_t x=5;
@@ -1836,7 +1848,10 @@ void menuProc0(uint8_t event)
   if(s_timerState != TMR_OFF){
     uint8_t att = DBLSIZE | (s_timerState==TMR_BEEPING ? BLINK : 0);
     putsTime(x+9*FW, FH*2, s_timerVal, att,att);
-    lcd_putsnAtt(x+7*FW-FW/2, FH*3, PSTR(" TME THRTHR%")-4+4*g_model.tmrMode,4,0);
+    if(g_model.tmrMode<4 && g_model.tmrMode>=0)
+      lcd_putsnAtt(x+8*FW-FW/2, FH*3, PSTR("OFFABSTHSTH%")+3*g_model.tmrMode,3,0);
+    else
+      putsDrSwitches(x+7*FW-FW/2, FH*3,g_model.tmrMode>0 ? g_model.tmrMode-3 : g_model.tmrMode,0);
   }
 
   lcd_putsnAtt(x+4*FW,     2*FH,PSTR("ExpExFFneMedCrs")+3*g_model.trimInc,3, 0);
@@ -1942,15 +1957,15 @@ void menuProc0(uint8_t event)
     V_BAR(SCREEN_WIDTH/2+5,SCREEN_HEIGHT-10,(anaIn(5)*BAR_HEIGHT/1024)+1l) //P3
     
     for(uint8_t i=0; i<3; i++)  {
-      uint8_t y=i*FH+4*FH; //+FH;
-      bool t=keyState((EnumKeys)(SW_BASE_DIAG+i));
-      lcd_putsnAtt(2*FW-2,y,PSTR(SWITCHES_STR)+3*i,3,t ? INVERS : 0);
+      //uint8_t y=i*FH+4*FH; //+FH;
+      //bool t=keyState((EnumKeys)(SW_BASE_DIAG+i));
+      lcd_putsnAtt(2*FW-2,i*FH+4*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i, 0) ? INVERS : 0);
     }
     
     for(uint8_t i=6; i<9; i++)  {
-      uint8_t y=(12-i)*FH; //+FH;
-      bool t=keyState((EnumKeys)(SW_BASE_DIAG+i));
-      lcd_putsnAtt(17*FW-1,y,PSTR(SWITCHES_STR)+3*i,3,t ? INVERS : 0);
+      //uint8_t y=(12-i)*FH; //+FH;
+      //bool t=keyState((EnumKeys)(SW_BASE_DIAG+i));
+      lcd_putsnAtt(17*FW-1,12*FH-i*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i, 0) ? INVERS : 0);
     }
   }
 
