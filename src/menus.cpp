@@ -30,6 +30,21 @@
                           DR_HIGH :                                  \
                           !getSwitch(g_model.expoData[x].drSw2,0)?   \
                           DR_MID : DR_LOW);
+                          
+#define DO_SQUARE(xx,yy,ww)         \
+    lcd_vline(xx-ww/2,yy-ww/2,ww);  \
+    lcd_hline(xx-ww/2,yy+ww/2,ww);  \
+    lcd_vline(xx+ww/2,yy-ww/2,ww);  \
+    lcd_hline(xx-ww/2,yy-ww/2,ww);  
+    
+#define DO_CROSS(xx,yy,ww)          \
+    lcd_vline(xx,yy-ww/2,ww);  \
+    lcd_hline(xx-ww/2,yy,ww);  \
+    
+#define V_BAR(xx,yy,ll)       \
+    lcd_vline(xx-1,yy-ll,ll); \
+    lcd_vline(xx  ,yy-ll,ll); \
+    lcd_vline(xx+1,yy-ll,ll); \
 
 
 static int16_t calibratedStick[4];
@@ -312,18 +327,12 @@ static bool  s_limitCacheOk;
 
 void setStickCenter() // copy state of 3 primary to subtrim
 {
-      for(uint8_t i=0; i<NUM_CHNOUT; i++){
-        int16_t v = g_chans512[i];
-        LimitData *ld = &g_model.limitData[i];
-
-        bool contThr = false;                 // Contains Throttle
-        for(uint8_t j=0;j<MAX_MIXERS;j++){    // Scan all mixes
-          MixData &md = g_model.mixData[j];
-          if((md.destCh==0) || (md.destCh>NUM_CHNOUT) || contThr) break; // if no dest, dest error or contains then exit
-          contThr = contThr || (IS_THROTTLE(md.srcRaw-1) && (md.destCh==(i+1)));
-        }
-        if(!contThr) ld->offset = (ld->revert) ? -v : v;
-      }
+      int16_t zero_chans512[NUM_CHNOUT];
+      perOut(zero_chans512,false,true); // do output loop - zero input channels
+      
+      for(uint8_t i=0; i<NUM_CHNOUT; i++)
+        g_model.limitData[i].offset += zero_chans512[i] - g_chans512[i];
+      
       for(uint8_t i=0; i<4; i++)
         if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
       LIMITS_DIRTY;
@@ -1328,7 +1337,7 @@ void menuProcDiagAna(uint8_t event)
         //lcd_outdez(17*FW, y, (v-g_eeGeneral.calibMid[i])*50/ max(1,g_eeGeneral.calibSpan[i]/2));
     }
     if(i==7){
-      putsVBat(13*FW,y,false,sub==1 ? INVERS : 0);
+      putsVBat(13*FW,y,false,(sub==1 ? INVERS : 0)|PREC1);
     }
   }
   if(sub==1){
@@ -1766,7 +1775,7 @@ void menuProc0(uint8_t event)
       pushMenu(menuProcSetup0);
       killEvents(event);
       break;
-#define MAX_VIEWS 2
+#define MAX_VIEWS 3
     case EVT_KEY_BREAK(KEY_UP):
       g_eeGeneral.view++;
       if(g_eeGeneral.view>=MAX_VIEWS) g_eeGeneral.view=0;
@@ -1815,14 +1824,7 @@ void menuProc0(uint8_t event)
   if(getSwitch(g_model.trimSw,0) && !trimSwLock) setStickCenter();
   trimSwLock = getSwitch(g_model.trimSw,0);
 
-  uint8_t x=FW*2;
-    //lcd_putsAtt(x,0*FH,PSTR("ER9x"),INVERS);
-    //lcd_putsnAtt(x,1*FH,PSTR("Exp ExF Fine Med Crse")+4*g_model.trimInc,4, 0);
-    //lcd_putsnAtt(x,2*FH,PSTR("    TTrm")+4*g_model.thrTrim,4, 0);
-    //lcd_putsnAtt(x+ 5*FW,   0*FH, g_model.name ,sizeof(g_model.name),BSS_NO_INV);
-    //lcd_puts_P(  x+ 5*FW,   1*FH,    PSTR("BAT"));
-    //putsVBat(x+ 8*FW,1*FH,false, g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0);
-  
+  uint8_t x=FW*2;  
     uint8_t att = (g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0) | DBLSIZE;
     for(uint8_t i=0;i<sizeof(g_model.name);i++)
       lcd_putcAtt(x+i*2*FW-i-2, 0*FH, g_model.name[i],DBLSIZE);
@@ -1871,14 +1873,17 @@ void menuProc0(uint8_t event)
     }
 
     //value marker
-#define MW 7
-    lcd_vline(xm-MW/2,ym-MW/2,MW);
-    lcd_hline(xm-MW/2,ym+MW/2,MW);
-    lcd_vline(xm+MW/2,ym-MW/2,MW);
-    lcd_hline(xm-MW/2,ym-MW/2,MW);
+    //#define MW 7
+    //lcd_vline(xm-MW/2,ym-MW/2,MW);
+    //lcd_hline(xm-MW/2,ym+MW/2,MW);
+    //lcd_vline(xm+MW/2,ym-MW/2,MW);
+    //lcd_hline(xm-MW/2,ym-MW/2,MW);
+    DO_SQUARE(xm,ym,7)
   }
-  for(uint8_t i=0; i<8; i++)
-  {
+  
+  if(g_eeGeneral.view!=2) {
+   for(uint8_t i=0; i<8; i++)
+   {
     uint8_t x0,y0;
     int16_t val = g_chans512[i];
     //val += g_model.limitData[i].revert ? g_model.limitData[i].offset : -g_model.limitData[i].offset;
@@ -1910,6 +1915,30 @@ void menuProc0(uint8_t event)
         lcd_hline(x0,y0-1,l);
         break;
     }
+   }
+  }
+  else {
+    #define BOX_WIDTH     25
+    #define BAR_HEIGHT    (BOX_WIDTH-1l)
+    #define MARKER_WIDTH  5
+    #define SCREEN_WIDTH  128
+    #define SCREEN_HEIGHT 64
+    #define BOX_LIMIT     (BOX_WIDTH-MARKER_WIDTH)
+    #define LBOX_CENTERX  (  SCREEN_WIDTH/4 + 2)
+    #define LBOX_CENTERY  (SCREEN_HEIGHT-9-BOX_WIDTH/2)
+    #define RBOX_CENTERX  (3*SCREEN_WIDTH/4 - 2)
+    #define RBOX_CENTERY  (SCREEN_HEIGHT-9-BOX_WIDTH/2)
+    DO_SQUARE(LBOX_CENTERX,LBOX_CENTERY,BOX_WIDTH);
+    DO_SQUARE(RBOX_CENTERX,RBOX_CENTERY,BOX_WIDTH);
+    
+    DO_CROSS(LBOX_CENTERX,LBOX_CENTERY,3)
+    DO_CROSS(RBOX_CENTERX,RBOX_CENTERY,3)
+    DO_SQUARE(LBOX_CENTERX+(calibratedStick[0]*BOX_LIMIT/1024), LBOX_CENTERY-(calibratedStick[1]*BOX_LIMIT/1024), MARKER_WIDTH)
+    DO_SQUARE(RBOX_CENTERX+(calibratedStick[3]*BOX_LIMIT/1024), RBOX_CENTERY-(calibratedStick[2]*BOX_LIMIT/1024), MARKER_WIDTH)
+    
+    V_BAR(SCREEN_WIDTH/2-5,SCREEN_HEIGHT-9,(anaIn(4)*BAR_HEIGHT/1024)+1l) //P1
+    V_BAR(SCREEN_WIDTH/2  ,SCREEN_HEIGHT-9,(anaIn(5)*BAR_HEIGHT/1024)+1l) //P2
+    V_BAR(SCREEN_WIDTH/2+5,SCREEN_HEIGHT-9,(anaIn(6)*BAR_HEIGHT/1024)+1l) //P3
   }
 
 }
@@ -1945,7 +1974,7 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
 
 uint16_t pulses2MHz[60];
 
-void perOut(int16_t *chanOut, bool init)
+void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
 {
   static int16_t  anas  [NUM_XCHNRAW];
   static int32_t  chans [NUM_CHNOUT];          // Outputs + intermidiates
@@ -2035,7 +2064,13 @@ void perOut(int16_t *chanOut, bool init)
   for(uint8_t i=9+NUM_PPM;i<NUM_XCHNRAW;i++)  anas[i] = chans[i-9-NUM_PPM]; //other mixes previous outputs
 
   memset(chans,0,sizeof(chans));        // All outputs to 0
-
+  
+  if(zeroInput) 
+    for(uint8_t i=0;i<4;i++) 
+      if(!IS_THROTTLE(i)) {
+        anas[i]  = 0;
+        trimA[i] = 0;
+      }
 
     //========== MIXER LOOP ===============
     for(uint8_t i=0;i<MAX_MIXERS;i++){
