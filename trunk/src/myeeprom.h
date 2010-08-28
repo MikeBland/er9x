@@ -122,7 +122,7 @@ typedef struct t_MixData {
 typedef struct t_ModelData {
   char      name[10];             // 10 must be first for eeLoadModelName
   uint8_t   mdVers;
-  uint8_t   tmrMode;
+  int8_t    tmrMode;
   uint16_t  tmrVal;
   uint8_t   protocol;
   int8_t    ppmNCH;
