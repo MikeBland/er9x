@@ -1918,7 +1918,7 @@ void menuProc0(uint8_t event)
    }
   }
   else {
-    #define BOX_WIDTH     25
+    #define BOX_WIDTH     23
     #define BAR_HEIGHT    (BOX_WIDTH-1l)
     #define MARKER_WIDTH  5
     #define SCREEN_WIDTH  128
@@ -1950,7 +1950,7 @@ void menuProc0(uint8_t event)
     for(uint8_t i=6; i<9; i++)  {
       uint8_t y=(12-i)*FH; //+FH;
       bool t=keyState((EnumKeys)(SW_BASE_DIAG+i));
-      lcd_putsnAtt(17*FW,y,PSTR(SWITCHES_STR)+3*i,3,t ? INVERS : 0);
+      lcd_putsnAtt(17*FW-1,y,PSTR(SWITCHES_STR)+3*i,3,t ? INVERS : 0);
     }
   }
 
