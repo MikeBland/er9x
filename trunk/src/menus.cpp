@@ -1956,16 +1956,16 @@ void menuProc0(uint8_t event)
     V_BAR(SCREEN_WIDTH/2  ,SCREEN_HEIGHT-10,(anaIn(6)*BAR_HEIGHT/1024)+1l) //P2
     V_BAR(SCREEN_WIDTH/2+5,SCREEN_HEIGHT-10,(anaIn(5)*BAR_HEIGHT/1024)+1l) //P3
     
-    for(uint8_t i=0; i<3; i++)  {
+    for(int8_t i=0; i<3; i++)  {
       //uint8_t y=i*FH+4*FH; //+FH;
       //bool t=keyState((EnumKeys)(SW_BASE_DIAG+i));
-      lcd_putsnAtt(2*FW-2,i*FH+4*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i, 0) ? INVERS : 0);
+      lcd_putsnAtt(2*FW-2,i*FH+4*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i+1, 0) ? INVERS : 0);
     }
     
-    for(uint8_t i=6; i<9; i++)  {
+    for(int8_t i=6; i<9; i++)  {
       //uint8_t y=(12-i)*FH; //+FH;
       //bool t=keyState((EnumKeys)(SW_BASE_DIAG+i));
-      lcd_putsnAtt(17*FW-1,12*FH-i*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i, 0) ? INVERS : 0);
+      lcd_putsnAtt(17*FW-1,12*FH-i*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i+1, 0) ? INVERS : 0);
     }
   }
 
