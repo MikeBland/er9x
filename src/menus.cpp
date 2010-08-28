@@ -108,11 +108,11 @@ void MState2::check_v(uint8_t event,  uint8_t curr,MenuFuncP *menuTab, uint8_t m
 void MState2::check(uint8_t event,  uint8_t curr,MenuFuncP *menuTab, uint8_t menuTabSize, prog_uint8_t*horTab,uint8_t horTabMax,uint8_t maxrow)
 {
   if(menuTab){
-    uint8_t attr = INVERS;
+    uint8_t attr = m_posVert==0 ? INVERS : 0;
     curr--; //calc from 0, user counts from 1
 
     if(m_posVert==0){
-      attr = INVERS;
+      //attr = INVERS;
       switch(event)
       {
         case EVT_KEY_FIRST(KEY_LEFT):
@@ -196,13 +196,13 @@ void MState2::check(uint8_t event,  uint8_t curr,MenuFuncP *menuTab, uint8_t men
 }
 
 
-#ifdef SIM
-extern char g_title[80];
-MState2 mstate2;
-#define TITLEP(pstr) lcd_putsAtt(0,0,pstr,INVERS);sprintf(g_title,"%s_%d_%d",pstr,mstate2.m_posVert,mstate2.m_posHorz);
-#else
+//#ifdef SIM
+//extern char g_title[80];
+//MState2 mstate2;
+//#define TITLEP(pstr) lcd_putsAtt(0,0,pstr,INVERS);sprintf(g_title,"%s_%d_%d",pstr,mstate2.m_posVert,mstate2.m_posHorz);
+//#else
 #define TITLEP(pstr) lcd_putsAtt(0,0,pstr,INVERS)
-#endif
+//#endif
 #define TITLE(str)   TITLEP(PSTR(str))
 
 
@@ -214,10 +214,10 @@ void menuProcCurveOne(uint8_t event) {
   static MState2 mstate2;
   uint8_t x = TITLE("CURVE ");
   lcd_outdezAtt(x, 0,s_curveChan+1 ,INVERS);
+  int8_t  sub    = mstate2.m_posVert;
 
   bool    cv9 = s_curveChan >= MAX_CURVE5;
   MSTATE_CHECK0_V((cv9 ? 9 : 5)+1);
-  int8_t  sub    = mstate2.m_posVert;
 
   int8_t *crv = cv9 ? g_model.curves9[s_curveChan-MAX_CURVE5] : g_model.curves5[s_curveChan];
 
