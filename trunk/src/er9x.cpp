@@ -53,7 +53,7 @@ void putsVBat(uint8_t x,uint8_t y,uint8_t hideV,uint8_t att)
 {
   //att |= g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0;
   if(!hideV) lcd_putcAtt(   x+ 4*FW,   y,    'V',att);
-  lcd_outdezAtt( x+ 4*FW,   y,    g_vbat100mV,att|PREC1);
+  lcd_outdezAtt( x+ 4*FW,   y,   g_vbat100mV,att);
 }
 void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 {
@@ -444,7 +444,7 @@ void evalCaptures();
 
 void perMain()
 {
-  perOut(g_chans512,false);
+  perOut(g_chans512,false, false);
   eeCheck();
 
   lcd_clear();
@@ -751,7 +751,7 @@ int main(void)
   checkSwitches();
   setupPulses();
   wdt_enable(WDTO_500MS);
-  perOut(g_chans512, true);
+  perOut(g_chans512, true, false);
 
   lcdSetRefVolt(g_eeGeneral.contrast);
   TIMSK |= (1<<OCIE1A); // Pulse generator enable immediately before mainloop
