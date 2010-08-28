@@ -1924,10 +1924,11 @@ void menuProc0(uint8_t event)
     #define SCREEN_WIDTH  128
     #define SCREEN_HEIGHT 64
     #define BOX_LIMIT     (BOX_WIDTH-MARKER_WIDTH)
-    #define LBOX_CENTERX  (  SCREEN_WIDTH/4 + 2)
+    #define LBOX_CENTERX  (  SCREEN_WIDTH/4 + 10)
     #define LBOX_CENTERY  (SCREEN_HEIGHT-9-BOX_WIDTH/2)
-    #define RBOX_CENTERX  (3*SCREEN_WIDTH/4 - 2)
+    #define RBOX_CENTERX  (3*SCREEN_WIDTH/4 - 10)
     #define RBOX_CENTERY  (SCREEN_HEIGHT-9-BOX_WIDTH/2)
+    
     DO_SQUARE(LBOX_CENTERX,LBOX_CENTERY,BOX_WIDTH);
     DO_SQUARE(RBOX_CENTERX,RBOX_CENTERY,BOX_WIDTH);
     
@@ -1936,9 +1937,21 @@ void menuProc0(uint8_t event)
     DO_SQUARE(LBOX_CENTERX+(calibratedStick[0]*BOX_LIMIT/1024), LBOX_CENTERY-(calibratedStick[1]*BOX_LIMIT/1024), MARKER_WIDTH)
     DO_SQUARE(RBOX_CENTERX+(calibratedStick[3]*BOX_LIMIT/1024), RBOX_CENTERY-(calibratedStick[2]*BOX_LIMIT/1024), MARKER_WIDTH)
     
-    V_BAR(SCREEN_WIDTH/2-5,SCREEN_HEIGHT-9,(anaIn(4)*BAR_HEIGHT/1024)+1l) //P1
-    V_BAR(SCREEN_WIDTH/2  ,SCREEN_HEIGHT-9,(anaIn(5)*BAR_HEIGHT/1024)+1l) //P2
-    V_BAR(SCREEN_WIDTH/2+5,SCREEN_HEIGHT-9,(anaIn(6)*BAR_HEIGHT/1024)+1l) //P3
+    V_BAR(SCREEN_WIDTH/2-5,SCREEN_HEIGHT-10,(anaIn(4)*BAR_HEIGHT/1024)+1l) //P1
+    V_BAR(SCREEN_WIDTH/2  ,SCREEN_HEIGHT-10,(anaIn(6)*BAR_HEIGHT/1024)+1l) //P2
+    V_BAR(SCREEN_WIDTH/2+5,SCREEN_HEIGHT-10,(anaIn(5)*BAR_HEIGHT/1024)+1l) //P3
+    
+    for(uint8_t i=0; i<3; i++)  {
+      uint8_t y=i*FH+4*FH; //+FH;
+      bool t=keyState((EnumKeys)(SW_BASE_DIAG+i));
+      lcd_putsnAtt(2*FW-2,y,PSTR(SWITCHES_STR)+3*i,3,t ? INVERS : 0);
+    }
+    
+    for(uint8_t i=6; i<9; i++)  {
+      uint8_t y=(12-i)*FH; //+FH;
+      bool t=keyState((EnumKeys)(SW_BASE_DIAG+i));
+      lcd_putsnAtt(17*FW,y,PSTR(SWITCHES_STR)+3*i,3,t ? INVERS : 0);
+    }
   }
 
 }

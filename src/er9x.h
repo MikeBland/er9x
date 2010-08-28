@@ -173,6 +173,9 @@ enum EnumKeys {
 //#define SWITCHES_STR "  NC  ON THR RUD ELE ID0 ID1 ID2 AILGEARTRNR"
 #define MAX_DRSWITCH (1+SW_Trainer-SW_ThrCt+1)
 
+#define SWITCHES_STR "THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN"
+
+
 #define NUM_KEYS TRM_RH_UP+1
 #define TRM_BASE TRM_LH_DWN
 

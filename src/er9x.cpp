@@ -73,9 +73,6 @@ void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 }
 
 
-#define SWITCHES_STR "THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN"
-
-
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
 {
   switch(idx1){
