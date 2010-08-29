@@ -112,7 +112,6 @@ void MState2::check(uint8_t event,  uint8_t curr,MenuFuncP *menuTab, uint8_t men
     curr--; //calc from 0, user counts from 1
 
     if(m_posVert==0){
-      //attr = INVERS;
       switch(event)
       {
         case EVT_KEY_FIRST(KEY_LEFT):
@@ -554,10 +553,10 @@ void menuProcMixOne(uint8_t event)
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->speedUp, 0,15); //!! bitfield
         break;
       case 10:   lcd_putsAtt(  2*FW,y,PSTR("DELETE MIX [MENU]"),attr);
-        if(attr && event==EVT_KEY_FIRST(KEY_MENU)){
+        if(attr && event==EVT_KEY_LONG(KEY_MENU)){
           killEvents(event);
-          //if(question(PSTR("Delete Mix?"))) 
-            deleteMix(s_currMixIdx);
+          deleteMix(s_currMixIdx);
+          beepWarn1();
           popMenu();
         }
         break;
@@ -635,6 +634,7 @@ void menuProcMix(uint8_t event)
     case EVT_ENTRY_UP:
       genMixTab();
       break;
+    case EVT_KEY_LONG(KEY_MENU):
     case EVT_KEY_FIRST(KEY_MENU):
       if(sub<1) break;
       if(s_currMixInsMode) insertMix(s_currMixIdx);
@@ -1820,6 +1820,7 @@ void menuProc0(uint8_t event)
       s_timerState = TMR_OFF; //is changed to RUNNING dep from mode
       s_timeCumAbs=0;
       s_timeCumThr=0;
+      s_timeCumSw=0;
       s_timeCum16ThrP=0;
       beepKey();
       break;
@@ -2257,7 +2258,7 @@ void setupPulsesPPM()
   //http://www.aerodesign.de/peter/2000/PCM/frame_ppm.gif
   //22.5 ges   0.3low 8* (0.7-1.7 high 0.3low) high
   //uint16_t rest=22500u*2;
-  uint16_t rest=22500u*2;
+  uint16_t rest=(22500u-300u*9)*2; //from thus issue 4, 41 yes, I know it's for 8 channels
   uint8_t j=0;
   uint8_t p=8+g_model.ppmNCH*2;
   for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
