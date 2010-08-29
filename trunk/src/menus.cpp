@@ -2255,15 +2255,14 @@ void setupPulses()
 
 void setupPulsesPPM()
 {
-  //http://www.aerodesign.de/peter/2000/PCM/frame_ppm.gif
-  //22.5 ges   0.3low 8* (0.7-1.7 high 0.3low) high
-  //uint16_t rest=22500u*2;
+  //Total frame length = 22.5msec
+  //each pulse is 0.7..1.7ms long with a 0.3ms stop tail
+  //The pulse ISR is 2mhz that's why everything is multiplied by 2
   uint16_t rest=(22500u-300u*9)*2; //from thus issue 4, 41 yes, I know it's for 8 channels
   uint8_t j=0;
   uint8_t p=8+g_model.ppmNCH*2;
   for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
-    int16_t v = g_chans512[i];
-    v = 2*v - v/21 + 1200*2; // 24/512 = 3/64 ~ 1/21
+    uint16_t v = (g_chans512[i] + 1200)*2; // we allow the signal to go from 688us to 1712us to have smoother output
     rest-=v;//chans[i];
     pulses2MHz[j++]=(g_model.ppmDelay*50+300)*2;
     pulses2MHz[j++]=v;
