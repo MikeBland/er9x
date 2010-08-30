@@ -33,4 +33,4 @@ Setup basic variables for model.
 
 
 
-*: Switches can be normal or reversed.  By pressing left you can see the following notation: !THR.  That means THR switch in reverse.
+'Switches can be normal or reversed.  By pressing left you can see the following notation: !THR.  That means THR switch in reverse.'
