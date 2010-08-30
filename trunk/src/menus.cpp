@@ -1313,13 +1313,14 @@ void menuProcDiagCalib(uint8_t event)
           beepKey();
           break;
         case 3:
-          for(uint8_t i=0; i<7; i++){
-            g_eeGeneral.calibMid[i]  = midVals[i];
-            int16_t v = midVals[i] - loVals[i];
-            g_eeGeneral.calibSpanNeg[i] = v - v/64;
-            v = hiVals[i] - midVals[i];
-            g_eeGeneral.calibSpanPos[i] = v - v/64;
-          }
+          for(uint8_t i=0; i<7; i++)
+            if(abs(loVals[i]-hiVals[i])>50) {
+              g_eeGeneral.calibMid[i]  = midVals[i];
+              int16_t v = midVals[i] - loVals[i];
+              g_eeGeneral.calibSpanNeg[i] = v - v/64;
+              v = hiVals[i] - midVals[i];
+              g_eeGeneral.calibSpanPos[i] = v - v/64;
+            }
           int16_t sum=0;
           for(uint8_t i=0; i<12;i++) sum+=g_eeGeneral.calibMid[i];
           g_eeGeneral.chkSum = sum;
