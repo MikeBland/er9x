@@ -344,8 +344,7 @@ void menuProcLimits(uint8_t event)
   static bool swVal[NUM_CHNOUT];
   TITLE("LIMITS");
   MSTATE_TAB = { 4,4};
-  uint8_t numChs = (8+g_model.ppmNCH*2);
-  MSTATE_CHECK_VxH(5,menuTabModel,numChs+2);
+  MSTATE_CHECK_VxH(5,menuTabModel,NUM_CHNOUT+2);
 
   uint8_t y = 0;
   uint8_t k = 0;
@@ -381,7 +380,7 @@ void menuProcLimits(uint8_t event)
   for(uint8_t i=0; i<6; i++){
     y=(i+2)*FH;
     k=i+s_pgOfs;
-    if(k==numChs) break;
+    if(k==NUM_CHNOUT) break;
     LimitData *ld = &g_model.limitData[k];
     for(uint8_t j=0; j<=4;j++){
       uint8_t attr = ((sub==k && subSub==j) ? (s_editMode ? BLINK : INVERS) : 0);
@@ -427,9 +426,9 @@ void menuProcLimits(uint8_t event)
       }
     }
   }
-  if(k==numChs){
+  if(k==NUM_CHNOUT){
     //last line available - add the "copy trim menu" line
-    uint8_t attr = (sub==numChs) ? INVERS : 0;
+    uint8_t attr = (sub==NUM_CHNOUT) ? INVERS : 0;
     lcd_putsAtt(  3*FW,y,PSTR("COPY TRIM [MENU]"),attr);
     if(attr && event==EVT_KEY_LONG(KEY_MENU)) {
       s_editMode = false;
@@ -482,7 +481,7 @@ void menuProcMixOne(uint8_t event)
   else if((sub-s_pgOfs)<0) s_pgOfs = sub;
   if(s_pgOfs<0) s_pgOfs = 0;
 
-#define CURV_STR "---x>0x<0|x|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
+#define CURV_STR "---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
   for(uint8_t y=FH; y<8*FH; y+=FH)
   {
     uint8_t i=(y/FH)+s_pgOfs-1;
@@ -506,9 +505,9 @@ void menuProcMixOne(uint8_t event)
       case 3:
         lcd_putsAtt(  2*FW,y,PSTR("Curves"),0);
         lcd_putsnAtt( FW*9,y,PSTR(CURV_STR)+md2->curve*3,3,attr);
-        if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->curve, 0,MAX_CURVE5+MAX_CURVE9+4-1); //!! bitfield
-        if(attr && md2->curve>=4 && event==EVT_KEY_FIRST(KEY_MENU)){
-          s_curveChan = md2->curve-4;
+        if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->curve, 0,MAX_CURVE5+MAX_CURVE9+7-1); //!! bitfield
+        if(attr && md2->curve>=7 && event==EVT_KEY_FIRST(KEY_MENU)){
+          s_curveChan = md2->curve-7;
           pushMenu(menuProcCurveOne);
         }
         break;
@@ -2218,6 +2217,15 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
           }
           break;
         case 3: v = abs(v);      break; //ABS
+        case 4:       //D|D>0
+          v = v>0 ? 512 : 0;
+          break;
+        case 5:       //D|D<0
+          v = v<0 ? -512 : 0;
+          break;
+        case 6:       //D||D|
+          v = v>0 ? 512 : -512;
+          break;
         default:
           v = intpol(v, md.curve - 4);
       }
@@ -2253,10 +2261,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     int16_t lim_p = g_model.limitData[i].max+100;
     int16_t lim_n = g_model.limitData[i].min-100;
 
-    if(chans[i]){
-       v = (chans[i]>0) ? chans[i]*lim_p/5000 : -chans[i]*lim_n/5000; //div by 5000 -> output = -1024..1024
-       chans[i] = chans[i]/100;//inputs are still -512..512
-    }
+    if(chans[i]) v = (chans[i]>0) ? chans[i]*lim_p/5000 : -chans[i]*lim_n/5000; //div by 5000 -> output = -1024..1024
 
     //impose hard limits
     lim_p = lim_p*10 + lim_p/4;  //lim_p = lim_p*5 + lim_p/8
@@ -2267,6 +2272,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     v+=g_model.limitData[i].offset*2;      //offset after limit.
     if(g_model.limitData[i].revert) v=-v;// finally do the reverse.
 
+    chans[i] = (int32_t)v/2;   //Copy output including offest and reverse
     cli();
     chanOut[i] = v; //copy consistent word to int-level
     sei();
