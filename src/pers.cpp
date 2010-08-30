@@ -31,9 +31,9 @@ EFile theFile2; //sometimes we need two files
 void generalDefault()
 {
   memset(&g_eeGeneral,0,sizeof(g_eeGeneral));
-  g_eeGeneral.myVers   =  2;
+  g_eeGeneral.myVers   =  3;
   g_eeGeneral.currModel=  0;
-  g_eeGeneral.contrast = 30;
+  g_eeGeneral.contrast = 25;
   g_eeGeneral.vBatWarn = 90;
   g_eeGeneral.stickMode=  1;
   int16_t sum=0;
@@ -63,7 +63,7 @@ void modelDefault(uint8_t id)
   g_model.name[5]='0'+(id+1)/10;
   g_model.name[6]='0'+(id+1)%10;
   g_model.mdVers = MDVERS;
-  
+
   for(uint8_t i= 0; i<4; i++){
     g_model.mixData[i].destCh = i+1;
     g_model.mixData[i].srcRaw = i+1;
@@ -102,7 +102,7 @@ void eeLoadModel(uint8_t id)
   {
     theFile.openRd(FILE_MODEL(id));
     uint16_t sz = theFile.readRlc((uint8_t*)&g_model, sizeof(g_model));
-    
+
     switch (g_model.mdVers){
 
       default:

@@ -273,10 +273,9 @@ bool checkIncDecGen2(uint8_t event, void *i_pval, int16_t i_min, int16_t i_max, 
   //change values based on P1
    static int16_t p1val;
    int16_t diff = p1val-anaIn(4);
-   if(!diff) newval += diff;
+   if(!diff) newval += diff>0 ? 3 : -3;
    p1val = anaIn(4);
    */
-
 
   if(newval>i_max)
   {
