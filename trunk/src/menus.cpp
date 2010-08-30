@@ -47,7 +47,7 @@
     lcd_vline(xx+1,yy-ll,ll); \
 
 
-static int16_t calibratedStick[4];
+static int16_t calibratedStick[7];
 static uint8_t s_pgOfs;
        uint8_t s_editMode;
 
@@ -73,7 +73,7 @@ MenuFuncP_PROGMEM APM menuTabModel[] = {
 MenuFuncP_PROGMEM APM menuTabDiag[] = {
   menuProcSetup0,
   menuProcSetup1,
-  menuProcTrainer,
+  menuProcPPMIn,
   menuProcDiagVers,
   menuProcDiagKeys,
   menuProcDiagAna,
@@ -1285,38 +1285,37 @@ void menuProcDiagCalib(uint8_t event)
 {
   static MState2 mstate2;
   TITLE("CALIB");
-  MSTATE_CHECK_V(7,menuTabDiag,5);
+  MSTATE_CHECK_V(7,menuTabDiag,4);
   int8_t  sub    = mstate2.m_posVert ;
-  static int16_t midVals[4];
-  static int16_t lowVals[4];
+  static int16_t midVals[7];
+  static int16_t loVals[7];
+  static int16_t hiVals[7];
+
+  for(uint8_t i=0; i<7; i++) { //get low and high vals for sticks and trims
+    int16_t vt = anaIn(i);
+    loVals[i] = min(vt,loVals[i]);
+    hiVals[i] = max(vt,hiVals[i]);
+    if(i>=4) midVals[i] = (loVals[i] + hiVals[i])/2;
+  }
+
   switch(event)
   {
+    case EVT_ENTRY:
+      for(uint8_t i=0; i<7; i++) loVals[i] = 15000;
+      break;
     case EVT_KEY_BREAK(KEY_DOWN): // !! achtung sub schon umgesetzt
       switch(sub)
       {
         case 2: //get mid
-          //for(uint8_t i=0; i<4; i++)midVals[i] = g_anaIns[i];
           for(uint8_t i=0; i<4; i++)midVals[i] = anaIn(i);
           beepKey();
           break;
         case 3:
-          //for(uint8_t i=0; i<4; i++)lowVals[i] = g_anaIns[i];
-          for(uint8_t i=0; i<4; i++)lowVals[i] = anaIn(i);
-          beepKey();
-          break;
-        case 4:
-#ifdef SIM
-          printf("do calib");
-#endif
-          for(uint8_t i=0; i<4; i++){
+          for(uint8_t i=0; i<7; i++){
             g_eeGeneral.calibMid[i]  = midVals[i];
-            //int16_t    dv1 = abs(midVals[i]-lowVals[i]);
-            //            int16_t    dv2 = abs(midVals[i]-(int16_t)anaIn(i));
-            //            sum += g_eeGeneral.calibSpan[i] = min(dv1,dv2);
-            uint16_t v;
-            v = midVals[i]       - lowVals[i];
+            int16_t v = midVals[i] - loVals[i];
             g_eeGeneral.calibSpanNeg[i] = v - v/64;
-            v = anaIn(i)- midVals[i];
+            v = hiVals[i] - midVals[i];
             g_eeGeneral.calibSpanPos[i] = v - v/64;
           }
           int16_t sum=0;
@@ -1328,25 +1327,19 @@ void menuProcDiagCalib(uint8_t event)
       }
       break;
   }
-  for(uint8_t i=1; i<5; i++)
+  for(uint8_t i=1; i<4; i++)
   {
     uint8_t y=i*FH+FH;
-    lcd_putsnAtt( 0, y,PSTR("SetMid SetLow SetHighReady  ")+7*(i-1),7,
+    lcd_putsnAtt( 0, y,PSTR("SetMid SetSpanDone   ")+7*(i-1),7,
                     sub==i ? INVERS : 0);
   }
-  for(uint8_t i=0; i<4; i++)
+  for(uint8_t i=0; i<7; i++)
   {
     uint8_t y=i*FH+0;
-    lcd_putsn_P( 8*FW,  y,      PSTR("A1A2A3A4")+2*i,2);
-    //lcd_outhex4(12*FW,  y,      g_anaIns[i]);
-    lcd_outhex4(12*FW,  y,      anaIn(i));
-    //lcd_puts_P( 16*FW,  y+4*FH, PSTR(":-"));
-    //lcd_putsn_P( 8*FW,  y+4*FH, PSTR("C1C2C3C4")+2*i,2);
-    //lcd_puts_P( 11*FW,  y+4*FH, PSTR("-    +"));
-    lcd_puts_P( 11*FW,  y+4*FH, PSTR("<    >"));
-    lcd_outhex4( 8*FW-3,y+4*FH, g_eeGeneral.calibSpanNeg[i]);
-    lcd_outhex4(12*FW,  y+4*FH, g_eeGeneral.calibMid[i]);
-    lcd_outhex4(17*FW,  y+4*FH, g_eeGeneral.calibSpanPos[i]);
+    lcd_puts_P( 11*FW,  y+1*FH, PSTR("<    >"));
+    lcd_outhex4( 8*FW-3,y+1*FH, sub==2 ? loVals[i]  : g_eeGeneral.calibSpanNeg[i]);
+    lcd_outhex4(12*FW,  y+1*FH, sub==1 ? anaIn(i) : (sub==2 ? midVals[i] : g_eeGeneral.calibMid[i]));
+    lcd_outhex4(17*FW,  y+1*FH, sub==2 ? hiVals[i]  : g_eeGeneral.calibSpanPos[i]);
   }
 
 }
@@ -1363,7 +1356,7 @@ void menuProcDiagAna(uint8_t event)
     lcd_putsn_P( 4*FW, y,PSTR("A1A2A3A4A5A6A7A8")+2*i,2);
     //lcd_outhex4( 8*FW, y,g_anaIns[i]);
     lcd_outhex4( 8*FW, y,anaIn(i));
-    if(i<4){
+    if(i<7){
       //int16_t v = g_anaIns[i];
       int16_t v = anaIn(i) - g_eeGeneral.calibMid[i];
       v =  v*50/max(1, (v > 0 ? g_eeGeneral.calibSpanPos[i] :  g_eeGeneral.calibSpanNeg[i])/2);
@@ -1431,16 +1424,14 @@ void menuProcDiagVers(uint8_t event)
   lcd_puts_P(0, 5*FH,stamp3 );
 }
 
-void menuProcTrainer(uint8_t event)
+void menuProcPPMIn(uint8_t event)
 {
   static MState2 mstate2;
-  TITLE("TRAINER");
-  MSTATE_TAB = { 4,4};
-  MSTATE_CHECK_VxH(3,menuTabDiag,1+4+1);
-  int8_t  sub    = mstate2.m_posVert-1 ;
-  uint8_t subSub = mstate2.m_posHorz+1;
+  TITLE("PPMIN");
+  MSTATE_TAB = { 1,4};
+  MSTATE_CHECK_VxH(3,menuTabDiag,1+1);
   uint8_t y;
-  bool    edit;
+  uint8_t edit = (mstate2.m_posVert==1);
 
   switch(event)
   {
@@ -1448,49 +1439,19 @@ void menuProcTrainer(uint8_t event)
       s_editMode = false;
       //mstate2.m_posHorz = -1;
       break;
-    case EVT_KEY_FIRST(KEY_MENU):
-      if(sub>=0 && sub<4) s_editMode = !s_editMode;
-      break;
   }
 
-  lcd_puts_P( 3*FW, 1*FH,PSTR("mode prc src swt"));
-  for(uint8_t i=0; i<4; i++){
-    y=(i+2)*FH;
-    TrainerData1*  td = &g_eeGeneral.trainer.chanMix[i];
-    putsChnRaw( 0, y,i+1,
-                sub==i ? INVERS : 0);
-    edit = (sub==i && subSub==1);
-    lcd_putsnAtt(   4*FW, y, PSTR("off += :=")+3*td->mode,3,
-                    edit ? (s_editMode ? BLINK : INVERS) : 0);
-    if(edit && s_editMode) td->mode = checkIncDec_hg( event, td->mode, 0,2); //!! bitfield
-
-    edit = (sub==i && subSub==2);
-    lcd_outdezAtt( 11*FW, y, td->studWeight*13/4,
-                   edit ? (s_editMode ? BLINK : INVERS) : 0);
-    if(edit && s_editMode) td->studWeight = checkIncDec_hg( event, td->studWeight, -31,31); //!! bitfield
-
-    edit = (sub==i && subSub==3);
-    lcd_putsnAtt(  12*FW, y, PSTR("ch1ch2ch3ch4")+3*td->srcChn,3, edit ? (s_editMode ? BLINK : INVERS) : 0);
-    if(edit && s_editMode) td->srcChn = checkIncDec_hg( event, td->srcChn, 0,3); //!! bitfield
-
-    edit = (sub==i && subSub==4);
-    putsDrSwitches(15*FW, y, td->swtch, edit ? (s_editMode ? BLINK : INVERS) : 0);
-    if(edit && s_editMode) td->swtch = checkIncDec_hg( event, td->swtch,  -MAX_DRSWITCH, MAX_DRSWITCH); //!! bitfield
-
-
-  }
-  edit = (sub==4);
-  y    = 7*FH;
-  lcd_putsnAtt(  0*FW, y, PSTR("Cal"),3,(sub==4) ? INVERS : 0);
-  for(uint8_t i=0; i<4; i++)
+  y    = 3*FH;
+  lcd_putsnAtt(  0*FW, y, PSTR("Cal"),3, edit ? INVERS : 0);
+  for(uint8_t i=0; i<8; i++)
   {
-    uint8_t x = (i*8+16)*FW/2;
-    lcd_outdezAtt( x , y, (g_ppmIns[i]-g_eeGeneral.trainer.calib[i])*2,PREC1 );
+    uint8_t x = i<4 ? (i*8+16)*FW/2 : ((i-4)*8+16)*FW/2;
+    lcd_outdezAtt( x, i<4 ? y : y+FH, (g_ppmIns[i]-g_eeGeneral.ppmInCalib[i])*2,PREC1 );
   }
   if(edit)
   {
     if(event==EVT_KEY_FIRST(KEY_MENU)){
-      memcpy(g_eeGeneral.trainer.calib,g_ppmIns,sizeof(g_eeGeneral.trainer.calib));
+      memcpy(g_eeGeneral.ppmInCalib,g_ppmIns,sizeof(g_eeGeneral.ppmInCalib));
       eeDirty(EE_GENERAL);
       beepKey();
     }
@@ -2000,9 +1961,9 @@ void menuProc0(uint8_t event)
     DO_SQUARE(LBOX_CENTERX+(calibratedStick[0]*BOX_LIMIT/1024), LBOX_CENTERY-(calibratedStick[1]*BOX_LIMIT/1024), MARKER_WIDTH)
     DO_SQUARE(RBOX_CENTERX+(calibratedStick[3]*BOX_LIMIT/1024), RBOX_CENTERY-(calibratedStick[2]*BOX_LIMIT/1024), MARKER_WIDTH)
 
-    V_BAR(SCREEN_WIDTH/2-5,SCREEN_HEIGHT-10,(anaIn(4)*BAR_HEIGHT/1024)+1l) //P1
-    V_BAR(SCREEN_WIDTH/2  ,SCREEN_HEIGHT-10,(anaIn(6)*BAR_HEIGHT/1024)+1l) //P2
-    V_BAR(SCREEN_WIDTH/2+5,SCREEN_HEIGHT-10,(anaIn(5)*BAR_HEIGHT/1024)+1l) //P3
+    V_BAR(SCREEN_WIDTH/2-5,SCREEN_HEIGHT-10,((calibratedStick[4]+512)*BAR_HEIGHT/1024)+1l) //P1
+    V_BAR(SCREEN_WIDTH/2  ,SCREEN_HEIGHT-10,((calibratedStick[6]+512)*BAR_HEIGHT/1024)+1l) //P2
+    V_BAR(SCREEN_WIDTH/2+5,SCREEN_HEIGHT-10,((calibratedStick[5]+512)*BAR_HEIGHT/1024)+1l) //P3
 
     for(int8_t i=0; i<3; i++)  {
       //uint8_t y=i*FH+4*FH; //+FH;
@@ -2070,7 +2031,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     if(inacCounter>((uint32_t)g_eeGeneral.inactivityTimer*97*60*10)) beepErr();
   }
 
-  for(uint8_t i=0;i<4;i++){        // calc Sticks
+  for(uint8_t i=0;i<7;i++){        // calc Sticks
 
     //Normalization  [0..1024] ->   [-512..512]
 
@@ -2083,60 +2044,52 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     if(v >=  RESX) v =  RESX;
     calibratedStick[i] = v; //for show in expo
 
-    uint8_t expoDrOn = GET_DR_STATE(i);
-    uint8_t stkDir = v>0 ? DR_RIGHT : DR_LEFT;
 
-    if(IS_THROTTLE(i) && g_model.thrExpo){
-      v  = 2*expo((v+RESX)/2,g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_RIGHT]);
-      stkDir = DR_RIGHT;
-    }
-    else
-      v  = expo(v,g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkDir]);
-    int32_t x = (int32_t)v * (g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][stkDir]+100)/100;
-    v = (int16_t)x;
-    if (IS_THROTTLE(i) && g_model.thrExpo) v -= RESX;
+    if(i<4) { //only do this for sticks
+      uint8_t expoDrOn = GET_DR_STATE(i);
+      uint8_t stkDir = v>0 ? DR_RIGHT : DR_LEFT;
 
-    TrainerData1*  td = &g_eeGeneral.trainer.chanMix[i];
-    if(td->mode && getSwitch(td->swtch,1)){
-      uint8_t chStud = td->srcChn;
-      int16_t vStud  = (g_ppmIns[chStud]- g_eeGeneral.trainer.calib[chStud])*
-        td->studWeight/31;
-
-      switch(td->mode)
-      {
-        case 1: v += vStud;   break; // add-mode
-        case 2: v  = vStud;   break; // subst-mode
+      if(IS_THROTTLE(i) && g_model.thrExpo){
+        v  = 2*expo((v+RESX)/2,g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_RIGHT]);
+        stkDir = DR_RIGHT;
       }
-    }
+      else
+        v  = expo(v,g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkDir]);
+      int32_t x = (int32_t)v * (g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][stkDir]+100)/100;
+      v = (int16_t)x;
+      if (IS_THROTTLE(i) && g_model.thrExpo) v -= RESX;
 
-    int32_t vv = 2*RESX;
-
-    //trace throttle
-    if(IS_THROTTLE(i))  //stickMode=0123 -> thr=2121
-    {
-      trace((g_eeGeneral.throttleReversed ? 512-v : v+512) / 32); //trace thr 0..32  (/32)
-      //throttle trim:
-      //v -> -512..512
-      //trim[i] -> -125..125
-      //512-v -> 0..1024 (normal)
-      //v+512 -> 1024..0 (reversed)
-      // multiply by 2 to get more range
-      if(g_model.thrTrim) vv = (g_eeGeneral.throttleReversed) ?
-                               ((int32_t)g_model.trim[i]-125)*(RESX+v)/(2*RESX) :
-                               ((int32_t)g_model.trim[i]+125)*(RESX-v)/(2*RESX);
-    }
+      //trace and trim throttle
+      int32_t vv = 2*RESX;
+      if(IS_THROTTLE(i))  //stickMode=0123 -> thr=2121
+      {
+        trace((g_eeGeneral.throttleReversed ? 512-v : v+512) / 32); //trace thr 0..32  (/32)
+        if(g_model.thrTrim) vv = (g_eeGeneral.throttleReversed) ?
+                                 ((int32_t)g_model.trim[i]-125)*(RESX+v)/(2*RESX) :
+                                 ((int32_t)g_model.trim[i]+125)*(RESX-v)/(2*RESX);
+      }
 
     //trim
-    trimA[i] = (vv==2*RESX) ? g_model.trim[i] : (int16_t)vv; //    if throttle trim -> trim low end
+      trimA[i] = (vv==2*RESX) ? g_model.trim[i] : (int16_t)vv; //    if throttle trim -> trim low end
+    }
     anas[i] = v; //10+1 Bit
   }
+  /*
   for(uint8_t i=4;i<7;i++){
-    int16_t v= anaIn(i);
-    anas[i] = v-512; // [-512..511]
+    int16_t v = anaIn(i);
+    v -= g_eeGeneral.calibMid[i];
+    v  =  v * (int32_t)RESX /  (max((int16_t)100,(v>0 ?
+                                     g_eeGeneral.calibSpanPos[i] :
+                                     g_eeGeneral.calibSpanNeg[i])));
+    if(v <= -RESX) v = -RESX;
+    if(v >=  RESX) v =  RESX;
+    calibratedStick[i] = v; //for show in expo
+    anas[i] = v; // [-512..511]
   }
+  */
   anas[7] = 512;     // MAX
   anas[8] = 512;     // FULL
-  for(uint8_t i=9;i<(9+NUM_PPM);i++)          anas[i] = g_ppmIns[i-9] - g_eeGeneral.trainer.calib[i-9]; //add ppm channels
+  for(uint8_t i=9;i<(9+NUM_PPM);i++)          anas[i] = g_ppmIns[i-9] - g_eeGeneral.ppmInCalib[i-9]; //add ppm channels
   for(uint8_t i=9+NUM_PPM;i<NUM_XCHNRAW;i++)  anas[i] = chans[i-9-NUM_PPM]; //other mixes previous outputs
 
   memset(chans,0,sizeof(chans));        // All outputs to 0

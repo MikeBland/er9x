@@ -392,7 +392,7 @@ void menuProcDiagCalib(uint8_t event);
 void menuProcDiagAna(uint8_t event);
 void menuProcDiagKeys(uint8_t event);
 void menuProcDiagVers(uint8_t event);
-void menuProcTrainer(uint8_t event);
+void menuProcPPMIn(uint8_t event);
 void menuProcSetup0(uint8_t event);
 void menuProcSetup1(uint8_t event);
 void menuProcMain(uint8_t event);
@@ -412,8 +412,6 @@ extern int16_t intpol(int16_t, uint8_t);
 
 //extern uint16_t s_ana[8];
 extern uint16_t anaIn(uint8_t chan);
-
-
 
 
 //extern TrainerData g_trainer;
