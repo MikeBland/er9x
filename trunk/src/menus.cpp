@@ -330,7 +330,7 @@ void setStickCenter() // copy state of 3 primary to subtrim
       perOut(zero_chans512,false,true); // do output loop - zero input channels
 
       for(uint8_t i=0; i<NUM_CHNOUT; i++)
-        g_model.limitData[i].offset += (zero_chans512[i] - g_chans512[i])/2;
+        g_model.limitData[i].offset += zero_chans512[i] - g_chans512[i];
 
       for(uint8_t i=0; i<4; i++)
         if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
@@ -366,7 +366,7 @@ void menuProcLimits(uint8_t event)
       if(sub>=0) s_editMode = !s_editMode;
       break;
     case EVT_KEY_LONG(KEY_MENU):
-      int16_t v = g_chans512[sub - s_pgOfs]/2;
+      int16_t v = g_chans512[sub - s_pgOfs];
       LimitData *ld = &g_model.limitData[sub];
       switch (subSub) {
         case 1:
@@ -384,21 +384,19 @@ void menuProcLimits(uint8_t event)
     LimitData *ld = &g_model.limitData[k];
     for(uint8_t j=0; j<=4;j++){
       uint8_t attr = ((sub==k && subSub==j) ? (s_editMode ? BLINK : INVERS) : 0);
-
       int16_t v = (ld->revert) ? -ld->offset : ld->offset;
       if((g_chans512[k] - v) >  50) swVal[k] = (true==ld->revert);// Switch to raw inputs?  - remove trim!
       if((g_chans512[k] - v) < -50) swVal[k] = (false==ld->revert);
       lcd_putcAtt(12*FW+FW/2, y, (swVal[k] ? 127 : 126),0); //'<' : '>'
-
       switch(j)
       {
         case 0:
           putsChn(0,y,k+1,(sub==k && subSub==0) ? INVERS : 0);
           break;
         case 1:
-          lcd_outdezAtt(  7*FW, y,  ld->offset,               attr);
+          lcd_outdezAtt(  8*FW, y,  ld->offset, attr|PREC1);
           if(attr && s_editMode) {
-            if(CHECK_INCDEC_H_MODELVAR( event, ld->offset, -500,500))  LIMITS_DIRTY;
+            if(CHECK_INCDEC_H_MODELVAR( event, ld->offset, -1000,1000))  LIMITS_DIRTY;
           }
           break;
         case 2:
@@ -473,7 +471,7 @@ void menuProcMixOne(uint8_t event)
   putsChn(x+1*FW,0,md2->destCh,0);
   //MSTATE_TAB = { 1,1,1,1,1,1,1,1,1,1,1};
   //MSTATE_CHECK0_VxH(11);
-  MSTATE_CHECK0_V(11);
+  MSTATE_CHECK0_V(12);
   int8_t  sub    = mstate2.m_posVert;
 
   if(sub<1) s_pgOfs=0;
@@ -498,59 +496,63 @@ void menuProcMixOne(uint8_t event)
         if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->weight, -125,125);
         break;
       case 2:
+        lcd_putsAtt(  2*FW,y,PSTR("Offset"),0);
+        lcd_outdezAtt(FW*11 + FW/2,y,md2->sOffset,attr);
+        if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->sOffset, -125,125);
+        break; 
+      case 3:
         lcd_putsAtt(  2*FW,y,PSTR("Trim"),0);
         lcd_putsnAtt(FW*9,y, PSTR("ON OFF")+3*md2->carryTrim,3,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->carryTrim, 0,1);
         break;
-      case 3:
+      case 4:
         lcd_putsAtt(  2*FW,y,PSTR("Curves"),0);
         lcd_putsnAtt( FW*9,y,PSTR(CURV_STR)+md2->curve*3,3,attr);
-        if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->curve, 0,MAX_CURVE5+MAX_CURVE9+7-1); //!! bitfield
+        if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->curve, 0,MAX_CURVE5+MAX_CURVE9+7-1); 
         if(attr && md2->curve>=7 && event==EVT_KEY_FIRST(KEY_MENU)){
           s_curveChan = md2->curve-7;
           pushMenu(menuProcCurveOne);
         }
         break;
-      case 4:
+      case 5:
         lcd_putsAtt(  2*FW,y,PSTR("Switch"),0);
         putsDrSwitches(8*FW,  y,md2->swtch,attr);
-        if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->swtch, -MAX_DRSWITCH, MAX_DRSWITCH); //!! bitfield
+        if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->swtch, -MAX_DRSWITCH, MAX_DRSWITCH); 
         break;
-      case 5:
+      case 6:
         lcd_putsAtt(  2*FW,y,PSTR("Multpx"),0);
         lcd_putsnAtt(9*FW, y,PSTR("Add     MultiplyReplace ")+8*md2->mltpx,8,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->mltpx, 0, 2); //!! bitfield
         break;
-      case 6:
+      case 7:
         lcd_putsAtt(  2*FW,y,PSTR("Delay Down"),0);
         attr = (sub==i) ? INVERS : 0;
         //lcd_putsAtt(9*FW, y, PSTR("Dn"),0);
         lcd_outdezAtt(FW*15,y,md2->delayDown,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->delayDown, 0,15); //!! bitfield
         break;
-      case 7:
+      case 8:
         lcd_putsAtt(  2*FW,y,PSTR("Delay Up"),0);
         attr = (sub==i) ? INVERS : 0;
         //lcd_putsAtt(15*FW, y, PSTR("Up"),0);
         lcd_outdezAtt(FW*15,y,md2->delayUp,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->delayUp, 0,15); //!! bitfield
         break;
-
-      case 8:
+      case 9:
         lcd_putsAtt(  2*FW,y,PSTR("Slow  Down"),0);
         attr = (sub==i) ? INVERS : 0;
         //lcd_putsAtt(9*FW, y, PSTR("Dn"),0);
         lcd_outdezAtt(FW*15,y,md2->speedDown,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->speedDown, 0,15); //!! bitfield
         break;
-      case 9:
+      case 10:
         lcd_putsAtt(  2*FW,y,PSTR("Slow  Up"),0);
         attr = (sub==i) ? INVERS : 0;
         //lcd_putsAtt(15*FW, y, PSTR("Up"),0);
         lcd_outdezAtt(FW*15,y,md2->speedUp,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->speedUp, 0,15); //!! bitfield
         break;
-      case 10:   lcd_putsAtt(  2*FW,y,PSTR("DELETE MIX [MENU]"),attr);
+      case 11:   lcd_putsAtt(  2*FW,y,PSTR("DELETE MIX [MENU]"),attr);
         if(attr && event==EVT_KEY_LONG(KEY_MENU)){
           killEvents(event);
           deleteMix(s_currMixIdx);
@@ -2118,10 +2120,12 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       else
         v = anas[md.srcRaw-1]; //Switch is on. MAX=FULL=512 or value.
 
+      //========== INPUT OFFSET ===============
+      if(md.sOffset) v += (int16_t)md.sOffset*5 + md.sOffset/8; 
+
       //========== DELAY and PAUSE ===============
       if (md.speedUp || md.speedDown || md.delayUp || md.delayDown)  // there are delay values
       {
-
         static int16_t sDelay[MAX_MIXERS];
         static int16_t act   [MAX_MIXERS];
         static bool    swtch [MAX_MIXERS];
@@ -2147,6 +2151,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
           v = act[i]/32;
         }
       }
+      
       //========== CURVES ===============
       switch(md.curve){
         case 0:
@@ -2169,14 +2174,16 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
             if( v>0 ) v=0;   //x|x<0
           }
           break;
-        case 3: v = abs(v);      break; //ABS
-        case 4:       //D|D>0
+        case 3:       // x|abs(x)
+          v = abs(v);      
+          break; 
+        case 4:       //f|f>0
           v = v>0 ? 512 : 0;
           break;
-        case 5:       //D|D<0
+        case 5:       //f|f<0
           v = v<0 ? -512 : 0;
           break;
-        case 6:       //D||D|
+        case 6:       //f|abs(f)
           v = v>0 ? 512 : -512;
           break;
         default:
@@ -2187,7 +2194,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       if((md.carryTrim==0) && (md.srcRaw>0) && (md.srcRaw<=4)) v += trimA[md.srcRaw-1];  //  0 = Trim ON  =  Default
 
       //========== MULTIPLEX ===============
-      int32_t dv = (int32_t)v*(md.weight);
+      int32_t dv = (int32_t)v*md.weight;
       switch(md.mltpx){
         case MLTPX_REP:
           chans[md.destCh-1] = dv;
@@ -2214,7 +2221,10 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     int16_t lim_p = g_model.limitData[i].max+100;
     int16_t lim_n = g_model.limitData[i].min-100;
 
-    if(chans[i]) v = (chans[i]>0) ? chans[i]*lim_p/5000 : -chans[i]*lim_n/5000; //div by 5000 -> output = -1024..1024
+    if(chans[i]) {
+      v = (chans[i]>0) ? chans[i]*lim_p/5000 : -chans[i]*lim_n/5000; //div by 5000 -> output = -1024..1024
+      chans[i] /= 100; // chans back to -512..512
+    }
 
     //impose hard limits
     lim_p = lim_p*10 + lim_p/4;  //lim_p = lim_p*5 + lim_p/8
@@ -2222,10 +2232,9 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     if(v>lim_p) v = lim_p;
     if(v<lim_n) v = lim_n;// absolute limits - do not go over!
 
-    v+=g_model.limitData[i].offset*2;      //offset after limit.
+    v+=g_model.limitData[i].offset;      //offset after limit.
     if(g_model.limitData[i].revert) v=-v;// finally do the reverse.
 
-    chans[i] = (int32_t)v/2;   //Copy output including offest and reverse
     cli();
     chanOut[i] = v; //copy consistent word to int-level
     sei();
