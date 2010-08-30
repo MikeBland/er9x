@@ -8,6 +8,7 @@ Setup basic variables for model.
     # THS - Throttle Stick actuated. Counts down when throttle is not idle.
     # TH% - Throttle %.  The higher the throttle the faster it counts down.
     # Switch - A switch can be selected to control the timer.
+       * The switch can be normal or 'momentary'.  The notation XXXm denotes a momentary switch which has to be pressed to toggle the timer on or off.
 
  * T-Trim - Throttle trim.  Allows the trim for the throttle channel to affect only the lower part of the range.  High throttle is unaffected by the trim.
 
@@ -29,3 +30,7 @@ Setup basic variables for model.
  * TRIM->subTRIM - Press Long MENU to copy trim values to the subtrims.
 
  * DELETE MODEL - Press Long MENU to delete current model. 
+
+
+
+*: Switches can be normal or reversed.  By pressing left you can see the following notation: !THR.  That means THR switch in reverse.
