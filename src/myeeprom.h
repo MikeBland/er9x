@@ -29,6 +29,8 @@
 #define MDVERS_r77 4
 #define MDVERS     5
 
+#define GENERAL_MYVER 3
+
 
 // eeprom ver <9 => mdvers == 1
 // eeprom ver >9 => mdvers ==2

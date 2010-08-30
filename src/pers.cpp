@@ -31,7 +31,7 @@ EFile theFile2; //sometimes we need two files
 void generalDefault()
 {
   memset(&g_eeGeneral,0,sizeof(g_eeGeneral));
-  g_eeGeneral.myVers   =  3;
+  g_eeGeneral.myVers   =  GENERAL_MYVER;
   g_eeGeneral.currModel=  0;
   g_eeGeneral.contrast = 25;
   g_eeGeneral.vBatWarn = 90;
@@ -49,7 +49,7 @@ bool eeLoadGeneral()
   theFile.openRd(FILE_GENERAL);
   uint8_t sz = theFile.readRlc((uint8_t*)&g_eeGeneral, sizeof(EEGeneral));
   uint16_t sum=0;
-  if(sz == sizeof(EEGeneral)  && g_eeGeneral.myVers==2){
+  if(sz == sizeof(EEGeneral)  && g_eeGeneral.myVers==GENERAL_MYVER){
     for(int i=0; i<12;i++) sum+=g_eeGeneral.calibMid[i];
     return g_eeGeneral.chkSum == sum;
   }
