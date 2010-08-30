@@ -2227,7 +2227,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
           v = v>0 ? 512 : -512;
           break;
         default:
-          v = intpol(v, md.curve - 4);
+          v = intpol(v, md.curve - 7);
       }
 
       //========== TRIM ===============
