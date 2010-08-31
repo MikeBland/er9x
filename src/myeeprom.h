@@ -63,6 +63,13 @@ typedef struct t_EEGeneral {
 
 
 
+#define MIX_P1    5
+#define MIX_P2    6
+#define MIX_P3    7
+#define MIX_MAX   8
+#define MIX_FULL  9
+
+
 
 #define DR_HIGH   0
 #define DR_MID    1
@@ -116,7 +123,7 @@ typedef struct t_MixData {
 typedef struct t_ModelData {
   char      name[10];             // 10 must be first for eeLoadModelName
   uint8_t   mdVers;
-  int8_t    tmrMode;
+  int8_t    tmrMode;   //timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw, chx(value > or < than tmrChVal), ch%
   uint16_t  tmrVal;
   uint8_t   protocol;
   int8_t    ppmNCH;
@@ -125,7 +132,8 @@ typedef struct t_ModelData {
   int8_t    trimInc;              // Trim Increments
   int8_t    ppmDelay;
   int8_t    trimSw;
-  char      res[4];
+  int8_t    tmrChVal;  //Timer channel trigger value
+  char      res[3];
   MixData   mixData[MAX_MIXERS];
   LimitData limitData[NUM_CHNOUT];
   ExpoData  expoData[4];
