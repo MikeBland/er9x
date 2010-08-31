@@ -57,40 +57,59 @@ typedef struct t_MixData {
 } __attribute__((packed)) MixData;
   */
 
-typedef struct t_TemplateData {
-  char      name[10];
-  uint8_t   mCount;
-  MixData   md[]
-} __attribute__((packed)) TemplateData;
-
-//TEPLATES -> GO BY MODE 1 => "RUD ELE THR AIL"
 
 #define STK_RUD  1
 #define STK_ELE  2
 #define STK_THR  3
 #define STK_AIL  4
-#define NUM_TEMPLATES DIM(mix_Templates)
+#define STK_P1   5
+#define STK_P2   6
+#define STK_P3   7
+#define NUM_TEMPLATES    3
+#define NUM_TEMPLATE_MIX 4
 
-const TemplateData APM  mix_Templates[] =
-{
-  .name="T-Cut",
-  .count=1,
-  .md[0]={.destCh=STK_THR,  .srcRaw=MIX_MAX,  .weight=-100,  .swtch=DSW_THR,  .mltpx=MLTPX_REP}
-},
-{
-  .name="V-Tail",
-  .count=4,
-  .md[0]={.destCh=STK_RUD,  .srcRaw=STK_RUD,  .weight=100},
-  .md[1]={.destCh=STK_RUD,  .srcRaw=STK_ELE,  .weight=100},
-  .md[2]={.destCh=STK_ELE,  .srcRaw=STK_RUD,  .weight=100},
-  .md[3]={.destCh=STK_ELE,  .srcRaw=STK_ELE,  .weight=100}
-},
-{
-  .name="Elevon",
-  .count=4,
-  .md[0]={.destCh=STK_ELE,  .srcRaw=STK_ELE,  .weight=100},
-  .md[1]={.destCh=STK_ELE,  .srcRaw=STK_AIL,  .weight=100},
-  .md[2]={.destCh=STK_AIL,  .srcRaw=STK_ELE,  .weight=100},
-  .md[3]={.destCh=STK_AIL,  .srcRaw=STK_AIL,  .weight=100}
-};
+typedef struct t_TemplateData {
+  char      name[15];
+  MixData   md[NUM_TEMPLATE_MIX];
+} __attribute__((packed)) TemplateData;
 
+//TEMPLATES -> GO BY MODE 1 => "RUD ELE THR AIL"
+
+TemplateData  mix_Templates[NUM_TEMPLATES];
+
+void initTemplates()
+{
+  memset(mix_Templates,0,sizeof(mix_Templates));
+  TemplateData *td;
+  
+  uint8_t j=0;
+  uint8_t i=0;
+  
+  i=0;
+  td = &mix_Templates[j];
+  memset(td->name,' ',sizeof(td->name));
+  strcpy_P(td->name,PSTR("T-Cut"));
+  td->md[i].destCh=STK_THR;  td->md[i].srcRaw=MIX_MAX;  td->md[i].weight=-100;  td->md[i].swtch=DSW_THR;  td->md[i].mltpx=MLTPX_REP;
+  j++;
+  
+  i=0;
+  td = &mix_Templates[j];
+  memset(td->name,' ',sizeof(td->name));
+  strcpy_P(td->name,PSTR("V-Tail"));
+  td->md[i].destCh=STK_RUD;  td->md[i].srcRaw=STK_RUD;  td->md[i].weight=-100; i++;
+  td->md[i].destCh=STK_RUD;  td->md[i].srcRaw=STK_ELE;  td->md[i].weight=-100; i++;
+  td->md[i].destCh=STK_ELE;  td->md[i].srcRaw=STK_RUD;  td->md[i].weight=-100; i++;
+  td->md[i].destCh=STK_ELE;  td->md[i].srcRaw=STK_ELE;  td->md[i].weight=-100; i++;
+  j++;
+
+  i=0;
+  td = &mix_Templates[j];
+  memset(td->name,' ',sizeof(td->name));
+  strcpy_P(td->name,PSTR("Elevon\\Delta"));
+  td->md[i].destCh=STK_ELE;  td->md[i].srcRaw=STK_ELE;  td->md[i].weight=-100; i++;
+  td->md[i].destCh=STK_ELE;  td->md[i].srcRaw=STK_AIL;  td->md[i].weight=-100; i++;
+  td->md[i].destCh=STK_AIL;  td->md[i].srcRaw=STK_ELE;  td->md[i].weight=-100; i++;
+  td->md[i].destCh=STK_AIL;  td->md[i].srcRaw=STK_AIL;  td->md[i].weight=-100; i++;
+  j++;
+  
+}

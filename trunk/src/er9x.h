@@ -138,7 +138,16 @@
 #define INP_G_RF_POW   1
 #define INP_G_RuddDR   0
 
+const uint8_t APM modn12x3[4][4]= {
+  {1, 2, 3, 4},
+  {1, 3, 2, 4},
+  {4, 2, 3, 1},
+  {4, 3, 2, 1} };
 
+
+
+//convert from mode 1 to mode g_eeGeneral.stickMode
+#define CONVERT_MODE(x) (x<=4 ? modn12x3[g_eeGeneral.stickMode][(x-1)] : x)
 
 enum EnumKeys {
   KEY_MENU ,
@@ -420,6 +429,8 @@ void setupPulses();
 void setupPulsesPPM();
 void setupPulsesSilver();
 void setupPulsesTracerCtp1009();
+
+void initTemplates();
 
 extern int16_t intpol(int16_t, uint8_t);
 
