@@ -1,6 +1,6 @@
 /*
  * Author - Erez Raviv <erezraviv@gmail.com>
- * 
+ *
  * Based on th9x -> http://code.google.com/p/th9x/
  *
  * This program is free software; you can redistribute it and/or modify
@@ -174,6 +174,17 @@ enum EnumKeys {
 #define MAX_DRSWITCH (1+SW_Trainer-SW_ThrCt+1)
 
 #define SWITCHES_STR "THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN"
+
+#define DSW_THR  1
+#define DSW_RUD  2
+#define DSW_ELE  3
+#define DSW_ID0  4
+#define DSW_ID1  5
+#define DSW_ID2  6
+#define DSW_AIL  7
+#define DSW_GEA  8
+#define DSW_TRN  9
+
 
 
 #define NUM_KEYS TRM_RH_UP+1
@@ -397,6 +408,8 @@ void menuProcSetup0(uint8_t event);
 void menuProcSetup1(uint8_t event);
 void menuProcMain(uint8_t event);
 void menuProcModelSelect(uint8_t event);
+void menuProcTemplates(uint8_t event);
+
 
 
 void menuProcStatistic2(uint8_t event);
