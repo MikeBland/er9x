@@ -36,14 +36,7 @@ const prog_char APM modi12x3[]=
   "AIL ELE THR RUD "
   "AIL THR ELE RUD ";
 
-const uint8_t APM modn12x3[4][4]=
-  {1, 2, 3, 4},
-  {1, 3, 2, 4},
-  {4, 2, 3, 1},
-  {4, 3, 2, 1};
 
-//convert from mode 1 to mode g_eeGeneral.stickMode
-#define CONVERT_MODE(x) (x<=4 ? modn12x3[g_eeGeneral.stickMode][(x-1)] : x)
 
 
 void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
@@ -756,6 +749,7 @@ int main(void)
   checkSwitches();
   setupPulses();
   wdt_enable(WDTO_500MS);
+  initTemplates();
   perOut(g_chans512, true, false);
 
   lcdSetRefVolt(g_eeGeneral.contrast);
