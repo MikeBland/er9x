@@ -65,8 +65,8 @@ typedef struct t_MixData {
 #define STK_P1   5
 #define STK_P2   6
 #define STK_P3   7
-#define NUM_TEMPLATES    3
-#define NUM_TEMPLATE_MIX 4
+#define NUM_TEMPLATES    4
+#define NUM_TEMPLATE_MIX 8
 
 typedef struct t_TemplateData {
   char      name[15];
@@ -81,17 +81,17 @@ void initTemplates()
 {
   memset(mix_Templates,0,sizeof(mix_Templates));
   TemplateData *td;
-  
+
   uint8_t j=0;
   uint8_t i=0;
-  
+
   i=0;
   td = &mix_Templates[j];
   memset(td->name,' ',sizeof(td->name));
   strcpy_P(td->name,PSTR("T-Cut"));
   td->md[i].destCh=STK_THR;  td->md[i].srcRaw=MIX_MAX;  td->md[i].weight=-100;  td->md[i].swtch=DSW_THR;  td->md[i].mltpx=MLTPX_REP;
   j++;
-  
+
   i=0;
   td = &mix_Templates[j];
   memset(td->name,' ',sizeof(td->name));
@@ -111,5 +111,31 @@ void initTemplates()
   td->md[i].destCh=STK_AIL;  td->md[i].srcRaw=STK_ELE;  td->md[i].weight=-100; i++;
   td->md[i].destCh=STK_AIL;  td->md[i].srcRaw=STK_AIL;  td->md[i].weight=-100; i++;
   j++;
-  
+
+  i=0;
+  td = &mix_Templates[j];
+  memset(td->name,' ',sizeof(td->name));
+  strcpy_P(td->name,PSTR("eCCPM"));
+  td->md[i].destCh=STK_ELE;  td->md[i].srcRaw=STK_ELE;  td->md[i].weight= 72; i++;
+  td->md[i].destCh=STK_ELE;  td->md[i].srcRaw=STK_THR;  td->md[i].weight= 55; i++;
+  td->md[i].destCh=STK_AIL;  td->md[i].srcRaw=STK_ELE;  td->md[i].weight=-36; i++;
+  td->md[i].destCh=STK_AIL;  td->md[i].srcRaw=STK_AIL;  td->md[i].weight= 62; i++;
+  td->md[i].destCh=STK_AIL;  td->md[i].srcRaw=STK_THR;  td->md[i].weight= 55; i++;
+  td->md[i].destCh=6;        td->md[i].srcRaw=STK_ELE;  td->md[i].weight=-36; i++;
+  td->md[i].destCh=6;        td->md[i].srcRaw=STK_AIL;  td->md[i].weight=-62; i++;
+  td->md[i].destCh=6;        td->md[i].srcRaw=STK_THR;  td->md[i].weight= 55; i++;
+  j++;
+
+  /*
+CH2   72% ELE
+   +  55% THR
+CH3  -36% ELE
+   +  62% AIL
+   +  55% THR
+CH4  -36% ELE
+   + -62% AIL
+   +  55% THR
+   */
+
+
 }

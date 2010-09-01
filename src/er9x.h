@@ -147,7 +147,7 @@ const uint8_t APM modn12x3[4][4]= {
 
 
 //convert from mode 1 to mode g_eeGeneral.stickMode
-#define CONVERT_MODE(x) (x<=4 ? modn12x3[g_eeGeneral.stickMode][(x-1)] : x)
+#define CONVERT_MODE(x) ((x)<=4 ? modn12x3[g_eeGeneral.stickMode][((x)-1)] : (x))
 
 enum EnumKeys {
   KEY_MENU ,
@@ -176,13 +176,17 @@ enum EnumKeys {
   SW_Gear   ,
   SW_Trainer
 };
+
+#define SWITCHES_STR "THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN""SW1""SW2""SW3""SW4""SW5""SW6"
+#define NUM_CSW  6 //number of custom switches
+
 //#define SW_BASE      SW_NC
 #define SW_BASE      SW_ThrCt
 #define SW_BASE_DIAG SW_ThrCt
 //#define SWITCHES_STR "  NC  ON THR RUD ELE ID0 ID1 ID2 AILGEARTRNR"
-#define MAX_DRSWITCH (1+SW_Trainer-SW_ThrCt+1)
+#define MAX_DRSWITCH (1+SW_Trainer-SW_ThrCt+1+NUM_CSW)
 
-#define SWITCHES_STR "THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN"
+
 
 #define DSW_THR  1
 #define DSW_RUD  2
@@ -418,6 +422,7 @@ void menuProcSetup1(uint8_t event);
 void menuProcMain(uint8_t event);
 void menuProcModelSelect(uint8_t event);
 void menuProcTemplates(uint8_t event);
+void menuProcSwitches(uint8_t event);
 
 
 
