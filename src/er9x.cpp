@@ -59,13 +59,13 @@ void putsVBat(uint8_t x,uint8_t y,uint8_t hideV,uint8_t att)
 }
 void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 {
-  if((idx1>=1) && (idx1 <=4))
-  {
+  if(!idx1)
+    lcd_putsnAtt(x,y,PSTR("----"),4,att);
+  else if((idx1>=1) && (idx1 <=4))
     lcd_putsnAtt(x,y,modi12x3+g_eeGeneral.stickMode*16+4*(idx1-1),4,att);
-  }else{                // 4   5   6   7   8   9
+  else                // 4   5   6   7   8   9
     lcd_putsnAtt(x,y,PSTR("P1  P2  P3  MAX FULLPPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"
                           "CH17CH18CH19CH20CH21CH22CH23CH24CH25CH26CH27CH28CH29CH30")+4*(idx1-5),4,att);
-  }
 }
 void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 {
@@ -84,6 +84,7 @@ void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
   lcd_putcAtt(x,y, idx1<0 ? '!' : ' ',att);
   lcd_putsnAtt(x+FW,y,PSTR(SWITCHES_STR)+3*(abs(idx1)-1),3,att);
 }
+
 bool getSwitch(int8_t swtch, bool nc)
 {
   switch(swtch){
@@ -103,21 +104,21 @@ bool getSwitch(int8_t swtch, bool nc)
   //input -> 1..4 -> sticks,  5..8 pots
   //MAX,FULL - disregard
   //ppm
-  CSwData &cs = g_model.customSw[abs(swtch)-MAX_DRSWITCH+NUM_CSW];
-  uint16_t v = 0;
-  uint8_t  i = cs.input;
+  CSwData &cs = g_model.customSw[abs(swtch)-(MAX_DRSWITCH-NUM_CSW)];
+  int16_t  v = 0;
+  uint8_t  i = cs.input-1;
   if(!i) return false;
-  else if(i<MIX_MAX) v = calibratedStick[i];
-  else if(i=<MIX_FULL) 512; //FULL/MAX
+  else if(i<MIX_MAX) v = calibratedStick[i];//-512..512
+  else if(i<=MIX_FULL) v = 512; //FULL/MAX
   else if(i<MIX_FULL+NUM_PPM) v = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL];
-  else v = chans[i-MIX_FULL-NUM_PPM];
+  else v = g_chans512[i-MIX_FULL-NUM_PPM];
 
-  uint16_t ofs = cs.offset*5 + cs.offset/8;
+  int16_t ofs = cs.offset*5 + cs.offset/8;
   switch (cs.func) {
-    case (CS_VPOS):   return (v>ofs);
-    case (CS_VNEG):   return (v<ofs);
-    case (CS_APOS):   return (abs(v)>ofs);
-    case (CS_ANEG):   return (abs(v)>ofs);
+    case (CS_VPOS):   return swtch>0 ? (v>ofs) : !(v>ofs);
+    case (CS_VNEG):   return swtch>0 ? (v<ofs) : !(v<ofs);
+    case (CS_APOS):   return swtch>0 ? (abs(v)>ofs) : !(abs(v)>ofs);
+    case (CS_ANEG):   return swtch>0 ? (abs(v)<ofs) : !(abs(v)<ofs);
     default:          return false;
   }
 }
@@ -775,7 +776,6 @@ int main(void)
   checkSwitches();
   setupPulses();
   wdt_enable(WDTO_500MS);
-  initTemplates();
   perOut(g_chans512, true, false);
 
   lcdSetRefVolt(g_eeGeneral.contrast);
