@@ -67,75 +67,70 @@ typedef struct t_MixData {
 #define STK_P3   7
 #define NUM_TEMPLATES    4
 #define NUM_TEMPLATE_MIX 8
+#define TEMPLATE_NLEN    15
 
-typedef struct t_TemplateData {
-  char      name[15];
-  MixData   md[NUM_TEMPLATE_MIX];
-} __attribute__((packed)) TemplateData;
+#define CM(x) (CONVERT_MODE((x)))
 
-//TEMPLATES -> GO BY MODE 1 => "RUD ELE THR AIL"
+const char n_Templates[][TEMPLATE_NLEN] = {
+  "T-Cut",
+  "V-Tail",
+  "Elevon\\Delta",
+  "eCCPM"
+};
 
-TemplateData  mix_Templates[NUM_TEMPLATES];
 
-void initTemplates()
+MixData* setDest(uint8_t dch)
 {
-  memset(mix_Templates,0,sizeof(mix_Templates));
-  TemplateData *td;
+  uint8_t i = 0;
+  while ((g_model.mixData[i].destCh<=dch) && (g_model.mixData[i].destCh) && (i<MAX_MIXERS)) i++;
+  if(i==MAX_MIXERS) return &g_model.mixData[0];
+  
+  memmove(&g_model.mixData[i+1],&g_model.mixData[i],
+         (MAX_MIXERS-(i+1))*sizeof(MixData) );
+  memset(&g_model.mixData[i],0,sizeof(MixData));
+  g_model.mixData[i].destCh = dch;
+  return &g_model.mixData[i];
+}
 
-  uint8_t j=0;
-  uint8_t i=0;
+void applyTemplate(uint8_t idx)
+{
+  MixData *md = &g_model.mixData[0];
+  
+  switch (idx){
+  //T-Cut
+  case (0):
+    md=setDest(CM(STK_THR));  md->srcRaw=MIX_MAX;  md->weight=-100;  md->swtch=DSW_THR;  md->mltpx=MLTPX_REP;
+  break;
 
-  i=0;
-  td = &mix_Templates[j];
-  memset(td->name,' ',sizeof(td->name));
-  strcpy_P(td->name,PSTR("T-Cut"));
-  td->md[i].destCh=STK_THR;  td->md[i].srcRaw=MIX_MAX;  td->md[i].weight=-100;  td->md[i].swtch=DSW_THR;  td->md[i].mltpx=MLTPX_REP;
-  j++;
+  //V-Tail
+  case (1):
+    md=setDest(CM(STK_RUD));  md->srcRaw=CM(STK_RUD);  md->weight= 100;
+    md=setDest(CM(STK_RUD));  md->srcRaw=CM(STK_ELE);  md->weight=-100;
+    md=setDest(CM(STK_ELE));  md->srcRaw=CM(STK_RUD);  md->weight= 100;
+    md=setDest(CM(STK_ELE));  md->srcRaw=CM(STK_ELE);  md->weight= 100;
+  break;
 
-  i=0;
-  td = &mix_Templates[j];
-  memset(td->name,' ',sizeof(td->name));
-  strcpy_P(td->name,PSTR("V-Tail"));
-  td->md[i].destCh=STK_RUD;  td->md[i].srcRaw=STK_RUD;  td->md[i].weight=-100; i++;
-  td->md[i].destCh=STK_RUD;  td->md[i].srcRaw=STK_ELE;  td->md[i].weight=-100; i++;
-  td->md[i].destCh=STK_ELE;  td->md[i].srcRaw=STK_RUD;  td->md[i].weight=-100; i++;
-  td->md[i].destCh=STK_ELE;  td->md[i].srcRaw=STK_ELE;  td->md[i].weight=-100; i++;
-  j++;
+  //Elevon\\Delta
+  case (2):
+    md=setDest(CM(STK_ELE));  md->srcRaw=CM(STK_ELE);  md->weight= 100;
+    md=setDest(CM(STK_ELE));  md->srcRaw=CM(STK_AIL);  md->weight= 100;
+    md=setDest(CM(STK_AIL));  md->srcRaw=CM(STK_ELE);  md->weight= 100;
+    md=setDest(CM(STK_AIL));  md->srcRaw=CM(STK_AIL);  md->weight=-100;
+  break;
 
-  i=0;
-  td = &mix_Templates[j];
-  memset(td->name,' ',sizeof(td->name));
-  strcpy_P(td->name,PSTR("Elevon\\Delta"));
-  td->md[i].destCh=STK_ELE;  td->md[i].srcRaw=STK_ELE;  td->md[i].weight=-100; i++;
-  td->md[i].destCh=STK_ELE;  td->md[i].srcRaw=STK_AIL;  td->md[i].weight=-100; i++;
-  td->md[i].destCh=STK_AIL;  td->md[i].srcRaw=STK_ELE;  td->md[i].weight=-100; i++;
-  td->md[i].destCh=STK_AIL;  td->md[i].srcRaw=STK_AIL;  td->md[i].weight=-100; i++;
-  j++;
+  //eCCPM
+  case (3):
+    md=setDest(CM(STK_ELE));  md->srcRaw=CM(STK_ELE);  md->weight= 72;
+    md=setDest(CM(STK_ELE));  md->srcRaw=CM(STK_THR);  md->weight= 55;
+    md=setDest(CM(STK_AIL));  md->srcRaw=CM(STK_ELE);  md->weight=-36;
+    md=setDest(CM(STK_AIL));  md->srcRaw=CM(STK_AIL);  md->weight= 62;
+    md=setDest(CM(STK_AIL));  md->srcRaw=CM(STK_THR);  md->weight= 55;
+    md=setDest(6);            md->srcRaw=CM(STK_ELE);  md->weight=-36;
+    md=setDest(6);            md->srcRaw=CM(STK_AIL);  md->weight=-62;
+    md=setDest(6);            md->srcRaw=CM(STK_THR);  md->weight= 55;
+  break;
 
-  i=0;
-  td = &mix_Templates[j];
-  memset(td->name,' ',sizeof(td->name));
-  strcpy_P(td->name,PSTR("eCCPM"));
-  td->md[i].destCh=STK_ELE;  td->md[i].srcRaw=STK_ELE;  td->md[i].weight= 72; i++;
-  td->md[i].destCh=STK_ELE;  td->md[i].srcRaw=STK_THR;  td->md[i].weight= 55; i++;
-  td->md[i].destCh=STK_AIL;  td->md[i].srcRaw=STK_ELE;  td->md[i].weight=-36; i++;
-  td->md[i].destCh=STK_AIL;  td->md[i].srcRaw=STK_AIL;  td->md[i].weight= 62; i++;
-  td->md[i].destCh=STK_AIL;  td->md[i].srcRaw=STK_THR;  td->md[i].weight= 55; i++;
-  td->md[i].destCh=6;        td->md[i].srcRaw=STK_ELE;  td->md[i].weight=-36; i++;
-  td->md[i].destCh=6;        td->md[i].srcRaw=STK_AIL;  td->md[i].weight=-62; i++;
-  td->md[i].destCh=6;        td->md[i].srcRaw=STK_THR;  td->md[i].weight= 55; i++;
-  j++;
-
-  /*
-CH2   72% ELE
-   +  55% THR
-CH3  -36% ELE
-   +  62% AIL
-   +  55% THR
-CH4  -36% ELE
-   + -62% AIL
-   +  55% THR
-   */
-
+}
+ STORE_MODELVARS;
 
 }

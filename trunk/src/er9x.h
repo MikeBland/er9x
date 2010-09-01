@@ -138,7 +138,7 @@
 #define INP_G_RF_POW   1
 #define INP_G_RuddDR   0
 
-const uint8_t APM modn12x3[4][4]= {
+const uint8_t modn12x3[4][4]= {
   {1, 2, 3, 4},
   {1, 3, 2, 4},
   {4, 2, 3, 1},
@@ -147,7 +147,7 @@ const uint8_t APM modn12x3[4][4]= {
 
 
 //convert from mode 1 to mode g_eeGeneral.stickMode
-#define CONVERT_MODE(x) ((x)<=4 ? modn12x3[g_eeGeneral.stickMode][((x)-1)] : (x))
+#define CONVERT_MODE(x) (((x)<=4) ? modn12x3[g_eeGeneral.stickMode][((x)-1)] : (x))
 
 enum EnumKeys {
   KEY_MENU ,
@@ -441,6 +441,7 @@ extern int16_t intpol(int16_t, uint8_t);
 
 //extern uint16_t s_ana[8];
 extern uint16_t anaIn(uint8_t chan);
+extern int16_t calibratedStick[7];
 
 
 //extern TrainerData g_trainer;

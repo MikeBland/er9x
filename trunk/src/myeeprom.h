@@ -147,7 +147,7 @@ typedef struct t_ModelData {
   char      name[10];             // 10 must be first for eeLoadModelName
   uint8_t   mdVers;
   int8_t    tmrMode;   //timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
-  int8_t    tmrDir:    //0=>Count Down, 1=>Count Up
+  int8_t    tmrDir;    //0=>Count Down, 1=>Count Up
   uint16_t  tmrVal;
   uint8_t   protocol;
   int8_t    ppmNCH;
