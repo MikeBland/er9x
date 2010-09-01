@@ -74,7 +74,6 @@ void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
                         "CH17CH18CH19CH20CH21CH22CH23CH24CH25CH26CH27CH28CH29CH30")+4*idx1,4,att);
 }
 
-
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
 {
   switch(idx1){
@@ -92,8 +91,35 @@ bool getSwitch(int8_t swtch, bool nc)
     case  MAX_DRSWITCH: return  true;
     case -MAX_DRSWITCH: return  false;
   }
-  if(swtch<0) return ! keyState((EnumKeys)(SW_BASE-swtch-1));
-  return               keyState((EnumKeys)(SW_BASE+swtch-1));
+
+  uint8_t dir = swtch>0;
+  if(abs(swtch)<(MAX_DRSWITCH-NUM_CSW)) {
+    if(!dir) return ! keyState((EnumKeys)(SW_BASE-swtch-1));
+    return            keyState((EnumKeys)(SW_BASE+swtch-1));
+  }
+
+  //custom switch, Issue 78
+  //use putsChnRaw
+  //input -> 1..4 -> sticks,  5..8 pots
+  //MAX,FULL - disregard
+  //ppm
+  CSwData &cs = g_model.customSw[abs(swtch)-MAX_DRSWITCH+NUM_CSW];
+  uint16_t v = 0;
+  uint8_t  i = cs.input;
+  if(!i) return false;
+  else if(i<MIX_MAX) v = calibratedStick[i];
+  else if(i=<MIX_FULL) 512; //FULL/MAX
+  else if(i<MIX_FULL+NUM_PPM) v = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL];
+  else v = chans[i-MIX_FULL-NUM_PPM];
+
+  uint16_t ofs = cs.offset*5 + cs.offset/8;
+  switch (cs.func) {
+    case (CS_VPOS):   return (v>ofs);
+    case (CS_VNEG):   return (v<ofs);
+    case (CS_APOS):   return (abs(v)>ofs);
+    case (CS_ANEG):   return (abs(v)>ofs);
+    default:          return false;
+  }
 }
 
 void checkMem()

@@ -27,7 +27,9 @@
 #define MDVERS_r14 2
 #define MDVERS_r22 3
 #define MDVERS_r77 4
-#define MDVERS     5
+#define MDVERS_r85 5
+#define MDVERS     6
+
 
 #define GENERAL_MYVER 3
 
@@ -114,16 +116,38 @@ typedef struct t_MixData {
   uint8_t speedDown:4;       // 0 nichts
   uint8_t carryTrim:1;
   uint8_t mltpx:3;           // multiplex method 0=+ 1=* 2=replace
-  uint8_t boolres:4;
+  uint8_t mixWarn:1;         // mixer warning
+  uint8_t boolres:3;
   int8_t  sOffset;
   int8_t  res;
 } __attribute__((packed)) MixData;
 
+#define CS_OFF     0
+#define CS_VPOS    1  //v>offset
+#define CS_VNEG    2  //v<offset
+#define CS_APOS    3  //|v|>offset
+#define CS_ANEG    4  //|v|<offset
+#define CS_MAXF    4  //max function
+
+
+typedef struct t_CSwData { // Custom Switches data
+  uint8_t input;
+  int8_t  offset;
+  uint8_t func;
+} __attribute__((packed)) CSwData;
+
+
+typedef struct t_SwashRingData { // Swash Ring data
+  uint8_t lim;   // 0 mean off 100 full deflection
+  uint8_t chX; // 2 channels to limit
+  uint8_t chY; // 2 channels to limit
+} __attribute__((packed)) SwashRingData;
 
 typedef struct t_ModelData {
   char      name[10];             // 10 must be first for eeLoadModelName
   uint8_t   mdVers;
-  int8_t    tmrMode;   //timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw, chx(value > or < than tmrChVal), ch%
+  int8_t    tmrMode;   //timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
+  int8_t    tmrDir:    //0=>Count Down, 1=>Count Up
   uint16_t  tmrVal;
   uint8_t   protocol;
   int8_t    ppmNCH;
@@ -132,14 +156,15 @@ typedef struct t_ModelData {
   int8_t    trimInc;              // Trim Increments
   int8_t    ppmDelay;
   int8_t    trimSw;
-  int8_t    tmrChVal;  //Timer channel trigger value
-  char      res[3];
+  char      res[5];
   MixData   mixData[MAX_MIXERS];
   LimitData limitData[NUM_CHNOUT];
   ExpoData  expoData[4];
   int8_t    trim[4];
   int8_t    curves5[MAX_CURVE5][5];
   int8_t    curves9[MAX_CURVE9][9];
+  CSwData   customSw[NUM_CSW];
+  SwashRingData swashR;
 } __attribute__((packed)) ModelData;
 
 
