@@ -583,11 +583,8 @@ void menuProcMixOne(uint8_t event)
   static MState2 mstate2;
   uint8_t x=TITLEP(s_currMixInsMode ? PSTR("INSERT MIX ") : PSTR("EDIT MIX "));
   MixData *md2 = &g_model.mixData[s_currMixIdx];
-  //lcd_putsAtt(x*FW, 0,PSTR("Dest->"),0);
   putsChn(x+1*FW,0,md2->destCh,0);
-  //MSTATE_TAB = { 1,1,1,1,1,1,1,1,1,1,1};
-  //MSTATE_CHECK0_VxH(11);
-  MSTATE_CHECK0_V(12);
+  MSTATE_CHECK0_V(13);
   int8_t  sub    = mstate2.m_posVert;
 
   if(sub<1) s_pgOfs=0;
@@ -819,6 +816,7 @@ void menuProcMix(uint8_t event)
     case EVT_KEY_LONG(KEY_MENU):
       if(sub<1) break;
       if(s_currMixInsMode) insertMix(s_currMixIdx);
+      s_moveMode=false;
       pushMenu(menuProcMixOne);
       break;
   }
@@ -1285,18 +1283,10 @@ void menuProcModel(uint8_t event)
   if(s_pgOfs<subN) { //timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw, chx(value > or < than tmrChVal), ch%
     lcd_putsAtt(    0,    y, PSTR("Trigger"),0);
     uint8_t attr = (sub==subN ?  INVERS : 0);
-    int8_t tm = g_model.tmrMode;
-    if(abs(tm)<10)
-      lcd_putsnAtt(  10*FW, y, PSTR("OFFABSRUsRU%ELsEL%THsTH%ALsAL%")+3*abs(tm),3,attr);
-      if(tm<0) lcd_putcAtt(9*FW,  y,'!',attr);
-    else if(abs(g_model.tmrMode)<(10+MAX_DRSWITCH))
-      putsDrSwitches( 9*FW,y,tm>0 ? tm-10 : tm+10,attr);//normal on-off
-    else {
-      putsDrSwitches( 9*FW,y,tm>0 ? tm-(10+MAX_DRSWITCH) : tm+(10+MAX_DRSWITCH),attr);//momentary on-off
-      lcd_putcAtt(13*FW,  y,'m',attr);
-    }
+    putsTmrMode(10*FW,y,attr);
     
-    if(sub==subN) CHECK_INCDEC_H_MODELVAR( event,g_model.tmrMode ,-(10+2*MAX_DRSWITCH),(10+2*MAX_DRSWITCH));
+    if(sub==subN) 
+      CHECK_INCDEC_H_MODELVAR( event,g_model.tmrMode ,-(13+2*MAX_DRSWITCH),(13+2*MAX_DRSWITCH));
     if((y+=FH)>8*FH) return;
   }subN++;
 
@@ -1773,6 +1763,7 @@ uint8_t  s_timerState;
 #define TMR_RUNNING 1
 #define TMR_BEEPING 2
 #define TMR_STOPPED 3
+
 int16_t  s_timerVal;
 void timer(uint8_t val)
 {
@@ -1782,9 +1773,9 @@ void timer(uint8_t val)
   static uint16_t s_sum;
   static uint8_t sw_toggled;
 
-  if(abs(tm)>50){ //toggeled switch
+  if(abs(tm)>=(TMR_VAROFS+MAX_DRSWITCH-1)){ //toggeled switch//abs(g_model.tmrMode)<(10+MAX_DRSWITCH-1)
     static uint8_t lastSwPos;
-    uint8_t swPos = getSwitch(tm>0 ? tm-50 : tm+50 ,0);
+    uint8_t swPos = getSwitch(tm>0 ? tm-(TMR_VAROFS+MAX_DRSWITCH-1-1) : tm+(TMR_VAROFS+MAX_DRSWITCH-1-1) ,0);
     if(swPos && !lastSwPos)  sw_toggled = !sw_toggled;  //if switcdh is flipped first time -> change counter state
     lastSwPos = swPos;
   }
@@ -1798,8 +1789,8 @@ void timer(uint8_t val)
   s_sum  -= val*s_cnt; //rest
   s_cnt   = 0;
 
-  if(abs(tm)<10) sw_toggled = false; // not switch - sw timer off
-  else if(abs(tm)<50) sw_toggled = getSwitch((tm>0 ? tm-10 : tm+10) ,0); //normal switch
+  if(abs(tm)<TMR_VAROFS) sw_toggled = false; // not switch - sw timer off
+  else if(abs(tm)<(TMR_VAROFS+MAX_DRSWITCH-1)) sw_toggled = getSwitch((tm>0 ? tm-(TMR_VAROFS-1) : tm+(TMR_VAROFS-1)) ,0); //normal switch
 
   s_timeCumTot               += 1;
   s_timeCumAbs               += g_model.tmrDir ? -1 : 1;
@@ -1811,29 +1802,10 @@ void timer(uint8_t val)
   uint8_t tmrM = abs(g_model.tmrMode);
   if(tmrM==TMRMODE_NONE) s_timerState = TMR_OFF;
   else if(tmrM==TMRMODE_ABS) s_timerVal -= s_timeCumAbs;
-  else if(tmrM<10) s_timerVal -= (tmrM&1) ? s_timeCum16ThrP/16 : s_timeCumThr;// stick% : stick
+  else if(tmrM<TMR_VAROFS) s_timerVal -= (tmrM&1) ? s_timeCum16ThrP/16 : s_timeCumThr;// stick% : stick
   else s_timerVal -= s_timeCumSw; //switch
-  /*
-  switch(g_model.tmrMode)
-  {
-    case TMRMODE_NONE:
-      s_timerState = TMR_OFF;
-      return;
-    case TMRMODE_THR_REL:
-      s_timerVal -= s_timeCum16ThrP/16;
-      break;
-    case TMRMODE_THR:
-      s_timerVal -= s_timeCumThr;
-      break;
-    case TMRMODE_ABS:
-      s_timerVal -= s_timeCumAbs;
-      //s_timeCum16 += 16;
-      break;
-    default: //switch
-      s_timerVal -= s_timeCumSw;
-      break;
-  }
-  */
+
+
   switch(s_timerState)
   {
     case TMR_OFF:
@@ -1867,10 +1839,10 @@ uint16_t s_traceCnt;
 void trace()   // called in perOut - once envery 0.01sec
 {
   //value for time described in g_model.tmrMode
-  //OFFABSRUsRU%ELsEL%THsTH%ALsAL%
+  //OFFABSRUsRU%ELsEL%THsTH%ALsAL%P1P1%P2P2%P3P3%
   uint16_t v = 0;
-  if((abs(g_model.tmrMode)>1) && (abs(g_model.tmrMode)<9)) {
-    v = calibratedStick[CONVERT_MODE(abs(g_model.tmrMode)/2 - 1)];
+  if((abs(g_model.tmrMode)>1) && (abs(g_model.tmrMode)<TMR_VAROFS)) {
+    v = calibratedStick[CONVERT_MODE(abs(g_model.tmrMode)/2)-1];
     v = (g_model.tmrMode<0 ? RESX-v : v+RESX ) / 32;
   }
   timer(v);
@@ -2080,18 +2052,7 @@ void menuProc0(uint8_t event)
   if(s_timerState != TMR_OFF){
     uint8_t att = DBLSIZE | (s_timerState==TMR_BEEPING ? BLINK : 0);
     putsTime(x+9*FW, FH*2, s_timerVal, att,att);
-
-    int8_t tm = g_model.tmrMode;
-    if(abs(tm)<10)
-      lcd_putsnAtt(        x+8*FW-FW/2, FH*3, PSTR("OFFABSRUsRU%ELsEL%THsTH%ALsAL%")+3*abs(tm),3,0);
-      if(tm<0) lcd_putcAtt(x+7*FW-FW/2, FH*3,'!',0);
-    else if(abs(tm)<50)
-      putsDrSwitches(x+7*FW-FW/2, FH*3,tm>0 ? tm-10 : tm+10,0);//normal on-off
-    else {
-      putsDrSwitches(x+6*FW-FW/2, FH*3,tm>0 ? tm-50 : tm+50,0);//momentary on-off
-      lcd_putcAtt(x+10*FW-FW/2,  FH*3,'m',0);
-    }
-
+    putsTmrMode(x+7*FW-FW/2,FH*3,0);
   }
 
   lcd_putsnAtt(x+4*FW,     2*FH,PSTR("ExpExFFneMedCrs")+3*g_model.trimInc,3, 0);
@@ -2193,8 +2154,8 @@ void menuProc0(uint8_t event)
     DO_SQUARE(RBOX_CENTERX+(calibratedStick[3]*BOX_LIMIT/1024), RBOX_CENTERY-(calibratedStick[2]*BOX_LIMIT/1024), MARKER_WIDTH)
 
     V_BAR(SCREEN_WIDTH/2-5,SCREEN_HEIGHT-10,((calibratedStick[4]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P1
-    V_BAR(SCREEN_WIDTH/2  ,SCREEN_HEIGHT-10,((calibratedStick[6]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P2
-    V_BAR(SCREEN_WIDTH/2+5,SCREEN_HEIGHT-10,((calibratedStick[5]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P3
+    V_BAR(SCREEN_WIDTH/2  ,SCREEN_HEIGHT-10,((calibratedStick[5]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P2
+    V_BAR(SCREEN_WIDTH/2+5,SCREEN_HEIGHT-10,((calibratedStick[6]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P3
 
     for(int8_t i=0; i<3; i++)  {
       //uint8_t y=i*FH+4*FH; //+FH;
@@ -2323,7 +2284,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
         trimA[i] = 0;
       }
 
-     //do swash ring setup
+  //========== SWASH RING ===============
   if(g_model.swashR.lim) {
     int32_t chX = anas[g_model.swashR.chX];
     int32_t chY = anas[g_model.swashR.chY];
@@ -2332,13 +2293,25 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     chY *= chY;
     lim *= lim;
     if((chX+chY)>lim) {// x^2 + y^2 > lim^2
-      //limit channels ch * lim^2/(chx^2+chy^2)
-      int32_t x = anas[g_model.swashR.chX];
-      x *= lim/(chX+chY); //10+10+10+1 bits -> 31.
-      anas[g_model.swashR.chX] = (int16_t)x;
-      x = anas[g_model.swashR.chY];
-      x *= lim/(chX+chY); //10+10+10+1 bits -> 31.
-      anas[g_model.swashR.chY] = (int16_t)x;
+      //limit channels ch * lim^2/(anainx^2+anainy^2)
+      //lim /= 1024;
+      chX = anas[g_model.swashR.chX];
+      chX *= chX;
+      chY = anas[g_model.swashR.chY];
+      chY *= chY;
+      chX = (chX+chY);// /1024; // need to be sqrt here
+      
+      // need to implement differently.
+      // should be ch * sqrt(lim^2/(x^2 + y^2))
+      chY = anas[g_model.swashR.chX];
+      chY *= lim;
+      chY /= chX;
+      anas[g_model.swashR.chX] = (int16_t)chY;
+      
+      chY = anas[g_model.swashR.chY];
+      chY *= lim;
+      chY /= chX;
+      anas[g_model.swashR.chY] = (int16_t)chY;
     }
   }
 
@@ -2391,7 +2364,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
         if(diff && (md.speedUp || md.speedDown)){
           //rate = steps/sec => 32*1024/100*md.speedUp/Down
           //act[i] += diff>0 ? (32768)/((int16_t)100*md.speedUp) : -(32768)/((int16_t)100*md.speedDown);
-          act[i] += (diff>0) ? ((md.speedUp>0)    ? (32767)/((int16_t)100*md.speedUp)   : -(v - diff)*32) :
+          act[i] += (diff>0) ? ((md.speedUp>0)    ? (32767)/((int16_t)100*md.speedUp)   :  (v - diff)*32) :
                                ((md.speedDown>0) ? -(32768)/((int16_t)100*md.speedDown) :  (v - diff)*32);
 
           v = act[i]/32;

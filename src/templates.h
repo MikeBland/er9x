@@ -72,6 +72,7 @@ typedef struct t_MixData {
 #define CM(x) (CONVERT_MODE((x)))
 
 const char n_Templates[][TEMPLATE_NLEN] = {
+  "Simple 4-CH",
   "T-Cut",
   "V-Tail",
   "Elevon\\Delta",
@@ -97,13 +98,21 @@ void applyTemplate(uint8_t idx)
   MixData *md = &g_model.mixData[0];
   
   switch (idx){
-  //T-Cut
+  //Simple 4-Ch
   case (0):
+    md=setDest(CM(STK_RUD));  md->srcRaw=CM(STK_RUD);  md->weight=100;
+    md=setDest(CM(STK_ELE));  md->srcRaw=CM(STK_ELE);  md->weight=100;
+    md=setDest(CM(STK_THR));  md->srcRaw=CM(STK_THR);  md->weight=100;
+    md=setDest(CM(STK_AIL));  md->srcRaw=CM(STK_AIL);  md->weight=100;
+  break;
+    
+  //T-Cut  
+  case (1):
     md=setDest(CM(STK_THR));  md->srcRaw=MIX_MAX;  md->weight=-100;  md->swtch=DSW_THR;  md->mltpx=MLTPX_REP;
   break;
 
   //V-Tail
-  case (1):
+  case (2):
     md=setDest(CM(STK_RUD));  md->srcRaw=CM(STK_RUD);  md->weight= 100;
     md=setDest(CM(STK_RUD));  md->srcRaw=CM(STK_ELE);  md->weight=-100;
     md=setDest(CM(STK_ELE));  md->srcRaw=CM(STK_RUD);  md->weight= 100;
@@ -111,7 +120,7 @@ void applyTemplate(uint8_t idx)
   break;
 
   //Elevon\\Delta
-  case (2):
+  case (3):
     md=setDest(CM(STK_ELE));  md->srcRaw=CM(STK_ELE);  md->weight= 100;
     md=setDest(CM(STK_ELE));  md->srcRaw=CM(STK_AIL);  md->weight= 100;
     md=setDest(CM(STK_AIL));  md->srcRaw=CM(STK_ELE);  md->weight= 100;
@@ -119,7 +128,7 @@ void applyTemplate(uint8_t idx)
   break;
 
   //eCCPM
-  case (3):
+  case (4):
     md=setDest(CM(STK_ELE));  md->srcRaw=CM(STK_ELE);  md->weight= 72;
     md=setDest(CM(STK_ELE));  md->srcRaw=CM(STK_THR);  md->weight= 55;
     md=setDest(CM(STK_AIL));  md->srcRaw=CM(STK_ELE);  md->weight=-36;
