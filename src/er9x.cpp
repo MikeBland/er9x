@@ -623,7 +623,7 @@ uint16_t anaIn(uint8_t chan)
   return *p;
 }
 
-
+/*
 ISR(ADC_vect, ISR_NOBLOCK)
 {
   static uint8_t  chan;
@@ -638,6 +638,28 @@ ISR(ADC_vect, ISR_NOBLOCK)
   chan    = (chan + 1) & 0x7;
   ADMUX   =  chan | (1<<REFS0);  // Multiplexer stellen
   STARTADCONV;                  //16MHz/128/25 = 5000 Conv/sec
+  
+  
+}
+*/
+
+ISR(ADC_vect, ISR_NOBLOCK)
+{
+  static uint8_t  chan;
+  static uint16_t s_ana[8];
+  static uint16_t ss_ana[8];
+  static uint16_t sss_ana[8];
+
+  ADCSRA  = 0; //reset adconv, 13>25 cycles
+  
+  s_anaFilt[chan] = (s_anaFilt[chan] + sss_ana[chan]) >> 1;
+  sss_ana[chan] = (sss_ana[chan] + ss_ana[chan]) >> 1;
+  ss_ana[chan] = (ss_ana[chan] + s_ana[chan]) >> 1;
+  s_ana[chan] = (ADC + s_ana[chan]) >> 1;
+  
+  chan    = (chan + 1) & 0x7;
+  ADMUX   =  chan | (1<<REFS0);  // Multiplexer stellen
+  STARTADCONV;                  //16MHz/128/25 = 5000 Conv/sec
 }
 
 void setupAdc(void)
@@ -645,6 +667,7 @@ void setupAdc(void)
   ADMUX = (1<<REFS0);      //start with ch0
   STARTADCONV;
 }
+
 
 volatile uint8_t g_tmr16KHz;
 
