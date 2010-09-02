@@ -600,32 +600,32 @@ void menuProcMixOne(uint8_t event)
     switch(i){
       case 0:
         lcd_putsAtt(  2*FW,y,PSTR("Source"),0);
-        putsChnRaw(   FW*9,y,md2->srcRaw,attr);
+        putsChnRaw(   FW*10,y,md2->srcRaw,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->srcRaw, 1,NUM_XCHNRAW);
         break;
       case 1:
         lcd_putsAtt(  2*FW,y,PSTR("Weight"),0);
-        lcd_outdezAtt(FW*11 + FW/2,y,md2->weight,attr);
+        lcd_outdezAtt(FW*12 + FW/2,y,md2->weight,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->weight, -125,125);
         break;
       case 2:
         lcd_putsAtt(  2*FW,y,PSTR("Offset"),0);
-        lcd_outdezAtt(FW*11 + FW/2,y,md2->sOffset,attr);
+        lcd_outdezAtt(FW*12 + FW/2,y,md2->sOffset,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->sOffset, -125,125);
         break;
       case 3:
         lcd_putsAtt(  2*FW,y,PSTR("Trim"),0);
-        lcd_putsnAtt(FW*9,y, PSTR("ON OFF")+3*md2->carryTrim,3,attr);
+        lcd_putsnAtt(FW*10,y, PSTR("ON OFF")+3*md2->carryTrim,3,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->carryTrim, 0,1);
         break;
       case 4:
         lcd_putsAtt(  2*FW,y,PSTR("Warning"),0);
-        lcd_putsnAtt(FW*9,y, PSTR("OFFON ")+3*md2->mixWarn,3,attr);
+        lcd_putsnAtt(FW*10,y, PSTR("OFFON ")+3*md2->mixWarn,3,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->mixWarn, 0,1);
         break;
       case 5:
         lcd_putsAtt(  2*FW,y,PSTR("Curves"),0);
-        lcd_putsnAtt( FW*9,y,PSTR(CURV_STR)+md2->curve*3,3,attr);
+        lcd_putsnAtt( FW*10,y,PSTR(CURV_STR)+md2->curve*3,3,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->curve, 0,MAX_CURVE5+MAX_CURVE9+7-1);
         if(attr && md2->curve>=7 && event==EVT_KEY_FIRST(KEY_MENU)){
           s_curveChan = md2->curve-7;
@@ -634,40 +634,36 @@ void menuProcMixOne(uint8_t event)
         break;
       case 6:
         lcd_putsAtt(  2*FW,y,PSTR("Switch"),0);
-        putsDrSwitches(8*FW,  y,md2->swtch,attr);
+        putsDrSwitches(9*FW,  y,md2->swtch,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->swtch, -MAX_DRSWITCH, MAX_DRSWITCH);
         break;
       case 7:
         lcd_putsAtt(  2*FW,y,PSTR("Multpx"),0);
-        lcd_putsnAtt(9*FW, y,PSTR("Add     MultiplyReplace ")+8*md2->mltpx,8,attr);
+        lcd_putsnAtt(10*FW, y,PSTR("Add     MultiplyReplace ")+8*md2->mltpx,8,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->mltpx, 0, 2); //!! bitfield
         break;
       case 8:
         lcd_putsAtt(  2*FW,y,PSTR("Delay Down"),0);
         attr = (sub==i) ? INVERS : 0;
-        //lcd_putsAtt(9*FW, y, PSTR("Dn"),0);
-        lcd_outdezAtt(FW*15,y,md2->delayDown,attr);
+        lcd_outdezAtt(FW*16,y,md2->delayDown,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->delayDown, 0,15); //!! bitfield
         break;
       case 9:
         lcd_putsAtt(  2*FW,y,PSTR("Delay Up"),0);
         attr = (sub==i) ? INVERS : 0;
-        //lcd_putsAtt(15*FW, y, PSTR("Up"),0);
-        lcd_outdezAtt(FW*15,y,md2->delayUp,attr);
+        lcd_outdezAtt(FW*16,y,md2->delayUp,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->delayUp, 0,15); //!! bitfield
         break;
       case 10:
         lcd_putsAtt(  2*FW,y,PSTR("Slow  Down"),0);
         attr = (sub==i) ? INVERS : 0;
-        //lcd_putsAtt(9*FW, y, PSTR("Dn"),0);
-        lcd_outdezAtt(FW*15,y,md2->speedDown,attr);
+        lcd_outdezAtt(FW*16,y,md2->speedDown,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->speedDown, 0,15); //!! bitfield
         break;
       case 11:
         lcd_putsAtt(  2*FW,y,PSTR("Slow  Up"),0);
         attr = (sub==i) ? INVERS : 0;
-        //lcd_putsAtt(15*FW, y, PSTR("Up"),0);
-        lcd_outdezAtt(FW*15,y,md2->speedUp,attr);
+        lcd_outdezAtt(FW*16,y,md2->speedUp,attr);
         if(attr)  CHECK_INCDEC_H_MODELVAR_BF( event, md2->speedUp, 0,15); //!! bitfield
         break;
       case 12:   lcd_putsAtt(  2*FW,y,PSTR("DELETE MIX [MENU]"),attr);
@@ -2431,7 +2427,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
         }
     }
 
-  if(mixWarning && (g_tmr10ms & 0x80)) beepWarn1(); // if warning beep every 1.28 seconds
+  if(mixWarning && !(g_tmr10ms & 0xFF)) beepWarn1(); // if warning beep every 2.56 seconds
 
   //========== LIMITS ===============
   for(uint8_t i=0;i<NUM_CHNOUT;i++){
