@@ -1199,8 +1199,8 @@ void menuProcModel(uint8_t event)
   static MState2 mstate2;
   uint8_t x=TITLE("SETUP ");
   lcd_outdezNAtt(x+2*FW,0,g_eeGeneral.currModel+1,INVERS+LEADING0,2);
-  MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,3,3,1,1};
-  MSTATE_CHECK_VxH(2,menuTabModel,13);
+  MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,3,1,1};
+  MSTATE_CHECK_VxH(2,menuTabModel,12);
   int8_t  sub    = mstate2.m_posVert;
   uint8_t subSub = mstate2.m_posHorz + 1;
 
@@ -1325,6 +1325,7 @@ void menuProcModel(uint8_t event)
     if((y+=FH)>8*FH) return;
   }subN++;
 
+/*
   if(s_pgOfs<subN) {
     //12345678901234567890
     //Sw-Ring val ch1 ch2
@@ -1353,6 +1354,7 @@ void menuProcModel(uint8_t event)
       }
     if((y+=FH)>8*FH) return;
   }subN++;
+*/
 
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("Proto"),0);//sub==2 ? INVERS:0);
@@ -2334,7 +2336,8 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       else
         v = anas[md.srcRaw-1]; //Switch is on. MAX=FULL=512 or value.
 
-      if(!mixWarning) mixWarning = md.mixWarn;
+      if(!mixWarning)
+       if(getSwitch(md.swtch,0)) mixWarning = md.mixWarn;
 
       //========== INPUT OFFSET ===============
       if(md.sOffset) v += (int16_t)md.sOffset*5 + md.sOffset/8;
@@ -2428,7 +2431,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
         }
     }
 
-  if(mixWarning && !(g_tmr10ms & 0xFF)) beepKey(); // if warning beep every 2.56 seconds
+  if(mixWarning && (g_tmr10ms & 0x80)) beepWarn1(); // if warning beep every 1.28 seconds
 
   //========== LIMITS ===============
   for(uint8_t i=0;i<NUM_CHNOUT;i++){
