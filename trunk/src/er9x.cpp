@@ -85,6 +85,24 @@ void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
   lcd_putsnAtt(x+FW,y,PSTR(SWITCHES_STR)+3*(abs(idx1)-1),3,att);
 }
 
+void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
+{
+  int8_t tm = g_model.tmrMode;
+  if(abs(tm)<TMR_VAROFS) {
+    lcd_putsnAtt(  x, y, PSTR("OFFABSRUsRU%ELsEL%THsTH%ALsAL%P1 P1%P2 P2%P3 P3%")+3*abs(tm),3,attr);
+    if(tm<(-TMRMODE_ABS)) lcd_putcAtt(x-1*FW,  y,'!',attr);
+    return;
+  }
+  
+  if(abs(g_model.tmrMode)<(TMR_VAROFS+MAX_DRSWITCH-1)) { //normal on-off
+    putsDrSwitches( x-1*FW,y,tm>0 ? tm-15 : tm+15,attr);
+    return;
+  }
+  
+  putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS+MAX_DRSWITCH-1-1) : tm+(TMR_VAROFS+MAX_DRSWITCH-1-1),attr);//momentary on-off
+  lcd_putcAtt(x+3*FW,  y,'m',attr);
+}
+
 bool getSwitch(int8_t swtch, bool nc)
 {
   switch(swtch){
@@ -610,12 +628,13 @@ ISR(ADC_vect, ISR_NOBLOCK)
 {
   static uint8_t  chan;
   static uint16_t s_ana[8];
+  //static uint16_t ss_ana[8];
+  //static uint16_t sss_ana[8];
 
   ADCSRA  = 0; //reset adconv, 13>25 cycles
-  //if(! keyState(SW_ThrCt)){
   s_anaFilt[chan] = s_ana[chan] / 16;
   s_ana[chan]    += ADC - s_anaFilt[chan]; //
-    //}
+
   chan    = (chan + 1) & 0x7;
   ADMUX   =  chan | (1<<REFS0);  // Multiplexer stellen
   STARTADCONV;                  //16MHz/128/25 = 5000 Conv/sec
@@ -626,27 +645,6 @@ void setupAdc(void)
   ADMUX = (1<<REFS0);      //start with ch0
   STARTADCONV;
 }
-
-//ISR(ADC_vect, ISR_NOBLOCK)
-//{
-//  static uint8_t  chan;
-//  static uint16_t s_ana[8];
-//
-//  uint8_t k = chan & 0x7;
-//  ADMUX = k | (1<<REFS0);      // Multiplexer frueh stellen kann nie schaden
-//  if(! keyState(SW_ThrCt)){
-//    s_ana[k]   += ADC - s_ana[k] / 4; // Index ist immer 1 weniger als Kanal
-//  }
-//  ++chan;
-//  if(chan & 0x20)
-//  {
-//    chan = 0;       // letzter Kanal war 6
-//    ADCSRA &= ~(1 << ADIE);
-//  }
-//  else
-//    STARTADCONV;
-//}
-
 
 volatile uint8_t g_tmr16KHz;
 

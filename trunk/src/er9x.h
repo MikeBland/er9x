@@ -287,6 +287,7 @@ bool    getSwitch(int8_t swtch, bool nc);
 ///   \param att   NO_INV,INVERS,BLINK
 ///
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t swtch,uint8_t att);
+void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr);
 
 void checkMem();
 void checkTHR();
@@ -398,6 +399,7 @@ void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att);
 /// Schreibt die Batteriespannung aufs lcd
 void putsVBat(uint8_t x,uint8_t y,uint8_t hideV,uint8_t att);
 void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2);
+#define TMR_VAROFS  16
 
 #define SUB_MODE_V     1
 #define SUB_MODE_H     2
