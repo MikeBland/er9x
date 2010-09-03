@@ -337,7 +337,7 @@ void setStickCenter() // copy state of 3 primary to subtrim
 
       for(uint8_t i=0; i<4; i++)
         if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
-      LIMITS_DIRTY;
+      STORE_MODELVARS;
       beepWarn1();
 }
 
@@ -379,7 +379,7 @@ void menuProcLimits(uint8_t event)
       switch (subSub) {
         case 1:
           ld->offset = (ld->revert) ? -v : v;
-          LIMITS_DIRTY;
+          STORE_MODELVARS;
           break;
       }
       break;
@@ -760,6 +760,7 @@ void moveMix(uint8_t idx,uint8_t mcopy, uint8_t dir) //true=inc=down false=dec=u
   memcpy(&temp,&src,sizeof(MixData));
   memcpy(&src,&tgt,sizeof(MixData));
   memcpy(&tgt,&temp,sizeof(MixData));
+  STORE_MODELVARS;
 
 }
 
@@ -1845,7 +1846,7 @@ void trace()   // called in perOut - once envery 0.01sec
   }
   timer(v);
 
-  uint16_t val = calibratedStick[CONVERT_MODE(3)]; //Get throttle channel value
+  uint16_t val = calibratedStick[CONVERT_MODE(3)-1]; //Get throttle channel value
   val = (g_eeGeneral.throttleReversed ? RESX-val : val+RESX) / 32; //calibrate it
   static uint16_t s_time;
   static uint16_t s_cnt;
@@ -2283,6 +2284,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       }
 
   //========== SWASH RING ===============
+  /*
   if(g_model.swashR.lim) {
     int32_t chX = anas[g_model.swashR.chX];
     int32_t chY = anas[g_model.swashR.chY];
@@ -2312,7 +2314,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       anas[g_model.swashR.chY] = (int16_t)chY;
     }
   }
-
+  */
 
    uint8_t mixWarning = false;
     //========== MIXER LOOP ===============
@@ -2363,8 +2365,8 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
         if(diff && (md.speedUp || md.speedDown)){
           //rate = steps/sec => 32*1024/100*md.speedUp/Down
           //act[i] += diff>0 ? (32768)/((int16_t)100*md.speedUp) : -(32768)/((int16_t)100*md.speedDown);
-          act[i] += (diff>0) ? ((md.speedUp>0)    ? (32767)/((int16_t)100*md.speedUp)   :  (v - diff)*32) :
-                               ((md.speedDown>0) ? -(32768)/((int16_t)100*md.speedDown) :  (v - diff)*32);
+          act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(32767)/((int16_t)100*md.speedUp)   :  v*32) :
+                              ((md.speedDown>0) ? act[i]-(32768)/((int16_t)100*md.speedDown) :  v*32) ;
 
           v = act[i]/32;
         }
@@ -2427,7 +2429,8 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
         }
     }
 
-  if(mixWarning && !(g_tmr10ms & 0xFF)) beepWarn1(); // if warning beep every 2.56 seconds
+  if(mixWarning)
+    if(((g_tmr10ms&0xFF)==0) || ((g_tmr10ms&0xFF)==8)) beepWarn1(); // if warning beep every 2.56 seconds beep-beep
 
   //========== LIMITS ===============
   for(uint8_t i=0;i<NUM_CHNOUT;i++){

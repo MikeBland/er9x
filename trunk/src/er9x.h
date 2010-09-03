@@ -147,6 +147,7 @@ const uint8_t modn12x3[4][4]= {
 
 
 //convert from mode 1 to mode g_eeGeneral.stickMode
+//NOTICE!  =>  1..4 -> 1..4
 #define CONVERT_MODE(x) (((x)<=4) ? modn12x3[g_eeGeneral.stickMode][((x)-1)] : (x))
 
 enum EnumKeys {
