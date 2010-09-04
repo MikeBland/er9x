@@ -49,6 +49,7 @@
 #define NO_HI_LEN 25
 
 int16_t calibratedStick[7];
+int16_t ex_chans[NUM_CHNOUT];          // Outputs + intermidiates
 uint8_t s_pgOfs;
 uint8_t s_editMode;
 uint8_t s_noHi;
@@ -593,6 +594,7 @@ void menuProcMixOne(uint8_t event)
   if(s_pgOfs<0) s_pgOfs = 0;
 
 #define CURV_STR "---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
+#define NUM_OFS(x) (((x<0 ? 2*FW-1 : 1*FW) + ((abs(x)>=100) ? 2*FW-2 : ((abs(x)>=10) ? 1*FW-1 : 0 ))))
   for(uint8_t y=FH; y<8*FH; y+=FH)
   {
     uint8_t i=(y/FH)+s_pgOfs-1;
@@ -605,12 +607,12 @@ void menuProcMixOne(uint8_t event)
         break;
       case 1:
         lcd_putsAtt(  2*FW,y,PSTR("Weight"),0);
-        lcd_outdezAtt(FW*12 + FW/2,y,md2->weight,attr);
+        lcd_outdezAtt(10*FW+NUM_OFS(md2->weight),y,md2->weight,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->weight, -125,125);
         break;
       case 2:
         lcd_putsAtt(  2*FW,y,PSTR("Offset"),0);
-        lcd_outdezAtt(FW*12 + FW/2,y,md2->sOffset,attr);
+        lcd_outdezAtt(10*FW+NUM_OFS(md2->sOffset),y,md2->sOffset,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->sOffset, -125,125);
         break;
       case 3:
@@ -619,11 +621,6 @@ void menuProcMixOne(uint8_t event)
         if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->carryTrim, 0,1);
         break;
       case 4:
-        lcd_putsAtt(  2*FW,y,PSTR("Warning"),0);
-        lcd_putsnAtt(FW*10,y, PSTR("OFFON ")+3*md2->mixWarn,3,attr);
-        if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->mixWarn, 0,1);
-        break;
-      case 5:
         lcd_putsAtt(  2*FW,y,PSTR("Curves"),0);
         lcd_putsnAtt( FW*10,y,PSTR(CURV_STR)+md2->curve*3,3,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->curve, 0,MAX_CURVE5+MAX_CURVE9+7-1);
@@ -632,10 +629,18 @@ void menuProcMixOne(uint8_t event)
           pushMenu(menuProcCurveOne);
         }
         break;
-      case 6:
+      case 5:
         lcd_putsAtt(  2*FW,y,PSTR("Switch"),0);
         putsDrSwitches(9*FW,  y,md2->swtch,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->swtch, -MAX_DRSWITCH, MAX_DRSWITCH);
+        break;
+      case 6:
+        lcd_putsAtt(  2*FW,y,PSTR("Warning"),0);
+        if(md2->mixWarn)
+          lcd_outdezAtt(FW*10+NUM_OFS(md2->mixWarn),y,md2->mixWarn,attr);
+        else
+          lcd_putsAtt(  FW*10,y,PSTR("OFF"),attr);
+        if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->mixWarn, 0,3);
         break;
       case 7:
         lcd_putsAtt(  2*FW,y,PSTR("Multpx"),0);
@@ -1409,12 +1414,12 @@ void menuProcModelSelect(uint8_t event)
 {
   static MState2 mstate2;
   TITLE("MODELSEL");
-  MSTATE_CHECK_V(1,menuTabModel,MAX_MODELS);
+  //MSTATE_CHECK_V(1,menuTabModel,MAX_MODELS);
   lcd_puts_P(     10*FW, 0, PSTR("free"));
   lcd_outdezAtt(  18*FW, 0, EeFsGetFree(),0);
-  //lcd_putsAtt(128-FW*3,0,PSTR("1/7"),INVERS);
+  lcd_putsAtt(128-FW*3,0,PSTR("1/8"),INVERS);
   int8_t subOld  = mstate2.m_posVert;
-  //MSTATE_CHECK0_V(MAX_MODELS);
+  MSTATE_CHECK0_V(MAX_MODELS);
   int8_t  sub    = mstate2.m_posVert;
   static uint8_t sel_editMode;
   switch(event)
@@ -2168,7 +2173,6 @@ void menuProc0(uint8_t event)
       lcd_putsnAtt(17*FW-1,12*FH-i*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i+1, 0) ? INVERS : 0);
     }
   }
-
 }
 
 
@@ -2205,7 +2209,7 @@ uint16_t pulses2MHz[60];
 void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
 {
   static int16_t  anas  [NUM_XCHNRAW];
-  static int32_t  chans [NUM_CHNOUT];          // Outputs + intermidiates
+  static int32_t  chans[NUM_CHNOUT]; 
   static uint32_t inacCounter;
   static uint16_t inacSum;
 
@@ -2316,7 +2320,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
   }
   */
 
-   uint8_t mixWarning = false;
+   uint8_t mixWarning = 0;
     //========== MIXER LOOP ===============
     for(uint8_t i=0;i<MAX_MIXERS;i++){
       MixData &md = g_model.mixData[i];
@@ -2334,8 +2338,8 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       else
         v = anas[md.srcRaw-1]; //Switch is on. MAX=FULL=512 or value.
 
-      if(!mixWarning)
-       if(getSwitch(md.swtch,0)) mixWarning = md.mixWarn;
+      if(md.mixWarn)
+       if(getSwitch(md.swtch,0)) mixWarning |= 1<<(md.mixWarn-1);
 
       //========== INPUT OFFSET ===============
       if(md.sOffset) v += (int16_t)md.sOffset*5 + md.sOffset/8;
@@ -2429,9 +2433,15 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
         }
     }
 
-  if(mixWarning)
-    if(((g_tmr10ms&0xFF)==0) || ((g_tmr10ms&0xFF)==8)) beepWarn1(); // if warning beep every 2.56 seconds beep-beep
-
+  //========== MIXER WARNING ===============
+  //1= 00,08
+  //2= 24,32,40
+  //3= 56,64,72,80
+  if(mixWarning & 1) if(((g_tmr10ms&0xFF)==  0)) beepWarn1(); 
+  if(mixWarning & 2) if(((g_tmr10ms&0xFF)== 64) || ((g_tmr10ms&0xFF)== 72)) beepWarn1(); 
+  if(mixWarning & 4) if(((g_tmr10ms&0xFF)==128) || ((g_tmr10ms&0xFF)==136) || ((g_tmr10ms&0xFF)==144)) beepWarn1(); 
+    
+    
   //========== LIMITS ===============
   for(uint8_t i=0;i<NUM_CHNOUT;i++){
     // chans[i] holds data from mixer.   chans[i] = v*weight => 512*100
@@ -2447,6 +2457,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     if(chans[i]) {
       v = (chans[i]>0) ? chans[i]*lim_p/5000 : -chans[i]*lim_n/5000; //div by 5000 -> output = -1024..1024
       chans[i] /= 100; // chans back to -512..512
+      ex_chans[i] = chans[i]; //for getswitch
     }
 
     //impose hard limits

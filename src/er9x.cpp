@@ -129,7 +129,7 @@ bool getSwitch(int8_t swtch, bool nc)
   else if(i<MIX_MAX) v = calibratedStick[i];//-512..512
   else if(i<=MIX_FULL) v = 512; //FULL/MAX
   else if(i<MIX_FULL+NUM_PPM) v = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL];
-  else v = g_chans512[i-MIX_FULL-NUM_PPM];
+  else v = ex_chans[i-MIX_FULL-NUM_PPM];
 
   int16_t ofs = cs.offset*5 + cs.offset/8;
   switch (cs.func) {
@@ -623,26 +623,22 @@ uint16_t anaIn(uint8_t chan)
   return *p;
 }
 
-/*
-ISR(ADC_vect, ISR_NOBLOCK)
+#define ADC_VREF_TYPE 0x40
+
+void getADC()
 {
-  static uint8_t  chan;
-  static uint16_t s_ana[8];
-  //static uint16_t ss_ana[8];
-  //static uint16_t sss_ana[8];
-
-  ADCSRA  = 0; //reset adconv, 13>25 cycles
-  s_anaFilt[chan] = s_ana[chan] / 16;
-  s_ana[chan]    += ADC - s_anaFilt[chan]; //
-
-  chan    = (chan + 1) & 0x7;
-  ADMUX   =  chan | (1<<REFS0);  // Multiplexer stellen
-  STARTADCONV;                  //16MHz/128/25 = 5000 Conv/sec
-  
-  
+  for (uint8_t adc_input=0;adc_input<8;adc_input++){
+		ADMUX=adc_input|ADC_VREF_TYPE;
+		// Start the AD conversion
+		ADCSRA|=0x40;
+		// Wait for the AD conversion to complete
+		while ((ADCSRA & 0x10)==0);
+		ADCSRA|=0x10;
+		s_anaFilt[adc_input]= ADCW;
+  }
 }
-*/
 
+/*
 ISR(ADC_vect, ISR_NOBLOCK)
 {
   static uint8_t  chan;
@@ -667,7 +663,7 @@ void setupAdc(void)
   ADMUX = (1<<REFS0);      //start with ch0
   STARTADCONV;
 }
-
+*/
 
 volatile uint8_t g_tmr16KHz;
 
@@ -771,6 +767,9 @@ int main(void)
   DDRF = 0x00;  PORTF = 0xff; //anain
   DDRG = 0x10;  PORTG = 0xff; //pullups + SIM_CTL=1 = phonejack = ppm_in
   lcd_init();
+  
+  ADMUX=ADC_VREF_TYPE;
+	ADCSRA=0x85;
 
   // TCNT0         10ms = 16MHz/160000  periodic timer
   //TCCR0  = (1<<WGM01)|(7 << CS00);//  CTC mode, clk/1024
@@ -790,29 +789,33 @@ int main(void)
   sei(); //damit alert in eeReadGeneral() nicht haengt
   g_menuStack[0] =  menuProc0;
 
+  lcdSetRefVolt(25);
   eeReadAll();
   checkMem();
-  setupAdc(); //before checkTHR
+  //setupAdc(); //before checkTHR
+  getADC();
   checkTHR();
   checkSwitches();
   setupPulses();
   wdt_enable(WDTO_500MS);
   perOut(g_chans512, true, false);
-
+  
   lcdSetRefVolt(g_eeGeneral.contrast);
   TIMSK |= (1<<OCIE1A); // Pulse generator enable immediately before mainloop
   while(1){
-    uint16_t old10ms=g_tmr10ms;
+    //uint16_t old10ms=g_tmr10ms;
     uint16_t t0 = getTmr16KHz();
+    getADC();
     perMain();
-    t0 = getTmr16KHz() - t0;
-    g_timeMain = max(g_timeMain,t0);
-    while(g_tmr10ms==old10ms) sleep_mode();
+    //while(g_tmr10ms==old10ms) sleep_mode();
     if(heartbeat == 0x3)
     {
       wdt_reset();
-      heartbeat = 0;
+     heartbeat = 0;
     }
+    t0 = getTmr16KHz() - t0;
+    g_timeMain = max(g_timeMain,t0);
+    
   }
 }
 #endif
