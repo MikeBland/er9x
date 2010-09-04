@@ -116,8 +116,7 @@ typedef struct t_MixData {
   uint8_t speedDown:4;       // 0 nichts
   uint8_t carryTrim:1;
   uint8_t mltpx:3;           // multiplex method 0=+ 1=* 2=replace
-  uint8_t mixWarn:1;         // mixer warning
-  uint8_t boolres:3;
+  uint8_t mixWarn:4;         // mixer warning
   int8_t  sOffset;
   int8_t  res;
 } __attribute__((packed)) MixData;

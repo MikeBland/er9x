@@ -445,6 +445,7 @@ extern int16_t intpol(int16_t, uint8_t);
 //extern uint16_t s_ana[8];
 extern uint16_t anaIn(uint8_t chan);
 extern int16_t calibratedStick[7];
+extern int16_t ex_chans[NUM_CHNOUT];
 
 
 //extern TrainerData g_trainer;
