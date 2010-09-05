@@ -250,12 +250,13 @@ void menuProcCurveOne(uint8_t event) {
 #define WCHART 32
 #define X0     (128-WCHART-2)
 #define Y0     32
-#define RESX    512
-#define RESXu   512u
-#define RESXul  512ul
-#define RESXl   512l
+#define RESX    1024
+#define RESXu   1024u
+#define RESXul  1024ul
+#define RESXl   1024l
 #define RESKul  100ul
 #define RESX_PLUS_TRIM (RESX+128)
+#define TRIM_MULTIPLIER 2
 
   for (uint8_t xv = 0; xv < WCHART * 2; xv++) {
     uint16_t yv = intpol(xv * (RESXu / WCHART) - RESXu, s_curveChan) / (RESXu
@@ -1416,8 +1417,7 @@ void menuProcModelSelect(uint8_t event)
   TITLE("MODELSEL");
   lcd_puts_P(     10*FW, 0, PSTR("free"));
   lcd_outdezAtt(  18*FW, 0, EeFsGetFree(),0);
-  lcd_putsAtt(128-FW*3,0,PSTR("1/"),INVERS);
-  lcd_putcAtt(128-FW*1,0,DIM(menuTab)+'0',INVERS);
+  lcd_putsAtt(128-FW*3,0,PSTR("1/8"),INVERS);
 
   int8_t subOld  = mstate2.m_posVert;
   MSTATE_CHECK0_V(MAX_MODELS);
@@ -1677,7 +1677,7 @@ void menuProcSetup1(uint8_t event)
     uint8_t attr = sub==i ? INVERS : 0;
     lcd_putsnAtt( FW*7,y,PSTR("THR Warn"
                               "SW  Warn"
-                              "Mem Warn"
+                              "MEM Warn"
                               "Beeper  ")+i*8,8,0);
     switch(i){
       case 0:
@@ -1714,17 +1714,17 @@ void menuProcSetup0(uint8_t event)
     CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.contrast, 20, 45);
     lcdSetRefVolt(g_eeGeneral.contrast);
   }
-  lcd_puts_P( 6*FW, y,PSTR("CONTRAST"));
+  lcd_puts_P( 6*FW, y,PSTR("Contrast"));
   y+=FH;
 
   lcd_outdezAtt(4*FW,y,g_eeGeneral.vBatWarn,(sub==1 ? INVERS : 0)|PREC1);
   if(sub==1){
     CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatWarn, 50, 100); //5-10V
   }
-  lcd_puts_P( 4*FW, y,PSTR("V BAT WARNING"));
+  lcd_puts_P( 4*FW, y,PSTR("V BAT Warning"));
   y+=FH;
 
-  lcd_outdezAtt(4*FW,y,g_eeGeneral.inactivityTimer*10,(sub==2 ? INVERS : 0));
+  lcd_outdezAtt(4*FW,y,g_eeGeneral.inactivityTimer,(sub==2 ? INVERS : 0));
   if(sub==2){
     CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.inactivityTimer, 0, 30); //0..300minutes
   }
@@ -1742,7 +1742,7 @@ void menuProcSetup0(uint8_t event)
   if(sub==4){
     CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightSw, -MAX_DRSWITCH, MAX_DRSWITCH); //5-10V
   }
-  lcd_puts_P( 6*FW, y,PSTR("LIGHT"));
+  lcd_puts_P( 6*FW, y,PSTR("Light"));
 
 
   y+=FH;
@@ -1848,12 +1848,12 @@ void trace()   // called in perOut - once envery 0.01sec
   uint16_t v = 0;
   if((abs(g_model.tmrMode)>1) && (abs(g_model.tmrMode)<TMR_VAROFS)) {
     v = calibratedStick[CONVERT_MODE(abs(g_model.tmrMode)/2)-1];
-    v = (g_model.tmrMode<0 ? RESX-v : v+RESX ) / 32;
+    v = (g_model.tmrMode<0 ? RESX-v : v+RESX ) / 64;
   }
   timer(v);
 
   uint16_t val = calibratedStick[CONVERT_MODE(3)-1]; //Get throttle channel value
-  val = (g_eeGeneral.throttleReversed ? RESX-val : val+RESX) / 32; //calibrate it
+  val = (g_eeGeneral.throttleReversed ? RESX-val : val+RESX) / 64; //calibrate it
   static uint16_t s_time;
   static uint16_t s_cnt;
   static uint16_t s_sum;
@@ -2155,8 +2155,8 @@ void menuProc0(uint8_t event)
 
     DO_CROSS(LBOX_CENTERX,LBOX_CENTERY,3)
     DO_CROSS(RBOX_CENTERX,RBOX_CENTERY,3)
-    DO_SQUARE(LBOX_CENTERX+(calibratedStick[0]*BOX_LIMIT/1024), LBOX_CENTERY-(calibratedStick[1]*BOX_LIMIT/1024), MARKER_WIDTH)
-    DO_SQUARE(RBOX_CENTERX+(calibratedStick[3]*BOX_LIMIT/1024), RBOX_CENTERY-(calibratedStick[2]*BOX_LIMIT/1024), MARKER_WIDTH)
+    DO_SQUARE(LBOX_CENTERX+(calibratedStick[0]*BOX_LIMIT/(2*RESX)), LBOX_CENTERY-(calibratedStick[1]*BOX_LIMIT/(2*RESX)), MARKER_WIDTH)
+    DO_SQUARE(RBOX_CENTERX+(calibratedStick[3]*BOX_LIMIT/(2*RESX)), RBOX_CENTERY-(calibratedStick[2]*BOX_LIMIT/(2*RESX)), MARKER_WIDTH)
 
     V_BAR(SCREEN_WIDTH/2-5,SCREEN_HEIGHT-10,((calibratedStick[4]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P1
     V_BAR(SCREEN_WIDTH/2  ,SCREEN_HEIGHT-10,((calibratedStick[5]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P2
@@ -2224,13 +2224,13 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     if(tsum!=inacSum){
       inacSum = tsum;
       inacCounter=0;
-    }                                                //   s  m 10min  - using 97 instead of 100 for accuracy
-    if(inacCounter>((uint32_t)g_eeGeneral.inactivityTimer*97*60*10)) beepErr();
+    }                                                //   s  m 1min  - using 97 instead of 100 for accuracy
+    if(inacCounter>((uint32_t)g_eeGeneral.inactivityTimer*97*60)) beepErr();
   }
 
   for(uint8_t i=0;i<7;i++){        // calc Sticks
 
-    //Normalization  [0..1024] ->   [-512..512]
+    //Normalization  [0..2048] ->   [-1024..1024]
 
     int16_t v = anaIn(i);
     v -= g_eeGeneral.calibMid[i];
@@ -2267,7 +2267,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       }
 
     //trim
-      trimA[i] = (vv==2*RESX) ? g_model.trim[i] : (int16_t)vv; //    if throttle trim -> trim low end
+      trimA[i] = (vv==2*RESX) ? g_model.trim[i]*TRIM_MULTIPLIER : (int16_t)vv*TRIM_MULTIPLIER; //    if throttle trim -> trim low end
     }
     anas[i] = v; //10+1 Bit
   }
@@ -2352,9 +2352,9 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
         static int16_t act   [MAX_MIXERS];
         static bool    swtch [MAX_MIXERS];
 
-        if(init) act[i]=v*32;
+        if(init) act[i]=v*16;
 
-        int16_t diff = v-act[i]/32;
+        int16_t diff = v-act[i]/16;
         if(abs(diff)<4) diff=0;
         if(diff>0) swtch[i] = true;
         if(diff<0) swtch[i] = false;
@@ -2363,17 +2363,17 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
           sDelay[i] = (swtch[i] ? md.delayUp :  md.delayDown) * 100;
         else if(sDelay[i]){ // perform delay
             sDelay[i]--;
-            v = act[i]/32;
+            v = act[i]/16;
             diff = 0;
           }
 
         if(diff && (md.speedUp || md.speedDown)){
           //rate = steps/sec => 32*1024/100*md.speedUp/Down
           //act[i] += diff>0 ? (32768)/((int16_t)100*md.speedUp) : -(32768)/((int16_t)100*md.speedDown);
-          act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(32767)/((int16_t)100*md.speedUp)   :  v*32) :
-                              ((md.speedDown>0) ? act[i]-(32768)/((int16_t)100*md.speedDown) :  v*32) ;
+          act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(32767)/((int16_t)100*md.speedUp)   :  v*16) :
+                              ((md.speedDown>0) ? act[i]-(32768)/((int16_t)100*md.speedDown) :  v*16) ;
 
-          v = act[i]/32;
+          v = act[i]/16;
         }
       }
 
@@ -2445,18 +2445,18 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
 
   //========== LIMITS ===============
   for(uint8_t i=0;i<NUM_CHNOUT;i++){
-    // chans[i] holds data from mixer.   chans[i] = v*weight => 512*100
+    // chans[i] holds data from mixer.   chans[i] = v*weight => 1024*100
     // later we multiply by the limit (up to 100) and then we need to normalize
-    // at the end chans[i] = chans[i]/100 =>  -512..512
+    // at the end chans[i] = chans[i]/100 =>  -1024..1024
     // interpolate value with min/max so we get smooth motion from center to stop
-    // this limits based on v original values and min=-512, max=512  RESX=512
+    // this limits based on v original values and min=-1024, max=1024  RESX=1024
 
     int16_t v = 0;
     int16_t lim_p = g_model.limitData[i].max+100;
     int16_t lim_n = g_model.limitData[i].min-100;
 
     if(chans[i]) {
-      v = (chans[i]>0) ? chans[i]*lim_p/5000 : -chans[i]*lim_n/5000; //div by 5000 -> output = -1024..1024
+      v = (chans[i]>0) ? chans[i]*lim_p/10000 : -chans[i]*lim_n/10000; //div by 10000 -> output = -1024..1024
       chans[i] /= 100; // chans back to -512..512
       ex_chans[i] = chans[i]; //for getswitch
     }

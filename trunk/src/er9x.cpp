@@ -127,11 +127,11 @@ bool getSwitch(int8_t swtch, bool nc)
   uint8_t  i = cs.input-1;
   if(!i) return false;
   else if(i<MIX_MAX) v = calibratedStick[i];//-512..512
-  else if(i<=MIX_FULL) v = 512; //FULL/MAX
+  else if(i<=MIX_FULL) v = 1024; //FULL/MAX
   else if(i<MIX_FULL+NUM_PPM) v = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL];
   else v = ex_chans[i-MIX_FULL-NUM_PPM];
 
-  int16_t ofs = cs.offset*5 + cs.offset/8;
+  int16_t ofs = cs.offset*10 + cs.offset/4; //coffset 100 -> 1024
   switch (cs.func) {
     case (CS_VPOS):   return swtch>0 ? (v>ofs) : !(v>ofs);
     case (CS_VNEG):   return swtch>0 ? (v<ofs) : !(v<ofs);
@@ -518,7 +518,7 @@ void perMain()
         // g_vbat100mV += g_vbat100mV*g_eeGeneral.vBatCalib/256;
         //g_vbat100mV = (g_anaIns[7]*35+g_anaIns[7]/4*g_eeGeneral.vBatCalib) / 256;
         uint16_t ab = anaIn(7);
-        g_vbat100mV = (ab*35 + ab / 4 * g_eeGeneral.vBatCalib) / 256;
+        g_vbat100mV = (ab*35 + ab / 4 * g_eeGeneral.vBatCalib) / 512;
 
         static uint8_t s_batCheck;
         s_batCheck+=32;
@@ -624,10 +624,10 @@ uint16_t anaIn(uint8_t chan)
 }
 
 #define ADC_VREF_TYPE 0x40
-void getADC(uint8_t osmp)
+void getADC()
 {
   uint16_t temp_ana[8] = {0};
-  for (uint8_t i=0; i<(osmp*4);i++) {
+  for (uint8_t i=0; i<4;i++) {  // Going from 10bits to 11 bits.  Addition = n.  Loop 4^n times
     for (uint8_t adc_input=0;adc_input<8;adc_input++){
       ADMUX=adc_input|ADC_VREF_TYPE;
       // Start the AD conversion
@@ -640,7 +640,7 @@ void getADC(uint8_t osmp)
   }
 
   for(uint8_t i=0; i<8; i++)
-    s_anaFilt[i] = temp_ana[i] >> osmp;
+    s_anaFilt[i] = temp_ana[i] / 2; // divide by 2^n to normalize result.
 }
 /*
  *
@@ -785,7 +785,7 @@ int main(void)
   eeReadAll();
   checkMem();
   //setupAdc(); //before checkTHR
-  getADC(1);
+  getADC();
   checkTHR();
   checkSwitches();
   setupPulses();
@@ -797,7 +797,10 @@ int main(void)
   while(1){
     //uint16_t old10ms=g_tmr10ms;
     uint16_t t0 = getTmr16KHz();
-    getADC(1); //over sample -> add one bit 10bit ADC => 11 bit ADC
+    getADC(); //over sample -> add one bit 10bit ADC => 11 bit ADC
+    getADC();
+    getADC();
+    getADC();
     perMain();
     //while(g_tmr10ms==old10ms) sleep_mode();
     if(heartbeat == 0x3)
