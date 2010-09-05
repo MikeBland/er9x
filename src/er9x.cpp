@@ -93,12 +93,12 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
     if(tm<(-TMRMODE_ABS)) lcd_putcAtt(x-1*FW,  y,'!',attr);
     return;
   }
-  
+
   if(abs(g_model.tmrMode)<(TMR_VAROFS+MAX_DRSWITCH-1)) { //normal on-off
     putsDrSwitches( x-1*FW,y,tm>0 ? tm-15 : tm+15,attr);
     return;
   }
-  
+
   putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS+MAX_DRSWITCH-1-1) : tm+(TMR_VAROFS+MAX_DRSWITCH-1-1),attr);//momentary on-off
   lcd_putcAtt(x+3*FW,  y,'m',attr);
 }
@@ -624,47 +624,39 @@ uint16_t anaIn(uint8_t chan)
 }
 
 #define ADC_VREF_TYPE 0x40
+void getADC(uint8_t osmp)
+{
+  uint16_t temp_ana[8] = {0};
+  for (uint8_t i=0; i<(osmp*4);i++) {
+    for (uint8_t adc_input=0;adc_input<8;adc_input++){
+      ADMUX=adc_input|ADC_VREF_TYPE;
+      // Start the AD conversion
+      ADCSRA|=0x40;
+      // Wait for the AD conversion to complete
+      while ((ADCSRA & 0x10)==0);
+      ADCSRA|=0x10;
+      temp_ana[adc_input] += ADCW;
+    }
+  }
 
+  for(uint8_t i=0; i<8; i++)
+    s_anaFilt[i] = temp_ana[i] >> osmp;
+}
+/*
+ *
 void getADC()
 {
   for (uint8_t adc_input=0;adc_input<8;adc_input++){
-		ADMUX=adc_input|ADC_VREF_TYPE;
-		// Start the AD conversion
-		ADCSRA|=0x40;
-		// Wait for the AD conversion to complete
-		while ((ADCSRA & 0x10)==0);
-		ADCSRA|=0x10;
-		s_anaFilt[adc_input]= ADCW;
+    ADMUX=adc_input|ADC_VREF_TYPE;
+    // Start the AD conversion
+    ADCSRA|=0x40;
+    // Wait for the AD conversion to complete
+    while ((ADCSRA & 0x10)==0);
+    ADCSRA|=0x10;
+    s_anaFilt[adc_input]= ADCW;
   }
 }
-
-/*
-ISR(ADC_vect, ISR_NOBLOCK)
-{
-  static uint8_t  chan;
-  static uint16_t s_ana[8];
-  static uint16_t ss_ana[8];
-  static uint16_t sss_ana[8];
-
-  ADCSRA  = 0; //reset adconv, 13>25 cycles
-  
-  s_anaFilt[chan] = (s_anaFilt[chan] + sss_ana[chan]) >> 1;
-  sss_ana[chan] = (sss_ana[chan] + ss_ana[chan]) >> 1;
-  ss_ana[chan] = (ss_ana[chan] + s_ana[chan]) >> 1;
-  s_ana[chan] = (ADC + s_ana[chan]) >> 1;
-  
-  chan    = (chan + 1) & 0x7;
-  ADMUX   =  chan | (1<<REFS0);  // Multiplexer stellen
-  STARTADCONV;                  //16MHz/128/25 = 5000 Conv/sec
-}
-
-void setupAdc(void)
-{
-  ADMUX = (1<<REFS0);      //start with ch0
-  STARTADCONV;
-}
-*/
-
+ * */
 volatile uint8_t g_tmr16KHz;
 
 ISR(TIMER0_OVF_vect) //continuous timer 16ms (16MHz/1024)
@@ -767,9 +759,9 @@ int main(void)
   DDRF = 0x00;  PORTF = 0xff; //anain
   DDRG = 0x10;  PORTG = 0xff; //pullups + SIM_CTL=1 = phonejack = ppm_in
   lcd_init();
-  
+
   ADMUX=ADC_VREF_TYPE;
-	ADCSRA=0x85;
+  ADCSRA=0x85;
 
   // TCNT0         10ms = 16MHz/160000  periodic timer
   //TCCR0  = (1<<WGM01)|(7 << CS00);//  CTC mode, clk/1024
@@ -793,19 +785,19 @@ int main(void)
   eeReadAll();
   checkMem();
   //setupAdc(); //before checkTHR
-  getADC();
+  getADC(1);
   checkTHR();
   checkSwitches();
   setupPulses();
   wdt_enable(WDTO_500MS);
   perOut(g_chans512, true, false);
-  
+
   lcdSetRefVolt(g_eeGeneral.contrast);
   TIMSK |= (1<<OCIE1A); // Pulse generator enable immediately before mainloop
   while(1){
     //uint16_t old10ms=g_tmr10ms;
     uint16_t t0 = getTmr16KHz();
-    getADC();
+    getADC(1); //over sample -> add one bit 10bit ADC => 11 bit ADC
     perMain();
     //while(g_tmr10ms==old10ms) sleep_mode();
     if(heartbeat == 0x3)
@@ -815,7 +807,7 @@ int main(void)
     }
     t0 = getTmr16KHz() - t0;
     g_timeMain = max(g_timeMain,t0);
-    
+
   }
 }
 #endif

@@ -476,7 +476,7 @@ void menuProcTemplates(uint8_t event)  //Issue 73
       beepWarn1();
       break;
   }
-  
+
   for(uint8_t i=0; i<7; i++){
     y=(i+1)*FH;
     k=i+s_pgOfs;
@@ -1286,8 +1286,8 @@ void menuProcModel(uint8_t event)
     lcd_putsAtt(    0,    y, PSTR("Trigger"),0);
     uint8_t attr = (sub==subN ?  INVERS : 0);
     putsTmrMode(10*FW,y,attr);
-    
-    if(sub==subN) 
+
+    if(sub==subN)
       CHECK_INCDEC_H_MODELVAR( event,g_model.tmrMode ,-(13+2*MAX_DRSWITCH),(13+2*MAX_DRSWITCH));
     if((y+=FH)>8*FH) return;
   }subN++;
@@ -1414,10 +1414,11 @@ void menuProcModelSelect(uint8_t event)
 {
   static MState2 mstate2;
   TITLE("MODELSEL");
-  //MSTATE_CHECK_V(1,menuTabModel,MAX_MODELS);
   lcd_puts_P(     10*FW, 0, PSTR("free"));
   lcd_outdezAtt(  18*FW, 0, EeFsGetFree(),0);
-  lcd_putsAtt(128-FW*3,0,PSTR("1/8"),INVERS);
+  lcd_putsAtt(128-FW*3,0,PSTR("1/"),INVERS);
+  lcd_putcAtt(128-FW*1,0,DIM(menuTab)+'0',INVERS);
+
   int8_t subOld  = mstate2.m_posVert;
   MSTATE_CHECK0_V(MAX_MODELS);
   int8_t  sub    = mstate2.m_posVert;
@@ -2209,7 +2210,7 @@ uint16_t pulses2MHz[60];
 void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
 {
   static int16_t  anas  [NUM_XCHNRAW];
-  static int32_t  chans[NUM_CHNOUT]; 
+  static int32_t  chans[NUM_CHNOUT];
   static uint32_t inacCounter;
   static uint16_t inacSum;
 
@@ -2304,14 +2305,14 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       chY = anas[g_model.swashR.chY];
       chY *= chY;
       chX = (chX+chY);// /1024; // need to be sqrt here
-      
+
       // need to implement differently.
       // should be ch * sqrt(lim^2/(x^2 + y^2))
       chY = anas[g_model.swashR.chX];
       chY *= lim;
       chY /= chX;
       anas[g_model.swashR.chX] = (int16_t)chY;
-      
+
       chY = anas[g_model.swashR.chY];
       chY *= lim;
       chY /= chX;
@@ -2437,11 +2438,11 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
   //1= 00,08
   //2= 24,32,40
   //3= 56,64,72,80
-  if(mixWarning & 1) if(((g_tmr10ms&0xFF)==  0)) beepWarn1(); 
-  if(mixWarning & 2) if(((g_tmr10ms&0xFF)== 64) || ((g_tmr10ms&0xFF)== 72)) beepWarn1(); 
-  if(mixWarning & 4) if(((g_tmr10ms&0xFF)==128) || ((g_tmr10ms&0xFF)==136) || ((g_tmr10ms&0xFF)==144)) beepWarn1(); 
-    
-    
+  if(mixWarning & 1) if(((g_tmr10ms&0xFF)==  0)) beepWarn1();
+  if(mixWarning & 2) if(((g_tmr10ms&0xFF)== 64) || ((g_tmr10ms&0xFF)== 72)) beepWarn1();
+  if(mixWarning & 4) if(((g_tmr10ms&0xFF)==128) || ((g_tmr10ms&0xFF)==136) || ((g_tmr10ms&0xFF)==144)) beepWarn1();
+
+
   //========== LIMITS ===============
   for(uint8_t i=0;i<NUM_CHNOUT;i++){
     // chans[i] holds data from mixer.   chans[i] = v*weight => 512*100
