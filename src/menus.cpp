@@ -256,7 +256,6 @@ void menuProcCurveOne(uint8_t event) {
 #define RESXl   1024l
 #define RESKul  100ul
 #define RESX_PLUS_TRIM (RESX+128)
-#define TRIM_MULTIPLIER 2
 
   for (uint8_t xv = 0; xv < WCHART * 2; xv++) {
     uint16_t yv = intpol(xv * (RESXu / WCHART) - RESXu, s_curveChan) / (RESXu
@@ -1848,12 +1847,12 @@ void trace()   // called in perOut - once envery 0.01sec
   uint16_t v = 0;
   if((abs(g_model.tmrMode)>1) && (abs(g_model.tmrMode)<TMR_VAROFS)) {
     v = calibratedStick[CONVERT_MODE(abs(g_model.tmrMode)/2)-1];
-    v = (g_model.tmrMode<0 ? RESX-v : v+RESX ) / 64;
+    v = (g_model.tmrMode<0 ? RESX-v : v+RESX ) / (RESX/32);
   }
   timer(v);
 
   uint16_t val = calibratedStick[CONVERT_MODE(3)-1]; //Get throttle channel value
-  val = (g_eeGeneral.throttleReversed ? RESX-val : val+RESX) / 64; //calibrate it
+  val = (g_eeGeneral.throttleReversed ? RESX-val : val+RESX) / (RESX/32); //calibrate it
   static uint16_t s_time;
   static uint16_t s_cnt;
   static uint16_t s_sum;
@@ -2267,7 +2266,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       }
 
     //trim
-      trimA[i] = (vv==2*RESX) ? g_model.trim[i]*TRIM_MULTIPLIER : (int16_t)vv*TRIM_MULTIPLIER; //    if throttle trim -> trim low end
+      trimA[i] = (vv==2*RESX) ? g_model.trim[i]*2 : (int16_t)vv*2; //    if throttle trim -> trim low end
     }
     anas[i] = v; //10+1 Bit
   }

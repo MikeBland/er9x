@@ -624,11 +624,12 @@ uint16_t anaIn(uint8_t chan)
 }
 
 #define ADC_VREF_TYPE 0x40
+/*
 void getADC()
 {
   uint16_t temp_ana[8] = {0};
-  for (uint8_t i=0; i<4;i++) {  // Going from 10bits to 11 bits.  Addition = n.  Loop 4^n times
-    for (uint8_t adc_input=0;adc_input<8;adc_input++){
+  for (uint8_t adc_input=0;adc_input<8;adc_input++){
+    for (uint8_t i=0; i<4;i++) {  // Going from 10bits to 11 bits.  Addition = n.  Loop 4^n times
       ADMUX=adc_input|ADC_VREF_TYPE;
       // Start the AD conversion
       ADCSRA|=0x40;
@@ -637,26 +638,25 @@ void getADC()
       ADCSRA|=0x10;
       temp_ana[adc_input] += ADCW;
     }
+    s_anaFilt[adc_input] = temp_ana[adc_input] / 2; // divide by 2^n to normalize result.
   }
-
-  for(uint8_t i=0; i<8; i++)
-    s_anaFilt[i] = temp_ana[i] / 2; // divide by 2^n to normalize result.
 }
-/*
- *
+
+*/
+
 void getADC()
 {
-  for (uint8_t adc_input=0;adc_input<8;adc_input++){
-    ADMUX=adc_input|ADC_VREF_TYPE;
-    // Start the AD conversion
-    ADCSRA|=0x40;
-    // Wait for the AD conversion to complete
-    while ((ADCSRA & 0x10)==0);
-    ADCSRA|=0x10;
-    s_anaFilt[adc_input]= ADCW;
-  }
+    for (uint8_t adc_input=0;adc_input<8;adc_input++){
+      ADMUX=adc_input|ADC_VREF_TYPE;
+      // Start the AD conversion
+      ADCSRA|=0x40;
+      // Wait for the AD conversion to complete
+      while ((ADCSRA & 0x10)==0);
+      ADCSRA|=0x10;
+      s_anaFilt[adc_input]= ADCW * 2; // use 11 bit numbers
+    }
 }
- * */
+ 
 volatile uint8_t g_tmr16KHz;
 
 ISR(TIMER0_OVF_vect) //continuous timer 16ms (16MHz/1024)
