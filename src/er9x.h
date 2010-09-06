@@ -435,7 +435,7 @@ void menuProcDiagAna(uint8_t event);
 void menuProcDiagKeys(uint8_t event);
 void menuProcDiagVers(uint8_t event);
 void menuProcPPMIn(uint8_t event);
-void menuProcSetup0(uint8_t event);
+void menuProcSetup(uint8_t event);
 void menuProcSetup1(uint8_t event);
 void menuProcMain(uint8_t event);
 void menuProcModelSelect(uint8_t event);

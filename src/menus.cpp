@@ -79,7 +79,7 @@ MenuFuncP_PROGMEM APM menuTabModel[] = {
 };
 
 MenuFuncP_PROGMEM APM menuTabDiag[] = {
-  menuProcSetup0,
+  menuProcSetup,
   menuProcSetup1,
   menuProcPPMIn,
   menuProcDiagVers,
@@ -1248,8 +1248,8 @@ void menuProcModel(uint8_t event)
   uint8_t subN = 1;
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("Name"),0);
-    lcd_putsnAtt(10*FW,   y, g_model.name ,sizeof(g_model.name),BSS_NO_INV | (sub==1 ? (s_editMode ? 0 : INVERS) : 0));
-    if(sub==1 && s_editMode){
+    lcd_putsnAtt(10*FW,   y, g_model.name ,sizeof(g_model.name),BSS_NO_INV | (sub==subN ? (s_editMode ? 0 : INVERS) : 0));
+    if(sub==subN && s_editMode){
         char v = char2idx(g_model.name[subSub-1]);
         if(event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_FIRST(KEY_UP) || event==EVT_KEY_REPT(KEY_DOWN) || event==EVT_KEY_REPT(KEY_UP))
            CHECK_INCDEC_H_MODELVAR_BF( event,v ,0,NUMCHARS-1);
@@ -1704,60 +1704,85 @@ void menuProcSetup1(uint8_t event)
     }
   }
 }
-void menuProcSetup0(uint8_t event)
+void menuProcSetup(uint8_t event)
 {
   static MState2 mstate2;
-  TITLE("SETUP BASIC");
-  MSTATE_CHECK_V(1,menuTabDiag,1+6);
-  int8_t  sub    = mstate2.m_posVert-1 ;
-  uint8_t y=FH;
-  lcd_outdezAtt(4*FW,y,g_eeGeneral.contrast,sub==0 ? INVERS : 0);
-  if(sub==0){
-    CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.contrast, 20, 45);
-    lcdSetRefVolt(g_eeGeneral.contrast);
-  }
-  lcd_puts_P( 6*FW, y,PSTR("Contrast"));
-  y+=FH;
+  TITLE("SETUP");
+  MSTATE_CHECK_V(1,menuTabDiag,1+7);
+  //int8_t  sub    = mstate2.m_posVert-1 ;
+  //uint8_t y=FH;
+  
+  int8_t  sub    = mstate2.m_posVert;
 
-  lcd_outdezAtt(4*FW,y,g_eeGeneral.vBatWarn,(sub==1 ? INVERS : 0)|PREC1);
-  if(sub==1){
-    CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatWarn, 50, 100); //5-10V
-  }
-  lcd_puts_P( 4*FW, y,PSTR("V BAT Warning"));
-  y+=FH;
+  if(sub<1) s_pgOfs=0;
+  else if((sub-s_pgOfs)>6) s_pgOfs = sub-6;
+  else if((sub-s_pgOfs)<1) s_pgOfs = sub-1;
+  if(s_pgOfs<0) s_pgOfs = 0;
 
-  lcd_outdezAtt(4*FW,y,g_eeGeneral.inactivityTimer,(sub==2 ? INVERS : 0));
-  if(sub==2){
-    CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.inactivityTimer, 0, 30); //0..300minutes
-  }
-  lcd_puts_P( 4*FW, y,PSTR("m Inactivity Alrm"));
-  y+=FH;
+  uint8_t y = 1*FH;
+  
+  uint8_t subN = 1;
+  if(s_pgOfs<subN) {
+    lcd_puts_P( 6*FW, y,PSTR("Contrast"));
+    lcd_outdezAtt(4*FW,y,g_eeGeneral.contrast,sub==subN ? INVERS : 0);
+    if(sub==subN) {
+      CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.contrast, 20, 45);
+      lcdSetRefVolt(g_eeGeneral.contrast);
+    }
+    if((y+=FH)>8*FH) return;
+  }subN++;
+  
+  if(s_pgOfs<subN) {
+    lcd_puts_P( 4*FW, y,PSTR("V BAT Warning"));
+    lcd_outdezAtt(4*FW,y,g_eeGeneral.vBatWarn,(sub==subN ? INVERS : 0)|PREC1);
+    if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatWarn, 50, 100); //5-10V
+    if((y+=FH)>8*FH) return;
+  }subN++;
+  
+  
+  
 
-  lcd_putsnAtt(1*FW, y, PSTR("OFF ON")+3*g_eeGeneral.throttleReversed,3,(sub==3 ? INVERS:0));
-  if(sub==3){
-    CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.throttleReversed, 0, 1);
-  }
-  lcd_puts_P( 6*FW, y,PSTR("Throttle Rev"));
-  y+=FH;
+  if(s_pgOfs<subN) {
+    lcd_puts_P( 4*FW, y,PSTR("m Inactivity Alrm"));
+    lcd_outdezAtt(4*FW,y,g_eeGeneral.inactivityTimer,(sub==subN ? INVERS : 0));
+    if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.inactivityTimer, 0, 250); //0..250minutes
+    if((y+=FH)>8*FH) return;
+  }subN++;
+  
+  if(s_pgOfs<subN) {
+    lcd_puts_P( 6*FW, y,PSTR("Filter ADC"));
+    lcd_putsnAtt(1*FW, y, PSTR("OFF ON")+3*g_eeGeneral.filterInput,3,(sub==subN ? INVERS:0));
+    if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.filterInput, 0, 1);
+    if((y+=FH)>8*FH) return;
+  }subN++;
+  
+  if(s_pgOfs<subN) {
+    lcd_puts_P( 6*FW, y,PSTR("Throttle Rev"));
+    lcd_putsnAtt(1*FW, y, PSTR("OFF ON")+3*g_eeGeneral.throttleReversed,3,(sub==subN ? INVERS:0));
+    if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.throttleReversed, 0, 1);
+    if((y+=FH)>8*FH) return;
+  }subN++;
+  
+  if(s_pgOfs<subN) {
+    lcd_puts_P( 6*FW, y,PSTR("Light"));
+    putsDrSwitches(0*FW,y,g_eeGeneral.lightSw,sub==subN ? INVERS : 0);
+    if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightSw, -MAX_DRSWITCH, MAX_DRSWITCH);
+    if((y+=FH)>8*FH) return;
+  }subN++;
+  
+  
+  if(s_pgOfs<(subN)) {
+    lcd_putsAtt( 1*FW, y, PSTR("Mode"),0);//sub==3?INVERS:0);
+    lcd_putcAtt( 3*FW, y+FH, '1'+g_eeGeneral.stickMode,sub==subN?INVERS:0);
+    for(uint8_t i=0; i<4; i++)
+    {
+      lcd_img(    (6+4*i)*FW, y,   sticks,i,0);
+      putsChnRaw( (6+4*i)*FW, y+FH,i+1,0);//sub==3?INVERS:0);
+    }
+    if(sub==subN) CHECK_INCDEC_H_GENVAR(event,g_eeGeneral.stickMode,0,3);
+    if((y+=FH)>8*FH) return;
+  }subN++;
 
-  putsDrSwitches(0*FW,y,g_eeGeneral.lightSw,sub==4 ? INVERS : 0);
-  if(sub==4){
-    CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightSw, -MAX_DRSWITCH, MAX_DRSWITCH); //5-10V
-  }
-  lcd_puts_P( 6*FW, y,PSTR("Light"));
-
-
-  y+=FH;
-  lcd_putsAtt( 1*FW, y, PSTR("Mode"),0);//sub==3?INVERS:0);
-  lcd_putcAtt( 3*FW, y+FH, '1'+g_eeGeneral.stickMode,sub==5?INVERS:0);
-  for(uint8_t i=0; i<4; i++)
-  {
-    lcd_img(    (6+4*i)*FW, y,   sticks,i,0);
-    putsChnRaw( (6+4*i)*FW, y+FH,i+1,0);//sub==3?INVERS:0);
-  }
-  if(sub==5){
-    CHECK_INCDEC_H_GENVAR(event,g_eeGeneral.stickMode,0,3);
-  }
 }
 
 uint16_t s_timeCumTot;
@@ -2046,7 +2071,7 @@ void menuProc0(uint8_t event)
       }
       break;
     case EVT_KEY_LONG(KEY_LEFT):
-      pushMenu(menuProcSetup0);
+      pushMenu(menuProcSetup);
       killEvents(event);
       break;
 #define MAX_VIEWS 3
@@ -2160,15 +2185,15 @@ void menuProc0(uint8_t event)
    for(uint8_t i=0; i<8; i++)
    {
     uint8_t x0,y0;
-    int16_t val = g_chans512[i]/2;
+    int16_t val = g_chans512[i];
     //val += g_model.limitData[i].revert ? g_model.limitData[i].offset : -g_model.limitData[i].offset;
     switch(g_eeGeneral.view)
     {
       case 0:
         x0 = (i%4*9+3)*FW/2;
         y0 = i/4*FH+40;
-        // *1000/512 = x*2 - x/16 + x/64
-#define GPERC(x)  (x*2 - x/16 + x/64)
+        // *1000/1024 = x - x/8 + x/32
+#define GPERC(x)  (x - x/32 + x/128)
         lcd_outdezAtt( x0+4*FW , y0, GPERC(val),PREC1 );
         break;
       case 1:
