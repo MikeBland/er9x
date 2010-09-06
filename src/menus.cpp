@@ -1850,12 +1850,12 @@ void trace()   // called in perOut - once envery 0.01sec
   uint16_t v = 0;
   if((abs(g_model.tmrMode)>1) && (abs(g_model.tmrMode)<TMR_VAROFS)) {
     v = calibratedStick[CONVERT_MODE(abs(g_model.tmrMode)/2)-1];
-    v = (g_model.tmrMode<0 ? RESX-v : v+RESX ) / (RESX/32);
+    v = (g_model.tmrMode<0 ? RESX-v : v+RESX ) / (RESX/16);
   }
   timer(v);
 
   uint16_t val = calibratedStick[CONVERT_MODE(3)-1]; //Get throttle channel value
-  val = (g_eeGeneral.throttleReversed ? RESX-val : val+RESX) / (RESX/32); //calibrate it
+  val = (g_eeGeneral.throttleReversed ? RESX-val : val+RESX) / (RESX/16); //calibrate it
   static uint16_t s_time;
   static uint16_t s_cnt;
   static uint16_t s_sum;
