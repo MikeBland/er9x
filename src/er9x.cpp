@@ -780,7 +780,6 @@ int main(void)
   JETI_Init();
 #endif
 
-
   ADMUX=ADC_VREF_TYPE;
   ADCSRA=0x85;
 
