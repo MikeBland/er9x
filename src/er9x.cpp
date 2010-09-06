@@ -37,8 +37,6 @@ const prog_char APM modi12x3[]=
   "AIL THR ELE RUD ";
 
 
-
-
 void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
 {
   //uint8_t fw=FWNUM; //FW-1;
@@ -131,7 +129,7 @@ bool getSwitch(int8_t swtch, bool nc)
   else if(i<MIX_FULL+NUM_PPM) v = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL];
   else v = ex_chans[i-MIX_FULL-NUM_PPM];
 
-  int16_t ofs = cs.offset*10 + cs.offset/4; //coffset 100 -> 1024
+  int16_t ofs = calc100toRESX(cs.offset); //coffset 100 -> 1024
   switch (cs.func) {
     case (CS_VPOS):   return swtch>0 ? (v>ofs) : !(v>ofs);
     case (CS_VNEG):   return swtch>0 ? (v<ofs) : !(v<ofs);
@@ -674,7 +672,7 @@ void getADC_single()
       s_anaFilt[adc_input]= ADCW * 2; // use 11 bit numbers
     }
 }
- 
+
 volatile uint8_t g_tmr16KHz;
 
 ISR(TIMER0_OVF_vect) //continuous timer 16ms (16MHz/1024)
