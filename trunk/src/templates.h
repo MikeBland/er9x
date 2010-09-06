@@ -65,7 +65,7 @@ typedef struct t_MixData {
 #define STK_P1   5
 #define STK_P2   6
 #define STK_P3   7
-#define NUM_TEMPLATES    4
+#define NUM_TEMPLATES    DIM(n_Templates)
 #define NUM_TEMPLATE_MIX 8
 #define TEMPLATE_NLEN    15
 

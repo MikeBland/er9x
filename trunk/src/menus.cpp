@@ -58,6 +58,9 @@ int16_t g_chans512[NUM_CHNOUT];
 
 extern bool warble;
 
+
+
+
 //static TrainerData g_trainer;
 
 //sticks
@@ -2342,7 +2345,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
        if(getSwitch(md.swtch,0)) mixWarning |= 1<<(md.mixWarn-1);
 
       //========== INPUT OFFSET ===============
-      if(md.sOffset) v += (int16_t)md.sOffset*5 + md.sOffset/8;
+      if(md.sOffset) v += calc100toRESX(md.sOffset);
 
       //========== DELAY and PAUSE ===============
       if (md.speedUp || md.speedDown || md.delayUp || md.delayDown)  // there are delay values
@@ -2461,8 +2464,8 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     }
 
     //impose hard limits
-    lim_p = lim_p*10 + lim_p/4;  //lim_p = lim_p*5 + lim_p/8
-    lim_n = lim_n*10 + lim_n/4;  //x*10 + x/4 -> f(x=100) = ~1024
+    lim_p = calc100toRESX(lim_p);
+    lim_n = calc100toRESX(lim_n);
     if(v>lim_p) v = lim_p;
     if(v<lim_n) v = lim_n;// absolute limits - do not go over!
 
