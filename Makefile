@@ -1,10 +1,11 @@
 
 
-SRC= simu.cpp th9x.cpp menus.cpp pers.cpp file.cpp lcd.cpp drivers.cpp 
+SRC= simu.cpp th9x.cpp menus.cpp pers.cpp file.cpp lcd.cpp drivers.cpp
 SRC:=$(foreach f,$(SRC),src/$(f))
 
+REMOVE = rm -f
 
-all:  tgt_bin 
+all:  tgt_bin
 
 
 INC=-I/usr/local/include/fox-1.6 -I/usr/include/fox-1.6 \
@@ -35,4 +36,13 @@ dump:
 file: src/file.cpp
 	g++  -DTEST -DSIM $(CFLAGS) src/file.cpp -o$@
 
--include OBJS/*.dsimu
+clean:
+	$(REMOVE) OBJS/*.ii
+	$(REMOVE) OBJS/*.d
+	$(REMOVE) OBJS/*.o
+	$(REMOVE) OBJS/*.s
+	$(REMOVE) OBJS/*.elf
+	$(REMOVE) OBJS/*.bin
+	$(REMOVE) OBJS/*.map
+	$(REMOVE) er9x.bin
+	$(REMOVE) er9x.elf

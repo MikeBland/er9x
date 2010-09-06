@@ -162,7 +162,13 @@ bool keyState(EnumKeys enuk)
   if(enuk < (int)DIM(keys))  return keys[enuk].state() ? 1 : 0;
   switch(enuk){
     case SW_ElevDR : return PINE & (1<<INP_E_ElevDR);
+    //case SW_AileDR : return PINE & (1<<INP_E_AileDR);
+#ifndef JETI
     case SW_AileDR : return PINE & (1<<INP_E_AileDR);
+#endif
+#ifdef JETI
+    case SW_AileDR : return PINC & (1<<INP_C_AileDR); //shaddi: umgelegt fuer freien UART0
+#endif
     case SW_RuddDR : return PING & (1<<INP_G_RuddDR);
       //     INP_G_ID1 INP_E_ID2
       // id0    0        1
@@ -172,7 +178,13 @@ bool keyState(EnumKeys enuk)
     case SW_ID1    : return (PING & (1<<INP_G_ID1))&& (PINE & (1<<INP_E_ID2));
     case SW_ID2    : return !(PINE & (1<<INP_E_ID2));
     case SW_Gear   : return PINE & (1<<INP_E_Gear);
-    case SW_ThrCt  : return PINE & (1<<INP_E_ThrCt);
+    //case SW_ThrCt  : return PINE & (1<<INP_E_ThrCt);
+#ifndef JETI
+     case SW_ThrCt  : return PINE & (1<<INP_E_ThrCt);
+#endif
+#ifdef JETI
+    case SW_ThrCt  : return PINC & (1<<INP_C_ThrCt); //shaddi: umgelegt fuer freien UART0
+#endif
     case SW_Trainer: return PINE & (1<<INP_E_Trainer);
     default:;
   }

@@ -130,8 +130,16 @@
 #define INP_E_Gear    4
 #define OUT_E_BUZZER  3
 #define INP_E_ElevDR  2
+
+#ifndef JETI
 #define INP_E_AileDR  1
 #define INP_E_ThrCt   0
+#endif
+
+#ifdef JETI
+#define INP_C_ThrCt   6
+#define INP_C_AileDR  7
+#endif
 
 #define OUT_G_SIM_CTL  4 //1 : phone-jack=ppm_in
 #define INP_G_ID1      3
@@ -453,6 +461,12 @@ extern int16_t intpol(int16_t, uint8_t);
 extern uint16_t anaIn(uint8_t chan);
 extern int16_t calibratedStick[7];
 extern int16_t ex_chans[NUM_CHNOUT];
+
+#ifdef JETI
+// Jeti-DUPLEX Telemetry
+extern uint16_t jeti_keys;
+#include "jeti.h"
+#endif
 
 
 //extern TrainerData g_trainer;

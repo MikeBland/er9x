@@ -776,6 +776,11 @@ int main(void)
   DDRG = 0x10;  PORTG = 0xff; //pullups + SIM_CTL=1 = phonejack = ppm_in
   lcd_init();
 
+#ifdef JETI
+  JETI_Init();
+#endif
+
+
   ADMUX=ADC_VREF_TYPE;
   ADCSRA=0x85;
 
