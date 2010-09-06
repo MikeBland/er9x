@@ -627,8 +627,8 @@ uint16_t anaIn(uint8_t chan)
 #define ADC_VREF_TYPE 0x40
 void getADC_filt()
 {
-  uint16_t temp_ana[4][8] = {{0}};
   for (uint8_t adc_input=0;adc_input<8;adc_input++){
+    uint16_t t = 0;
     for (uint8_t i=0; i<4;i++) {  // Going from 10bits to 11 bits.  Addition = n.  Loop 4^n times
       ADMUX=adc_input|ADC_VREF_TYPE;
       // Start the AD conversion
@@ -636,11 +636,9 @@ void getADC_filt()
       // Wait for the AD conversion to complete
       while ((ADCSRA & 0x10)==0);
       ADCSRA|=0x10;
-      s_anaFilt[adc_input]   = (s_anaFilt[adc_input]   + temp_ana[0][adc_input]);
-      temp_ana[0][adc_input] = (temp_ana[0][adc_input] + temp_ana[1][adc_input]) >> 1;
-      temp_ana[1][adc_input] = (temp_ana[1][adc_input] + temp_ana[2][adc_input]) >> 1;
-      temp_ana[2][adc_input] = (temp_ana[2][adc_input] + ADCW                  ) >> 1;
+      t += ADCW;
     }
+    s_anaFilt[adc_input] = t/2;
   }
 }
 
@@ -817,7 +815,7 @@ int main(void)
   while(1){
     //uint16_t old10ms=g_tmr10ms;
     uint16_t t0 = getTmr16KHz();
-    getADC_osmp(); //over sample -> add one bit 10bit ADC => 11 bit ADC
+    getADC_filt(); //over sample -> add one bit 10bit ADC => 11 bit ADC
     perMain();
     //while(g_tmr10ms==old10ms) sleep_mode();
     if(heartbeat == 0x3)

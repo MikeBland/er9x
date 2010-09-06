@@ -1901,7 +1901,7 @@ void menuProcStatistic2(uint8_t event)
   lcd_puts_P( 0*FW,  3*FH, PSTR("tmr1 Jitter    us"));
   lcd_outdez(14*FW , 3*FH, (g_tmr1Latency_max - g_tmr1Latency_min) /2 );
   lcd_puts_P( 0*FW,  4*FH, PSTR("tmain          ms"));
-  lcd_outdez(14*FW , 4*FH, g_timeMain/16 );
+  lcd_outdezAtt(14*FW , 4*FH, (g_timeMain*100)/16 ,PREC2);
 }
 
 void menuProcStatistic(uint8_t event)
