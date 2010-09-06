@@ -813,7 +813,7 @@ int main(void)
   while(1){
     //uint16_t old10ms=g_tmr10ms;
     uint16_t t0 = getTmr16KHz();
-    getADC_filt(); //over sample -> add one bit 10bit ADC => 11 bit ADC
+    getADC_osmp(); //over sample -> add one bit 10bit ADC => 11 bit ADC
     perMain();
     //while(g_tmr10ms==old10ms) sleep_mode();
     if(heartbeat == 0x3)
