@@ -6,6 +6,7 @@ require "pp"
 #TGT=%w(drehzahl.cpp  MCU=attiny26 CFLAGS=)
 #TGT=%w(servo.c  MCU=attiny22     CFLAGS=-xc++)
 TGT=%w( DIR=src er9x.cpp sticks_4x1.xbm font_6x1.xbm menus.cpp pers.cpp file.cpp  lcd.cpp drivers.cpp  MCU=atmega64)
+#TGT=%w( DIR=src er9x.cpp sticks_4x1.xbm font_6x1.xbm menus.cpp pers.cpp file.cpp  lcd.cpp drivers.cpp jeti.cpp CFLAGS=-DJETI  MCU=atmega64)
 
 
 
@@ -61,9 +62,9 @@ class Builder
           end
           pp "osrc=",osrc,"deps=",deps if $opt_v>=3
           checkDep(fobj,deps) {
-            cmd  = @pars[:CC] 
+            cmd  = @pars[:CC]
             cmd += " "+ @pars[:INCLUDE]
-            cmd += " "+ @pars[:CFLAGS] 
+            cmd += " "+ @pars[:CFLAGS]
             cmd += " -o #{fobj}"
             cmd += " -pedantic-errors"
             cmd += " -MD -c"
@@ -75,19 +76,19 @@ class Builder
       }
       checkDep(felf,objs+[mkrb]) {
         mkStamp("../src/stamp-#{@projectName}.h")
-        cmd  = @pars[:CC] 
+        cmd  = @pars[:CC]
         cmd += " ../src/stamp.cpp"
         cmd += " -o #{felf}"
         cmd += " -Wl,-Map=#{@projectName}.map,--cref,-v"
         cmd += " -mmcu=#{@pars[:MCU]}"
-        cmd += " "+ @pars[:CFLAGS] 
+        cmd += " "+ @pars[:CFLAGS]
         cmd += " "+ @pars[:LDFLAGS]
         cmd += " "+ objs.join(" ")
-        #$(CC)     $(INCDIR) $(CFLAGS) $(LIB) $(LDFLAGS) -mmcu=$(MCU) -o #{obj} 
+        #$(CC)     $(INCDIR) $(CFLAGS) $(LIB) $(LDFLAGS) -mmcu=$(MCU) -o #{obj}
         sys "#{@pars[:CC]} "+objs.join(" "),cmd
       }
       checkDep(fbin,felf) {
-        cmd  = @pars[:OBJCOPY] 
+        cmd  = @pars[:OBJCOPY]
         cmd += " -O binary #{felf} #{fbin}"
         #      $(BIN) -O binary $< $(@:.rom=.bin)
         sys "#{@pars[:OBJCOPY]} #{fbin}",cmd
@@ -95,7 +96,7 @@ class Builder
       }
     }
     return [fbin,felf]
-  end 
+  end
   def load
     #setup()
 
@@ -188,7 +189,7 @@ class Builder
     puts "--- #{cmt}"
     pp cmd      if     $opt_v>=2
     return      if     $opt_n
-    ret = system cmd  
+    ret = system cmd
     raise "command not found '#{cmd}' '#{$?.inspect}'" if !ret and $?.exitstatus==127
     raise "exitstatus not 0 cmd:'#{cmd}' exitstatus=#{$?.exitstatus}" if $?.exitstatus != 0
   end
@@ -219,7 +220,7 @@ class Builder
     opts.on("-h","--help", "show this message") {puts opts; exit}
     $opt_v  = 1
     opts.on("-q",          "be quiet")   {    $opt_v  = 0  }
-    opts.on("-v[lev]",     "increase (set) verbose level") { |v| 
+    opts.on("-v[lev]",     "increase (set) verbose level") { |v|
       $opt_v += 1
       $opt_v  = v.to_i   if v =~ /^\d+$/
       $opt_v += v.length if v =~ /^v+$/

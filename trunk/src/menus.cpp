@@ -1907,13 +1907,65 @@ void menuProcStatistic2(uint8_t event)
   lcd_outdezAtt(14*FW , 4*FH, (g_timeMain*100)/16 ,PREC2);
 }
 
+#ifdef JETI
+void menuProcJeti(uint8_t event)
+{
+  TITLE("JETI");
+
+  uint8_t i;
+
+  switch(event)
+  {
+    //case EVT_KEY_FIRST(KEY_MENU):
+    //  break;
+    case EVT_KEY_FIRST(KEY_EXIT):
+      JETI_DisableRXD();
+      chainMenu(menuProc0);
+      break;
+  }
+
+  for (i = 0; i < 16; i++)
+  {
+    lcd_putcAtt((i+2)*FW,   3*FH, JetiBuffer[i], BSS_NO_INV);
+  }
+
+  for (i = 0; i < 16; i++)
+  {
+    lcd_putcAtt((i+2)*FW,   4*FH, JetiBuffer[i+16], BSS_NO_INV);
+  }
+
+  if (JetiBufferReady)
+  {
+    JETI_EnableTXD();
+    if (keyState((EnumKeys)(KEY_UP))) jeti_keys &= JETI_KEY_UP;
+    if (keyState((EnumKeys)(KEY_DOWN))) jeti_keys &= JETI_KEY_DOWN;
+    if (keyState((EnumKeys)(KEY_LEFT))) jeti_keys &= JETI_KEY_LEFT;
+    if (keyState((EnumKeys)(KEY_RIGHT))) jeti_keys &= JETI_KEY_RIGHT;
+
+    JetiBufferReady = 0;    // invalidate buffer
+
+    JETI_putw((uint16_t) jeti_keys);
+    _delay_ms (1);
+    JETI_DisableTXD();
+
+    jeti_keys = JETI_KEY_NOCHANGE;
+  }
+}
+#endif
+
 void menuProcStatistic(uint8_t event)
 {
   TITLE("STAT");
   switch(event)
   {
     case EVT_KEY_FIRST(KEY_UP):
+#ifndef JETI
       chainMenu(menuProcStatistic2);
+#endif
+#ifdef JETI
+      JETI_EnableRXD(); // Jeti-Empfang aktivieren
+      chainMenu(menuProcJeti);
+#endif
       break;
     case EVT_KEY_FIRST(KEY_DOWN):
     case EVT_KEY_FIRST(KEY_EXIT):
