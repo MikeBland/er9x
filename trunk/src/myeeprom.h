@@ -60,7 +60,8 @@ typedef struct t_EEGeneral {
   uint8_t   stickMode;
   uint8_t   inactivityTimer;
   uint8_t   throttleReversed;
-  uint8_t   res[5];
+  uint8_t   filterInput;
+  uint8_t   res[4];
 } __attribute__((packed)) EEGeneral;
 
 
