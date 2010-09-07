@@ -622,6 +622,8 @@ uint16_t anaIn(uint8_t chan)
 }
 
 
+
+
 #define ADC_VREF_TYPE 0x40
 void getADC_filt()
 {
@@ -678,6 +680,12 @@ void getADC_single()
       s_anaFilt[adc_input]= ADCW * 2; // use 11 bit numbers
     }
 }
+
+getADCp getADC[3] = {
+  getADC_single,
+  getADC_osmp,
+  getADC_filt
+  };
 
 volatile uint8_t g_tmr16KHz;
 
@@ -817,16 +825,13 @@ int main(void)
   setupPulses();
   wdt_enable(WDTO_500MS);
   perOut(g_chans512, true, false);
-
+  
   lcdSetRefVolt(g_eeGeneral.contrast);
   TIMSK |= (1<<OCIE1A); // Pulse generator enable immediately before mainloop
   while(1){
     //uint16_t old10ms=g_tmr10ms;
     uint16_t t0 = getTmr16KHz();
-    if(g_eeGeneral.filterInput)
-      getADC_filt();
-    else
-      getADC_osmp(); //over sample -> add one bit 10bit ADC => 11 bit ADC
+    getADC[g_eeGeneral.filterInput]();
     perMain();
     //while(g_tmr10ms==old10ms) sleep_mode();
     if(heartbeat == 0x3)
