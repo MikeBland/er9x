@@ -167,7 +167,7 @@ bool keyState(EnumKeys enuk)
     case SW_AileDR : return PINE & (1<<INP_E_AileDR);
 #endif
 #ifdef JETI
-    case SW_AileDR : return PINC & (1<<INP_C_AileDR); //shaddi: umgelegt fuer freien UART0
+    case SW_AileDR : return PINC & (1<<INP_C_AileDR); //shad974: rerouted inputs to free up UART0
 #endif
     case SW_RuddDR : return PING & (1<<INP_G_RuddDR);
       //     INP_G_ID1 INP_E_ID2
@@ -183,7 +183,7 @@ bool keyState(EnumKeys enuk)
      case SW_ThrCt  : return PINE & (1<<INP_E_ThrCt);
 #endif
 #ifdef JETI
-    case SW_ThrCt  : return PINC & (1<<INP_C_ThrCt); //shaddi: umgelegt fuer freien UART0
+    case SW_ThrCt  : return PINC & (1<<INP_C_ThrCt); //shad974: rerouted inputs to free up UART0
 #endif
     case SW_Trainer: return PINE & (1<<INP_E_Trainer);
     default:;
