@@ -1711,7 +1711,7 @@ void menuProcSetup(uint8_t event)
   MSTATE_CHECK_V(1,menuTabDiag,1+7);
   //int8_t  sub    = mstate2.m_posVert-1 ;
   //uint8_t y=FH;
-  
+
   int8_t  sub    = mstate2.m_posVert;
 
   if(sub<1) s_pgOfs=0;
@@ -1720,7 +1720,7 @@ void menuProcSetup(uint8_t event)
   if(s_pgOfs<0) s_pgOfs = 0;
 
   uint8_t y = 1*FH;
-  
+
   uint8_t subN = 1;
   if(s_pgOfs<subN) {
     lcd_puts_P( 6*FW, y,PSTR("Contrast"));
@@ -1731,16 +1731,16 @@ void menuProcSetup(uint8_t event)
     }
     if((y+=FH)>8*FH) return;
   }subN++;
-  
+
   if(s_pgOfs<subN) {
     lcd_puts_P( 4*FW, y,PSTR("V BAT Warning"));
     lcd_outdezAtt(4*FW,y,g_eeGeneral.vBatWarn,(sub==subN ? INVERS : 0)|PREC1);
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatWarn, 50, 100); //5-10V
     if((y+=FH)>8*FH) return;
   }subN++;
-  
-  
-  
+
+
+
 
   if(s_pgOfs<subN) {
     lcd_puts_P( 4*FW, y,PSTR("m Inactivity Alrm"));
@@ -1748,29 +1748,29 @@ void menuProcSetup(uint8_t event)
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.inactivityTimer, 0, 250); //0..250minutes
     if((y+=FH)>8*FH) return;
   }subN++;
-  
+
   if(s_pgOfs<subN) {
     lcd_puts_P( 6*FW, y,PSTR("Filter ADC"));
     lcd_putsnAtt(0*FW, y, PSTR("SINGOSMPFILT")+4*g_eeGeneral.filterInput,4,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.filterInput, 0, 2);
     if((y+=FH)>8*FH) return;
   }subN++;
-  
+
   if(s_pgOfs<subN) {
     lcd_puts_P( 6*FW, y,PSTR("Throttle Rev"));
     lcd_putsnAtt(1*FW, y, PSTR("OFF ON")+3*g_eeGeneral.throttleReversed,3,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.throttleReversed, 0, 1);
     if((y+=FH)>8*FH) return;
   }subN++;
-  
+
   if(s_pgOfs<subN) {
     lcd_puts_P( 6*FW, y,PSTR("Light"));
     putsDrSwitches(0*FW,y,g_eeGeneral.lightSw,sub==subN ? INVERS : 0);
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightSw, -MAX_DRSWITCH, MAX_DRSWITCH);
     if((y+=FH)>8*FH) return;
   }subN++;
-  
-  
+
+
   if(s_pgOfs<(subN)) {
     lcd_putsAtt( 1*FW, y, PSTR("Mode"),0);//sub==3?INVERS:0);
     lcd_putcAtt( 3*FW, y+FH, '1'+g_eeGeneral.stickMode,sub==subN?INVERS:0);
@@ -1984,13 +1984,7 @@ void menuProcStatistic(uint8_t event)
   switch(event)
   {
     case EVT_KEY_FIRST(KEY_UP):
-#ifndef JETI
       chainMenu(menuProcStatistic2);
-#endif
-#ifdef JETI
-      JETI_EnableRXD(); // Jeti-Empfang aktivieren
-      chainMenu(menuProcJeti);
-#endif
       break;
     case EVT_KEY_FIRST(KEY_DOWN):
     case EVT_KEY_FIRST(KEY_EXIT):
@@ -2094,7 +2088,13 @@ void menuProc0(uint8_t event)
       killEvents(event);
       break;
     case EVT_KEY_LONG(KEY_DOWN):
+#ifndef JETI
       chainMenu(menuProcStatistic2);
+#endif
+#ifdef JETI
+      JETI_EnableRXD(); // Jeti-Empfang aktivieren
+      chainMenu(menuProcJeti);
+#endif
       killEvents(event);
       break;
     case EVT_KEY_FIRST(KEY_EXIT):
@@ -2267,9 +2267,9 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
 
   x+=RESXu;
   if(x < 0) {
-    erg = crv[0] * (RESX/2);
+    erg = (int16_t)crv[0] * (RESX);
   } else if(x >= (RESX*2)) {
-    erg = crv[(cv9 ? 8 : 4)] * (RESX/2);
+    erg = (int16_t)crv[(cv9 ? 8 : 4)] * (RESX);
   } else {
     int16_t a,dx;
     if(cv9){
@@ -2279,9 +2279,9 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
       a   = (uint16_t)x / D5;
       dx  = (uint16_t)x % D5;
     }
-    erg  = (int16_t)crv[a]*(D5-dx) + (int16_t)crv[a+1]*(dx);
+    erg  = (int16_t)crv[a]*((D5-dx)/2) + (int16_t)crv[a+1]*(dx/2);
   }
-  return erg / 50; // 100*D5/RESX;
+  return erg / 25; // 100*D5/RESX;
 }
 
 uint16_t pulses2MHz[60];
