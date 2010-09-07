@@ -1751,8 +1751,8 @@ void menuProcSetup(uint8_t event)
   
   if(s_pgOfs<subN) {
     lcd_puts_P( 6*FW, y,PSTR("Filter ADC"));
-    lcd_putsnAtt(1*FW, y, PSTR("OFF ON")+3*g_eeGeneral.filterInput,3,(sub==subN ? INVERS:0));
-    if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.filterInput, 0, 1);
+    lcd_putsnAtt(0*FW, y, PSTR("SINGOSMPFILT")+4*g_eeGeneral.filterInput,4,(sub==subN ? INVERS:0));
+    if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.filterInput, 0, 2);
     if((y+=FH)>8*FH) return;
   }subN++;
   

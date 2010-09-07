@@ -244,6 +244,7 @@ enum EnumKeys {
 #define PROT_STR_LEN     6
 
 typedef void (*MenuFuncP)(uint8_t event);
+typedef void (*getADCp)();
 
 /// stoppt alle events von dieser taste bis eine kurze Zeit abgelaufen ist
 void pauseEvents(uint8_t enuk);
@@ -298,6 +299,9 @@ bool    getSwitch(int8_t swtch, bool nc);
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t swtch,uint8_t att);
 void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr);
 
+
+
+
 void checkMem();
 void checkTHR();
 ///   Pr�ft beim Einschalten ob alle Switches 'off' sind.
@@ -320,6 +324,14 @@ bool checkIncDecModVar(uint8_t event, void*p, uint8_t flags)
 {
   return checkIncDecGen2(event, p, min, max, flags);
 }
+
+//void getADC_filt();
+//void getADC_osmp();
+//void getADC_single();
+#define GETADC_SING = 0
+#define GETADC_OSMP = 1
+#define GETADC_FILT = 2
+
 
 
 ///Hilfs-funktion zum Aufruf von checkIncDecGen2 fuer bitfield Variablen
