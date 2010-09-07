@@ -185,9 +185,6 @@ void eeCheck(bool immediately)
       if(theFile.errno()==ERR_TMO){
         s_eeDirtyMsk |= EE_GENERAL; //try again
         s_eeDirtyTime10ms = g_tmr10ms - WRITE_DELAY_10MS;
-#ifdef SIM
-        printf("writing aborted GENERAL\n");
-#endif
       }else{
         alert(PSTR("EEPROM overflow"));
       }
@@ -203,9 +200,6 @@ void eeCheck(bool immediately)
       if(theFile.errno()==ERR_TMO){
         s_eeDirtyMsk |= EE_MODEL; //try again
         s_eeDirtyTime10ms = g_tmr10ms - WRITE_DELAY_10MS;
-#ifdef SIM
-        printf("writing aborted MODEL\n");
-#endif
       }else{
         alert(PSTR("EEPROM overflow"));
       }
