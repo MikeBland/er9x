@@ -1825,10 +1825,10 @@ void timer(uint8_t val)
   else if(abs(tm)<(TMR_VAROFS+MAX_DRSWITCH-1)) sw_toggled = getSwitch((tm>0 ? tm-(TMR_VAROFS-1) : tm+(TMR_VAROFS-1)) ,0); //normal switch
 
   s_timeCumTot               += 1;
-  s_timeCumAbs               += g_model.tmrDir ? -1 : 1;
-  if(val) s_timeCumThr       += g_model.tmrDir ? -1 : 1;
-  if(sw_toggled) s_timeCumSw += g_model.tmrDir ? -1 : 1;
-  s_timeCum16ThrP            += g_model.tmrDir ? -val/2 : val/2;
+  s_timeCumAbs               += 1;
+  if(val) s_timeCumThr       += 1;
+  if(sw_toggled) s_timeCumSw += 1;
+  s_timeCum16ThrP            += val/2;
 
   s_timerVal = g_model.tmrVal;
   uint8_t tmrM = abs(g_model.tmrMode);
@@ -1836,7 +1836,6 @@ void timer(uint8_t val)
   else if(tmrM==TMRMODE_ABS) s_timerVal -= s_timeCumAbs;
   else if(tmrM<TMR_VAROFS) s_timerVal -= (tmrM&1) ? s_timeCum16ThrP/16 : s_timeCumThr;// stick% : stick
   else s_timerVal -= s_timeCumSw; //switch
-
 
   switch(s_timerState)
   {
@@ -1853,6 +1852,8 @@ void timer(uint8_t val)
     case TMR_STOPPED:
       break;
   }
+
+  if(g_model.tmrDir) s_timerVal = g_model.tmrVal-s_timerVal; //if counting backwards - display backwards
 
   if(s_timerState==TMR_BEEPING){
     static int16_t last_tmr;
