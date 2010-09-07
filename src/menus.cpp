@@ -2092,7 +2092,7 @@ void menuProc0(uint8_t event)
       chainMenu(menuProcStatistic2);
 #endif
 #ifdef JETI
-      JETI_EnableRXD(); // Jeti-Empfang aktivieren
+      JETI_EnableRXD(); // enable JETI-Telemetry reception
       chainMenu(menuProcJeti);
 #endif
       killEvents(event);
