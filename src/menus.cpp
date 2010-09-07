@@ -337,7 +337,9 @@ void setStickCenter() // copy state of 3 primary to subtrim
       perOut(zero_chans512,false,true); // do output loop - zero input channels
 
       for(uint8_t i=0; i<NUM_CHNOUT; i++)
-        g_model.limitData[i].offset += zero_chans512[i] - g_chans512[i];
+        g_model.limitData[i].offset += g_model.limitData[i].revert ? 
+                                       (zero_chans512[i] - g_chans512[i]) :
+                                      -(zero_chans512[i] - g_chans512[i]);
 
       for(uint8_t i=0; i<4; i++)
         if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
@@ -2256,8 +2258,6 @@ void menuProc0(uint8_t event)
   }
 }
 
-
-
 int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 100
 {
 #define D9 (RESX * 2 / 8)
@@ -2268,9 +2268,9 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
 
   x+=RESXu;
   if(x < 0) {
-    erg = (int16_t)crv[0] * (RESX);
+    erg = (int16_t)crv[0] * (RESX/4);
   } else if(x >= (RESX*2)) {
-    erg = (int16_t)crv[(cv9 ? 8 : 4)] * (RESX);
+    erg = (int16_t)crv[(cv9 ? 8 : 4)] * (RESX/4);
   } else {
     int16_t a,dx;
     if(cv9){
