@@ -358,14 +358,14 @@ ALL_CPPFLAGS = -mmcu=$(MCU) -I. -x c++ $(CPPFLAGS) $(GENDEPFLAGS)
 ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 
 
-
-
+VER = ${shell sh -c "grep \"SUB_VERS\" stamp-er9x.h | grep -Eo \"[[:digit:]]*\""}
+VER := $(shell echo ${VER}+1 | bc)
 
 # Default target.
 all: begin gccversion sizebefore build sizeafter end
 
 # Change the build target to build a HEX file or a library.
-build: stamp elf hex eep lss sym
+build: stamp font.lbm sticks.lbm elf hex eep lss sym
 #build: lib
 
 
@@ -380,14 +380,23 @@ lib: $(LIBNAME)
 
 # Build stamp-file
 stamp:
+	@echo
 	@echo "Generate Version-stamp:"
 	@echo "#define DATE_STR \"`date +%d.%m.%Y`\"" > stamp-er9x.h
 	@echo "#define TIME_STR \"`date +%H:%I:%S`\"" >> stamp-er9x.h
-	@echo "#define SUB_VERS 000-$(USER)" >> stamp-er9x.h
+	@echo "#define SUB_VERS $(VER)-$(USER)" >> stamp-er9x.h
 	@echo "#define SVN_VERS \"trunk-$(REV)\"" >> stamp-er9x.h
 	@cat stamp-er9x.h
 
+font.lbm: font_6x1.xbm
+	@echo
+	@echo "Convert font from xbm to lbm:"
+	$(XBM2LBM) $<	
 
+sticks.lbm: sticks_4x1.xbm
+	@echo
+	@echo "Convert font from xbm to lbm:"
+	$(XBM2LBM) $<
 
 # Eye candy.
 # AVR Studio 3.x does not check make's exit code but relies on
@@ -579,7 +588,6 @@ clean_list :
 	$(REMOVE) $(SRC:.c=.s)
 	$(REMOVE) $(SRC:.c=.d)
 	$(REMOVEDIR) .dep
-	$(REMOVE) stamp-er9x.h
 
 
 # Create object files directory
