@@ -97,7 +97,10 @@ void eeLoadModel(uint8_t id)
     switch (g_model.mdVers){
 
       default:
-        if(sz != sizeof(ModelData)) modelDefault(id);
+        if(sz != sizeof(ModelData)) {
+          //alert("Error Loading Model");
+          modelDefault(id);
+        }
         break;
     }
   }

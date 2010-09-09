@@ -485,7 +485,7 @@ void evalCaptures();
 
 void perMain()
 {
-  perOut(g_chans512,false, false);
+  perOut(g_chans512, false);
   eeCheck();
 
   lcd_clear();
@@ -824,7 +824,7 @@ int main(void)
   checkSwitches();
   setupPulses();
   wdt_enable(WDTO_500MS);
-  perOut(g_chans512, true, false);
+  perOut(g_chans512, false);
   
   lcdSetRefVolt(g_eeGeneral.contrast);
   TIMSK |= (1<<OCIE1A); // Pulse generator enable immediately before mainloop
