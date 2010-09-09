@@ -334,7 +334,7 @@ static bool  s_limitCacheOk;
 void setStickCenter() // copy state of 3 primary to subtrim
 {
       int16_t zero_chans512[NUM_CHNOUT];
-      perOut(zero_chans512,false,true); // do output loop - zero input channels
+      perOut(zero_chans512,true); // do output loop - zero input channels
 
       for(uint8_t i=0; i<NUM_CHNOUT; i++)
         g_model.limitData[i].offset += g_model.limitData[i].revert ? 
@@ -1441,6 +1441,7 @@ void menuProcModelSelect(uint8_t event)
     case  EVT_KEY_FIRST(KEY_RIGHT):
       if(g_eeGeneral.currModel != mstate2.m_posVert)
       {
+        killEvents(event);
         eeLoadModel(g_eeGeneral.currModel = mstate2.m_posVert);
         eeDirty(EE_GENERAL);
         LIMITS_DIRTY;
@@ -2287,25 +2288,30 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
 
 uint16_t pulses2MHz[60];
 
-void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
+void perOut(int16_t *chanOut, uint8_t zeroInput)
 {
-  static int16_t  anas  [NUM_XCHNRAW];
+  static int16_t  anas [NUM_XCHNRAW];
   static int32_t  chans[NUM_CHNOUT];
   static uint32_t inacCounter;
   static uint16_t inacSum;
+  static uint16_t lastTm;
+  
+  uint8_t tick10ms = g_tmr10ms - lastTm; 
+  lastTm = g_tmr10ms; 
+  int16_t trimA[4];
 
-         int16_t  trimA    [4];
-
-  if(s_noHi) s_noHi--;
-  if(g_eeGeneral.inactivityTimer) {
-    inacCounter++;
-    uint16_t tsum = 0;
-    for(uint8_t i=0;i<4;i++) tsum += anas[i]/4;//div 4 -> reduce sensitivity
-    if(tsum!=inacSum){
-      inacSum = tsum;
-      inacCounter=0;
-    }                                                //   s  m 1min  - using 97 instead of 100 for accuracy
-    if(inacCounter>((uint32_t)g_eeGeneral.inactivityTimer*97*60)) beepErr();
+  if(tick10ms) {
+    if(s_noHi) s_noHi--;
+    if(g_eeGeneral.inactivityTimer) {
+      inacCounter++;
+      uint16_t tsum = 0;
+      for(uint8_t i=0;i<4;i++) tsum += anas[i]/4;//div 4 -> reduce sensitivity
+      if(tsum!=inacSum){
+        inacSum = tsum;
+        inacCounter=0;
+      }                                                //   s  m 1min  - using 97 instead of 100 for accuracy
+      if(inacCounter>((uint32_t)g_eeGeneral.inactivityTimer*97*60)) beepErr();
+    }
   }
 
   for(uint8_t i=0;i<7;i++){        // calc Sticks
@@ -2410,17 +2416,22 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
 
       //Notice 0 = NC switch means not used -> always on line
 
+      static uint8_t lastSw[MAX_MIXERS];
+      uint8_t swTog;
       int16_t v  = 0;
-      if(!getSwitch(md.swtch,1)){
+      if(!getSwitch(md.swtch,1)){ // switch on?  if no switch selected => on
+        swTog = lastSw[i]; //if last was true then it was toggled.  
+        lastSw[i] = false;
         if(md.srcRaw!=MIX_MAX && md.srcRaw!=MIX_FULL) continue;// if not MAX or FULL - next loop
-        if(md.mltpx==MLTPX_REP && md.srcRaw==MIX_MAX) continue; // if MAX and switch is off and REPLACE then off
+        if(md.mltpx==MLTPX_REP) continue; // if switch is off and REPLACE then off
         v = (md.srcRaw == MIX_FULL ? -RESX : 0); // switch is off and it is either MAX=0 or FULL=-512
       }
-      else
+      else {
+        swTog = !lastSw[i];//if last was false then sw toggled
+        lastSw[i] = true;
         v = anas[md.srcRaw-1]; //Switch is on. MAX=FULL=512 or value.
-
-      if(md.mixWarn)
-       if(getSwitch(md.swtch,0)) mixWarning |= 1<<(md.mixWarn-1);
+        mixWarning |= 1<<(md.mixWarn-1); // Mix warning
+      }
 
       //========== INPUT OFFSET ===============
       if(md.sOffset) v += calc100toRESX(md.sOffset);
@@ -2428,35 +2439,42 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       //========== DELAY and PAUSE ===============
       if (md.speedUp || md.speedDown || md.delayUp || md.delayDown)  // there are delay values
       {
-        static int16_t sDelay[MAX_MIXERS];
-        static int16_t act   [MAX_MIXERS];
-        static bool    swtch [MAX_MIXERS];
+        static int16_t  sDelay[MAX_MIXERS];
+        static int16_t  act   [MAX_MIXERS];
+        static int16_t  actLst[NUM_CHNOUT];
+        static uint8_t  swtch [MAX_MIXERS];
 
-        if(init) act[i]=v*16;
-
+        //need to init if it's toggled
+        //init -> take value from chans[md.destCh]
+        
+        if(swTog) act[i] = actLst[md.destCh-1]*16;//(int16_t)chans[md.destCh-1]*16;
+        
         int16_t diff = v-act[i]/16;
-        if(abs(diff)<4) diff=0;
+        if(abs(diff)<4) {
+          diff=0;
+          act[i]=v*16;
+        }
         if(diff>0) swtch[i] = true;
         if(diff<0) swtch[i] = false;
 
         if(!diff)     //set up delay
           sDelay[i] = (swtch[i] ? md.delayUp :  md.delayDown) * 100;
         else if(sDelay[i]){ // perform delay
-            sDelay[i]--;
+            if(tick10ms) sDelay[i]--;
             v = act[i]/16;
             diff = 0;
           }
 
         if(diff && (md.speedUp || md.speedDown)){
-          //rate = steps/sec => 32*1024/100*md.speedUp/Down
-          //act[i] += diff>0 ? (32768)/((int16_t)100*md.speedUp) : -(32768)/((int16_t)100*md.speedDown);
-          act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(32767)/((int16_t)100*md.speedUp)   :  v*16) :
-                              ((md.speedDown>0) ? act[i]-(32768)/((int16_t)100*md.speedDown) :  v*16) ;
-
+          //rate = steps/sec ->  2048*16/(spd*100)
+          if(tick10ms)
+            act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(32768)/((int16_t)100*md.speedUp)   :  v*16) :
+                                ((md.speedDown>0) ? act[i]-(32768)/((int16_t)100*md.speedDown) :  v*16);
           v = act[i]/16;
         }
+        actLst[md.destCh-1] = v;
       }
-
+      
       //========== CURVES ===============
       switch(md.curve){
         case 0:
@@ -2554,8 +2572,6 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     chanOut[i] = v; //copy consistent word to int-level
     sei();
   }
-
-
 }
 
 
