@@ -253,7 +253,7 @@ uint16_t EFile::readRlc(uint8_t*buf,uint16_t i_len){
       if(read(&m_bRlc,1)!=1) break;
     }
     assert(m_bRlc & 0x7f);
-    uint8_t l=m_bRlc&0x7f;//min(m_bRlc&0x7f,(uint8_t)(i_len-i) & 0x7f);
+    uint8_t l=m_bRlc&0x7f;
     if((uint16_t)l>(i_len-i)) l = (uint8_t)(i_len-i);
     if(m_bRlc&0x80){
       memset(&buf[i],0,l);

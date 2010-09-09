@@ -86,16 +86,6 @@ void eeLoadModelName(uint8_t id,char*buf,uint8_t len)
     }
   }
 }
-int8_t trimRevert(int16_t val)
-{
-  uint8_t idx = 0;
-  bool    neg = val<0; val=abs(val);
-  while(val>0){
-    idx++;
-    val-=idx;
-  }
-  return neg ? -idx : idx;
-}
 
 void eeLoadModel(uint8_t id)
 {
