@@ -2430,7 +2430,7 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
         swTog = !lastSw[i];//if last was false then sw toggled
         lastSw[i] = true;
         v = anas[md.srcRaw-1]; //Switch is on. MAX=FULL=512 or value.
-        mixWarning |= 1<<(md.mixWarn-1); // Mix warning
+        if(md.mixWarn) mixWarning |= 1<<(md.mixWarn-1); // Mix warning
       }
 
       //========== INPUT OFFSET ===============
