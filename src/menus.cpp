@@ -2338,30 +2338,27 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
       }
       else
         v  = expo(v,g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkDir]);
+        
       int32_t x = (int32_t)v * (g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][stkDir]+100)/100;
       v = (int16_t)x;
       if (IS_THROTTLE(i) && g_model.thrExpo) v -= RESX;
 
-      //trace and trim throttle
+      //do trim -> throttle trim if applicable
       int32_t vv = 2*RESX;
-      if(IS_THROTTLE(i))  //stickMode=0123 -> thr=2121
-      {
-        //trace((g_eeGeneral.throttleReversed ? RESX-v : v+RESX) / 32); //trace thr 0..32  (/32)
-        if(g_model.thrTrim) vv = (g_eeGeneral.throttleReversed) ?
+      if(IS_THROTTLE(i) && g_model.thrTrim) vv = (g_eeGeneral.throttleReversed) ?
                                  ((int32_t)g_model.trim[i]-125)*(RESX+v)/(2*RESX) :
                                  ((int32_t)g_model.trim[i]+125)*(RESX-v)/(2*RESX);
-      }
-
-    //trim
+      
+      //trim
       trimA[i] = (vv==2*RESX) ? g_model.trim[i]*2 : (int16_t)vv*2; //    if throttle trim -> trim low end
     }
-    anas[i] = v; //10+1 Bit
+    anas[i] = v; //set values for mixer
   }
 
   anas[MIX_MAX-1]  = RESX;     // MAX
   anas[MIX_FULL-1] = RESX;     // FULL
-  for(uint8_t i=MIX_FULL;i<(MIX_FULL+NUM_PPM);i++)          anas[i] = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL]; //add ppm channels
-  for(uint8_t i=MIX_FULL+NUM_PPM;i<NUM_XCHNRAW;i++)  anas[i] = chans[i-MIX_FULL-NUM_PPM]; //other mixes previous outputs
+  for(uint8_t i=MIX_FULL;i<(MIX_FULL+NUM_PPM);i++)  anas[i] = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL]; //add ppm channels
+  for(uint8_t i=MIX_FULL+NUM_PPM;i<NUM_XCHNRAW;i++) anas[i] = chans[i-MIX_FULL-NUM_PPM]; //other mixes previous outputs
 
   trace(); //trace thr 0..32  (/32)
 
@@ -2416,19 +2413,13 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
 
       //Notice 0 = NC switch means not used -> always on line
 
-      static uint8_t lastSw[MAX_MIXERS];
-      uint8_t swTog;
       int16_t v  = 0;
       if(!getSwitch(md.swtch,1)){ // switch on?  if no switch selected => on
-        swTog = lastSw[i]; //if last was true then it was toggled.  
-        lastSw[i] = false;
         if(md.srcRaw!=MIX_MAX && md.srcRaw!=MIX_FULL) continue;// if not MAX or FULL - next loop
         if(md.mltpx==MLTPX_REP) continue; // if switch is off and REPLACE then off
         v = (md.srcRaw == MIX_FULL ? -RESX : 0); // switch is off and it is either MAX=0 or FULL=-512
       }
       else {
-        swTog = !lastSw[i];//if last was false then sw toggled
-        lastSw[i] = true;
         v = anas[md.srcRaw-1]; //Switch is on. MAX=FULL=512 or value.
         if(md.mixWarn) mixWarning |= 1<<(md.mixWarn-1); // Mix warning
       }
@@ -2440,39 +2431,30 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
       if (md.speedUp || md.speedDown || md.delayUp || md.delayDown)  // there are delay values
       {
         static int16_t  sDelay[MAX_MIXERS];
-        static int16_t  act   [MAX_MIXERS];
-        static int16_t  actLst[NUM_CHNOUT];
         static uint8_t  swtch [MAX_MIXERS];
 
-        //need to init if it's toggled
-        //init -> take value from chans[md.destCh]
+        int16_t act=anas[md.destCh-1+MIX_FULL+NUM_PPM];//start with current channle value
         
-        if(swTog) act[i] = actLst[md.destCh-1]*16;//(int16_t)chans[md.destCh-1]*16;
-        
-        int16_t diff = v-act[i]/16;
-        if(abs(diff)<4) {
-          diff=0;
-          act[i]=v*16;
-        }
+        int16_t diff = v-act;
+        int16_t vo = v;
+        v = act;
         if(diff>0) swtch[i] = true;
         if(diff<0) swtch[i] = false;
 
         if(!diff)     //set up delay
           sDelay[i] = (swtch[i] ? md.delayUp :  md.delayDown) * 100;
         else if(sDelay[i]){ // perform delay
-            if(tick10ms) sDelay[i]--;
-            v = act[i]/16;
-            diff = 0;
-          }
-
-        if(diff && (md.speedUp || md.speedDown)){
-          //rate = steps/sec ->  2048*16/(spd*100)
-          if(tick10ms)
-            act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(32768)/((int16_t)100*md.speedUp)   :  v*16) :
-                                ((md.speedDown>0) ? act[i]-(32768)/((int16_t)100*md.speedDown) :  v*16);
-          v = act[i]/16;
+          if(tick10ms) sDelay[i]--;
+          diff = 0;
         }
-        actLst[md.destCh-1] = v;
+
+        //rate = steps/sec ->  2048/(spd*100)
+        if(tick10ms && diff && (md.speedUp || md.speedDown)) {
+          if((diff>0) && (md.speedUp>0))   v += (2*RESX)/((int16_t)80*md.speedUp);
+          if((diff<0) && (md.speedDown>0)) v -= (2*RESX)/((int16_t)80*md.speedDown);//using 80 to offset slowdown caused by accuracy
+          
+          if((diff>0 && v>vo) || (diff<0 && v<vo)) v=vo;  //deal with overshoot
+        }
       }
       
       //========== CURVES ===============
