@@ -334,7 +334,7 @@ static bool  s_limitCacheOk;
 void setStickCenter() // copy state of 3 primary to subtrim
 {
       int16_t zero_chans512[NUM_CHNOUT];
-      perOut(zero_chans512,true); // do output loop - zero input channels
+      perOut(zero_chans512,false,true); // do output loop - zero input channels
 
       for(uint8_t i=0; i<NUM_CHNOUT; i++)
         g_model.limitData[i].offset += g_model.limitData[i].revert ? 
@@ -2288,7 +2288,7 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
 
 uint16_t pulses2MHz[60];
 
-void perOut(int16_t *chanOut, uint8_t zeroInput)
+void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
 {
   static int16_t  anas [NUM_XCHNRAW];
   static int32_t  chans[NUM_CHNOUT];
@@ -2414,12 +2414,18 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
       //Notice 0 = NC switch means not used -> always on line
 
       int16_t v  = 0;
+      uint8_t swTog;
+      static uint8_t swTg[MAX_MIXERS];
       if(!getSwitch(md.swtch,1)){ // switch on?  if no switch selected => on
+        swTog = swTg[i];
+        swTg[i]=false;
         if(md.srcRaw!=MIX_MAX && md.srcRaw!=MIX_FULL) continue;// if not MAX or FULL - next loop
         if(md.mltpx==MLTPX_REP) continue; // if switch is off and REPLACE then off
         v = (md.srcRaw == MIX_FULL ? -RESX : 0); // switch is off and it is either MAX=0 or FULL=-512
       }
       else {
+        swTog = !swTg[i];
+        swTg[i]=true;
         v = anas[md.srcRaw-1]; //Switch is on. MAX=FULL=512 or value.
         if(md.mixWarn) mixWarning |= 1<<(md.mixWarn-1); // Mix warning
       }
@@ -2430,35 +2436,38 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
       //========== DELAY and PAUSE ===============
       if (md.speedUp || md.speedDown || md.delayUp || md.delayDown)  // there are delay values
       {
-        static int16_t  sDelay[MAX_MIXERS];
-        static uint8_t  swtch [MAX_MIXERS];
+        static int16_t sDelay[MAX_MIXERS];
+        static int16_t act   [MAX_MIXERS];
 
-        int16_t act=anas[md.destCh-1+MIX_FULL+NUM_PPM];//start with current channle value
+        if(init) {
+          act[i]=v*16;
+          swTog = false;
+        }
+        int16_t diff = v-act[i]/16;
         
-        int16_t diff = v-act;        
-        if(diff>0) swtch[i] = true;
-        if(diff<0) swtch[i] = false; //record last direction for delay setup
-
-        if(!diff)     //set up delay
-          sDelay[i] = (swtch[i] ? md.delayUp :  md.delayDown) * 100;
-        else if(sDelay[i]){ // perform delay
-          if(tick10ms) sDelay[i]--; //dec only on 10ms tick
-          diff = 0;
-          v = act;
+        if(swTog) {
+          act[i] = anas[md.destCh-1+MIX_FULL+NUM_PPM]*16;
+          diff = v-act[i]/16;
+          if(diff) sDelay[i] = (diff<0 ? md.delayUp :  md.delayDown) * 100;
         }
 
-        //rate = steps/sec ->  2048/(spd*100)
-        #define RFULL 32768
-        if(diff && (md.speedUp || md.speedDown)) {
-          static int16_t lb[MAX_MIXERS];
-          int32_t t = (int32_t)lb[i] + ((int32_t)act * RFULL);
-          if(tick10ms && (diff>0) && md.speedUp)   t += (((int32_t)(2*RESX) * RFULL))/((int32_t)100*md.speedUp);
-          if(tick10ms && (diff<0) && md.speedDown) t -= (((int32_t)(2*RESX) * RFULL))/((int32_t)100*md.speedDown); //using 80 to deal with inaccuracy
-          lb[i] = t % RFULL;
-          act =   t / RFULL;
-          if((diff>0 && act<v) || (diff<0 && act>v)) v = act;  //deal with overshoot
+        if(sDelay[i]){ // perform delay
+            if(tick10ms) sDelay[i]--;
+            v = act[i]/16;
+            diff = 0;
+        }
+
+        if(diff && (md.speedUp || md.speedDown)){
+          //rate = steps/sec => 32*1024/100*md.speedUp/Down
+          //act[i] += diff>0 ? (32768)/((int16_t)100*md.speedUp) : -(32768)/((int16_t)100*md.speedDown);
+          if(tick10ms) act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(32768)/((int16_t)100*md.speedUp)   :  v*16) :
+                                           ((md.speedDown>0) ? act[i]-(32768)/((int16_t)100*md.speedDown) :  v*16) ;
+                                        
+          if(((diff>0) && ((v*16)<act[i])) || ((diff<0) && ((v*16)>act[i]))) act[i]=v*16; //deal with overflow
+          v = act[i]/16;
         }
       }
+
 
       //========== CURVES ===============
       switch(md.curve){
