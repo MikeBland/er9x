@@ -2448,13 +2448,18 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
         }
 
         //rate = steps/sec ->  2048/(spd*100)
+        #define RFULL 32768
         if(diff && (md.speedUp || md.speedDown)) {
-          if(tick10ms && (diff>0) && md.speedUp)   act += (2*RESX)/((int16_t)80*md.speedUp);
-          if(tick10ms && (diff<0) && md.speedDown) act -= (2*RESX)/((int16_t)80*md.speedDown); //using 80 to deal with inaccuracy
+          static int16_t lb[MAX_MIXERS];
+          int32_t t = (int32_t)lb[i] + ((int32_t)act * RFULL);
+          if(tick10ms && (diff>0) && md.speedUp)   t += (((int32_t)(2*RESX) * RFULL))/((int32_t)100*md.speedUp);
+          if(tick10ms && (diff<0) && md.speedDown) t -= (((int32_t)(2*RESX) * RFULL))/((int32_t)100*md.speedDown); //using 80 to deal with inaccuracy
+          lb[i] = t % RFULL;
+          act =   t / RFULL;
           if((diff>0 && act<v) || (diff<0 && act>v)) v = act;  //deal with overshoot
         }
       }
-      
+
       //========== CURVES ===============
       switch(md.curve){
         case 0:
