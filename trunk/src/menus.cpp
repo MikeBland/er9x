@@ -2364,7 +2364,7 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
 
   memset(chans,0,sizeof(chans));        // All outputs to 0
 
-  if(zeroInput)
+  if(zeroInput) //zero input for setStickCenter()
     for(uint8_t i=0;i<4;i++)
       if(!IS_THROTTLE(i)) {
         anas[i]  = 0;
@@ -2435,25 +2435,23 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
 
         int16_t act=anas[md.destCh-1+MIX_FULL+NUM_PPM];//start with current channle value
         
-        int16_t diff = v-act;
-        int16_t vo = v;
-        v = act;
+        int16_t diff = v-act;        
         if(diff>0) swtch[i] = true;
-        if(diff<0) swtch[i] = false;
+        if(diff<0) swtch[i] = false; //record last direction for delay setup
 
         if(!diff)     //set up delay
           sDelay[i] = (swtch[i] ? md.delayUp :  md.delayDown) * 100;
         else if(sDelay[i]){ // perform delay
-          if(tick10ms) sDelay[i]--;
+          if(tick10ms) sDelay[i]--; //dec only on 10ms tick
           diff = 0;
+          v = act;
         }
 
         //rate = steps/sec ->  2048/(spd*100)
-        if(tick10ms && diff && (md.speedUp || md.speedDown)) {
-          if((diff>0) && (md.speedUp>0))   v += (2*RESX)/((int16_t)80*md.speedUp);
-          if((diff<0) && (md.speedDown>0)) v -= (2*RESX)/((int16_t)80*md.speedDown);//using 80 to offset slowdown caused by accuracy
-          
-          if((diff>0 && v>vo) || (diff<0 && v<vo)) v=vo;  //deal with overshoot
+        if(diff && (md.speedUp || md.speedDown)) {
+          if(tick10ms && (diff>0) && md.speedUp)   act += (2*RESX)/((int16_t)80*md.speedUp);
+          if(tick10ms && (diff<0) && md.speedDown) act -= (2*RESX)/((int16_t)80*md.speedDown); //using 80 to deal with inaccuracy
+          if((diff>0 && act<v) || (diff<0 && act>v)) v = act;  //deal with overshoot
         }
       }
       
@@ -2491,7 +2489,7 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
         case 6:       //f|abs(f)
           v = v>0 ? RESX : -RESX;
           break;
-        default:
+        default: //c1..c16
           v = intpol(v, md.curve - 7);
       }
 
