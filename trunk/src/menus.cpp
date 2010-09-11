@@ -12,14 +12,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
- *
- * Needs fixing:
- * TRAINER
- * SETUP01
- * *EXPO
- * *LIMITS
- * *EditMix ONE
- *
  */
 
 #include "er9x.h"
@@ -48,6 +40,16 @@
 
 #define NO_HI_LEN 25
 
+#define WCHART 32
+#define X0     (128-WCHART-2)
+#define Y0     32
+#define RESX    1024
+#define RESXu   1024u
+#define RESXul  1024ul
+#define RESXl   1024l
+#define RESKul  100ul
+#define RESX_PLUS_TRIM (RESX+128)
+
 int16_t calibratedStick[7];
 int16_t ex_chans[NUM_CHNOUT];          // Outputs + intermidiates
 uint8_t s_pgOfs;
@@ -59,11 +61,6 @@ int16_t g_chans512[NUM_CHNOUT];
 extern bool warble;
 
 
-
-
-//static TrainerData g_trainer;
-
-//sticks
 #include "sticks.lbm"
 typedef PROGMEM void (*MenuFuncP_PROGMEM)(uint8_t event);
 
@@ -203,15 +200,8 @@ void MState2::check(uint8_t event,  uint8_t curr,MenuFuncP *menuTab, uint8_t men
 }
 
 
-//#ifdef SIM
-//extern char g_title[80];
-//MState2 mstate2;
-//#define TITLEP(pstr) lcd_putsAtt(0,0,pstr,INVERS);sprintf(g_title,"%s_%d_%d",pstr,mstate2.m_posVert,mstate2.m_posHorz);
-//#else
 #define TITLEP(pstr) lcd_putsAtt(0,0,pstr,INVERS)
-//#endif
 #define TITLE(str)   TITLEP(PSTR(str))
-
 
 static uint8_t s_curveChan;
 
@@ -227,11 +217,11 @@ void menuProcCurveOne(uint8_t event) {
 
   int8_t *crv = cv9 ? g_model.curves9[s_curveChan-MAX_CURVE5] : g_model.curves5[s_curveChan];
 
-    for (uint8_t i = 0; i < 5; i++) {
-      uint8_t y = i * FH + 16;
-      uint8_t attr = sub == i ? INVERS : 0;
-      lcd_outdezAtt(4 * FW, y, crv[i], attr);
-    }
+  for (uint8_t i = 0; i < 5; i++) {
+    uint8_t y = i * FH + 16;
+    uint8_t attr = sub == i ? INVERS : 0;
+    lcd_outdezAtt(4 * FW, y, crv[i], attr);
+  }
   if(cv9)
     for (uint8_t i = 0; i < 4; i++) {
       uint8_t y = i * FH + 16;
@@ -249,16 +239,6 @@ void menuProcCurveOne(uint8_t event) {
       eeDirty(EE_MODEL);
     }
   }
-
-#define WCHART 32
-#define X0     (128-WCHART-2)
-#define Y0     32
-#define RESX    1024
-#define RESXu   1024u
-#define RESXul  1024ul
-#define RESXl   1024l
-#define RESKul  100ul
-#define RESX_PLUS_TRIM (RESX+128)
 
   for (uint8_t xv = 0; xv < WCHART * 2; xv++) {
     uint16_t yv = intpol(xv * (RESXu / WCHART) - RESXu, s_curveChan) / (RESXu
@@ -1172,15 +1152,6 @@ void menuProcExpoAll(uint8_t event)
       lcd_putcAtt(19*FW+FW/2,y,'H',0);
       break;
     }
-
-    /*
-    if(g_model.expoData[i].drSw){
-      editExpoVals(event,3,sub==i && subHor==3,17*FW, y,i,stkVal[i]);
-      editExpoVals(event,4,sub==i && subHor==4,21*FW, y,i,stkVal[i]);
-    }else{
-      if(sub==i && subHor>=3) mstate2.m_posHorz=2;
-    }
-    */
   }
 }
 const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.";
@@ -1555,6 +1526,7 @@ void menuProcDiagCalib(uint8_t event)
   }
 
 }
+
 void menuProcDiagAna(uint8_t event)
 {
   static MState2 mstate2;
@@ -1566,23 +1538,11 @@ void menuProcDiagAna(uint8_t event)
   {
     uint8_t y=i*FH;
     lcd_putsn_P( 4*FW, y,PSTR("A1A2A3A4A5A6A7A8")+2*i,2);
-    //lcd_outhex4( 8*FW, y,g_anaIns[i]);
     lcd_outhex4( 8*FW, y,anaIn(i));
-    if(i<7){
-      //int16_t v = g_anaIns[i];
-      int16_t v = anaIn(i) - g_eeGeneral.calibMid[i];
-      v =  v*50/max(1, (v > 0 ? g_eeGeneral.calibSpanPos[i] :  g_eeGeneral.calibSpanNeg[i])/2);
-      lcd_outdez(17*FW, y, v);
-        //lcd_outdez(17*FW, y, (v-g_eeGeneral.calibMid[i])*50/ max(1,g_eeGeneral.calibSpan[i]/2));
-    }
-    if(i==7){
-      putsVBat(13*FW,y,false,(sub==1 ? INVERS : 0)|PREC1);
-    }
+    if(i<7)  lcd_outdez(17*FW, y, (int32_t)calibratedStick[i]*100/1024);
+    if(i==7) putsVBat(13*FW,y,false,(sub==1 ? INVERS : 0)|PREC1);
   }
-  if(sub==1){
-   CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatCalib, -127, 127);
-  }
-
+  if(sub==1) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatCalib, -127, 127);
 }
 
 void menuProcDiagKeys(uint8_t event)
@@ -1611,13 +1571,11 @@ void menuProcDiagKeys(uint8_t event)
     lcd_putcAtt(x+FW*5+2,  y,t+'0',t);
   }
 
-
   x=14*FW;
   lcd_putsn_P(x, 3*FH,PSTR("Trim- +"),7);
   for(uint8_t i=0; i<4; i++)
   {
     uint8_t y=i*FH+FH*4;
-    //lcd_putsn_P(x+7, y,PSTR("TR_LH-TR_LH+TR_LV-TR_LV+TR_RV-TR_RV+TR_RH-TR_RH+")+6*i,6);
     lcd_img(    x,       y, sticks,i,0);
     bool tm=keyState((EnumKeys)(TRM_BASE+2*i));
     bool tp=keyState((EnumKeys)(TRM_BASE+2*i+1));
@@ -1625,6 +1583,7 @@ void menuProcDiagKeys(uint8_t event)
     lcd_putcAtt(x+FW*6,  y, tp+'0',tp ? INVERS : 0);
   }
 }
+
 void menuProcDiagVers(uint8_t event)
 {
   static MState2 mstate2;
@@ -1707,14 +1666,12 @@ void menuProcSetup1(uint8_t event)
     }
   }
 }
+
 void menuProcSetup(uint8_t event)
 {
   static MState2 mstate2;
   TITLE("SETUP");
   MSTATE_CHECK_V(1,menuTabDiag,1+7);
-  //int8_t  sub    = mstate2.m_posVert-1 ;
-  //uint8_t y=FH;
-
   int8_t  sub    = mstate2.m_posVert;
 
   if(sub<1) s_pgOfs=0;
@@ -1741,9 +1698,6 @@ void menuProcSetup(uint8_t event)
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatWarn, 50, 100); //5-10V
     if((y+=FH)>8*FH) return;
   }subN++;
-
-
-
 
   if(s_pgOfs<subN) {
     lcd_puts_P( 4*FW, y,PSTR("m Inactivity Alrm"));
@@ -1772,7 +1726,6 @@ void menuProcSetup(uint8_t event)
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightSw, -MAX_DRSWITCH, MAX_DRSWITCH);
     if((y+=FH)>8*FH) return;
   }subN++;
-
 
   if(s_pgOfs<(subN)) {
     lcd_putsAtt( 1*FW, y, PSTR("Mode"),0);//sub==3?INVERS:0);
@@ -1896,7 +1849,6 @@ void trace()   // called in perOut - once envery 0.01sec
   val   = s_sum/s_cnt;
   s_sum = 0;
   s_cnt = 0;
-
 
   s_traceCnt++;
   s_traceBuf[s_traceWr++] = val;
@@ -2029,7 +1981,7 @@ void menuProcStatistic(uint8_t event)
 
 }
 
-extern volatile uint16_t captureRing[16];
+//extern volatile uint16_t captureRing[16];
 
 
 void menuProc0(uint8_t event)
@@ -2165,23 +2117,14 @@ void menuProc0(uint8_t event)
         lcd_vline(xm-1, ym-1,  3);
         lcd_vline(xm+1, ym-1,  3);
       }
-      //lcd_hline(xm-1, ym,     3);
       ym -= val;
     }else{
       ym=60;
       lcd_hline(xm-TL,ym,    TL*2);
       lcd_hline(xm-1, ym-1,  3);
       lcd_hline(xm-1, ym+1,  3);
-      //lcd_vline(xm,   ym-1,     3);
       xm += val;
     }
-
-    //value marker
-    //#define MW 7
-    //lcd_vline(xm-MW/2,ym-MW/2,MW);
-    //lcd_hline(xm-MW/2,ym+MW/2,MW);
-    //lcd_vline(xm+MW/2,ym-MW/2,MW);
-    //lcd_hline(xm-MW/2,ym-MW/2,MW);
     DO_SQUARE(xm,ym,7)
   }
 
@@ -2245,17 +2188,8 @@ void menuProc0(uint8_t event)
     V_BAR(SCREEN_WIDTH/2  ,SCREEN_HEIGHT-10,((calibratedStick[5]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P2
     V_BAR(SCREEN_WIDTH/2+5,SCREEN_HEIGHT-10,((calibratedStick[6]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P3
 
-    for(int8_t i=0; i<3; i++)  {
-      //uint8_t y=i*FH+4*FH; //+FH;
-      //bool t=keyState((EnumKeys)(SW_BASE_DIAG+i));
-      lcd_putsnAtt(2*FW-2,i*FH+4*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i+1, 0) ? INVERS : 0);
-    }
-
-    for(int8_t i=6; i<9; i++)  {
-      //uint8_t y=(12-i)*FH; //+FH;
-      //bool t=keyState((EnumKeys)(SW_BASE_DIAG+i));
-      lcd_putsnAtt(17*FW-1,12*FH-i*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i+1, 0) ? INVERS : 0);
-    }
+    for(int8_t i=0; i<3; i++) lcd_putsnAtt(2*FW-2,i*FH+4*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i+1, 0) ? INVERS : 0);
+    for(int8_t i=6; i<9; i++) lcd_putsnAtt(17*FW-1,12*FH-i*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i+1, 0) ? INVERS : 0);
   }
 }
 
