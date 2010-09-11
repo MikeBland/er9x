@@ -1506,7 +1506,7 @@ void menuProcDiagCalib(uint8_t event)
     int16_t vt = anaIn(i);
     loVals[i] = min(vt,loVals[i]);
     hiVals[i] = max(vt,hiVals[i]);
-    if(i>=4) midVals[i] = (loVals[i] + hiVals[i])/2;
+    //if(i>=4) midVals[i] = (loVals[i] + hiVals[i])/2;
   }
 
   switch(event)
@@ -1518,7 +1518,7 @@ void menuProcDiagCalib(uint8_t event)
       switch(sub)
       {
         case 2: //get mid
-          for(uint8_t i=0; i<4; i++)midVals[i] = anaIn(i);
+          for(uint8_t i=0; i<7; i++)midVals[i] = anaIn(i);
           beepKey();
           break;
         case 3:
