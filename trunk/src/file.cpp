@@ -250,15 +250,15 @@ uint16_t EFile::readRlc(uint8_t*buf,uint16_t i_len){
   uint16_t i;
   for( i=0; i<i_len; ){
     if((m_bRlc&0x7f) == 0) {
-      if(read(&m_bRlc,1)!=1) break;
+      if(read(&m_bRlc,1)!=1) break; //read how many bytes to read
     }
     assert(m_bRlc & 0x7f);
     uint8_t l=m_bRlc&0x7f;
     if((uint16_t)l>(i_len-i)) l = (uint8_t)(i_len-i);
-    if(m_bRlc&0x80){
-      memset(&buf[i],0,l);
+    if(m_bRlc&0x80){       // if contains high byte
+      memset(&buf[i],0,l); // write l zeros
     }else{
-      uint8_t lr = read(&buf[i],l);
+      uint8_t lr = read(&buf[i],l); // read and write l bytes
       if(lr!=l) return i+lr;
     }
     i    += l;
@@ -324,12 +324,17 @@ uint16_t EFile::writeRlc(uint8_t i_fileId, uint8_t typ,uint8_t*buf,uint16_t i_le
   bool    state0 = true;
   uint8_t cnt    = 0;
   uint16_t i;
+
+  //RLE compression:
+  //rb = read byte
+  //if (rb | 0x80) write rb & 0x7F zeros
+  //else write rb bytes
   for( i=0; i<=i_len; i++)
   {
-    bool nst0 = buf[i] == 0;
-    if( nst0 && !state0 && buf[i+1]!=0) nst0 = false ;
+    bool nst0 = buf[i] == 0;                           // nst0   - current byte is 0
+    if( nst0 && !state0 && buf[i+1]!=0) nst0 = false ; // state0 - prev byte 0
     if(nst0 != state0 || cnt>=0x7f || i==i_len){
-      if(state0){
+      if(state0 && !(cnt>=0x7f || i==i_len)){  // what if cnt>=0x7f and state0!=0 ? still needs to write the bytes
         if(cnt>0){
           cnt|=0x80;
           if( write(&cnt,1)!=1)           goto error;
