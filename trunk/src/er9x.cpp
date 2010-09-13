@@ -151,11 +151,9 @@ void checkMem()
 void checkTHR()
 {
   if(! WARN_THR) return;
-#ifdef SIM
-  for(uint8_t i=0; i<20; i++) per10ms(); //read anas
-#else
+
   while(g_tmr10ms<20){} //wait for some ana in
-#endif
+
   int thrchn=(2-(g_eeGeneral.stickMode&1));//stickMode=0123 -> thr=2121
   //int16_t v      = g_anaIns[thrchn];
   int16_t v      = anaIn(thrchn);
@@ -188,11 +186,8 @@ void checkSwitches()
   pushMenu(menuProcDiagKeys);
 }
 
-MenuFuncP g_menuStack[5]
-#ifdef SIM
- = {menuProc0};
-#endif
-;
+MenuFuncP g_menuStack[5];
+
 uint8_t  g_menuStackPtr = 0;
 uint8_t  g_beepCnt;
 uint8_t  g_beepVal[4];
@@ -546,7 +541,6 @@ volatile uint8_t  captureRd;
 int16_t g_ppmIns[8];
 uint8_t ppmInState; //0=unsync 1..8= wait for value i-1
 
-#ifndef SIM
 #include <avr/interrupt.h>
 //#include <avr/wdt.h>
 #define HEART_TIMER2Mhz 1;
@@ -843,4 +837,3 @@ int main(void)
     g_timeMain = max(g_timeMain,t0);
   }
 }
-#endif

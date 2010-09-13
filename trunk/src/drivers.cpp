@@ -17,7 +17,6 @@
 
 #include "er9x.h"
 
-#ifndef SIM
 #include "avr/interrupt.h"
 
 ///opt/cross/avr/include/avr/eeprom.h
@@ -56,17 +55,12 @@ void eeWriteBlockCmp(const void *i_pointer_ram, void *i_pointer_eeprom, size_t s
 //  static prog_char APM crossAna[]={4,2,3,1,5,6,7,0}; // wenn schon Tabelle, dann muss sich auch lohnen
 //  return s_ana[pgm_read_byte(crossAna+chan)] / 4;
 //}
-#endif
-
 
 
 
 static uint8_t s_evt;
 void putEvent(uint8_t evt)
 {
-  //#ifdef SIM
-  //  printf("putEvent %d %x\n",evt,evt);
-  //#endif
   s_evt = evt;
 }
 uint8_t getEvent()
@@ -246,7 +240,7 @@ void per10ms()
   //  {
   //    g_anaIns[i] = anaIn(i);
   //  }
-#ifndef SIM
+
   //  STARTADCONV;            // Analogkanäle lesen
-#endif
+
 }
