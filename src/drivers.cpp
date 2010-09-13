@@ -72,13 +72,14 @@ uint8_t getEvent()
 
 class Key
 {
-#define FFVAL        0x03
+#define FILTERBITS      4
+#define FFVAL          ((1<<FILTERBITS)-1)
 #define KSTATE_OFF      0
   //#define KSTATE_SHORT   96
 #define KSTATE_START   97
 #define KSTATE_PAUSE   98
 #define KSTATE_KILLED  99
-  uint8_t m_vals:2;
+  uint8_t m_vals:FILTERBITS;   // key debounce?  4 = 40ms
   uint8_t m_dblcnt:2;
   uint8_t m_cnt;
   uint8_t m_state;
