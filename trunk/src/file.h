@@ -65,7 +65,7 @@ public:
   ///If file was larger before, then unused blocks are freed
   uint16_t writeRlc(uint8_t i_fileId, uint8_t typ,uint8_t*buf,uint16_t i_len, uint8_t maxTme10ms); 
 
-  uint8_t read(uint8_t*buf,uint8_t i_len);
+  uint8_t read(uint8_t*buf,uint16_t i_len);
   uint8_t write(uint8_t*buf,uint8_t i_len);
 
   ///return size of compressed file without block overhead

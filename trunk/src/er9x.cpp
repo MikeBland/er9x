@@ -204,6 +204,7 @@ void alert(const prog_char * s)
   while(1)
   {
     if(IS_KEY_BREAK(getEvent()))   return;  //wait for key release
+    //if(EVT_KEY_LONG(getEvent())==KEY_EXIT)   return;  //wait for key release
   }
 }
 
