@@ -219,8 +219,8 @@ uint8_t EFile::openRd(uint8_t i_fileId){
   m_err      = ERR_NONE;       //error reasons
   return  eeFs.files[m_fileId].typ;
 }
-uint8_t EFile::read(uint8_t*buf,uint8_t i_len){
-  uint8_t len = eeFs.files[m_fileId].size - m_pos;
+uint8_t EFile::read(uint8_t*buf,uint16_t i_len){
+  uint16_t len = eeFs.files[m_fileId].size - m_pos;
   if(len < i_len) i_len = len;
   len = i_len;
   while(len)
@@ -321,20 +321,22 @@ uint16_t EFile::writeRlc(uint8_t i_fileId, uint8_t typ,uint8_t*buf,uint16_t i_le
   //else write rb bytes
   for( i=0; i<=i_len; i++)
   {
-    bool nst0 = buf[i] == 0;                           // nst0   - current byte is 0
-    if( nst0 && !state0 && buf[i+1]!=0) nst0 = false ; // state0 - prev byte 0
+    bool nst0 = buf[i] == 0;                   
+    if( nst0 && !state0 && buf[i+1]!=0) nst0 = false ;
     if(nst0 != state0 || cnt>=0x7f || i==i_len){
-      if(state0 && !(cnt>=0x7f || i==i_len)){  // what if cnt>=0x7f and state0!=0 ? still needs to write the bytes
+      if(state0){  
         if(cnt>0){
           cnt|=0x80;
           if( write(&cnt,1)!=1)           goto error;
           cnt=0;
         }
       }else{
-        if( write(&cnt,1) !=1)            goto error;
-        uint8_t ret=write(&buf[i-cnt],cnt);
-        if( ret !=cnt) { cnt-=ret;        goto error;}
-        cnt=0;
+        if(cnt>0) {
+          if( write(&cnt,1) !=1)            goto error;
+          uint8_t ret=write(&buf[i-cnt],cnt);
+          if( ret !=cnt) { cnt-=ret;        goto error;}
+          cnt=0;
+        }
       }
       state0 = nst0;
     }

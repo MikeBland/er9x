@@ -2229,6 +2229,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
   static uint32_t inacCounter;
   static uint16_t inacSum;
   static uint16_t lastTm;
+
   
   uint8_t tick10ms = g_tmr10ms - lastTm; 
   lastTm = g_tmr10ms; 
