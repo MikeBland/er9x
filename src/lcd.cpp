@@ -14,17 +14,6 @@
  *
  */
 
-
-
-// #ifdef SIM
-// #  include "simpgmspace.h"
-// #else
-// #  include <avr/pgmspace.h>
-// #define F_CPU 16000000UL  // 16 MHz
-// #  include <util/delay.h>
-// #endif
-// #include "lcd.h"
-// #include <stdlib.h>
 #include "er9x.h"
 
 
@@ -86,9 +75,6 @@ void lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
     }
     if(p<DISPLAY_END) *p++ = inv ? ~0 : 0;
   }
-#ifdef SIM
-  assert(p<=DISPLAY_END);
-#endif
 }
 void lcd_putc(uint8_t x,uint8_t y,const char c)
 {

@@ -2688,9 +2688,6 @@ void setupPulsesTracerCtp1009()
     }else{
       rot = min(63u,(uint16_t)(-g_chans512[1]+16) / 32u);
     }
-#ifdef SIM
-    printf("thr %02x  rot %02x\n",thr,rot);
-#endif
     sendByteTra(thr);
     sendByteTra(rot);
     uint8_t chk=thr^rot;
@@ -2698,9 +2695,6 @@ void setupPulsesTracerCtp1009()
     _send_hilo( 5000*2, 2000*2 );
   }else{
     uint8_t fwd = min(127u,(uint16_t)(g_chans512[2]+1024) /  16u) | 0x80;
-#ifdef SIM
-    printf("fwd %02x \n",fwd);
-#endif
     sendByteTra(fwd);
     sendByteTra(0x8e);
     uint8_t chk=fwd^0x8e;

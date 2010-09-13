@@ -149,11 +149,7 @@ int8_t EeFsck()
     }
   }
   for(blk = FIRSTBLK; blk < BLOCKS; blk++){
-    if(bufp[blk]==0)       //goto err_4; //unused block
-    {
-#ifdef SIM
-      printf("ERROR fsck -4 blk=%d readding..\n",blk);
-#endif
+    if(bufp[blk]==0) {       //goto err_4; //unused block
       EeFsSetLink(blk,eeFs.freeList);
       eeFs.freeList = blk; //chain in front
       EeFsFlushFreelist();
@@ -164,9 +160,6 @@ int8_t EeFsck()
     //err_3: ret--;
     //    err_2: ret--;
     //    err_1: ret--;
-    //#ifdef SIM
-    //    printf("ERROR fsck %d blk=%d\n",ret,blk);
-    //#endif
   //  }
   return ret;
 }
@@ -189,10 +182,7 @@ void EeFsFormat()
 bool EeFsOpen()
 {
   eeprom_read_block(&eeFs,0,sizeof(eeFs));
-#ifdef SIM
-  if(eeFs.version != EEFS_VERS)    printf("bad eeFs.version\n");
-  if(eeFs.mySize  != sizeof(eeFs)) printf("bad eeFs.mySize\n");
-#endif
+
   return eeFs.version == EEFS_VERS && eeFs.mySize  == sizeof(eeFs);
 }
 
