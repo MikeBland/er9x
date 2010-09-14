@@ -434,10 +434,13 @@ uint8_t checkSubGen(uint8_t event,uint8_t num, uint8_t sub, uint8_t mode)
 }
 #endif
 
+
+
 MenuFuncP lastPopMenu()
 {
   return  g_menuStack[g_menuStackPtr+1];
 }
+
 void popMenu(bool uppermost)
 {
   if(g_menuStackPtr>0){
@@ -449,17 +452,15 @@ void popMenu(bool uppermost)
   }
 }
 
-extern MenuFuncP lastMenu;
 void chainMenu(MenuFuncP newMenu)
 {
-  lastMenu = newMenu;
   g_menuStack[g_menuStackPtr] = newMenu;
   (*newMenu)(EVT_ENTRY);
   beepKey();
 }
 void pushMenu(MenuFuncP newMenu)
 {
-  lastMenu = newMenu;
+
   g_menuStackPtr++;
   if(g_menuStackPtr >= DIM(g_menuStack))
   {
