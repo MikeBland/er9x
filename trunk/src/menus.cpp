@@ -85,8 +85,6 @@ MenuFuncP_PROGMEM APM menuTabDiag[] = {
   menuProcDiagCalib
 };
 
-MenuFuncP lastMenu = menuProcModelSelect;
-
 
 //#define PARR8(args...) (__extension__({static prog_uint8_t APM __c[] = args;&__c[0];}))
 struct MState2
@@ -2019,7 +2017,8 @@ void menuProc0(uint8_t event)
   switch(event)
   {
     case  EVT_KEY_LONG(KEY_MENU):// go to last menu
-      pushMenu(lastMenu);
+      //pushMenu(lastMenu);
+      pushMenu(lastPopMenu());
       killEvents(event);
       break;
     case EVT_KEY_FIRST(KEY_RIGHT):
