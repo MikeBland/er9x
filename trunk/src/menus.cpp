@@ -212,6 +212,16 @@ void menuProcCurveOne(uint8_t event) {
   lcd_outdezAtt(x, 0,s_curveChan+1 ,INVERS);
   int8_t  sub    = mstate2.m_posVert;
 
+  switch(event)
+  {
+      case EVT_KEY_LONG(KEY_EXIT):
+      case EVT_KEY_FIRST(KEY_EXIT):
+      case EVT_KEY_BREAK(KEY_EXIT):
+          killEvents(event);
+          popMenu();
+          break;
+  }
+
   bool    cv9 = s_curveChan >= MAX_CURVE5;
   MSTATE_CHECK0_V((cv9 ? 9 : 5)+1);
 
@@ -572,6 +582,16 @@ void menuProcMixOne(uint8_t event)
   putsChn(x+1*FW,0,md2->destCh,0);
   MSTATE_CHECK0_V(13);
   int8_t  sub    = mstate2.m_posVert;
+
+  switch(event)
+  {
+      case EVT_KEY_LONG(KEY_EXIT):
+      case EVT_KEY_FIRST(KEY_EXIT):
+      case EVT_KEY_BREAK(KEY_EXIT):
+          killEvents(event);
+          popMenu();
+          break;
+  }
 
   if(sub<1) s_pgOfs=0;
   else if((sub-s_pgOfs)>6) s_pgOfs = sub-6;
@@ -976,12 +996,18 @@ void menuProcExpoOne(uint8_t event)
 
    switch(event)
   {
-    case EVT_ENTRY:
-      s_editMode = false;
-      break;
-    case EVT_KEY_FIRST(KEY_MENU):
-      s_editMode = false;
-      break;
+      case EVT_ENTRY:
+          s_editMode = false;
+          break;
+      case EVT_KEY_FIRST(KEY_MENU):
+          s_editMode = false;
+          break;
+      case EVT_KEY_FIRST(KEY_EXIT):
+      case EVT_KEY_BREAK(KEY_EXIT):
+      case EVT_KEY_LONG(KEY_EXIT):
+          killEvents(event);
+          popMenu();
+          break;
   }
   uint8_t expoDrOn = GET_DR_STATE(s_expoChan);
   uint8_t  y = 16;
@@ -2229,7 +2255,6 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
   static uint32_t inacCounter;
   static uint16_t inacSum;
   static uint16_t lastTm;
-
   
   uint8_t tick10ms = g_tmr10ms - lastTm; 
   lastTm = g_tmr10ms; 
