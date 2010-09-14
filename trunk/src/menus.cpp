@@ -147,8 +147,9 @@ void MState2::check(uint8_t event,  uint8_t curr,MenuFuncP *menuTab, uint8_t men
       break;
     case EVT_KEY_LONG(KEY_EXIT):
       s_editMode = false;
-      popMenu(true); //return to uppermost, beeps itself
-      break;
+      //popMenu(true); //return to uppermost, beeps itself
+      //break;
+      //fallthrough
     case EVT_KEY_BREAK(KEY_EXIT):
       if(s_editMode) {
         s_editMode = false;
@@ -209,16 +210,6 @@ void menuProcCurveOne(uint8_t event) {
   uint8_t x = TITLE("CURVE ");
   lcd_outdezAtt(x, 0,s_curveChan+1 ,INVERS);
   int8_t  sub    = mstate2.m_posVert;
-
-  switch(event)
-  {
-      case EVT_KEY_LONG(KEY_EXIT):
-      case EVT_KEY_FIRST(KEY_EXIT):
-      case EVT_KEY_BREAK(KEY_EXIT):
-          killEvents(event);
-          popMenu();
-          break;
-  }
 
   bool    cv9 = s_curveChan >= MAX_CURVE5;
   MSTATE_CHECK0_V((cv9 ? 9 : 5)+1);
@@ -580,16 +571,6 @@ void menuProcMixOne(uint8_t event)
   putsChn(x+1*FW,0,md2->destCh,0);
   MSTATE_CHECK0_V(13);
   int8_t  sub    = mstate2.m_posVert;
-
-  switch(event)
-  {
-      case EVT_KEY_LONG(KEY_EXIT):
-      case EVT_KEY_FIRST(KEY_EXIT):
-      case EVT_KEY_BREAK(KEY_EXIT):
-          killEvents(event);
-          popMenu();
-          break;
-  }
 
   if(sub<1) s_pgOfs=0;
   else if((sub-s_pgOfs)>6) s_pgOfs = sub-6;
@@ -1000,12 +981,6 @@ void menuProcExpoOne(uint8_t event)
       case EVT_KEY_FIRST(KEY_MENU):
           s_editMode = false;
           break;
-      case EVT_KEY_FIRST(KEY_EXIT):
-      case EVT_KEY_BREAK(KEY_EXIT):
-      case EVT_KEY_LONG(KEY_EXIT):
-          killEvents(event);
-          popMenu();
-          break;
   }
   uint8_t expoDrOn = GET_DR_STATE(s_expoChan);
   uint8_t  y = 16;
@@ -1201,7 +1176,7 @@ void menuProcModel(uint8_t event)
   static MState2 mstate2;
   uint8_t x=TITLE("SETUP ");
   lcd_outdezNAtt(x+2*FW,0,g_eeGeneral.currModel+1,INVERS+LEADING0,2);
-  MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,3,1,1};
+  MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,7,3,1,1};
   MSTATE_CHECK_VxH(2,menuTabModel,12);
   int8_t  sub    = mstate2.m_posVert;
   uint8_t subSub = mstate2.m_posHorz + 1;
@@ -1252,7 +1227,7 @@ void menuProcModel(uint8_t event)
            CHECK_INCDEC_H_MODELVAR_BF( event,v ,0,NUMCHARS-1);
         v = idx2char(v);
         g_model.name[subSub-1]=v;
-        lcd_putcAtt((10+subSub-1)*FW, 1*FH, v,INVERS);
+        lcd_putcAtt((10+subSub-1)*FW, y, v,INVERS);
     }
     if((y+=FH)>8*FH) return;
   }subN++;
@@ -1324,6 +1299,20 @@ void menuProcModel(uint8_t event)
     lcd_putsAtt(    0,    y, PSTR("Trim Sw"),0);
     putsDrSwitches(9*FW,y,g_model.trimSw,sub==subN ? INVERS:0);
     if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.trimSw,-MAX_DRSWITCH, MAX_DRSWITCH);
+    if((y+=FH)>8*FH) return;
+  }subN++;
+  
+  if(s_pgOfs<subN) {
+    lcd_putsAtt(    0,    y, PSTR("Beep Cnt"),0);
+    for(uint8_t i=0;i<7;i++) lcd_putsnAtt((10+i)*FW, y, PSTR("RTEA123")+i,1, (((subSub-1)==i) && (sub==subN)) ? BLINK : ((g_model.beepANACenter & (1<<i)) ? INVERS : 0 ) );
+    if(sub==subN){
+        if(event==EVT_KEY_FIRST(KEY_MENU)) {
+            killEvents(event);
+            s_editMode = false;
+            g_model.beepANACenter ^= (1<<(subSub-1));
+            STORE_MODELVARS;
+        }
+    }
     if((y+=FH)>8*FH) return;
   }subN++;
 
@@ -2254,10 +2243,12 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
   static uint32_t inacCounter;
   static uint16_t inacSum;
   static uint16_t lastTm;
+  static uint8_t  bpanaCenter;
   
   uint8_t tick10ms = g_tmr10ms - lastTm; 
   lastTm = g_tmr10ms; 
   int16_t trimA[4];
+  uint8_t  anaCenter = 0;
 
   if(tick10ms) {
     if(s_noHi) s_noHi--;
@@ -2285,6 +2276,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     if(v <= -RESX) v = -RESX;
     if(v >=  RESX) v =  RESX;
     calibratedStick[i] = v; //for show in expo
+    if(!(v/16)) anaCenter |= 1<<i;
 
 
     if(i<4) { //only do this for sticks
@@ -2312,6 +2304,13 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       trimA[i] = (vv==2*RESX) ? g_model.trim[i]*2 : (int16_t)vv*2; //    if throttle trim -> trim low end
     }
     anas[i] = v; //set values for mixer
+  }
+
+  //===========BEEP CENTER================
+  if(g_model.beepANACenter) {
+      anaCenter &= g_model.beepANACenter;
+      if(((bpanaCenter ^ anaCenter) & anaCenter)) beepWarn1();
+      bpanaCenter = anaCenter;
   }
 
   anas[MIX_MAX-1]  = RESX;     // MAX

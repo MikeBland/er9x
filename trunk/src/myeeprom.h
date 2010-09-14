@@ -156,7 +156,8 @@ typedef struct t_ModelData {
   int8_t    trimInc;              // Trim Increments
   int8_t    ppmDelay;
   int8_t    trimSw;
-  char      res[5];
+  uint8_t   beepANACenter;        //1<<0->A1.. 1<<6->A7
+  char      res[4];
   MixData   mixData[MAX_MIXERS];
   LimitData limitData[NUM_CHNOUT];
   ExpoData  expoData[4];
