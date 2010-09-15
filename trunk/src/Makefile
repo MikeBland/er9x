@@ -315,7 +315,7 @@ COPY = cp
 WINSHELL = cmd
 
 # th9x/er9x-specific
-XBM2LBM = ruby ../util/xbm2lbm.rb
+XBM2LBM = ruby util/xbm2lbm.rb
 REV = $(shell sh -c "cat .svn/entries | sed -n '4p'")
 
 # Define Messages
