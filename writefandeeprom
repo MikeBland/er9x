@@ -1,2 +1,2 @@
-avrdude -c usbasp -p m64 -U flash:w:"er9x.hex":a
+avrdude -c usbasp -p m64 -U flash:w:"src/er9x.hex":a
 avrdude -c usbasp -p m64 -U eeprom:w:"backupeeprom.bin":a
