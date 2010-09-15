@@ -316,7 +316,9 @@ WINSHELL = cmd
 
 # th9x/er9x-specific
 XBM2LBM = ruby util/xbm2lbm.rb
-REV = $(shell sh -c "cat .svn/entries | sed -n '4p'")
+AREV = $(shell sh -c "cat .svn/entries | sed -n '4p'")
+REV = $(shell echo $$(( $(AREV) + 1 )))
+
 
 # Define Messages
 # English
@@ -359,8 +361,9 @@ ALL_CFLAGS = -mmcu=$(MCU) -I. $(CFLAGS) $(GENDEPFLAGS)
 ALL_CPPFLAGS = -mmcu=$(MCU) -I. -x c++ $(CPPFLAGS) $(GENDEPFLAGS)
 ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 
-VER = ${shell sh -c "grep \"SUB_VERS\" stamp-er9x.h | grep -E \"[[:digit:]]*\""}
-VER := $(shell echo ${VER}+1 )
+VER = ${shell sh -c "grep \"SUB_VERS\" stamp-er9x.h | egrep -o \"[[:digit:]]*\""}
+
+
 
 # Default target.
 all: begin gccversion sizebefore build sizeafter end
@@ -371,7 +374,8 @@ jeti: ALL_CPPFLAGS += -DJETI
 jeti: jetimsg all
 
 
-
+vers:
+	@echo "$(VER)"
 
 
 # Change the build target to build a HEX file or a library.
@@ -394,10 +398,11 @@ lib: $(LIBNAME)
 stamp:
 	@echo
 	@echo "Generate Version-stamp:"
-	@echo "#define DATE_STR \"`date +%d.%m.%Y`\"" > stamp-er9x.h
+	@echo "//Automatically generated file - do not edit" > stamp-er9x.h
+	@echo "#define DATE_STR \"`date +%d.%m.%Y`\"" >> stamp-er9x.h
 	@echo "#define TIME_STR \"`date +%H:%I:%S`\"" >> stamp-er9x.h
 	@echo "#define SUB_VERS $(VER)-$(USER)" >> stamp-er9x.h
-	@echo "#define SVN_VERS \"trunk-$(REV)\"" >> stamp-er9x.h
+	@echo "#define SVN_VERS \"trunk-r$(REV)\"" >> stamp-er9x.h
 	@cat stamp-er9x.h
 
 font.lbm: font_6x1.xbm
