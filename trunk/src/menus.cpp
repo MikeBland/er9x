@@ -316,7 +316,7 @@ void setStickCenter() // copy state of 3 primary to subtrim
       perOut(zero_chans512,false,true); // do output loop - zero input channels
 
       for(uint8_t i=0; i<NUM_CHNOUT; i++)
-        g_model.limitData[i].offset += g_model.limitData[i].revert ? 
+        g_model.limitData[i].offset += g_model.limitData[i].revert ?
                                        (zero_chans512[i] - g_chans512[i]) :
                                       -(zero_chans512[i] - g_chans512[i]);
 
@@ -1177,7 +1177,7 @@ void menuProcModel(uint8_t event)
   uint8_t x=TITLE("SETUP ");
   lcd_outdezNAtt(x+2*FW,0,g_eeGeneral.currModel+1,INVERS+LEADING0,2);
   MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,7,3,1,1};
-  MSTATE_CHECK_VxH(2,menuTabModel,12);
+  MSTATE_CHECK_VxH(2,menuTabModel,13);
   int8_t  sub    = mstate2.m_posVert;
   uint8_t subSub = mstate2.m_posHorz + 1;
 
@@ -1301,7 +1301,7 @@ void menuProcModel(uint8_t event)
     if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.trimSw,-MAX_DRSWITCH, MAX_DRSWITCH);
     if((y+=FH)>8*FH) return;
   }subN++;
-  
+
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("Beep Cnt"),0);
     for(uint8_t i=0;i<7;i++) lcd_putsnAtt((10+i)*FW, y, PSTR("RTEA123")+i,1, (((subSub-1)==i) && (sub==subN)) ? BLINK : ((g_model.beepANACenter & (1<<i)) ? INVERS : 0 ) );
@@ -2244,9 +2244,9 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
   static uint16_t inacSum;
   static uint16_t lastTm;
   static uint8_t  bpanaCenter;
-  
-  uint8_t tick10ms = g_tmr10ms - lastTm; 
-  lastTm = g_tmr10ms; 
+
+  uint8_t tick10ms = g_tmr10ms - lastTm;
+  lastTm = g_tmr10ms;
   int16_t trimA[4];
   uint8_t  anaCenter = 0;
 
@@ -2289,7 +2289,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       }
       else
         v  = expo(v,g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkDir]);
-        
+
       int32_t x = (int32_t)v * (g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][stkDir]+100)/100;
       v = (int16_t)x;
       if (IS_THROTTLE(i) && g_model.thrExpo) v -= RESX;
@@ -2299,7 +2299,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       if(IS_THROTTLE(i) && g_model.thrTrim) vv = (g_eeGeneral.throttleReversed) ?
                                  ((int32_t)g_model.trim[i]-125)*(RESX+v)/(2*RESX) :
                                  ((int32_t)g_model.trim[i]+125)*(RESX-v)/(2*RESX);
-      
+
       //trim
       trimA[i] = (vv==2*RESX) ? g_model.trim[i]*2 : (int16_t)vv*2; //    if throttle trim -> trim low end
     }
@@ -2307,11 +2307,9 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
   }
 
   //===========BEEP CENTER================
-  if(g_model.beepANACenter) {
-      anaCenter &= g_model.beepANACenter;
-      if(((bpanaCenter ^ anaCenter) & anaCenter)) beepWarn1();
-      bpanaCenter = anaCenter;
-  }
+  anaCenter &= g_model.beepANACenter;
+  if(((bpanaCenter ^ anaCenter) & anaCenter)) beepWarn1();
+  bpanaCenter = anaCenter;
 
   anas[MIX_MAX-1]  = RESX;     // MAX
   anas[MIX_FULL-1] = RESX;     // FULL
@@ -2402,7 +2400,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
           swTog = false;
         }
         int16_t diff = v-act[i]/16;
-        
+
         if(swTog) {
           int32_t t = (int32_t)md.weight*anas[md.destCh-1+MIX_FULL+NUM_PPM]*16/100;
           act[i] = (int16_t)t;
@@ -2421,7 +2419,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
           //act[i] += diff>0 ? (32768)/((int16_t)100*md.speedUp) : -(32768)/((int16_t)100*md.speedDown);
           if(tick10ms) act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(32768)/((int16_t)100*md.speedUp)   :  v*16) :
                                            ((md.speedDown>0) ? act[i]-(32768)/((int16_t)100*md.speedDown) :  v*16) ;
-                                        
+
           if(((diff>0) && ((v*16)<act[i])) || ((diff<0) && ((v*16)>act[i]))) act[i]=v*16; //deal with overflow
           v = act[i]/16;
         }
