@@ -68,7 +68,7 @@ ASRC =
 # Optimization level, can be [0, 1, 2, 3, s].
 #     0 = turn off optimization. s = optimize for size.
 #     (Note: 3 is not always the best optimization level. See avr-libc FAQ.)
-OPT = s
+OPT = 2
 
 
 # Debugging format.
@@ -361,7 +361,8 @@ ALL_CFLAGS = -mmcu=$(MCU) -I. $(CFLAGS) $(GENDEPFLAGS)
 ALL_CPPFLAGS = -mmcu=$(MCU) -I. -x c++ $(CPPFLAGS) $(GENDEPFLAGS)
 ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 
-VER = ${shell sh -c "grep \"SUB_VERS\" stamp-er9x.h | egrep -o \"[[:digit:]]*\""}
+AVER = ${shell sh -c "grep \"SUB_VERS\" stamp-er9x.h | egrep -o \"[[:digit:]]*\""}
+VER = $(shell echo $$(( $(AVER) + 1 )))
 
 
 
@@ -373,9 +374,6 @@ jeti: ALL_CPPFLAGS += -DJETI
 	OBJ += $(OBJDIR)/jeti.o
 jeti: jetimsg all
 
-
-vers:
-	@echo "$(VER)"
 
 
 # Change the build target to build a HEX file or a library.
