@@ -1304,7 +1304,7 @@ void menuProcModel(uint8_t event)
 
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("Beep Cnt"),0);
-    for(uint8_t i=0;i<7;i++) lcd_putsnAtt((10+i)*FW, y, PSTR("RTEA123")+i,1, (((subSub-1)==i) && (sub==subN)) ? BLINK : ((g_model.beepANACenter & (1<<i)) ? INVERS : 0 ) );
+    for(uint8_t i=0;i<7;i++) lcd_putsnAtt((10+i)*FW, y, PSTR("RETA123")+i,1, (((subSub-1)==i) && (sub==subN)) ? BLINK : ((g_model.beepANACenter & (1<<i)) ? INVERS : 0 ) );
     if(sub==subN){
         if(event==EVT_KEY_FIRST(KEY_MENU)) {
             killEvents(event);
@@ -2276,7 +2276,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     if(v <= -RESX) v = -RESX;
     if(v >=  RESX) v =  RESX;
     calibratedStick[i] = v; //for show in expo
-    if(!(v/16)) anaCenter |= 1<<i;
+    if(!(v/16)) anaCenter |= 1<<(CONVERT_MODE((i+1))-1);
 
 
     if(i<4) { //only do this for sticks
