@@ -2504,11 +2504,10 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     int16_t lim_p = g_model.limitData[i].max+100;
     int16_t lim_n = g_model.limitData[i].min-100;
 
-    if(chans[i]) {
-      v = (chans[i]>0) ? chans[i]*lim_p/10000 : -chans[i]*lim_n/10000; //div by 10000 -> output = -1024..1024
-      chans[i] /= 100; // chans back to -512..512
-      ex_chans[i] = chans[i]; //for getswitch
-    }
+    int32_t q = chans[i] + g_model.limitData[i].offset*100; // offset before limit
+    if(q) v = (q>0) ? q*lim_p/10000 : -q*lim_n/10000; //div by 10000 -> output = -1024..1024
+    chans[i] /= 100; // chans back to -512..512
+    ex_chans[i] = chans[i]; //for getswitch
 
     //impose hard limits
     lim_p = calc100toRESX(lim_p);
@@ -2516,7 +2515,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
     if(v>lim_p) v = lim_p;
     if(v<lim_n) v = lim_n;// absolute limits - do not go over!
 
-    v+=g_model.limitData[i].offset;      //offset after limit.
+    //v+=g_model.limitData[i].offset;      //offset after limit.
     if(g_model.limitData[i].revert) v=-v;// finally do the reverse.
 
     cli();
