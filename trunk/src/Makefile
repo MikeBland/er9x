@@ -45,15 +45,15 @@ OBJDIR = obj
 # Enable JETI-Telemetry reception on UART0
 # For this option you need to modify your hardware!
 # More information at [insertURLhere]
-#EXT = JETI
+EXT = STD
 
 
 # List C++ source files here. (C dependencies are automatically generated.)
 CPPSRC = $(TARGET).cpp stamp.cpp menus.cpp pers.cpp file.cpp lcd.cpp drivers.cpp
 
-#ifeq ($(EXT), JETI)
-# CPPSRC += jeti.cpp
-#endif
+ifeq ($(EXT), JETI)
+ CPPSRC += jeti.cpp
+endif
 
 # List Assembler source files here.
 #     Make them always end in a capital .S.  Files ending in a lowercase .s
@@ -103,9 +103,9 @@ CPPDEFS = -DF_CPU=$(F_CPU)UL
 #CPPDEFS += -D__STDC_CONSTANT_MACROS
 
 # If JETI-Support is enabled
-#ifeq ($(EXT), JETI)
-# CPPDEFS += -DJETI
-#endif
+ifeq ($(EXT), JETI)
+ CPPDEFS += -DJETI
+endif
 
 #---------------- Compiler Options C ----------------
 #  -g*:          generate debugging information
@@ -335,7 +335,6 @@ MSG_EXTENDED_LISTING = Creating Extended Listing:
 MSG_SYMBOL_TABLE = Creating Symbol Table:
 MSG_LINKING = Linking:
 MSG_COMPILING = Compiling C:
-MSG_COMPILING_JETI = Compiling With JETI DUPLEX enabled
 MSG_COMPILING_CPP = Compiling C++:
 MSG_ASSEMBLING = Assembling:
 MSG_CLEANING = Cleaning project:
@@ -368,13 +367,6 @@ VER = $(shell echo $$(( $(AVER) + 1 )))
 
 # Default target.
 all: begin gccversion sizebefore build sizeafter end
-
-#make with JETI DUPLEX enabled
-jeti: ALL_CPPFLAGS += -DJETI
-	OBJ += $(OBJDIR)/jeti.o
-jeti: jetimsg all
-
-
 
 # Change the build target to build a HEX file or a library.
 build: stamp font.lbm sticks.lbm elf hex eep lss sym
@@ -425,10 +417,6 @@ end:
 	@echo $(MSG_END)
 	@echo
 
-jetimsg:
-	@echo
-	@echo $(MSG_COMPILING_JETI)
-	@echo
 
 
 # Display size of file.
