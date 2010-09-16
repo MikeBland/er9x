@@ -243,8 +243,11 @@ AVRDUDE_PROGRAMMER = usbasp
 # com1 = serial port. Use lpt1 to connect to parallel port.
 AVRDUDE_PORT = /dev/ttyUSB01
 
-AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
-#AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).eep
+AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex:a
+AVRDUDE_WRITE_EEPROM = -U eeprom:w:$(TARGET).bin:a
+AVRDUDE_READ_FLASH = -U flash:r:$(TARGET).hex:r
+AVRDUDE_READ_EEPROM = -U eeprom:r:$(TARGET).bin:r
+
 
 
 # Uncomment the following if you want avrdude's erase cycle counter.
@@ -441,9 +444,17 @@ gccversion :
 
 
 # Program the device.
-program: $(TARGET).hex $(TARGET).eep
+wflash: $(TARGET).hex
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH)
-	$(AVRDUDE_WRITE_EEPROM)
+
+weeprom: $(TARGET).bin
+	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_EEPROM)
+
+rflash: $(TARGET).hex
+	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_READ_FLASH)
+
+reeprom: $(TARGET).bin
+	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_READ_EEPROM)
 
 
 # Generate avr-gdb config/init file which does the following:
