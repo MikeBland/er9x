@@ -1,0 +1,25 @@
+#summary How to modify the TX to work with the JETI-Duplex-Version
+
+= Introduction =
+
+For the JETI-Duplex-Telemetry features you need to modify the hardware in the 9x Transmitter.
+
+Please note: You need good soldering skills. Very small SMD-Resistors need to be soldered out!
+
+
+= Details =
+
+First of all, the radio must be already set up with an ISP-connection for flashing. We will use two connections of the ISP-Port for the telemetry later.
+
+1. solder out the left two resistors from the PCB:
+
+[http://utfreaks.de/blog/wp-content/uploads/2010/09/IMG_0575-1024x768.jpg http://utfreaks.de/blog/wp-content/uploads/2010/09/IMG_0575-150x150.jpg]
+
+On the picture, i soldered them out and resoldered them in a 90° standing position at the bottom pad. The open ends of the resistors are connected to two wires going to PC6 and PC7 on the AVR:
+[http://utfreaks.de/blog/wp-content/uploads/2010/09/IMG_0574-1024x768.jpg http://utfreaks.de/blog/wp-content/uploads/2010/09/IMG_0574-150x150.jpg]
+
+(PC6 is the right pin, PC7 is the left one)
+
+2. reflash the 9x with the JETI-Version now. Check the Ail.DR and Thr.Cut switches for correct function in the DIAG-Screen.
+
+3. (to be continued...)
