@@ -2560,8 +2560,8 @@ void setupPulsesPPM()
   uint8_t p=8+g_model.ppmNCH*2;
   for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
     uint16_t v = g_chans512[i] + 1200*2; // we allow the signal to have 2048 steps
-    //if(v>1720*2) v = 1720*2; //limit to between 680 - 1720.  Should be enough room
-    //if(v<680*2)  v = 680*2; //still not sure I want to limit pulses
+    if(v>1720*2) v = 1720*2; //limit to between 680 - 1720.  Should be enough room
+    if(v<680*2)  v = 680*2; //Issue 110
     //pulses are limited to -640 .. 640 -> 560 .. 1840 by the limits in perOut()
     rest-=v;
     pulses2MHz[j++]=(g_model.ppmDelay*50+300)*2;
