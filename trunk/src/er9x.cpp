@@ -282,7 +282,6 @@ uint8_t checkTrim(uint8_t event)
 bool    checkIncDec_Ret;
 int16_t p1val;
 int16_t p1valdiff;
-#define P1VALDIV 32
 
 bool checkIncDecGen2(uint8_t event, void *i_pval, int16_t i_min, int16_t i_max, uint8_t i_flags)
 {
@@ -489,7 +488,7 @@ void perMain()
   evt = checkTrim(evt);
   
   static int16_t p1valprev;
-  p1valdiff = (p1val-calibratedStick[6])/P1VALDIV;
+  p1valdiff = (p1val-calibratedStick[6])/32;
   if(p1valdiff) {
       p1valdiff = (p1valprev-calibratedStick[6])/2;
       p1val = calibratedStick[6];
