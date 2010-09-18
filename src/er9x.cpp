@@ -488,8 +488,13 @@ void perMain()
   uint8_t evt=getEvent();
   evt = checkTrim(evt);
   
+  static int16_t p1valprev;
   p1valdiff = (p1val-calibratedStick[6])/P1VALDIV;
-  if(p1valdiff) p1val = calibratedStick[6];
+  if(p1valdiff) {
+      p1valdiff = (p1valprev-calibratedStick[6])/2;
+      p1val = calibratedStick[6];
+  }
+  p1valprev = calibratedStick[6];
   
   g_menuStack[g_menuStackPtr](evt);
   refreshDiplay();
