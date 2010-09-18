@@ -59,7 +59,7 @@ uint8_t s_noHi;
 int16_t g_chans512[NUM_CHNOUT];
 
 extern bool warble;
-
+extern int16_t p1valdiff;
 
 #include "sticks.lbm"
 typedef PROGMEM void (*MenuFuncP_PROGMEM)(uint8_t event);
@@ -388,13 +388,13 @@ void menuProcLimits(uint8_t event)
           break;
         case 1:
           lcd_outdezAtt(  8*FW, y,  ld->offset, attr|PREC1);
-          if(attr && s_editMode) {
+          if(attr && (s_editMode || p1valdiff)) {
             if(CHECK_INCDEC_H_MODELVAR( event, ld->offset, -1000,1000))  LIMITS_DIRTY;
           }
           break;
         case 2:
           lcd_outdezAtt(  12*FW, y, (int8_t)(ld->min-100),   attr);
-          if(attr && s_editMode) {
+          if(attr && (s_editMode || p1valdiff)) {
             ld->min -=  100;
             if(CHECK_INCDEC_H_MODELVAR( event, ld->min, -125,125))  LIMITS_DIRTY;
             ld->min +=  100;
@@ -402,7 +402,7 @@ void menuProcLimits(uint8_t event)
           break;
         case 3:
           lcd_outdezAtt( 17*FW, y, (int8_t)(ld->max+100),    attr);
-          if(attr && s_editMode) {
+          if(attr && (s_editMode || p1valdiff)) {
             ld->max +=  100;
             if(CHECK_INCDEC_H_MODELVAR( event, ld->max, -125,125))  LIMITS_DIRTY;
             ld->max -=  100;
@@ -410,7 +410,7 @@ void menuProcLimits(uint8_t event)
           break;
         case 4:
           lcd_putsnAtt(   18*FW, y, PSTR("---INV")+ld->revert*3,3,attr);
-          if(attr && s_editMode) {
+          if(attr && (s_editMode || p1valdiff)) {
             CHECK_INCDEC_H_MODELVAR_BF( event, ld->revert,    0,1);
           }
           break;
@@ -524,7 +524,7 @@ void menuProcSwitches(uint8_t event)  //Issue 78
     lcd_outdezAtt( 12*FW, y, cs.offset ,subSub==2 ? attr : 0);
     lcd_putsnAtt(  13*FW, y, PSTR("----   v>ofs  v<ofs  |v|>ofs|v|<ofs")+7*cs.func,7,subSub==3 ? attr : 0);
 
-    if(s_editMode && attr)
+    if((s_editMode || p1valdiff) && attr)
       switch (subSub) {
         case (1):
           CHECK_INCDEC_H_MODELVAR( event, cs.input, 0,NUM_XCHNRAW);
@@ -1129,16 +1129,17 @@ void menuProcExpoAll(uint8_t event)
     putsChnRaw( 0, y,i+1,0);
     uint8_t stkOp = (stkVal[i] == DR_RIGHT) ? DR_LEFT : DR_RIGHT;
 
-    editExpoVals(event,false,s_editMode,sub==i && subHor==0, 7*FW-FW/2, y,i,expoDrOn,DR_EXPO,stkVal[i]);
-    if(sub==i && subHor==0 && s_editMode && stickCentred)
+    uint8_t edtm = (s_editMode || p1valdiff);
+    editExpoVals(event,false,edtm,sub==i && subHor==0, 7*FW-FW/2, y,i,expoDrOn,DR_EXPO,stkVal[i]);
+    if(sub==i && subHor==0 && edtm && stickCentred)
       CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkOp],-100, 100);
 
-    editExpoVals(event,false,s_editMode,sub==i && subHor==1, 9*FW+FW/2, y,i,expoDrOn,DR_WEIGHT,stkVal[i]);
-    if(sub==i && subHor==1 && s_editMode && stickCentred)
+    editExpoVals(event,false,edtm,sub==i && subHor==1, 9*FW+FW/2, y,i,expoDrOn,DR_WEIGHT,stkVal[i]);
+    if(sub==i && subHor==1 && edtm && stickCentred)
       CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][stkOp],-100, 0);
 
-    editExpoVals(event,false,s_editMode,sub==i && subHor==2,10*FW+FW/2, y,i,DR_DRSW1,0,0);
-    editExpoVals(event,false,s_editMode,sub==i && subHor==3,14*FW+FW/2, y,i,DR_DRSW2,0,0);
+    editExpoVals(event,false,edtm,sub==i && subHor==2,10*FW+FW/2, y,i,DR_DRSW1,0,0);
+    editExpoVals(event,false,edtm,sub==i && subHor==3,14*FW+FW/2, y,i,DR_DRSW2,0,0);
     lcd_putcAtt(9*FW+FW/2 + ((!stkVal[i] && !stickCentred) ? 2 : 1 ), y, stickCentred ? '-' : (stkVal[i] ? 127 : 126),0);//'|' : (stkVal[i] ? '<' : '>'),0);
     switch (expoDrOn) {
     case DR_MID:
@@ -1170,8 +1171,6 @@ char idx2char(uint8_t idx)
   if(idx < NUMCHARS) return pgm_read_byte(s_charTab+idx);
   return ' ';
 }
-
-extern int16_t p1valdiff;
 
 void menuProcModel(uint8_t event)
 {
@@ -1238,7 +1237,7 @@ void menuProcModel(uint8_t event)
     lcd_putsAtt(    0,    y, PSTR("Timer"),0);
     putsTime(       9*FW, y, g_model.tmrVal,(sub==subN && subSub==1 ? (s_editMode ? BLINK : INVERS):0),(sub==subN && subSub==2 ? (s_editMode ? BLINK : INVERS):0) );
 
-    if(sub==subN && s_editMode)
+    if(sub==subN && (s_editMode || p1valdiff))
       switch (subSub) {
        case 1:
           {
@@ -1308,7 +1307,7 @@ void menuProcModel(uint8_t event)
     lcd_putsAtt(    0,    y, PSTR("Beep Cnt"),0);
     for(uint8_t i=0;i<7;i++) lcd_putsnAtt((10+i)*FW, y, PSTR("RETA123")+i,1, (((subSub-1)==i) && (sub==subN)) ? BLINK : ((g_model.beepANACenter & (1<<i)) ? INVERS : 0 ) );
     if(sub==subN){
-        if(event==EVT_KEY_FIRST(KEY_MENU)) {
+        if((event==EVT_KEY_FIRST(KEY_MENU)) || p1valdiff) {
             killEvents(event);
             s_editMode = false;
             g_model.beepANACenter ^= (1<<(subSub-1));
@@ -1358,7 +1357,7 @@ void menuProcModel(uint8_t event)
       lcd_putsAtt(    17*FW,    y, PSTR("uSec"),0);
       lcd_outdezAtt(  17*FW, y,  (g_model.ppmDelay*50)+300, (sub==subN && subSub==3 ? (s_editMode ? BLINK : INVERS):0));
     }
-    if(sub==subN && s_editMode)
+    if(sub==subN && (s_editMode || p1valdiff))
       switch (subSub){
         case 1:
             CHECK_INCDEC_H_MODELVAR(event,g_model.protocol,0,PROT_MAX);
