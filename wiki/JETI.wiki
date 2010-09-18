@@ -16,6 +16,7 @@ First of all, the radio must be already set up with an ISP-connection for flashi
 [http://utfreaks.de/blog/wp-content/uploads/2010/09/IMG_0575-1024x768.jpg http://utfreaks.de/blog/wp-content/uploads/2010/09/IMG_0575-150x150.jpg]
 
 On the picture, i soldered them out and resoldered them in a 90° standing position at the bottom pad. The open ends of the resistors are connected to two wires going to PC6 and PC7 on the AVR:
+
 [http://utfreaks.de/blog/wp-content/uploads/2010/09/IMG_0574-1024x768.jpg http://utfreaks.de/blog/wp-content/uploads/2010/09/IMG_0574-150x150.jpg]
 
 (PC6 is the right pin, PC7 is the left one)
