@@ -280,6 +280,9 @@ uint8_t checkTrim(uint8_t event)
 
 //global helper vars
 bool    checkIncDec_Ret;
+int16_t p1val;
+int16_t p1valdiff;
+#define P1VALDIV 32
 
 bool checkIncDecGen2(uint8_t event, void *i_pval, int16_t i_min, int16_t i_max, uint8_t i_flags)
 {
@@ -310,13 +313,9 @@ bool checkIncDecGen2(uint8_t event, void *i_pval, int16_t i_min, int16_t i_max, 
     killEvents(kmi);
     killEvents(kpl);
   }
-  /*
+  
   //change values based on P1
-   static int16_t p1val;
-   int16_t diff = p1val-anaIn(4);
-   if(!diff) newval += diff>0 ? 3 : -3;
-   p1val = anaIn(4);
-   */
+  newval -= p1valdiff; 
 
   if(newval>i_max)
   {
@@ -484,10 +483,14 @@ void perMain()
 {
   perOut(g_chans512, false, false);
   eeCheck();
-
+  
   lcd_clear();
   uint8_t evt=getEvent();
   evt = checkTrim(evt);
+  
+  p1valdiff = (p1val-calibratedStick[6])/P1VALDIV;
+  if(p1valdiff) p1val = calibratedStick[6];
+  
   g_menuStack[g_menuStackPtr](evt);
   refreshDiplay();
   if(PING & (1<<INP_G_RF_POW)) { //no power -> only phone jack = slave mode
