@@ -587,7 +587,7 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
   if( *pulsePtr == 0) {
     //currpulse=0;
     pulsePtr = pulses2MHz;
-    pulsePol = 0;
+    pulsePol = g_model.pulsePol;//0;
 
     TIMSK &= ~(1<<OCIE1A); //stop reentrance
     sei();

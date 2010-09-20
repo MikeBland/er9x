@@ -1177,8 +1177,8 @@ void menuProcModel(uint8_t event)
   static MState2 mstate2;
   uint8_t x=TITLE("SETUP ");
   lcd_outdezNAtt(x+2*FW,0,g_eeGeneral.currModel+1,INVERS+LEADING0,2);
-  MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,7,3,1};
-  MSTATE_CHECK_VxH(2,menuTabModel,12);
+  MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,7,3,1,1};
+  MSTATE_CHECK_VxH(2,menuTabModel,13);
   int8_t  sub    = mstate2.m_posVert;
   uint8_t subSub = mstate2.m_posHorz + 1;
 
@@ -1369,6 +1369,13 @@ void menuProcModel(uint8_t event)
             CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
             break;
       }
+    if((y+=FH)>8*FH) return;
+  }subN++;
+  
+  if(s_pgOfs<subN) {
+    lcd_putsAtt(    0,    y, PSTR("Invert S"),0);
+    lcd_putsnAtt(  10*FW, y, PSTR("OFFON ")+3*g_model.pulsePol,3,(sub==subN ? INVERS:0));
+    if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.pulsePol,0,1);
     if((y+=FH)>8*FH) return;
   }subN++;
 
