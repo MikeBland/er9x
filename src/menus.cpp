@@ -1373,8 +1373,8 @@ void menuProcModel(uint8_t event)
   }subN++;
   
   if(s_pgOfs<subN) {
-    lcd_putsAtt(    0,    y, PSTR("Invert S"),0);
-    lcd_putsnAtt(  10*FW, y, PSTR("OFFON ")+3*g_model.pulsePol,3,(sub==subN ? INVERS:0));
+    lcd_putsAtt(    0,    y, PSTR("Shift Sel"),0);
+    lcd_putsnAtt(  10*FW, y, PSTR("POSNEG")+3*g_model.pulsePol,3,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.pulsePol,0,1);
     if((y+=FH)>8*FH) return;
   }subN++;
