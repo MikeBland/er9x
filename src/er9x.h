@@ -486,7 +486,7 @@ extern uint8_t            g_beepCnt;
 extern uint8_t            g_beepVal[4];
 extern const PROGMEM char modi12x3[];
 //extern uint16_t           pulses2MHz[9];
-extern uint16_t           pulses2MHz[60];
+extern uint16_t           pulses2MHz[120];
 extern int16_t            g_ppmIns[8];
 extern int16_t            g_chans512[NUM_CHNOUT];
 

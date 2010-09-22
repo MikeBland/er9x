@@ -2231,7 +2231,7 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
   return erg / 25; // 100*D5/RESX;
 }
 
-uint16_t pulses2MHz[60];
+uint16_t pulses2MHz[120];
 
 void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
 {
