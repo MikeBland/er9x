@@ -492,6 +492,7 @@ void perMain()
   if(p1valdiff) {
       p1valdiff = (p1valprev-calibratedStick[6])/2;
       p1val = calibratedStick[6];
+      if(p1valdiff>1) warble=true;
       beepKey();
   }
   p1valprev = calibratedStick[6];
