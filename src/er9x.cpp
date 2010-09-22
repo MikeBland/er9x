@@ -492,6 +492,7 @@ void perMain()
   if(p1valdiff) {
       p1valdiff = (p1valprev-calibratedStick[6])/2;
       p1val = calibratedStick[6];
+      beepKey();
   }
   p1valprev = calibratedStick[6];
   
