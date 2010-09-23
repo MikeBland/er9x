@@ -23,4 +23,15 @@ On the picture, i soldered them out and resoldered them in a 90° standing posit
 
 2. reflash the 9x with the JETI-Version now. Check the Ail.DR and Thr.Cut switches for correct function in the DIAG-Screen.
 
-3. (to be continued...)
+3. Hook up the Jeti-Module like this:   (click to enlarge image!)
+
+[http://gallery.privy.de/d/15477-1/9x-jeti-connection.png http://gallery.privy.de/d/15478-2/9x-jeti-connection.png]
+
+Please note: You have to disconnect this connection to reflash the 9x avr!
+I have connected the whole JETI-Part thru the ISP-Plug in the battery-housing.
+
+4. Use JETI-Telemetry!
+Push the DOWN-Button long on the main screen to enter the JETI-Menu. Now you can use the UP, DOWN, LEFT and RIGHT buttons like on your JETI-Box. Press Exit to leave the JETI-Menu.
+
+
+Any questions? -> shadow (at) privy.de
