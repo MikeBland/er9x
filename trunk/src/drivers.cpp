@@ -208,6 +208,7 @@ uint8_t getEventDbl(uint8_t event)
 volatile uint16_t g_tmr10ms;
 volatile uint8_t  g_blinkTmr10ms;
 
+
 void per10ms()
 {
   g_tmr10ms++;

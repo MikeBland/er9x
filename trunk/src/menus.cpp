@@ -1681,13 +1681,15 @@ void menuProcSetup(uint8_t event)
 {
   static MState2 mstate2;
   TITLE("SETUP");
-  MSTATE_CHECK_V(1,menuTabDiag,1+7);
+  MSTATE_CHECK_V(1,menuTabDiag,1+8);
   int8_t  sub    = mstate2.m_posVert;
 
   if(sub<1) s_pgOfs=0;
-  else if((sub-s_pgOfs)>6) s_pgOfs = sub-6;
+  else if((sub-s_pgOfs)>7) s_pgOfs = sub-7;
   else if((sub-s_pgOfs)<1) s_pgOfs = sub-1;
   if(s_pgOfs<0) s_pgOfs = 0;
+  
+  if(s_pgOfs==1) s_pgOfs= sub<3 ? 0 : 2;
 
   uint8_t y = 1*FH;
 
@@ -1731,20 +1733,33 @@ void menuProcSetup(uint8_t event)
   }subN++;
 
   if(s_pgOfs<subN) {
-    lcd_puts_P( 6*FW, y,PSTR("Light"));
+    lcd_puts_P( 6*FW, y,PSTR("Light SW"));
     putsDrSwitches(0*FW,y,g_eeGeneral.lightSw,sub==subN ? INVERS : 0);
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightSw, -MAX_DRSWITCH, MAX_DRSWITCH);
     if((y+=FH)>8*FH) return;
   }subN++;
 
-  if(s_pgOfs<(subN)) {
-    lcd_putsAtt( 1*FW, y, PSTR("Mode"),0);//sub==3?INVERS:0);
-    lcd_putcAtt( 3*FW, y+FH, '1'+g_eeGeneral.stickMode,sub==subN?INVERS:0);
-    for(uint8_t i=0; i<4; i++)
+  if(s_pgOfs<subN) {
+    lcd_puts_P( 6*FW, y,PSTR("Light OFF after"));
+    if(g_eeGeneral.lightAutoOff)
     {
-      lcd_img(    (6+4*i)*FW, y,   sticks,i,0);
-      putsChnRaw( (6+4*i)*FW, y+FH,i+1,0);//sub==3?INVERS:0);
+        lcd_puts_P( 4*FW, y,PSTR("s "));
+        lcd_outdezAtt(4*FW,y,g_eeGeneral.lightAutoOff*5,(sub==subN ? INVERS : 0));
     }
+    else
+        lcd_putsnAtt(1*FW, y, PSTR("OFF"),3,(sub==subN ? INVERS:0));
+    if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightAutoOff, 0, 600/5);
+    if((y+=FH)>8*FH) return;
+  }subN++;
+  
+  if(s_pgOfs<subN) {
+    lcd_putsAtt( 1*FW, y, PSTR("Mode"),0);//sub==3?INVERS:0);
+    if(y<7*FH) {for(uint8_t i=0; i<4; i++) lcd_img((6+4*i)*FW, y, sticks,i,0); }
+    if((y+=FH)>8*FH) return;
+    
+    lcd_putcAtt( 3*FW, y, '1'+g_eeGeneral.stickMode,sub==subN?INVERS:0);
+    for(uint8_t i=0; i<4; i++) putsChnRaw( (6+4*i)*FW, y,i+1,0);//sub==3?INVERS:0);
+    
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event,g_eeGeneral.stickMode,0,3);
     if((y+=FH)>8*FH) return;
   }subN++;
@@ -2239,11 +2254,8 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
   static int32_t  chans[NUM_CHNOUT];
   static uint32_t inacCounter;
   static uint16_t inacSum;
-  static uint16_t lastTm;
   static uint8_t  bpanaCenter;
 
-  uint8_t tick10ms = g_tmr10ms - lastTm;
-  lastTm = g_tmr10ms;
   int16_t trimA[4];
   uint8_t  anaCenter = 0;
 

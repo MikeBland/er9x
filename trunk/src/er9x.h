@@ -149,7 +149,6 @@ const uint8_t modn12x3[4][4]= {
   {4, 3, 2, 1} };
 
 
-
 //convert from mode 1 to mode g_eeGeneral.stickMode
 //NOTICE!  =>  1..4 -> 1..4
 #define CONVERT_MODE(x) (((x)<=4) ? modn12x3[g_eeGeneral.stickMode][((x)-1)] : (x))
@@ -489,6 +488,7 @@ extern const PROGMEM char modi12x3[];
 extern uint16_t           pulses2MHz[120];
 extern int16_t            g_ppmIns[8];
 extern int16_t            g_chans512[NUM_CHNOUT];
+extern uint8_t            tick10ms;
 
 #include "lcd.h"
 extern const char stamp1[];
