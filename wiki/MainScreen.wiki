@@ -22,6 +22,9 @@ Screen 3 - Representation of stick, pot and switch position.
 *Long Down/Up*
    Statistics screens
 
+*Long Down*  (JETI-Version only!)
+   Enter JETI-Telemetry-Menu
+
 *Long Right*
    Model Select/Setup
 
