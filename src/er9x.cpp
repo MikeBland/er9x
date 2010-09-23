@@ -471,15 +471,17 @@ void pushMenu(MenuFuncP newMenu)
   (*newMenu)(EVT_ENTRY);
 }
 
-
-
-
-
 uint8_t  g_vbat100mV;
+uint8_t  tick10ms;
+uint16_t g_LightOffCounter;
 void evalCaptures();
 
 void perMain()
 {
+  static uint16_t lastTMR;
+  tick10ms = g_tmr10ms - lastTMR;
+  lastTMR = g_tmr10ms;
+  
   perOut(g_chans512, false, false);
   eeCheck();
   
@@ -487,13 +489,16 @@ void perMain()
   uint8_t evt=getEvent();
   evt = checkTrim(evt);
   
+  if(tick10ms && g_LightOffCounter) g_LightOffCounter--;
+  if(IS_KEY_BREAK(evt)) g_LightOffCounter = g_eeGeneral.lightAutoOff*500; // on keypress turn the light on 5*100
+  
   static int16_t p1valprev;
   p1valdiff = (p1val-calibratedStick[6])/32;
   if(p1valdiff) {
       p1valdiff = (p1valprev-calibratedStick[6])/2;
       p1val = calibratedStick[6];
-      if(p1valdiff>1) warble=true;
-      beepKey();
+      //if(p1valdiff>1) warble=true;
+      //beepKey();
   }
   p1valprev = calibratedStick[6];
   
@@ -507,9 +512,9 @@ void perMain()
   }
   switch( g_tmr10ms & 0x1f ) { //alle 10ms*32
     case 1:
-      //check light switch
-      if( getSwitch(g_eeGeneral.lightSw,0)) PORTB |=  (1<<OUT_B_LIGHT);
-      else                                  PORTB &= ~(1<<OUT_B_LIGHT);
+      //check light switch and timer
+      if( getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter) PORTB |=  (1<<OUT_B_LIGHT);
+      else                                                       PORTB &= ~(1<<OUT_B_LIGHT);
       break;
 
     case 2:
