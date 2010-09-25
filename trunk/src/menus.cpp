@@ -2426,8 +2426,13 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
         if(diff && (md.speedUp || md.speedDown)){
           //rate = steps/sec => 32*1024/100*md.speedUp/Down
           //act[i] += diff>0 ? (32768)/((int16_t)100*md.speedUp) : -(32768)/((int16_t)100*md.speedDown);
-          if(tick10ms) act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(32768)/((int16_t)100*md.speedUp)   :  v*16) :
-                                           ((md.speedDown>0) ? act[i]-(32768)/((int16_t)100*md.speedDown) :  v*16) ;
+          //-100..100 => 32768 ->  100*83886/256 = 32768,   For MAX we divide by 2 sincde it's asymmetrical
+          if(tick10ms)
+          {
+              //int32_t rate = ((int32_t)abs(md.weight) * 83886) / (md.srcRaw==MIX_MAX ? 512: 256); 
+              act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(32768)/((int16_t)100*md.speedUp)   :  v*16) :
+                                  ((md.speedDown>0) ? act[i]-(32768)/((int16_t)100*md.speedDown) :  v*16) ;
+          }
 
           if(((diff>0) && ((v*16)<act[i])) || ((diff<0) && ((v*16)>act[i]))) act[i]=v*16; //deal with overflow
           v = act[i]/16;
