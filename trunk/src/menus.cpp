@@ -2411,8 +2411,9 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
         int16_t diff = v-act[i]/16;
 
         if(swTog) {
-          int32_t t = (int32_t)md.weight*anas[md.destCh-1+MIX_FULL+NUM_PPM]*16/100;
-          act[i] = (int16_t)t;
+          //int32_t t = (int32_t)md.weight*anas[md.destCh-1+MIX_FULL+NUM_PPM]*16/100;
+          //act[i] = (int16_t)t;
+          act[i] = anas[md.destCh-1+MIX_FULL+NUM_PPM]*16;
           diff = v-act[i]/16;
           if(diff) sDelay[i] = (diff<0 ? md.delayUp :  md.delayDown) * 100;
         }
