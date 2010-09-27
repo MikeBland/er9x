@@ -2322,8 +2322,8 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
 
   anas[MIX_MAX-1]  = RESX;     // MAX
   anas[MIX_FULL-1] = RESX;     // FULL
-  for(uint8_t i=MIX_FULL;i<(MIX_FULL+NUM_PPM);i++)  anas[i] = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL]; //add ppm channels
-  for(uint8_t i=MIX_FULL+NUM_PPM;i<NUM_XCHNRAW;i++) anas[i] = chans[i-MIX_FULL-NUM_PPM]; //other mixes previous outputs
+  for(uint8_t i=0;i<NUM_PPM;i++)     anas[i+MIX_FULL] = g_ppmIns[i] - g_eeGeneral.ppmInCalib[i]; //add ppm channels
+  for(uint8_t i=0;i<NUM_XCHNRAW;i++) anas[i+MIX_FULL+NUM_PPM] = chans[i]; //other mixes previous outputs
 
   trace(); //trace thr 0..32  (/32)
 
@@ -2377,23 +2377,22 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       if((md.destCh==0) || (md.destCh>NUM_CHNOUT)) break;
 
       //Notice 0 = NC switch means not used -> always on line
-
+      static uint8_t swOn[MAX_MIXERS];
+      
       int16_t v  = 0;
-      uint8_t swTog;
-      static uint8_t swTg[MAX_MIXERS];
+      uint8_t swTog=!swOn[i];
+      swOn[i]=false;
       if(!getSwitch(md.swtch,1)){ // switch on?  if no switch selected => on
-        swTog = swTg[i];
-        swTg[i]=false;
         if(md.srcRaw!=MIX_MAX && md.srcRaw!=MIX_FULL) continue;// if not MAX or FULL - next loop
         if(md.mltpx==MLTPX_REP) continue; // if switch is off and REPLACE then off
         v = (md.srcRaw == MIX_FULL ? -RESX : 0); // switch is off and it is either MAX=0 or FULL=-512
       }
       else {
-        swTog = !swTg[i];
-        swTg[i]=true;
         v = anas[md.srcRaw-1]; //Switch is on. MAX=FULL=512 or value.
         if(md.mixWarn) mixWarning |= 1<<(md.mixWarn-1); // Mix warning
       }
+      
+      swOn[i]=true;
 
       //========== INPUT OFFSET ===============
       if(md.sOffset) v += calc100toRESX(md.sOffset);
@@ -2411,9 +2410,13 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
         int16_t diff = v-act[i]/16;
 
         if(swTog) {
-          //int32_t t = (int32_t)md.weight*anas[md.destCh-1+MIX_FULL+NUM_PPM]*16/100;
-          //act[i] = (int16_t)t;
-          act[i] = anas[md.destCh-1+MIX_FULL+NUM_PPM]*16;
+            //need to know which "v" will give "anas".
+            //curves(v)*weight/100 -> anas
+            // v * weight / 100 = anas => anas*100/weight = v
+          int32_t t = anas[md.destCh-1+MIX_FULL+NUM_PPM]*16;
+          t *=100;
+          t /= md.weight;
+          act[i] = (int16_t)t;
           diff = v-act[i]/16;
           if(diff) sDelay[i] = (diff<0 ? md.delayUp :  md.delayDown) * 100;
         }
@@ -2428,8 +2431,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
           //rate = steps/sec => 32*1024/100*md.speedUp/Down
           //act[i] += diff>0 ? (32768)/((int16_t)100*md.speedUp) : -(32768)/((int16_t)100*md.speedDown);
           //-100..100 => 32768 ->  100*83886/256 = 32768,   For MAX we divide by 2 sincde it's asymmetrical
-          if(tick10ms)
-          {
+          if(tick10ms) {
               //int32_t rate = ((int32_t)abs(md.weight) * 83886) / (md.srcRaw==MIX_MAX ? 512: 256); 
               act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(32768)/((int16_t)100*md.speedUp)   :  v*16) :
                                   ((md.speedDown>0) ? act[i]-(32768)/((int16_t)100*md.speedDown) :  v*16) ;
