@@ -1667,10 +1667,10 @@ void menuProcSetup1(uint8_t event)
           break;
         }
       case 3:
-        uint8_t bits = 3<<i;
+        uint8_t bits = 7<<i;
         uint8_t val = (g_eeGeneral.warnOpts & bits)>>3;
         lcd_outdezAtt( FW*4, y, val,attr);
-        if(attr)  val = checkIncDec_hg( event, val, 0, 3); //!! bitfield
+        if(attr)  val = checkIncDec_hg( event, val, 0, 4); //!! bitfield
         g_eeGeneral.warnOpts = (g_eeGeneral.warnOpts & ~bits) | (val<<3);
         break;
     }

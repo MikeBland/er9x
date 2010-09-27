@@ -55,7 +55,7 @@ typedef struct t_EEGeneral {
 #define WARN_THR_REV (!(g_eeGeneral.warnOpts & 0x20))
 #define WARN_SW      (!(g_eeGeneral.warnOpts & 0x02))
 #define WARN_MEM     (!(g_eeGeneral.warnOpts & 0x04))
-#define BEEP_VAL     ( (g_eeGeneral.warnOpts & 0x18) >>3 )
+#define BEEP_VAL     ( (g_eeGeneral.warnOpts & 0x38) >>3 )
   uint8_t   warnOpts; //bitset for several warnings
   uint8_t   stickMode;
   uint8_t   inactivityTimer;
