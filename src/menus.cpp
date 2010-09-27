@@ -831,7 +831,8 @@ void menuProcMix(uint8_t event)
     if(s_mixTab[k].hasDat){ //show data
       MixData *md2=&md[s_mixTab[k].editIdx];
       uint8_t attr = sub==s_mixTab[k].selDat ? INVERS : 0;
-      if(!s_mixTab[k].showCh) lcd_putsnAtt(   3*FW, y, PSTR("+*R")+1*md2->mltpx,1,s_moveMode ? attr : 0);
+      //if(!s_mixTab[k].showCh)
+       lcd_putsnAtt(   3*FW, y, PSTR("+*R")+1*md2->mltpx,1,s_moveMode ? attr : 0);
       lcd_outdezAtt(  7*FW+FW/2, y, md2->weight,attr);
       lcd_putcAtt(    7*FW+FW/2, y, '%',s_moveMode ? attr : 0);
       putsChnRaw(     9*FW, y, md2->srcRaw,s_moveMode ? attr : 0);
@@ -2110,10 +2111,21 @@ void menuProc0(uint8_t event)
     uint8_t att = (g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0) | DBLSIZE;
     for(uint8_t i=0;i<sizeof(g_model.name);i++)
       lcd_putcAtt(x+i*2*FW-i-2, 0*FH, g_model.name[i],DBLSIZE);
+      
     putsVBat(x-1*FW,2*FH,true, att);
     lcd_putcAtt(x+4*FW, 3*FH, 'V',0);
-    lcd_hline(x+2*FW,4*FH-4,2);
-    lcd_hline(x+2*FW,4*FH-3,2);
+    
+    uint8_t ln = 2;
+    uint8_t xn = x;
+    uint8_t tn = (g_vbat100mV/10) % 10;
+    uint8_t sn = g_vbat100mV % 10;
+    
+    if(sn==2 || sn==3) ln++;
+    if(tn==1 || tn==2) {xn--;ln++;}
+    
+    lcd_hline(xn+2*FW,4*FH-4,ln);
+    lcd_hline(xn+2*FW,4*FH-3,ln);
+
 
   if(s_timerState != TMR_OFF){
     uint8_t att = DBLSIZE | (s_timerState==TMR_BEEPING ? BLINK : 0);
@@ -2401,29 +2413,30 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       if (md.speedUp || md.speedDown || md.delayUp || md.delayDown)  // there are delay values
       {
         static int16_t sDelay[MAX_MIXERS];
-        static int16_t act   [MAX_MIXERS];
+        static int32_t act   [MAX_MIXERS];
+
+#define DEL_MULT 256
 
         if(init) {
-          act[i]=v*16;
+          act[i]=(int32_t)v*DEL_MULT;
           swTog = false;
         }
-        int16_t diff = v-act[i]/16;
+        int16_t diff = v-act[i]/DEL_MULT;
 
         if(swTog) {
             //need to know which "v" will give "anas".
             //curves(v)*weight/100 -> anas
             // v * weight / 100 = anas => anas*100/weight = v
-          int32_t t = anas[md.destCh-1+MIX_FULL+NUM_PPM]*16;
-          t *=100;
-          t /= md.weight;
-          act[i] = (int16_t)t;
-          diff = v-act[i]/16;
+          act[i] = (int32_t)anas[md.destCh-1+MIX_FULL+NUM_PPM]*DEL_MULT;
+          act[i] *=100;
+          act[i] /= md.weight;
+          diff = v-act[i]/DEL_MULT;
           if(diff) sDelay[i] = (diff<0 ? md.delayUp :  md.delayDown) * 100;
         }
 
         if(sDelay[i]){ // perform delay
             if(tick10ms) sDelay[i]--;
-            v = act[i]/16;
+            v = act[i]/DEL_MULT;
             diff = 0;
         }
 
@@ -2432,13 +2445,13 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
           //act[i] += diff>0 ? (32768)/((int16_t)100*md.speedUp) : -(32768)/((int16_t)100*md.speedDown);
           //-100..100 => 32768 ->  100*83886/256 = 32768,   For MAX we divide by 2 sincde it's asymmetrical
           if(tick10ms) {
-              //int32_t rate = ((int32_t)abs(md.weight) * 83886) / (md.srcRaw==MIX_MAX ? 512: 256); 
-              act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(32768)/((int16_t)100*md.speedUp)   :  v*16) :
-                                  ((md.speedDown>0) ? act[i]-(32768)/((int16_t)100*md.speedDown) :  v*16) ;
+              int32_t rate = (int32_t)DEL_MULT*2048*100/md.weight;
+              act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(rate)/((int16_t)100*md.speedUp)   :  (int32_t)v*DEL_MULT) :
+                                  ((md.speedDown>0) ? act[i]-(rate)/((int16_t)100*md.speedDown) :  (int32_t)v*DEL_MULT) ;
           }
 
-          if(((diff>0) && ((v*16)<act[i])) || ((diff<0) && ((v*16)>act[i]))) act[i]=v*16; //deal with overflow
-          v = act[i]/16;
+          if(((diff>0) && (v<(act[i]/DEL_MULT))) || ((diff<0) && (v>(act[i]/DEL_MULT)))) act[i]=(int32_t)v*DEL_MULT; //deal with overflow
+          v = act[i]/DEL_MULT;
         }
       }
 
