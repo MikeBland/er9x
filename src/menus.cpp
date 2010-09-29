@@ -1796,8 +1796,7 @@ void timer(uint8_t val)
 
   s_cnt++;
   s_sum+=val;
-  if((g_tmr10ms-s_time)<100) //1 sec
-    return;
+  if((g_tmr10ms-s_time)<100) return; //1 sec
   s_time += 100;
   val     = s_sum/s_cnt;
   s_sum  -= val*s_cnt; //rest
@@ -2421,10 +2420,11 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
 
   anas[MIX_MAX-1]  = RESX;     // MAX
   anas[MIX_FULL-1] = RESX;     // FULL
-  for(uint8_t i=0;i<NUM_PPM;i++)     anas[i+MIX_FULL] = g_ppmIns[i] - g_eeGeneral.ppmInCalib[i]; //add ppm channels
-  for(uint8_t i=0;i<NUM_XCHNRAW;i++) anas[i+MIX_FULL+NUM_PPM] = chans[i]; //other mixes previous outputs
+  for(uint8_t i=MIX_FULL;i<(MIX_FULL+NUM_PPM);i++)  anas[i] = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL]; //add ppm channels
+  for(uint8_t i=MIX_FULL+NUM_PPM;i<NUM_XCHNRAW;i++) anas[i] = chans[i-MIX_FULL-NUM_PPM]; //other mixes previous outputs
 
-  trace(); //trace thr 0..32  (/32)
+
+  if(tick10ms) trace(); //trace thr 0..32  (/32)
 
   memset(chans,0,sizeof(chans));        // All outputs to 0
 
