@@ -1920,8 +1920,6 @@ void menuProcJeti(uint8_t event)
 {
   TITLE("JETI");
 
-  uint8_t i;
-
   switch(event)
   {
     //case EVT_KEY_FIRST(KEY_MENU):
@@ -1932,13 +1930,9 @@ void menuProcJeti(uint8_t event)
       break;
   }
 
-  for (i = 0; i < 16; i++)
+  for (uint8_t i = 0; i < 16; i++)
   {
     lcd_putcAtt((i+2)*FW,   3*FH, JetiBuffer[i], BSS_NO_INV);
-  }
-
-  for (i = 0; i < 16; i++)
-  {
     lcd_putcAtt((i+2)*FW,   4*FH, JetiBuffer[i+16], BSS_NO_INV);
   }
 
@@ -1995,10 +1989,7 @@ uint8_t hex2dec(uint8_t number, uint8_t multiplier)
 
 void menuProcJeti(uint8_t event)
 {
-  TITLE("FrSky");
-
-  uint8_t i;
-  
+  TITLE("FrSky");  
 
   switch(event)
   {
@@ -2012,7 +2003,7 @@ void menuProcJeti(uint8_t event)
 	
 	if (FrskyBufferReady)
 	{
-		i=0;
+		uint8_t i=0;
 		if (linkBuffer[i] == 0x7D)
 		{
 			i++;
@@ -2043,14 +2034,10 @@ void menuProcJeti(uint8_t event)
 	}
 		
 	
-  for (i = 0; i < 16; i++)
+  for (uint8_t i = 0; i < 16; i++)
   {
 	lcd_putcAtt((i+2)*FW,   3*FH, TelemBuffer[i], BSS_NO_INV);
-  }
-
-  for (i = 0; i < 16; i++)
-  {
-	lcd_putcAtt((i+2)*FW,   4*FH, TelemBuffer[i+16], BSS_NO_INV);
+    lcd_putcAtt((i+2)*FW,   4*FH, TelemBuffer[i+16], BSS_NO_INV);
   }
   
 }
