@@ -472,14 +472,14 @@ void pushMenu(MenuFuncP newMenu)
 }
 
 uint8_t  g_vbat100mV;
-uint8_t  tick10ms;
+volatile uint8_t  tick10ms;
 uint16_t g_LightOffCounter;
 void evalCaptures();
 
 void perMain()
 {
   static uint16_t lastTMR;
-  tick10ms = g_tmr10ms - lastTMR;
+  tick10ms = (g_tmr10ms != lastTMR);
   lastTMR = g_tmr10ms;
   
   perOut(g_chans512, false, false);
