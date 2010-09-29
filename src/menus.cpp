@@ -1231,7 +1231,7 @@ void menuProcModel(uint8_t event)
         g_model.name[subSub-1]=v;
         lcd_putcAtt((10+subSub-1)*FW, y, v,INVERS);
     }
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
@@ -1256,7 +1256,7 @@ void menuProcModel(uint8_t event)
           break;
           }
       }
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) { //timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw, chx(value > or < than tmrChVal), ch%
@@ -1266,42 +1266,42 @@ void menuProcModel(uint8_t event)
 
     if(sub==subN)
       CHECK_INCDEC_H_MODELVAR( event,g_model.tmrMode ,-(13+2*MAX_DRSWITCH),(13+2*MAX_DRSWITCH));
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("Timer "),0);
     lcd_putsnAtt(  10*FW, y, PSTR("Count DownCount Up  ")+10*g_model.tmrDir,10,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_MODELVAR_BF(event,g_model.tmrDir,0,1);
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("T-Trim"),0);
     lcd_putsnAtt(  10*FW, y, PSTR("OFFON ")+3*g_model.thrTrim,3,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_MODELVAR_BF(event,g_model.thrTrim,0,1);
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("T-Expo"),0);
     lcd_putsnAtt(  10*FW, y, PSTR("OFFON ")+3*g_model.thrExpo,3,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_MODELVAR_BF(event,g_model.thrExpo,0,1);
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("Trim Inc"),0);
     lcd_putsnAtt(  10*FW, y, PSTR("Exp   ExFineFine  MediumCoarse")+6*g_model.trimInc,6,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.trimInc,0,4);
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("Trim Sw"),0);
     putsDrSwitches(9*FW,y,g_model.trimSw,sub==subN ? INVERS:0);
     if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.trimSw,-MAX_DRSWITCH, MAX_DRSWITCH);
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
@@ -1315,7 +1315,7 @@ void menuProcModel(uint8_t event)
             STORE_MODELVARS;
         }
     }
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
 /*
@@ -1345,7 +1345,7 @@ void menuProcModel(uint8_t event)
             CHECK_INCDEC_H_MODELVAR(event,g_model.swashR.chY,0,3);
             break;
       }
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 */
 
@@ -1370,14 +1370,14 @@ void menuProcModel(uint8_t event)
             CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
             break;
       }
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
   
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("Shift Sel"),0);
     lcd_putsnAtt(  10*FW, y, PSTR("POSNEG")+3*g_model.pulsePol,3,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.pulsePol,0,1);
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
@@ -1392,7 +1392,7 @@ void menuProcModel(uint8_t event)
           chainMenu(menuProcModelSelect);
         //
     }
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 }
 
@@ -1669,10 +1669,10 @@ void menuProcSetup1(uint8_t event)
         }
       case 3:
         uint8_t bits = 7<<i;
-        uint8_t val = (g_eeGeneral.warnOpts & bits)>>3;
+        uint8_t val = (g_eeGeneral.warnOpts & bits)>>i;
         lcd_outdezAtt( FW*4, y, val,attr);
         if(attr)  val = checkIncDec_hg( event, val, 0, 4); //!! bitfield
-        g_eeGeneral.warnOpts = (g_eeGeneral.warnOpts & ~bits) | (val<<3);
+        g_eeGeneral.warnOpts = (g_eeGeneral.warnOpts & ~bits) | (val<<i);
         break;
     }
   }
@@ -1684,7 +1684,7 @@ void menuProcSetup(uint8_t event)
   TITLE("SETUP");
   MSTATE_CHECK_V(1,menuTabDiag,1+8);
   int8_t  sub    = mstate2.m_posVert;
-
+  
   if(sub<1) s_pgOfs=0;
   else if((sub-s_pgOfs)>7) s_pgOfs = sub-7;
   else if((sub-s_pgOfs)<1) s_pgOfs = sub-1;
@@ -1702,42 +1702,42 @@ void menuProcSetup(uint8_t event)
       CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.contrast, 20, 45);
       lcdSetRefVolt(g_eeGeneral.contrast);
     }
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
     lcd_puts_P( 4*FW, y,PSTR("V BAT Warning"));
     lcd_outdezAtt(4*FW,y,g_eeGeneral.vBatWarn,(sub==subN ? INVERS : 0)|PREC1);
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatWarn, 50, 100); //5-10V
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
     lcd_puts_P( 4*FW, y,PSTR("m Inactivity Alrm"));
     lcd_outdezAtt(4*FW,y,g_eeGeneral.inactivityTimer,(sub==subN ? INVERS : 0));
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.inactivityTimer, 0, 250); //0..250minutes
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
     lcd_puts_P( 6*FW, y,PSTR("Filter ADC"));
     lcd_putsnAtt(0*FW, y, PSTR("SINGOSMPFILT")+4*g_eeGeneral.filterInput,4,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.filterInput, 0, 2);
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
     lcd_puts_P( 6*FW, y,PSTR("Throttle Rev"));
     lcd_putsnAtt(1*FW, y, PSTR("OFF ON")+3*g_eeGeneral.throttleReversed,3,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.throttleReversed, 0, 1);
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
     lcd_puts_P( 6*FW, y,PSTR("Light SW"));
     putsDrSwitches(0*FW,y,g_eeGeneral.lightSw,sub==subN ? INVERS : 0);
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightSw, -MAX_DRSWITCH, MAX_DRSWITCH);
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
@@ -1750,19 +1750,19 @@ void menuProcSetup(uint8_t event)
     else
         lcd_putsnAtt(1*FW, y, PSTR("OFF"),3,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightAutoOff, 0, 600/5);
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>=7*FH) return;
   }subN++;
   
   if(s_pgOfs<subN) {
     lcd_putsAtt( 1*FW, y, PSTR("Mode"),0);//sub==3?INVERS:0);
     if(y<7*FH) {for(uint8_t i=0; i<4; i++) lcd_img((6+4*i)*FW, y, sticks,i,0); }
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
     
     lcd_putcAtt( 3*FW, y, '1'+g_eeGeneral.stickMode,sub==subN?INVERS:0);
     for(uint8_t i=0; i<4; i++) putsChnRaw( (6+4*i)*FW, y,i+1,0);//sub==3?INVERS:0);
     
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event,g_eeGeneral.stickMode,0,3);
-    if((y+=FH)>8*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
 
 }
@@ -1915,6 +1915,7 @@ void menuProcStatistic2(uint8_t event)
 }
 
 #ifdef JETI
+
 void menuProcJeti(uint8_t event)
 {
   TITLE("JETI");
@@ -1957,6 +1958,101 @@ void menuProcJeti(uint8_t event)
 
     jeti_keys = JETI_KEY_NOCHANGE;
   }
+}
+#endif
+
+#ifdef FRSKY
+
+uint8_t hex2dec(uint8_t number, uint8_t multiplier)
+{
+	uint8_t value = 0;
+
+	switch (multiplier)
+	{
+		case 1:
+			value = number%100;
+			value = value%10;
+			break;
+		
+		case 10:
+			value = number%100;
+			value = value /10;
+			break;
+		
+		case 100:
+			value = number/100;
+			break;
+	
+		default:
+		
+			break;
+	}
+	
+	value += 48;
+	return value;
+
+}
+
+void menuProcJeti(uint8_t event)
+{
+  TITLE("FrSky");
+
+  uint8_t i;
+  
+
+  switch(event)
+  {
+    //case EVT_KEY_FIRST(KEY_MENU):
+    //  break;
+    case EVT_KEY_FIRST(KEY_EXIT):
+      FRSKY_DisableRXD();
+      chainMenu(menuProc0);
+      break;
+  }
+	
+	if (FrskyBufferReady)
+	{
+		i=0;
+		if (linkBuffer[i] == 0x7D)
+		{
+			i++;
+			linkBuffer[i] ^= 0x20;
+		}
+		TelemBuffer[3] = hex2dec(linkBuffer[i], 100);
+		TelemBuffer[4] = hex2dec(linkBuffer[i], 10); 
+		TelemBuffer[5] = hex2dec(linkBuffer[i], 1);
+		i++;
+		if (linkBuffer[i] == 0x7D)
+		{
+			i++;
+			linkBuffer[i] ^= 0x20;
+		}
+		TelemBuffer[11] = hex2dec(linkBuffer[i], 100);
+		TelemBuffer[12] = hex2dec(linkBuffer[i], 10); 
+		TelemBuffer[13] = hex2dec(linkBuffer[i], 1);
+		i++;
+		if (linkBuffer[i] == 0x7D)
+		{
+			i++;
+			linkBuffer[i] ^= 0x20;
+		}
+		TelemBuffer[24] = hex2dec(linkBuffer[i], 100);
+		TelemBuffer[25] = hex2dec(linkBuffer[i], 10); 
+		TelemBuffer[26] = hex2dec(linkBuffer[i], 1);
+		FrskyBufferReady = 0;
+	}
+		
+	
+  for (i = 0; i < 16; i++)
+  {
+	lcd_putcAtt((i+2)*FW,   3*FH, TelemBuffer[i], BSS_NO_INV);
+  }
+
+  for (i = 0; i < 16; i++)
+  {
+	lcd_putcAtt((i+2)*FW,   4*FH, TelemBuffer[i+16], BSS_NO_INV);
+  }
+  
 }
 #endif
 
@@ -2071,11 +2167,15 @@ void menuProc0(uint8_t event)
       killEvents(event);
       break;
     case EVT_KEY_LONG(KEY_DOWN):
-#ifndef JETI
+#if (!(defined(JETI) || defined(FRSKY)))
       chainMenu(menuProcStatistic2);
 #endif
 #ifdef JETI
       JETI_EnableRXD(); // enable JETI-Telemetry reception
+      chainMenu(menuProcJeti);
+#endif
+#ifdef FRSKY
+      FRSKY_EnableRXD(); // enable FrSky-Telemetry reception
       chainMenu(menuProcJeti);
 #endif
       killEvents(event);

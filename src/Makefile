@@ -42,7 +42,7 @@ TARGET = er9x
 OBJDIR = obj
 
 #---------------- OPTIONS ---------------------------
-# Enable JETI-Telemetry reception on UART0
+# Enable JETI-Telemetry or FrSky Telemetry reception on UART0
 # For this option you need to modify your hardware!
 # More information at [insertURLhere]
 EXT = STD
@@ -53,6 +53,10 @@ CPPSRC = $(TARGET).cpp stamp.cpp menus.cpp pers.cpp file.cpp lcd.cpp drivers.cpp
 
 ifeq ($(EXT), JETI)
  CPPSRC += jeti.cpp
+endif
+
+ifeq ($(EXT), FRSKY)
+ CPPSRC += frsky.cpp
 endif
 
 # List Assembler source files here.
@@ -105,6 +109,11 @@ CPPDEFS = -DF_CPU=$(F_CPU)UL
 # If JETI-Support is enabled
 ifeq ($(EXT), JETI)
  CPPDEFS += -DJETI
+endif
+
+# If FRSKY-Support is enabled
+ifeq ($(EXT), FRSKY)
+ CPPDEFS += -DFRSKY
 endif
 
 #---------------- Compiler Options C ----------------

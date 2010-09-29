@@ -127,15 +127,18 @@
 #define OUT_E_BUZZER  3
 #define INP_E_ElevDR  2
 
-#ifndef JETI
+
 #define INP_E_AileDR  1
 #define INP_E_ThrCt   0
+	
+#if (defined(JETI) || defined(FRSKY))
+	#undef INP_E_ThrCt
+	#undef INP_E_AileDR
+	#define INP_C_ThrCt   6
+	#define INP_C_AileDR  7
 #endif
 
-#ifdef JETI
-#define INP_C_ThrCt   6
-#define INP_C_AileDR  7
-#endif
+
 
 #define OUT_G_SIM_CTL  4 //1 : phone-jack=ppm_in
 #define INP_G_ID1      3
@@ -475,6 +478,10 @@ extern uint16_t jeti_keys;
 #include "jeti.h"
 #endif
 
+#ifdef FRSKY
+// FrSky Telemetry
+#include "frsky.h"
+#endif
 
 //extern TrainerData g_trainer;
 //extern uint16_t           g_anaIns[8];
