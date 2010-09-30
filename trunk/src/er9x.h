@@ -187,13 +187,33 @@ enum EnumKeys {
 #define SWITCHES_STR "THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN""SW1""SW2""SW3""SW4""SW5""SW6"
 #define NUM_CSW  6 //number of custom switches
 
+#define CURV_STR "---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
+#define CURVE_BASE 7
+
 //#define SW_BASE      SW_NC
 #define SW_BASE      SW_ThrCt
 #define SW_BASE_DIAG SW_ThrCt
 //#define SWITCHES_STR "  NC  ON THR RUD ELE ID0 ID1 ID2 AILGEARTRNR"
 #define MAX_DRSWITCH (1+SW_Trainer-SW_ThrCt+1+NUM_CSW)
 
+#define MIX_P1    5
+#define MIX_P2    6
+#define MIX_P3    7
+#define MIX_MAX   8
+#define MIX_FULL  9
 
+#define PPM_BASE   (MIX_FULL)
+#define CHOUT_BASE (MIX_FULL+NUM_PPM)
+
+#define DR_HIGH   0
+#define DR_MID    1
+#define DR_LOW    2
+#define DR_EXPO   0
+#define DR_WEIGHT 1
+#define DR_RIGHT  0
+#define DR_LEFT   1
+#define DR_DRSW1  99
+#define DR_DRSW2  98
 
 #define DSW_THR  1
 #define DSW_RUD  2

@@ -67,23 +67,7 @@ typedef struct t_EEGeneral {
 
 
 
-#define MIX_P1    5
-#define MIX_P2    6
-#define MIX_P3    7
-#define MIX_MAX   8
-#define MIX_FULL  9
 
-
-
-#define DR_HIGH   0
-#define DR_MID    1
-#define DR_LOW    2
-#define DR_EXPO   0
-#define DR_WEIGHT 1
-#define DR_RIGHT  0
-#define DR_LEFT   1
-#define DR_DRSW1  99
-#define DR_DRSW2  98
 
 //eeprom modelspec
 //expo[3][2][2] //[Norm/Dr][expo/weight][R/L]
