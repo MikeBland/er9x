@@ -38,26 +38,6 @@
  */
 
 
- /*
-typedef struct t_MixData {
-  uint8_t destCh;            //        1..NUM_CHNOUT
-  uint8_t srcRaw;            //
-  int8_t  weight;
-  int8_t  swtch;
-  uint8_t curve;             //0=symmetrisch 1=no neg 2=no pos
-  uint8_t delayUp:4;
-  uint8_t delayDown:4;
-  uint8_t speedUp:4;         // Servogeschwindigkeit aus Tabelle (10ms Cycle)
-  uint8_t speedDown:4;       // 0 nichts
-  uint8_t carryTrim:1;
-  uint8_t mltpx:3;           // multiplex method 0=+ 1=* 2=replace
-  uint8_t boolres:4;
-  int8_t  sOffset;
-  int8_t  res;
-} __attribute__((packed)) MixData;
-  */
-
-
 #define STK_RUD  1
 #define STK_ELE  2
 #define STK_THR  3
@@ -69,16 +49,27 @@ typedef struct t_MixData {
 #define NUM_TEMPLATE_MIX 8
 #define TEMPLATE_NLEN    15
 
+#define TRIM_ON  0
+#define TRIM_OFF 1
+
 #define CM(x) (CONVERT_MODE((x)))
+#define CH(x) (CHOUT_BASE+(x)-1)
+#define CV(x) (CURVE_BASE+(x)-1)
+
+#define CURVE5(x) ((x)-1)
+#define CURVE9(x) (MAX_CURVE5+(x)-1)
 
 const char n_Templates[][TEMPLATE_NLEN] = {
   "Simple 4-CH",
   "T-Cut",
   "V-Tail",
   "Elevon\\Delta",
-  "eCCPM"
+  "eCCPM",
+  "Heli Setup"
 };
 
-
+void clearMixes();
+void clearCurves();
 void applyTemplate(uint8_t idx);
+
 

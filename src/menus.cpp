@@ -454,7 +454,7 @@ void menuProcTemplates(uint8_t event)  //Issue 73
       //apply mixes or delete
       s_noHi = NO_HI_LEN;
       if(sub==NUM_TEMPLATES)
-        memset(g_model.mixData,0,sizeof(g_model.mixData)); //clear all mixes
+        clearMixes();
       else
         applyTemplate(sub);
       beepWarn1();
@@ -577,7 +577,7 @@ void menuProcMixOne(uint8_t event)
   else if((sub-s_pgOfs)<0) s_pgOfs = sub;
   if(s_pgOfs<0) s_pgOfs = 0;
 
-#define CURV_STR "---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
+
 #define NUM_OFS(x) (((x<0 ? 2*FW-1 : 1*FW) + ((abs(x)>=100) ? 2*FW-2 : ((abs(x)>=10) ? 1*FW-1 : 0 ))))
   for(uint8_t y=FH; y<8*FH; y+=FH)
   {
@@ -601,15 +601,15 @@ void menuProcMixOne(uint8_t event)
         break;
       case 3:
         lcd_putsAtt(  2*FW,y,PSTR("Trim"),0);
-        lcd_putsnAtt(FW*10,y, PSTR("ON OFF")+3*md2->carryTrim,3,attr);
+        lcd_putsnAtt(FW*10,y, PSTR("ON OFF")+3*md2->carryTrim,3,attr);  //default is 0=ON
         if(attr) CHECK_INCDEC_H_MODELVAR_BF( event, md2->carryTrim, 0,1);
         break;
       case 4:
         lcd_putsAtt(  2*FW,y,PSTR("Curves"),0);
         lcd_putsnAtt( FW*10,y,PSTR(CURV_STR)+md2->curve*3,3,attr);
         if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->curve, 0,MAX_CURVE5+MAX_CURVE9+7-1);
-        if(attr && md2->curve>=7 && event==EVT_KEY_FIRST(KEY_MENU)){
-          s_curveChan = md2->curve-7;
+        if(attr && md2->curve>=CURVE_BASE && event==EVT_KEY_FIRST(KEY_MENU)){
+          s_curveChan = md2->curve-CURVE_BASE;
           pushMenu(menuProcCurveOne);
         }
         break;
@@ -2420,8 +2420,8 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
 
   anas[MIX_MAX-1]  = RESX;     // MAX
   anas[MIX_FULL-1] = RESX;     // FULL
-  for(uint8_t i=MIX_FULL;i<(MIX_FULL+NUM_PPM);i++)  anas[i] = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL]; //add ppm channels
-  for(uint8_t i=MIX_FULL+NUM_PPM;i<NUM_XCHNRAW;i++) anas[i] = chans[i-MIX_FULL-NUM_PPM]; //other mixes previous outputs
+  for(uint8_t i=PPM_BASE;i<CHOUT_BASE;i++)    anas[i] = g_ppmIns[i-PPM_BASE] - g_eeGeneral.ppmInCalib[i-PPM_BASE]; //add ppm channels
+  for(uint8_t i=CHOUT_BASE;i<NUM_XCHNRAW;i++) anas[i] = chans[i-CHOUT_BASE]; //other mixes previous outputs
 
 
   if(tick10ms) trace(); //trace thr 0..32  (/32)
@@ -2514,7 +2514,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
             //need to know which "v" will give "anas".
             //curves(v)*weight/100 -> anas
             // v * weight / 100 = anas => anas*100/weight = v
-          act[i] = (int32_t)anas[md.destCh-1+MIX_FULL+NUM_PPM]*DEL_MULT;
+          act[i] = (int32_t)anas[md.destCh-1+CHOUT_BASE]*DEL_MULT;
           act[i] *=100;
           act[i] /= md.weight;
           diff = v-act[i]/DEL_MULT;
