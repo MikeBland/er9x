@@ -15,6 +15,7 @@
  */
 
 #include "er9x.h"
+#include "templates.h"
 
 
 EFile theFile;  //used for any file operation
@@ -65,11 +66,12 @@ void modelDefault(uint8_t id)
   g_model.name[6]='0'+(id+1)%10;
   g_model.mdVers = MDVERS;
 
-  for(uint8_t i= 0; i<4; i++){
-    g_model.mixData[i].destCh = i+1;
-    g_model.mixData[i].srcRaw = i+1;
-    g_model.mixData[i].weight = 100;
-  }
+  //for(uint8_t i= 0; i<4; i++){
+  //  g_model.mixData[i].destCh = i+1;
+  //  g_model.mixData[i].srcRaw = i+1;
+  //  g_model.mixData[i].weight = 100;
+  //}
+  applyTemplate(0); //default 4 channel template
 }
 void eeLoadModelName(uint8_t id,char*buf,uint8_t len)
 {

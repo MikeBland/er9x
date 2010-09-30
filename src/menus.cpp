@@ -1682,7 +1682,7 @@ void menuProcSetup(uint8_t event)
 {
   static MState2 mstate2;
   TITLE("SETUP");
-  MSTATE_CHECK_V(1,menuTabDiag,1+8);
+  MSTATE_CHECK_V(1,menuTabDiag,1+9);
   int8_t  sub    = mstate2.m_posVert;
   
   if(sub<1) s_pgOfs=0;
@@ -1751,6 +1751,17 @@ void menuProcSetup(uint8_t event)
         lcd_putsnAtt(1*FW, y, PSTR("OFF"),3,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightAutoOff, 0, 600/5);
     if((y+=FH)>=7*FH) return;
+  }subN++;
+  
+  if(s_pgOfs<subN) {
+    lcd_puts_P( 6*FW, y,PSTR("Channel Order"));
+    lcd_putsnAtt(1*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][0],1,(sub==subN ? INVERS:0));
+    lcd_putsnAtt(2*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][1],1,(sub==subN ? INVERS:0));
+    lcd_putsnAtt(3*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][2],1,(sub==subN ? INVERS:0));
+    lcd_putsnAtt(4*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][3],1,(sub==subN ? INVERS:0));
+    
+    if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.templateSetup, 0, 23);
+    if((y+=FH)>7*FH) return;
   }subN++;
   
   if(s_pgOfs<subN) {
