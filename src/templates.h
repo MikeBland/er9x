@@ -53,7 +53,7 @@
 #define TRIM_OFF 1
 
 #define CM(x) (CONVERT_MODE((x)))
-#define CH(x) (CHOUT_BASE+(x)-1)
+#define CH(x) (CHOUT_BASE+(x))
 #define CV(x) (CURVE_BASE+(x)-1)
 
 #define CURVE5(x) ((x)-1)
