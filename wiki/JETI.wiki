@@ -14,6 +14,7 @@ First of all, the radio must be already set up with an ISP-connection for flashi
 1. solder out the left two resistors from the PCB:
 
 [http://utfreaks.de/blog/wp-content/uploads/2010/09/IMG_0575-1024x768.jpg http://utfreaks.de/blog/wp-content/uploads/2010/09/IMG_0575-150x150.jpg]
+[http://gallery.privy.de/d/15645-1/9xmod2.jpg http://gallery.privy.de/d/15646-1/9xmod2.jpg]
 
 On the picture, i soldered them out and resoldered them in a 90° standing position at the bottom pad. The open ends of the resistors are connected to two wires going to PC6 and PC7 on the AVR:
 
