@@ -20,8 +20,9 @@ On the picture, i soldered them out and resoldered them in a 90° standing posit
 
 [http://utfreaks.de/blog/wp-content/uploads/2010/09/IMG_0574-1024x768.jpg http://utfreaks.de/blog/wp-content/uploads/2010/09/IMG_0574-150x150.jpg]
 
-(PC6 is the right pin, PC7 is the left one)
+Thr.Cut (PE0, left resistor) goes to AVR PC6 (Pin 41, right) and Ail.DR (PE1, right resistor) goes to AVR PC7 (Pin 42, left).
 
+ 
 2. reflash the 9x with the JETI-Version now. Check the Ail.DR and Thr.Cut switches for correct function in the DIAG-Screen.
 
 3. Hook up the Jeti-Module like this:   (click to enlarge image!)
