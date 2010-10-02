@@ -1690,7 +1690,7 @@ void menuProcSetup(uint8_t event)
   else if((sub-s_pgOfs)<1) s_pgOfs = sub-1;
   if(s_pgOfs<0) s_pgOfs = 0;
   
-  if(s_pgOfs==1) s_pgOfs= sub<3 ? 0 : 2;
+  if(s_pgOfs==2) s_pgOfs= sub<3 ? 0 : 2;
 
   uint8_t y = 1*FH;
 
@@ -1754,7 +1754,7 @@ void menuProcSetup(uint8_t event)
   }subN++;
   
   if(s_pgOfs<subN) {
-    lcd_puts_P( 6*FW, y,PSTR("Channel Order"));
+    lcd_puts_P( 6*FW, y,PSTR("Channel Order"));//   RAET->AETR  
     lcd_putsnAtt(1*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][0],1,(sub==subN ? INVERS:0));
     lcd_putsnAtt(2*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][1],1,(sub==subN ? INVERS:0));
     lcd_putsnAtt(3*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][2],1,(sub==subN ? INVERS:0));
