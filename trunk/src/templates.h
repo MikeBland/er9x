@@ -58,7 +58,7 @@
 #define CM(x) (CONVERT_MODE((x)))
 #define CH(x) (CHOUT_BASE+(x))
 #define CV(x) (CURVE_BASE+(x)-1)
-#define CC(x) (chout_ar[g_eeGeneral.templateSetup][(x)])
+#define CC(x) (chout_ar[g_eeGeneral.templateSetup][(x)-1])
 
 
 #define CURVE5(x) ((x)-1)

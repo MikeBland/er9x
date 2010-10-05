@@ -210,6 +210,8 @@ void EFile::rm(uint8_t i_fileId){
 uint16_t EFile::size(){
   return eeFs.files[m_fileId].size;
 }
+
+
 uint8_t EFile::openRd(uint8_t i_fileId){
   m_fileId = i_fileId;
   m_pos      = 0;

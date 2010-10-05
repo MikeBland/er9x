@@ -841,6 +841,10 @@ int main(void)
   wdt_enable(WDTO_500MS);
   perOut(g_chans512, true, false);
   
+  pushMenu(menuProcModelSelect);
+  popMenu(true);  // this is so the first instance of [MENU LONG] doesn't freak out!
+  //g_menuStack[g_menuStackPtr+1] = 
+  
   lcdSetRefVolt(g_eeGeneral.contrast);
   TIMSK |= (1<<OCIE1A); // Pulse generator enable immediately before mainloop
   while(1){
