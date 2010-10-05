@@ -1388,6 +1388,18 @@ void menuProcModel(uint8_t event)
         killEvents(event);
         //if(question(PSTR("Delete Model?"))){
           EFile::rm(FILE_MODEL(g_eeGeneral.currModel)); //delete file
+          
+          uint8_t i = g_eeGeneral.currModel;//loop to find next available model
+          while (!EFile::exists(FILE_MODEL(i))) {
+              i--;
+              if(i>MAX_MODELS) i=MAX_MODELS-1;
+              if(i==g_eeGeneral.currModel) {
+                  i=0;
+                  break;
+              }
+          }
+          g_eeGeneral.currModel = i;
+          
           eeLoadModel(g_eeGeneral.currModel); //load default values
           chainMenu(menuProcModelSelect);
         //
@@ -1690,7 +1702,7 @@ void menuProcSetup(uint8_t event)
   else if((sub-s_pgOfs)<1) s_pgOfs = sub-1;
   if(s_pgOfs<0) s_pgOfs = 0;
   
-  if(s_pgOfs==2) s_pgOfs= sub<3 ? 0 : 2;
+  if(s_pgOfs==2) s_pgOfs= sub<4 ? 1 : 3;
 
   uint8_t y = 1*FH;
 
@@ -1750,15 +1762,15 @@ void menuProcSetup(uint8_t event)
     else
         lcd_putsnAtt(1*FW, y, PSTR("OFF"),3,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightAutoOff, 0, 600/5);
-    if((y+=FH)>=7*FH) return;
+    if((y+=FH)>7*FH) return;
   }subN++;
   
   if(s_pgOfs<subN) {
     lcd_puts_P( 6*FW, y,PSTR("Channel Order"));//   RAET->AETR  
-    lcd_putsnAtt(1*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][0],1,(sub==subN ? INVERS:0));
-    lcd_putsnAtt(2*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][1],1,(sub==subN ? INVERS:0));
-    lcd_putsnAtt(3*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][2],1,(sub==subN ? INVERS:0));
-    lcd_putsnAtt(4*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][3],1,(sub==subN ? INVERS:0));
+    lcd_putsnAtt(0*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][0],1,(sub==subN ? INVERS:0));
+    lcd_putsnAtt(1*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][1],1,(sub==subN ? INVERS:0));
+    lcd_putsnAtt(2*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][2],1,(sub==subN ? INVERS:0));
+    lcd_putsnAtt(3*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][3],1,(sub==subN ? INVERS:0));
     
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.templateSetup, 0, 23);
     if((y+=FH)>7*FH) return;
@@ -1766,7 +1778,7 @@ void menuProcSetup(uint8_t event)
   
   if(s_pgOfs<subN) {
     lcd_putsAtt( 1*FW, y, PSTR("Mode"),0);//sub==3?INVERS:0);
-    if(y<7*FH) {for(uint8_t i=0; i<4; i++) lcd_img((6+4*i)*FW, y, sticks,i,0); }
+    if(y<6*FH) {for(uint8_t i=0; i<4; i++) lcd_img((6+4*i)*FW, y, sticks,i,0); }
     if((y+=FH)>7*FH) return;
     
     lcd_putcAtt( 3*FW, y, '1'+g_eeGeneral.stickMode,sub==subN?INVERS:0);

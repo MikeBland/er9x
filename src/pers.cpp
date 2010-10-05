@@ -89,6 +89,12 @@ void eeLoadModelName(uint8_t id,char*buf,uint8_t len)
   }
 }
 
+uint16_t eeFileSize(uint8_t id)
+{
+    theFile.openRd(FILE_MODEL(id));
+    return theFile.size();
+}
+
 void eeLoadModel(uint8_t id)
 {
   if(id<MAX_MODELS)
@@ -97,7 +103,6 @@ void eeLoadModel(uint8_t id)
     uint16_t sz = theFile.readRlc((uint8_t*)&g_model, sizeof(g_model));
 
     switch (g_model.mdVers){
-
       default:
         if(sz != sizeof(ModelData)) {
           //alert("Error Loading Model");
