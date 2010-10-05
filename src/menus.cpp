@@ -434,7 +434,7 @@ void menuProcTemplates(uint8_t event)  //Issue 73
 {
   static MState2 mstate2;
   TITLE("TEMPLATES");
-  MSTATE_CHECK_V(8,menuTabModel,NUM_TEMPLATES+2);
+  MSTATE_CHECK_V(8,menuTabModel,NUM_TEMPLATES+3);
 
   uint8_t y = 0;
   uint8_t k = 0;
@@ -453,9 +453,9 @@ void menuProcTemplates(uint8_t event)  //Issue 73
       killEvents(event);
       //apply mixes or delete
       s_noHi = NO_HI_LEN;
-      if(sub==NUM_TEMPLATES)
+      if(sub==NUM_TEMPLATES+1)
         clearMixes();
-      else
+      else if((sub>=0) && (sub<NUM_TEMPLATES))
         applyTemplate(sub);
       beepWarn1();
       break;
@@ -470,10 +470,21 @@ void menuProcTemplates(uint8_t event)  //Issue 73
     lcd_outdezNAtt(3*FW, y, k+1, (sub==k ? INVERS : 0) + LEADING0,2);
     lcd_putsAtt(  4*FW, y, n_Templates[k],BSS_NO_INV | (s_noHi ? 0 : (sub==k ? INVERS  : 0)));
   }
-  if(k==NUM_TEMPLATES){
-    uint8_t attr = s_noHi ? 0 : ((sub==NUM_TEMPLATES) ? INVERS : 0);
-    lcd_putsAtt(  1*FW,y,PSTR("CLEAR MIXES [MENU]"),attr);
-  }
+  y-=FH;
+
+  if((y+=FH)>7*FH) return;
+  uint8_t attr = s_noHi ? 0 : ((sub==NUM_TEMPLATES) ? INVERS : 0);
+  lcd_puts_P( 1*FW, y,PSTR("Channel Order"));//   RAET->AETR  
+  lcd_putsnAtt(15*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][0],1,attr);
+  lcd_putsnAtt(16*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][1],1,attr);
+  lcd_putsnAtt(17*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][2],1,attr);
+  lcd_putsnAtt(18*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][3],1,attr);
+  if(attr) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.templateSetup, 0, 23);
+    
+  if((y+=FH)>7*FH) return;
+  attr = s_noHi ? 0 : ((sub==NUM_TEMPLATES+1) ? INVERS : 0);
+  lcd_putsAtt(  1*FW,y,PSTR("CLEAR MIXES [MENU]"),attr);
+  
 }
 
 void menuProcSwitches(uint8_t event)  //Issue 78
@@ -1702,7 +1713,7 @@ void menuProcSetup(uint8_t event)
   else if((sub-s_pgOfs)<1) s_pgOfs = sub-1;
   if(s_pgOfs<0) s_pgOfs = 0;
   
-  if(s_pgOfs==2) s_pgOfs= sub<4 ? 1 : 3;
+  if(s_pgOfs==1) s_pgOfs= sub<4 ? 0 : 2;
 
   uint8_t y = 1*FH;
 
@@ -1766,19 +1777,8 @@ void menuProcSetup(uint8_t event)
   }subN++;
   
   if(s_pgOfs<subN) {
-    lcd_puts_P( 6*FW, y,PSTR("Channel Order"));//   RAET->AETR  
-    lcd_putsnAtt(0*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][0],1,(sub==subN ? INVERS:0));
-    lcd_putsnAtt(1*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][1],1,(sub==subN ? INVERS:0));
-    lcd_putsnAtt(2*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][2],1,(sub==subN ? INVERS:0));
-    lcd_putsnAtt(3*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][3],1,(sub==subN ? INVERS:0));
-    
-    if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.templateSetup, 0, 23);
-    if((y+=FH)>7*FH) return;
-  }subN++;
-  
-  if(s_pgOfs<subN) {
     lcd_putsAtt( 1*FW, y, PSTR("Mode"),0);//sub==3?INVERS:0);
-    if(y<6*FH) {for(uint8_t i=0; i<4; i++) lcd_img((6+4*i)*FW, y, sticks,i,0); }
+    if(y<7*FH) {for(uint8_t i=0; i<4; i++) lcd_img((6+4*i)*FW, y, sticks,i,0); }
     if((y+=FH)>7*FH) return;
     
     lcd_putcAtt( 3*FW, y, '1'+g_eeGeneral.stickMode,sub==subN?INVERS:0);
