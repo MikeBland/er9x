@@ -474,17 +474,17 @@ void menuProcTemplates(uint8_t event)  //Issue 73
 
   if((y+=FH)>7*FH) return;
   uint8_t attr = s_noHi ? 0 : ((sub==NUM_TEMPLATES) ? INVERS : 0);
-  lcd_puts_P( 1*FW, y,PSTR("Channel Order"));//   RAET->AETR  
+  lcd_puts_P( 1*FW, y,PSTR("Channel Order"));//   RAET->AETR
   lcd_putsnAtt(15*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][0],1,attr);
   lcd_putsnAtt(16*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][1],1,attr);
   lcd_putsnAtt(17*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][2],1,attr);
   lcd_putsnAtt(18*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][3],1,attr);
   if(attr) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.templateSetup, 0, 23);
-    
+
   if((y+=FH)>7*FH) return;
   attr = s_noHi ? 0 : ((sub==NUM_TEMPLATES+1) ? INVERS : 0);
   lcd_putsAtt(  1*FW,y,PSTR("CLEAR MIXES [MENU]"),attr);
-  
+
 }
 
 void menuProcSwitches(uint8_t event)  //Issue 78
@@ -1383,7 +1383,7 @@ void menuProcModel(uint8_t event)
       }
     if((y+=FH)>7*FH) return;
   }subN++;
-  
+
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("Shift Sel"),0);
     lcd_putsnAtt(  10*FW, y, PSTR("POSNEG")+3*g_model.pulsePol,3,(sub==subN ? INVERS:0));
@@ -1399,7 +1399,7 @@ void menuProcModel(uint8_t event)
         killEvents(event);
         //if(question(PSTR("Delete Model?"))){
           EFile::rm(FILE_MODEL(g_eeGeneral.currModel)); //delete file
-          
+
           uint8_t i = g_eeGeneral.currModel;//loop to find next available model
           while (!EFile::exists(FILE_MODEL(i))) {
               i--;
@@ -1410,7 +1410,7 @@ void menuProcModel(uint8_t event)
               }
           }
           g_eeGeneral.currModel = i;
-          
+
           eeLoadModel(g_eeGeneral.currModel); //load default values
           chainMenu(menuProcModelSelect);
         //
@@ -1707,12 +1707,12 @@ void menuProcSetup(uint8_t event)
   TITLE("SETUP");
   MSTATE_CHECK_V(1,menuTabDiag,1+9);
   int8_t  sub    = mstate2.m_posVert;
-  
+
   if(sub<1) s_pgOfs=0;
   else if((sub-s_pgOfs)>7) s_pgOfs = sub-7;
   else if((sub-s_pgOfs)<1) s_pgOfs = sub-1;
   if(s_pgOfs<0) s_pgOfs = 0;
-  
+
   if(s_pgOfs==1) s_pgOfs= sub<4 ? 0 : 2;
 
   uint8_t y = 1*FH;
@@ -1775,15 +1775,15 @@ void menuProcSetup(uint8_t event)
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightAutoOff, 0, 600/5);
     if((y+=FH)>7*FH) return;
   }subN++;
-  
+
   if(s_pgOfs<subN) {
     lcd_putsAtt( 1*FW, y, PSTR("Mode"),0);//sub==3?INVERS:0);
     if(y<7*FH) {for(uint8_t i=0; i<4; i++) lcd_img((6+4*i)*FW, y, sticks,i,0); }
     if((y+=FH)>7*FH) return;
-    
+
     lcd_putcAtt( 3*FW, y, '1'+g_eeGeneral.stickMode,sub==subN?INVERS:0);
     for(uint8_t i=0; i<4; i++) putsChnRaw( (6+4*i)*FW, y,i+1,0);//sub==3?INVERS:0);
-    
+
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event,g_eeGeneral.stickMode,0,3);
     if((y+=FH)>7*FH) return;
   }subN++;
@@ -1981,37 +1981,37 @@ void menuProcJeti(uint8_t event)
 
 uint8_t hex2dec(uint8_t number, uint8_t multiplier)
 {
-	uint8_t value = 0;
+  uint8_t value = 0;
 
-	switch (multiplier)
-	{
-		case 1:
-			value = number%100;
-			value = value%10;
-			break;
-		
-		case 10:
-			value = number%100;
-			value = value /10;
-			break;
-		
-		case 100:
-			value = number/100;
-			break;
-	
-		default:
-		
-			break;
-	}
-	
-	value += 48;
-	return value;
+  switch (multiplier)
+  {
+    case 1:
+      value = number%100;
+      value = value%10;
+      break;
+
+    case 10:
+      value = number%100;
+      value = value /10;
+      break;
+
+    case 100:
+      value = number/100;
+      break;
+
+    default:
+
+      break;
+  }
+
+  value += 48;
+  return value;
 
 }
 
 void menuProcJeti(uint8_t event)
 {
-  TITLE("FrSky");  
+  TITLE("FrSky");
 
   switch(event)
   {
@@ -2022,46 +2022,46 @@ void menuProcJeti(uint8_t event)
       chainMenu(menuProc0);
       break;
   }
-	
-	if (FrskyBufferReady)
-	{
-		uint8_t i=0;
-		if (linkBuffer[i] == 0x7D)
-		{
-			i++;
-			linkBuffer[i] ^= 0x20;
-		}
-		TelemBuffer[3] = hex2dec(linkBuffer[i], 100);
-		TelemBuffer[4] = hex2dec(linkBuffer[i], 10); 
-		TelemBuffer[5] = hex2dec(linkBuffer[i], 1);
-		i++;
-		if (linkBuffer[i] == 0x7D)
-		{
-			i++;
-			linkBuffer[i] ^= 0x20;
-		}
-		TelemBuffer[11] = hex2dec(linkBuffer[i], 100);
-		TelemBuffer[12] = hex2dec(linkBuffer[i], 10); 
-		TelemBuffer[13] = hex2dec(linkBuffer[i], 1);
-		i++;
-		if (linkBuffer[i] == 0x7D)
-		{
-			i++;
-			linkBuffer[i] ^= 0x20;
-		}
-		TelemBuffer[24] = hex2dec(linkBuffer[i], 100);
-		TelemBuffer[25] = hex2dec(linkBuffer[i], 10); 
-		TelemBuffer[26] = hex2dec(linkBuffer[i], 1);
-		FrskyBufferReady = 0;
-	}
-		
-	
+
+  if (FrskyBufferReady)
+  {
+    uint8_t i=0;
+    if (linkBuffer[i] == 0x7D)
+    {
+      i++;
+      linkBuffer[i] ^= 0x20;
+    }
+    TelemBuffer[3] = hex2dec(linkBuffer[i], 100);
+    TelemBuffer[4] = hex2dec(linkBuffer[i], 10);
+    TelemBuffer[5] = hex2dec(linkBuffer[i], 1);
+    i++;
+    if (linkBuffer[i] == 0x7D)
+    {
+      i++;
+      linkBuffer[i] ^= 0x20;
+    }
+    TelemBuffer[11] = hex2dec(linkBuffer[i], 100);
+    TelemBuffer[12] = hex2dec(linkBuffer[i], 10);
+    TelemBuffer[13] = hex2dec(linkBuffer[i], 1);
+    i++;
+    if (linkBuffer[i] == 0x7D)
+    {
+      i++;
+      linkBuffer[i] ^= 0x20;
+    }
+    TelemBuffer[24] = hex2dec(linkBuffer[i], 100);
+    TelemBuffer[25] = hex2dec(linkBuffer[i], 10);
+    TelemBuffer[26] = hex2dec(linkBuffer[i], 1);
+    FrskyBufferReady = 0;
+  }
+
+
   for (uint8_t i = 0; i < 16; i++)
   {
-	lcd_putcAtt((i+2)*FW,   3*FH, TelemBuffer[i], BSS_NO_INV);
+  lcd_putcAtt((i+2)*FW,   3*FH, TelemBuffer[i], BSS_NO_INV);
     lcd_putcAtt((i+2)*FW,   4*FH, TelemBuffer[i+16], BSS_NO_INV);
   }
-  
+
 }
 #endif
 
@@ -2220,18 +2220,18 @@ void menuProc0(uint8_t event)
     uint8_t att = (g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0) | DBLSIZE;
     for(uint8_t i=0;i<sizeof(g_model.name);i++)
       lcd_putcAtt(x+i*2*FW-i-2, 0*FH, g_model.name[i],DBLSIZE);
-      
+
     putsVBat(x-1*FW,2*FH,true, att);
     lcd_putcAtt(x+4*FW, 3*FH, 'V',0);
-    
+
     uint8_t ln = 2;
     uint8_t xn = x;
     uint8_t tn = (g_vbat100mV/10) % 10;
     uint8_t sn = g_vbat100mV % 10;
-    
+
     if(sn==2 || sn==3) ln++;
     if(tn==1 || tn==2) {xn--;ln++;}
-    
+
     lcd_hline(xn+2*FW,4*FH-4,ln);
     lcd_hline(xn+2*FW,4*FH-3,ln);
 
@@ -2500,7 +2500,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
 
       //Notice 0 = NC switch means not used -> always on line
       static uint8_t swOn[MAX_MIXERS];
-      
+
       int16_t v  = 0;
       uint8_t swTog=!swOn[i];
       swOn[i]=false;
@@ -2513,7 +2513,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
         v = anas[md.srcRaw-1]; //Switch is on. MAX=FULL=512 or value.
         if(md.mixWarn) mixWarning |= 1<<(md.mixWarn-1); // Mix warning
       }
-      
+
       swOn[i]=true;
 
       //========== INPUT OFFSET ===============
@@ -2690,27 +2690,52 @@ void setupPulses()
   }
 }
 
-void setupPulsesPPM()
-{
-  //Total frame length = 22.5msec
-  //each pulse is 0.7..1.7ms long with a 0.3ms stop tail
-  //The pulse ISR is 2mhz that's why everything is multiplied by 2
-  uint16_t rest=(22500u-300u*9)*2; //from thus issue 4, 41 yes, I know it's for 8 channels
-  uint8_t j=0;
-  uint8_t p=8+g_model.ppmNCH*2;
-  for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
-    uint16_t v = g_chans512[i] + 1200*2; // we allow the signal to have 2048 steps
-    if(v>1720*2) v = 1720*2; //limit to between 680 - 1720.  Should be enough room
-    if(v<680*2)  v = 680*2; //Issue 110
-    //pulses are limited to -640 .. 640 -> 560 .. 1840 by the limits in perOut()
-    rest-=v;
-    pulses2MHz[j++]=(g_model.ppmDelay*50+300)*2;
-    pulses2MHz[j++]=v;
-  }
-  pulses2MHz[j++]=(g_model.ppmDelay*50+300)*2;
-  if(rest<((22500u-300u*9)*2)) pulses2MHz[j++]=rest;
-  pulses2MHz[j++]=0;
+//void setupPulsesPPM()
+//{
+  ////Total frame length = 22.5msec
+  ////each pulse is 0.7..1.7ms long with a 0.3ms stop tail
+  ////The pulse ISR is 2mhz that's why everything is multiplied by 2
+  //uint16_t rest=(22500u-300u*9)*2; //from thus issue 4, 41 yes, I know it's for 8 channels
+  //uint8_t j=0;
+  //uint8_t p=8+g_model.ppmNCH*2;
+  //for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
+    //uint16_t v = g_chans512[i] + 1200*2; // we allow the signal to have 2048 steps
+    //if(v>1720*2) v = 1720*2; //limit to between 680 - 1720.  Should be enough room
+    //if(v<680*2)  v = 680*2; //Issue 110
+    ////pulses are limited to -640 .. 640 -> 560 .. 1840 by the limits in perOut()
+    //rest-=v;
+    //pulses2MHz[j++]=(g_model.ppmDelay*50+300)*2;
+    //pulses2MHz[j++]=v;
+  //}
+  //pulses2MHz[j++]=(g_model.ppmDelay*50+300)*2;
+  //if(rest<((22500u-300u*9)*2)) pulses2MHz[j++]=rest;
+  //pulses2MHz[j++]=0;
 
+//}
+
+
+void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
+{
+ //Total frame length = 22.5msec
+ //each pulse is 0.7..1.7ms long with a 0.3ms stop tail
+ //The pulse ISR is 2mhz that's why everything is multiplied by 2
+ uint8_t j=0;
+ uint8_t p=8+g_model.ppmNCH*2; //Channels *2
+ uint16_t q=(g_model.ppmDelay*50+300)*2; //Stoplen *2
+ uint16_t rest=22500u*2-q; //Minimum Framelen=22.5 ms
+ if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
+ for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
+ uint16_t v = g_chans512[i] + 1200*2; // we allow the signal to have 2048 steps
+ if(v>1720*2) v = 1720*2; //limit to between 680 - 1720. Should be enough room
+ if(v<680*2) v = 680*2; // Issue 110
+ //pulses are limited to -640 .. 640 -> 560 .. 1840 by the limits in perOut()
+ rest-=(v+q);
+ pulses2MHz[j++]=q;
+ pulses2MHz[j++]=v;
+ }
+ pulses2MHz[j++]=q;
+ pulses2MHz[j++]=rest;
+ pulses2MHz[j++]=0;
 }
 
 
