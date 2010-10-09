@@ -173,17 +173,27 @@ void checkTHR()
 
 void checkSwitches()
 {
-  if(! WARN_SW) return;
-  uint8_t i;
-  for(i=SW_BASE_DIAG; i< SW_Trainer; i++)
+  if(! WARN_SW) return; // if warning is on
+
+  // first - display warning
+  lcd_clear();
+  lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
+  lcd_puts_P(0,4*FH,PSTR("Switches not off"));
+  lcd_puts_P(0,7*FH,PSTR("Please reset them"));
+  refreshDiplay();
+  lcdSetRefVolt(g_eeGeneral.contrast);
+  
+  //loop until all switches are reset
+  while (1)
   {
-    if(i==SW_ID0) continue;
-    //if(getSwitch(i-SW_BASE,0)) break;
-    if(keyState((EnumKeys)i)) break;
+    uint8_t i;
+    for(i=SW_BASE; i<SW_Trainer; i++)
+    {
+        if(i==SW_ID0) continue;
+        if(getSwitch(i-SW_BASE+1,0)) break;
+    }
+    if(i==SW_Trainer) return;
   }
-  if(i==SW_Trainer) return;
-  beepErr();
-  pushMenu(menuProcDiagKeys);
 }
 
 MenuFuncP g_menuStack[5];
@@ -204,27 +214,6 @@ void alert(const prog_char * s)
   while(1)
   {
     if(IS_KEY_BREAK(getEvent()))   return;  //wait for key release
-    //if(EVT_KEY_LONG(getEvent())==KEY_EXIT)   return;  //wait for key release
-  }
-}
-
-uint8_t question(const prog_char * s)
-{
-  lcd_clear();
-  //lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
-  lcd_putsAtt(0,2*FH,s,0);
-  lcd_puts_P(3*FW,5*FH,PSTR(" YES      NO  "));
-  lcd_puts_P(3*FW,6*FH,PSTR("[MENU]  [EXIT]"));
-  refreshDiplay();
-  lcdSetRefVolt(g_eeGeneral.contrast);
-  beepWarn();
-  while(getEvent());
-  while(!IS_KEY_BREAK(getEvent()));
-  while(1)
-  {
-    if(EVT_KEY_FIRST(getEvent())==KEY_MENU)   return true;
-    if(EVT_KEY_FIRST(getEvent())==KEY_EXIT)   return false;
-    //if(IS_KEY_BREAK(getEvent()))   return 0;  //wait for key release
   }
 }
 

@@ -83,7 +83,7 @@ MenuFuncP_PROGMEM APM menuTabDiag[] = {
   menuProcDiagKeys,
   menuProcDiagAna,
   menuProcDiagCalib
-};
+}; 
 
 
 //#define PARR8(args...) (__extension__({static prog_uint8_t APM __c[] = args;&__c[0];}))
@@ -204,6 +204,7 @@ void MState2::check(uint8_t event,  uint8_t curr,MenuFuncP *menuTab, uint8_t men
 
 static uint8_t s_curveChan;
 
+#define XD X0-2
 
 void menuProcCurveOne(uint8_t event) {
   static MState2 mstate2;
@@ -213,7 +214,6 @@ void menuProcCurveOne(uint8_t event) {
 
   bool    cv9 = s_curveChan >= MAX_CURVE5;
   MSTATE_CHECK0_V((cv9 ? 9 : 5)+1);
-
   int8_t *crv = cv9 ? g_model.curves9[s_curveChan-MAX_CURVE5] : g_model.curves5[s_curveChan];
 
   for (uint8_t i = 0; i < 5; i++) {
@@ -238,16 +238,37 @@ void menuProcCurveOne(uint8_t event) {
       eeDirty(EE_MODEL);
     }
   }
+  
+  for(uint8_t i=0; i<(cv9 ? 9 : 5); i++)
+  {
+    uint8_t xx = XD-1-WCHART+i*WCHART/(cv9 ? 4 : 2);
+    uint8_t yy = Y0-crv[i]*WCHART/100; 
+    //if((yy-1)<WCHART*2) lcd_hline( xx, yy-1, 3);
+    //if(yy<WCHART*2)     lcd_hline( xx, yy  , 3);
+    //if((yy+1)<WCHART*2) lcd_hline( xx, yy+1, 3);
+    
+    DO_SQUARE(xx+1,yy,3);
+    
+    //if((subSub-1)==i)
+    //{
+        //if((yy-2)<WCHART*2) lcd_hline( xx-1, yy-2, 5);
+        //if((yy-1)<WCHART*2) lcd_hline( xx-1, yy-1, 5);
+        //if(yy<WCHART*2)     lcd_hline( xx-1, yy  , 5);
+        //if((yy+1)<WCHART*2) lcd_hline( xx-1, yy+1, 5);
+        //if((yy+2)<WCHART*2) lcd_hline( xx-1, yy+2, 5);
+        ////CHECK_INCDEC_H_MODELVAR( event, crv[i], -100,100);
+    //}
+  }
 
   for (uint8_t xv = 0; xv < WCHART * 2; xv++) {
     uint16_t yv = intpol(xv * (RESXu / WCHART) - RESXu, s_curveChan) / (RESXu
                                                                       / WCHART);
-    lcd_plot(X0 + xv - WCHART, Y0 - yv);
+    lcd_plot(XD + xv - WCHART, Y0 - yv);
     if ((xv & 3) == 0) {
-      lcd_plot(X0 + xv - WCHART, Y0 + 0);
+      lcd_plot(XD + xv - WCHART, Y0 + 0);
     }
   }
-  lcd_vline(X0, Y0 - WCHART, WCHART * 2);
+  lcd_vline(XD, Y0 - WCHART, WCHART * 2);
 }
 
 
@@ -455,7 +476,7 @@ void menuProcTemplates(uint8_t event)  //Issue 73
       s_noHi = NO_HI_LEN;
       if(sub==NUM_TEMPLATES+1)
         clearMixes();
-      else if((sub>=0) && (sub<NUM_TEMPLATES))
+      else if((sub>=0) && (sub<(int8_t)NUM_TEMPLATES))
         applyTemplate(sub);
       beepWarn1();
       break;
@@ -1184,6 +1205,42 @@ char idx2char(uint8_t idx)
   return ' ';
 }
 
+void menuDeleteModel(uint8_t event)
+{
+  lcd_putsAtt(0,1*FH,PSTR("DELETE MODEL"),0);
+  lcd_putsnAtt(1,2*FH, g_model.name,sizeof(g_model.name),BSS_NO_INV);
+  lcd_putcAtt(sizeof(g_model.name)*FW+FW,2*FH,'?',0);
+  lcd_puts_P(3*FW,5*FH,PSTR("YES     NO"));
+  lcd_puts_P(3*FW,6*FH,PSTR("[MENU]  [EXIT]"));
+
+  uint8_t i;
+  switch(event){
+    case EVT_ENTRY:
+      beepWarn();
+      break;
+    case EVT_KEY_FIRST(KEY_MENU):
+      EFile::rm(FILE_MODEL(g_eeGeneral.currModel)); //delete file
+
+      i = g_eeGeneral.currModel;//loop to find next available model
+      while (!EFile::exists(FILE_MODEL(i))) {
+          i--;
+          if(i>MAX_MODELS) i=MAX_MODELS-1;
+          if(i==g_eeGeneral.currModel) {
+              i=0;
+              break;
+          }
+      }
+      g_eeGeneral.currModel = i;
+
+      eeLoadModel(g_eeGeneral.currModel); //load default values
+      chainMenu(menuProcModelSelect);
+      break;
+    case EVT_KEY_FIRST(KEY_EXIT):
+      popMenu();
+      break;
+  }
+}
+
 void menuProcModel(uint8_t event)
 {
   static MState2 mstate2;
@@ -1397,23 +1454,23 @@ void menuProcModel(uint8_t event)
         s_editMode = false;
         s_noHi = NO_HI_LEN;
         killEvents(event);
-        //if(question(PSTR("Delete Model?"))){
-          EFile::rm(FILE_MODEL(g_eeGeneral.currModel)); //delete file
+        pushMenu(menuDeleteModel);
+        
+          //EFile::rm(FILE_MODEL(g_eeGeneral.currModel)); //delete file
 
-          uint8_t i = g_eeGeneral.currModel;//loop to find next available model
-          while (!EFile::exists(FILE_MODEL(i))) {
-              i--;
-              if(i>MAX_MODELS) i=MAX_MODELS-1;
-              if(i==g_eeGeneral.currModel) {
-                  i=0;
-                  break;
-              }
-          }
-          g_eeGeneral.currModel = i;
+          //uint8_t i = g_eeGeneral.currModel;//loop to find next available model
+          //while (!EFile::exists(FILE_MODEL(i))) {
+              //i--;
+              //if(i>MAX_MODELS) i=MAX_MODELS-1;
+              //if(i==g_eeGeneral.currModel) {
+                  //i=0;
+                  //break;
+              //}
+          //}
+          //g_eeGeneral.currModel = i;
 
-          eeLoadModel(g_eeGeneral.currModel); //load default values
-          chainMenu(menuProcModelSelect);
-        //
+          //eeLoadModel(g_eeGeneral.currModel); //load default values
+          //chainMenu(menuProcModelSelect);
     }
     if((y+=FH)>7*FH) return;
   }subN++;
