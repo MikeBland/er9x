@@ -210,15 +210,47 @@ void menuProcCurveOne(uint8_t event) {
   static MState2 mstate2;
   uint8_t x = TITLE("CURVE ");
   lcd_outdezAtt(x, 0,s_curveChan+1 ,INVERS);
-  int8_t  sub    = mstate2.m_posVert-1;
-  int8_t  subSub = mstate2.m_posHorz;
 
   bool    cv9 = s_curveChan >= MAX_CURVE5;
   //MSTATE_CHECK0_V((cv9 ? 9 : 5)+1);
-  MSTATE_CHECK0_VxH((cv9 ? 9 : 5)+1);
-  MSTATE_TAB = { 1,1+(cv9 ? 9 : 5),1,1,1,1,1,1,1,1,1,1,1};
+  MSTATE_TAB = { 1+9,1,1,1,1,1,1,1,1,1,1,1 };
+  MSTATE_CHECK0_VxH((cv9 ? 9 : 5)+2);
   int8_t *crv = cv9 ? g_model.curves9[s_curveChan-MAX_CURVE5] : g_model.curves5[s_curveChan];
 
+  int8_t  sub    = mstate2.m_posVert-1;
+  if(sub!=-1) mstate2.m_posHorz = 0;
+  int8_t  subSub = mstate2.m_posHorz;
+  s_editMode = (sub==-1) && (subSub>0);
+  
+  switch(event){
+    case EVT_KEY_FIRST(KEY_EXIT):
+      if(s_editMode) killEvents(event);
+    case EVT_ENTRY:
+      s_editMode = false;
+      mstate2.m_posHorz = 0;
+      mstate2.m_posVert = 0;
+      break;
+      
+    case EVT_KEY_REPT(KEY_LEFT):
+    case EVT_KEY_FIRST(KEY_LEFT):
+      if(s_editMode) mstate2.m_posHorz--;
+      break;
+    case EVT_KEY_REPT(KEY_RIGHT):
+    case EVT_KEY_FIRST(KEY_RIGHT):
+      if((s_editMode) && (subSub<(cv9 ? 9 : 5))) mstate2.m_posHorz++;
+      break;
+    case EVT_KEY_REPT(KEY_UP):
+    case EVT_KEY_FIRST(KEY_UP):
+    case EVT_KEY_REPT(KEY_DOWN):
+    case EVT_KEY_FIRST(KEY_DOWN):
+      if (s_editMode) 
+      {
+          mstate2.m_posVert = 0;
+          sub = -1;
+      }
+      break;
+  }
+  
   for (uint8_t i = 0; i < 5; i++) {
     uint8_t y = i * FH + 16;
     uint8_t attr = sub == i ? INVERS : 0;
@@ -230,7 +262,7 @@ void menuProcCurveOne(uint8_t event) {
       uint8_t attr = sub == i + 5 ? INVERS : 0;
       lcd_outdezAtt(8 * FW, y, crv[i + 5], attr);
     }
-  lcd_putsAtt( 2*FW, 7*FH,PSTR("EDIT->"),sub == -1 ? INVERS : 0);
+  lcd_putsAtt( 2*FW, 1*FH,PSTR("EDIT->"),((sub == -1) && (subSub == 0)) ? INVERS : 0);
   lcd_putsAtt( 2*FW, 7*FH,PSTR("PRESET"),sub == (cv9 ? 9 : 5) ? INVERS : 0);
 
   static int8_t dfltCrv;
@@ -249,9 +281,7 @@ void menuProcCurveOne(uint8_t event) {
     {
       uint8_t xx = XD-1-WCHART+i*WCHART/(cv9 ? 4 : 2);
       uint8_t yy = Y0-crv[i]*WCHART/100;
-      if((yy-1)<WCHART*2) lcd_hline( xx, yy-1, 3); // do markup square
-      if(yy<WCHART*2)     lcd_hline( xx, yy  , 3);
-      if((yy+1)<WCHART*2) lcd_hline( xx, yy+1, 3);
+      
 
       if(subSub==(i+1))
       {
@@ -263,6 +293,12 @@ void menuProcCurveOne(uint8_t event) {
 
         if(p1valdiff || event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_FIRST(KEY_UP) || event==EVT_KEY_REPT(KEY_DOWN) || event==EVT_KEY_REPT(KEY_UP))
            CHECK_INCDEC_H_MODELVAR( event, crv[i], -100,100);  // edit on up/down
+      }
+      else
+      {
+          if((yy-1)<WCHART*2) lcd_hline( xx, yy-1, 3); // do markup square
+          if(yy<WCHART*2)     lcd_hline( xx, yy  , 3);
+          if((yy+1)<WCHART*2) lcd_hline( xx, yy+1, 3);
       }
     }
   }
