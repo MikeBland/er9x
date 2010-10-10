@@ -83,7 +83,7 @@ MenuFuncP_PROGMEM APM menuTabDiag[] = {
   menuProcDiagKeys,
   menuProcDiagAna,
   menuProcDiagCalib
-}; 
+};
 
 
 //#define PARR8(args...) (__extension__({static prog_uint8_t APM __c[] = args;&__c[0];}))
@@ -210,10 +210,13 @@ void menuProcCurveOne(uint8_t event) {
   static MState2 mstate2;
   uint8_t x = TITLE("CURVE ");
   lcd_outdezAtt(x, 0,s_curveChan+1 ,INVERS);
-  int8_t  sub    = mstate2.m_posVert;
+  int8_t  sub    = mstate2.m_posVert-1;
+  int8_t  subSub = mstate2.m_posHorz;
 
   bool    cv9 = s_curveChan >= MAX_CURVE5;
-  MSTATE_CHECK0_V((cv9 ? 9 : 5)+1);
+  //MSTATE_CHECK0_V((cv9 ? 9 : 5)+1);
+  MSTATE_CHECK0_VxH((cv9 ? 9 : 5)+1);
+  MSTATE_TAB = { 1,1+(cv9 ? 9 : 5),1,1,1,1,1,1,1,1,1,1,1};
   int8_t *crv = cv9 ? g_model.curves9[s_curveChan-MAX_CURVE5] : g_model.curves5[s_curveChan];
 
   for (uint8_t i = 0; i < 5; i++) {
@@ -227,37 +230,41 @@ void menuProcCurveOne(uint8_t event) {
       uint8_t attr = sub == i + 5 ? INVERS : 0;
       lcd_outdezAtt(8 * FW, y, crv[i + 5], attr);
     }
+  lcd_putsAtt( 2*FW, 7*FH,PSTR("EDIT->"),sub == -1 ? INVERS : 0);
   lcd_putsAtt( 2*FW, 7*FH,PSTR("PRESET"),sub == (cv9 ? 9 : 5) ? INVERS : 0);
 
   static int8_t dfltCrv;
   if(sub<(cv9 ? 9 : 5))  CHECK_INCDEC_H_MODELVAR( event, crv[sub], -100,100);
-  else {
+  else  if(sub>0){ //make sure we're not on "EDIT"
     if( checkIncDecGen2(event, &dfltCrv, -4, 4, 0)){
       if(cv9) for (uint8_t i = 0; i < 9; i++) crv[i] = (i-4)*dfltCrv* 100 / 16;
       else    for (uint8_t i = 0; i < 5; i++) crv[i] = (i-2)*dfltCrv* 100 /  8;
       eeDirty(EE_MODEL);
     }
   }
-  
-  for(uint8_t i=0; i<(cv9 ? 9 : 5); i++)
+
+  if(sub==-1)
   {
-    uint8_t xx = XD-1-WCHART+i*WCHART/(cv9 ? 4 : 2);
-    uint8_t yy = Y0-crv[i]*WCHART/100; 
-    //if((yy-1)<WCHART*2) lcd_hline( xx, yy-1, 3);
-    //if(yy<WCHART*2)     lcd_hline( xx, yy  , 3);
-    //if((yy+1)<WCHART*2) lcd_hline( xx, yy+1, 3);
-    
-    DO_SQUARE(xx+1,yy,3);
-    
-    //if((subSub-1)==i)
-    //{
-        //if((yy-2)<WCHART*2) lcd_hline( xx-1, yy-2, 5);
-        //if((yy-1)<WCHART*2) lcd_hline( xx-1, yy-1, 5);
-        //if(yy<WCHART*2)     lcd_hline( xx-1, yy  , 5);
-        //if((yy+1)<WCHART*2) lcd_hline( xx-1, yy+1, 5);
-        //if((yy+2)<WCHART*2) lcd_hline( xx-1, yy+2, 5);
-        ////CHECK_INCDEC_H_MODELVAR( event, crv[i], -100,100);
-    //}
+    for(uint8_t i=0; i<(cv9 ? 9 : 5); i++)
+    {
+      uint8_t xx = XD-1-WCHART+i*WCHART/(cv9 ? 4 : 2);
+      uint8_t yy = Y0-crv[i]*WCHART/100;
+      if((yy-1)<WCHART*2) lcd_hline( xx, yy-1, 3); // do markup square
+      if(yy<WCHART*2)     lcd_hline( xx, yy  , 3);
+      if((yy+1)<WCHART*2) lcd_hline( xx, yy+1, 3);
+
+      if(subSub==(i+1))
+      {
+        if((yy-2)<WCHART*2) lcd_hline( xx-1, yy-2, 5); //do selection square
+        if((yy-1)<WCHART*2) lcd_hline( xx-1, yy-1, 5);
+        if(yy<WCHART*2)     lcd_hline( xx-1, yy  , 5);
+        if((yy+1)<WCHART*2) lcd_hline( xx-1, yy+1, 5);
+        if((yy+2)<WCHART*2) lcd_hline( xx-1, yy+2, 5);
+
+        if(p1valdiff || event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_FIRST(KEY_UP) || event==EVT_KEY_REPT(KEY_DOWN) || event==EVT_KEY_REPT(KEY_UP))
+           CHECK_INCDEC_H_MODELVAR( event, crv[i], -100,100);  // edit on up/down
+      }
+    }
   }
 
   for (uint8_t xv = 0; xv < WCHART * 2; xv++) {
@@ -1455,7 +1462,7 @@ void menuProcModel(uint8_t event)
         s_noHi = NO_HI_LEN;
         killEvents(event);
         pushMenu(menuDeleteModel);
-        
+
           //EFile::rm(FILE_MODEL(g_eeGeneral.currModel)); //delete file
 
           //uint8_t i = g_eeGeneral.currModel;//loop to find next available model
