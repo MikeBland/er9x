@@ -2640,9 +2640,9 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
             //need to know which "v" will give "anas".
             //curves(v)*weight/100 -> anas
             // v * weight / 100 = anas => anas*100/weight = v
-          act[i] = (int32_t)anas[md.destCh-1+CHOUT_BASE]*DEL_MULT;
-          act[i] *=100;
-          act[i] /= md.weight;
+          //act[i] = (int32_t)anas[md.destCh-1+CHOUT_BASE]*DEL_MULT;
+          //act[i] *=100;
+          //act[i] /= md.weight;
           diff = v-act[i]/DEL_MULT;
           if(diff) sDelay[i] = (diff<0 ? md.delayUp :  md.delayDown) * 100;
         }
