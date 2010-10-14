@@ -221,7 +221,7 @@ void menuProcCurveOne(uint8_t event) {
   if(sub!=-1) mstate2.m_posHorz = 0;
   int8_t  subSub = mstate2.m_posHorz;
   s_editMode = (sub==-1) && (subSub>0);
-  
+
   switch(event){
     case EVT_KEY_FIRST(KEY_EXIT):
       if(s_editMode) killEvents(event);
@@ -230,7 +230,7 @@ void menuProcCurveOne(uint8_t event) {
       mstate2.m_posHorz = 0;
       mstate2.m_posVert = 0;
       break;
-      
+
     case EVT_KEY_REPT(KEY_LEFT):
     case EVT_KEY_FIRST(KEY_LEFT):
       if(s_editMode) mstate2.m_posHorz--;
@@ -243,14 +243,14 @@ void menuProcCurveOne(uint8_t event) {
     case EVT_KEY_FIRST(KEY_UP):
     case EVT_KEY_REPT(KEY_DOWN):
     case EVT_KEY_FIRST(KEY_DOWN):
-      if (s_editMode) 
+      if (s_editMode)
       {
           mstate2.m_posVert = 0;
           sub = -1;
       }
       break;
   }
-  
+
   for (uint8_t i = 0; i < 5; i++) {
     uint8_t y = i * FH + 16;
     uint8_t attr = sub == i ? INVERS : 0;
@@ -281,7 +281,7 @@ void menuProcCurveOne(uint8_t event) {
     {
       uint8_t xx = XD-1-WCHART+i*WCHART/(cv9 ? 4 : 2);
       uint8_t yy = Y0-crv[i]*WCHART/100;
-      
+
 
       if(subSub==(i+1))
       {
@@ -2602,19 +2602,22 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       static uint8_t swOn[MAX_MIXERS];
 
       int16_t v  = 0;
-      uint8_t swTog=!swOn[i];
-      swOn[i]=false;
+      uint8_t swTog;
+
+      //swOn[i]=false;
       if(!getSwitch(md.swtch,1)){ // switch on?  if no switch selected => on
+        swTog = swOn[i];
+        swOn[i] = false;
         if(md.srcRaw!=MIX_MAX && md.srcRaw!=MIX_FULL) continue;// if not MAX or FULL - next loop
         if(md.mltpx==MLTPX_REP) continue; // if switch is off and REPLACE then off
         v = (md.srcRaw == MIX_FULL ? -RESX : 0); // switch is off and it is either MAX=0 or FULL=-512
       }
       else {
+        swTog = !swOn[i];
+        swOn[i] = true;
         v = anas[md.srcRaw-1]; //Switch is on. MAX=FULL=512 or value.
         if(md.mixWarn) mixWarning |= 1<<(md.mixWarn-1); // Mix warning
       }
-
-      swOn[i]=true;
 
       //========== INPUT OFFSET ===============
       if(md.sOffset) v += calc100toRESX(md.sOffset);
