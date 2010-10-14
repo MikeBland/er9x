@@ -123,8 +123,7 @@ bool getSwitch(int8_t swtch, bool nc)
   CSwData &cs = g_model.customSw[abs(swtch)-(MAX_DRSWITCH-NUM_CSW)];
   int16_t  v = 0;
   uint8_t  i = cs.input-1;
-  if(!i) return false;
-  else if(i<MIX_MAX) v = calibratedStick[i];//-512..512
+  if(i<MIX_MAX) v = calibratedStick[i];//-512..512
   else if(i<=MIX_FULL) v = 1024; //FULL/MAX
   else if(i<MIX_FULL+NUM_PPM) v = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL];
   else v = ex_chans[i-MIX_FULL-NUM_PPM];
