@@ -1768,15 +1768,16 @@ void menuProcSetup1(uint8_t event)
 {
   static MState2 mstate2;
   TITLE("SETUP OPTS");
-  MSTATE_CHECK_V(2,menuTabDiag,1+4);
+  MSTATE_CHECK_V(2,menuTabDiag,1+5);
   int8_t  sub    = mstate2.m_posVert-1 ;
-  for(uint8_t i=0; i<4; i++){
+  for(uint8_t i=0; i<5; i++){
     uint8_t y=i*FH+2*FH;
     uint8_t attr = sub==i ? INVERS : 0;
-    lcd_putsnAtt( FW*7,y,PSTR("THR Warn"
-                              "SW  Warn"
-                              "MEM Warn"
-                              "Beeper  ")+i*8,8,0);
+    lcd_putsnAtt( FW*7,y,PSTR("THR Warn  "
+                              "SW  Warn  "
+                              "MEM Warn  "
+                              "ALARM Warn"
+                              "Beeper    ")+i*10,10,0);
     switch(i){
       case 0:
       case 1:
@@ -1790,12 +1791,22 @@ void menuProcSetup1(uint8_t event)
           if(val) g_eeGeneral.warnOpts &= ~bit;
           break;
         }
-      case 3:
-        uint8_t bits = 7<<i;
-        uint8_t val = (g_eeGeneral.warnOpts & bits)>>i;
+     case 3:
+        {
+          uint8_t bit = 0x80;//1<<7; //  ALARM Warning
+          bool    val = !(g_eeGeneral.warnOpts & bit);
+          lcd_putsAtt( FW*3, y, val ? PSTR("ON"): PSTR("OFF"),attr);
+          if(attr)  val = checkIncDec_hg( event, val, 0, 1); //!! bitfield
+          g_eeGeneral.warnOpts |= bit;
+          if(val) g_eeGeneral.warnOpts &= ~bit;
+          break;
+        }
+      case 4:
+        uint8_t bits = 0x38;
+        uint8_t val = (g_eeGeneral.warnOpts & bits)>>3;
         lcd_outdezAtt( FW*4, y, val,attr);
         if(attr)  val = checkIncDec_hg( event, val, 0, 4); //!! bitfield
-        g_eeGeneral.warnOpts = (g_eeGeneral.warnOpts & ~bits) | (val<<i);
+        g_eeGeneral.warnOpts = (g_eeGeneral.warnOpts & ~bits) | (val<<3);
         break;
     }
   }
@@ -2640,9 +2651,12 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
             //need to know which "v" will give "anas".
             //curves(v)*weight/100 -> anas
             // v * weight / 100 = anas => anas*100/weight = v
-          //act[i] = (int32_t)anas[md.destCh-1+CHOUT_BASE]*DEL_MULT;
-          //act[i] *=100;
-          //act[i] /= md.weight;
+          if(md.mltpx==MLTPX_REP)
+          {
+              act[i] = (int32_t)anas[md.destCh-1+CHOUT_BASE]*DEL_MULT;
+              act[i] *=100;
+              if(md.weight) act[i] /= md.weight;
+          }
           diff = v-act[i]/DEL_MULT;
           if(diff) sDelay[i] = (diff<0 ? md.delayUp :  md.delayDown) * 100;
         }
@@ -2658,7 +2672,8 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
           //act[i] += diff>0 ? (32768)/((int16_t)100*md.speedUp) : -(32768)/((int16_t)100*md.speedDown);
           //-100..100 => 32768 ->  100*83886/256 = 32768,   For MAX we divide by 2 sincde it's asymmetrical
           if(tick10ms) {
-              int32_t rate = (int32_t)DEL_MULT*2048*100/md.weight;
+              int32_t rate = (int32_t)DEL_MULT*2048*100;
+              if(md.weight) rate /=md.weight;
               act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(rate)/((int16_t)100*md.speedUp)   :  (int32_t)v*DEL_MULT) :
                                   ((md.speedDown>0) ? act[i]-(rate)/((int16_t)100*md.speedDown) :  (int32_t)v*DEL_MULT) ;
           }

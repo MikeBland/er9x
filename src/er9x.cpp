@@ -170,6 +170,12 @@ void checkTHR()
   }
 }
 
+void checkAlarm() // added by Gohst
+{
+    if(! WARN_BEP) return; 
+	if(! BEEP_VAL) alert(PSTR("Alarms Disabled"));
+}
+
 void checkSwitches()
 {
   if(! WARN_SW) return; // if warning is on
@@ -825,6 +831,7 @@ int main(void)
   getADC_single();
   checkTHR();
   checkSwitches();
+  checkAlarm();
   setupPulses();
   wdt_enable(WDTO_500MS);
   perOut(g_chans512, true, false);

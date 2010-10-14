@@ -52,7 +52,7 @@ typedef struct t_EEGeneral {
   int16_t   ppmInCalib[8];
   uint8_t   view;     //index of subview in main scrren
 #define WARN_THR     (!(g_eeGeneral.warnOpts & 0x01))
-#define WARN_THR_REV (!(g_eeGeneral.warnOpts & 0x20))
+#define WARN_BEP     (!(g_eeGeneral.warnOpts & 0x80))
 #define WARN_SW      (!(g_eeGeneral.warnOpts & 0x02))
 #define WARN_MEM     (!(g_eeGeneral.warnOpts & 0x04))
 #define BEEP_VAL     ( (g_eeGeneral.warnOpts & 0x38) >>3 )
