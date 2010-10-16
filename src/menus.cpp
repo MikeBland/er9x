@@ -148,7 +148,8 @@ void MState2::check(uint8_t event,  uint8_t curr,MenuFuncP *menuTab, uint8_t men
     case EVT_KEY_LONG(KEY_EXIT):
       s_editMode = false;
       //popMenu(true); //return to uppermost, beeps itself
-      //break;
+      popMenu(false);
+      break;
       //fallthrough
     case EVT_KEY_BREAK(KEY_EXIT):
       if(s_editMode) {
@@ -1540,6 +1541,9 @@ void menuProcModelSelect(uint8_t event)
         sel_editMode = false;
         beepKey();
         killEvents(event);
+        eeLoadModel(g_eeGeneral.currModel = mstate2.m_posVert);
+        eeDirty(EE_GENERAL);
+        LIMITS_DIRTY;
         break;
       }
       //fallthrough
@@ -1557,9 +1561,9 @@ void menuProcModelSelect(uint8_t event)
       if(event==EVT_KEY_FIRST(KEY_EXIT))  pushMenu(menuProcModelSelect);
       break;
     case  EVT_KEY_FIRST(KEY_MENU):
-      sel_editMode = true;
-      beepKey();
-      break;
+        sel_editMode = true;
+        beepKey();
+        break;
     case  EVT_KEY_LONG(KEY_MENU):
       if(sel_editMode){
         if(eeDuplicateModel(sub)) {
