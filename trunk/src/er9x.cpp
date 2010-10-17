@@ -92,12 +92,12 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
     return;
   }
 
-  if(abs(g_model.tmrMode)<(TMR_VAROFS+MAX_DRSWITCH-1)) { //normal on-off
-    putsDrSwitches( x-1*FW,y,tm>0 ? tm-15 : tm+15,attr);
+  if(abs(tm)<(TMR_VAROFS+MAX_DRSWITCH-1)) { //normal on-off
+    putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS) : tm+(TMR_VAROFS),attr);
     return;
   }
 
-  putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS+MAX_DRSWITCH-1-1) : tm+(TMR_VAROFS+MAX_DRSWITCH-1-1),attr);//momentary on-off
+  putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS+MAX_DRSWITCH-1) : tm+(TMR_VAROFS+MAX_DRSWITCH-1),attr);//momentary on-off
   lcd_putcAtt(x+3*FW,  y,'m',attr);
 }
 
@@ -172,8 +172,8 @@ void checkTHR()
 
 void checkAlarm() // added by Gohst
 {
-    if(! WARN_BEP) return; 
-	if(! BEEP_VAL) alert(PSTR("Alarms Disabled"));
+    if(! WARN_BEP) return;
+  if(! BEEP_VAL) alert(PSTR("Alarms Disabled"));
 }
 
 void checkSwitches()
@@ -187,7 +187,7 @@ void checkSwitches()
   lcd_puts_P(0,7*FH,PSTR("Please reset them"));
   refreshDiplay();
   lcdSetRefVolt(g_eeGeneral.contrast);
-  
+
   //loop until all switches are reset
   while (1)
   {
@@ -306,9 +306,9 @@ bool checkIncDecGen2(uint8_t event, void *i_pval, int16_t i_min, int16_t i_max, 
     killEvents(kmi);
     killEvents(kpl);
   }
-  
+
   //change values based on P1
-  newval -= p1valdiff; 
+  newval -= p1valdiff;
 
   if(newval>i_max)
   {
@@ -475,17 +475,17 @@ void perMain()
   static uint16_t lastTMR;
   tick10ms = (g_tmr10ms != lastTMR);
   lastTMR = g_tmr10ms;
-  
+
   perOut(g_chans512, false, false);
   eeCheck();
-  
+
   lcd_clear();
   uint8_t evt=getEvent();
   evt = checkTrim(evt);
-  
+
   if(tick10ms && g_LightOffCounter) g_LightOffCounter--;
   if(IS_KEY_BREAK(evt)) g_LightOffCounter = g_eeGeneral.lightAutoOff*500; // on keypress turn the light on 5*100
-  
+
   static int16_t p1valprev;
   p1valdiff = (p1val-calibratedStick[6])/32;
   if(p1valdiff) {
@@ -495,7 +495,7 @@ void perMain()
       //beepKey();
   }
   p1valprev = calibratedStick[6];
-  
+
   g_menuStack[g_menuStackPtr](evt);
   refreshDiplay();
   if(PING & (1<<INP_G_RF_POW)) { //no power -> only phone jack = slave mode
@@ -640,7 +640,7 @@ void getADC_filt()
       // Wait for the AD conversion to complete
       while ((ADCSRA & 0x10)==0);
       ADCSRA|=0x10;
-      
+
       s_anaFilt[adc_input] = (s_anaFilt[adc_input]/2 + t_ana[1][adc_input]) & 0xFFFE; //gain of 2 on last conversion - clear last bit
       //t_ana[2][adc_input]  =  (t_ana[2][adc_input]  + t_ana[1][adc_input]) >> 1;
       t_ana[1][adc_input]  = (t_ana[1][adc_input]  + t_ana[0][adc_input]) >> 1;
@@ -835,11 +835,11 @@ int main(void)
   setupPulses();
   wdt_enable(WDTO_500MS);
   perOut(g_chans512, true, false);
-  
+
   pushMenu(menuProcModelSelect);
   popMenu(true);  // this is so the first instance of [MENU LONG] doesn't freak out!
-  //g_menuStack[g_menuStackPtr+1] = 
-  
+  //g_menuStack[g_menuStackPtr+1] =
+
   lcdSetRefVolt(g_eeGeneral.contrast);
   TIMSK |= (1<<OCIE1A); // Pulse generator enable immediately before mainloop
   while(1){
