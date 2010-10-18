@@ -219,38 +219,34 @@ void menuProcCurveOne(uint8_t event) {
   int8_t *crv = cv9 ? g_model.curves9[s_curveChan-MAX_CURVE5] : g_model.curves5[s_curveChan];
 
   int8_t  sub    = mstate2.m_posVert-1;
-  if(sub!=-1) mstate2.m_posHorz = 0;
   int8_t  subSub = mstate2.m_posHorz;
-  s_editMode = (sub==-1) && (subSub>0);
 
   switch(event){
     case EVT_KEY_FIRST(KEY_EXIT):
-      if(s_editMode) killEvents(event);
+      if(sub!=-1 || subSub!=0) killEvents(event);
     case EVT_ENTRY:
       s_editMode = false;
-      mstate2.m_posHorz = 0;
       mstate2.m_posVert = 0;
+      mstate2.m_posHorz = 0;
       break;
 
     case EVT_KEY_REPT(KEY_LEFT):
     case EVT_KEY_FIRST(KEY_LEFT):
-      if(s_editMode) mstate2.m_posHorz--;
+      if(s_editMode && mstate2.m_posHorz>0) mstate2.m_posHorz--;
       break;
     case EVT_KEY_REPT(KEY_RIGHT):
     case EVT_KEY_FIRST(KEY_RIGHT):
       if((s_editMode) && (subSub<(cv9 ? 9 : 5))) mstate2.m_posHorz++;
       break;
-    case EVT_KEY_REPT(KEY_UP):
-    case EVT_KEY_FIRST(KEY_UP):
-    case EVT_KEY_REPT(KEY_DOWN):
-    case EVT_KEY_FIRST(KEY_DOWN):
-      if (s_editMode)
-      {
-          mstate2.m_posVert = 0;
-          sub = -1;
-      }
-      break;
   }
+  s_editMode = subSub;
+  if(s_editMode) {
+      mstate2.m_posVert = 0;
+  }
+  
+  if(mstate2.m_posHorz>=(cv9 ? 9 : 5)) mstate2.m_posHorz=(cv9 ? 9 : 5);
+  if(mstate2.m_posHorz<0) mstate2.m_posHorz=0;
+
 
   for (uint8_t i = 0; i < 5; i++) {
     uint8_t y = i * FH + 16;
@@ -276,7 +272,7 @@ void menuProcCurveOne(uint8_t event) {
     }
   }
 
-  if(sub==-1)
+  if(s_editMode)
   {
     for(uint8_t i=0; i<(cv9 ? 9 : 5); i++)
     {
@@ -332,6 +328,7 @@ void menuProcCurve(uint8_t event) {
     case EVT_ENTRY:
       s_pgOfs = 0;
       break;
+    case EVT_KEY_FIRST(KEY_RIGHT):
     case EVT_KEY_FIRST(KEY_MENU):
       if (sub >= 0) {
         s_curveChan = sub;
