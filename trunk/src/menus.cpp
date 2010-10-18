@@ -263,7 +263,7 @@ void menuProcCurveOne(uint8_t event) {
   lcd_putsAtt( 2*FW, 7*FH,PSTR("PRESET"),sub == (cv9 ? 9 : 5) ? INVERS : 0);
 
   static int8_t dfltCrv;
-  if(sub<(cv9 ? 9 : 5))  CHECK_INCDEC_H_MODELVAR( event, crv[sub], -100,100);
+  if((sub<(cv9 ? 9 : 5)) && (sub>-1))  CHECK_INCDEC_H_MODELVAR( event, crv[sub], -100,100);
   else  if(sub>0){ //make sure we're not on "EDIT"
     if( checkIncDecGen2(event, &dfltCrv, -4, 4, 0)){
       if(cv9) for (uint8_t i = 0; i < 9; i++) crv[i] = (i-4)*dfltCrv* 100 / 16;
