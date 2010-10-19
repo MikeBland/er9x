@@ -583,7 +583,7 @@ void menuProcSwitches(uint8_t event)  //Issue 78
       break;
   }
 
-  lcd_puts_P( 4*FW, 1*FH,PSTR("src  ofs func"));
+  lcd_puts_P( 4*FW, 1*FH,PSTR("Function V1  V2"));
   for(uint8_t i=0; i<6; i++){
     y=(i+2)*FH;
     k=i+s_pgOfs;
@@ -593,19 +593,19 @@ void menuProcSwitches(uint8_t event)  //Issue 78
 
     //write SW names here
     lcd_outdezNAtt(3*FW,  y, k+1, LEADING0,2);
-    lcd_putsnAtt(  4*FW, y, PSTR(CSWITCH_STR)+CSW_LEN_FUNC*cs.func,CSW_LEN_FUNC,subSub==3 ? attr : 0);
+    lcd_putsnAtt(  4*FW, y, PSTR(CSWITCH_STR)+CSW_LEN_FUNC*cs.func,CSW_LEN_FUNC,subSub==1 ? attr : 0);
 
     uint8_t is_and = cs.func>=CS_AND;
     
     if(is_and)
     {
-        putsDrSwitches(12*FW,y, cs.input  ,subSub==1 ? attr : 0);
-        putsDrSwitches(16*FW,y, cs.offset ,subSub==2 ? attr : 0);
+        putsDrSwitches(12*FW,y, cs.input  ,subSub==2 ? attr : 0);
+        putsDrSwitches(16*FW,y, cs.offset ,subSub==3 ? attr : 0);
     }
     else
     {
-        putsChnRaw(    12*FW, y, cs.input  ,subSub==1 ? attr : 0);
-        lcd_outdezAtt( 19*FW, y, cs.offset ,subSub==2 ? attr : 0);
+        putsChnRaw(    12*FW, y, cs.input  ,subSub==2 ? attr : 0);
+        lcd_outdezAtt( 20*FW, y, cs.offset ,subSub==3 ? attr : 0);
     }
 
     if((s_editMode || p1valdiff) && attr)
