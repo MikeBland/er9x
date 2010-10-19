@@ -243,7 +243,7 @@ void menuProcCurveOne(uint8_t event) {
   if(s_editMode) {
       mstate2.m_posVert = 0;
   }
-  
+
   if(mstate2.m_posHorz>=(cv9 ? 9 : 5)) mstate2.m_posHorz=(cv9 ? 9 : 5);
   if(mstate2.m_posHorz<0) mstate2.m_posHorz=0;
 
@@ -2674,7 +2674,7 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
           //-100..100 => 32768 ->  100*83886/256 = 32768,   For MAX we divide by 2 sincde it's asymmetrical
           if(tick10ms) {
               int32_t rate = (int32_t)DEL_MULT*2048*100;
-              if(md.weight) rate /=md.weight;
+              if(md.weight) rate /= abs(md.weight);
               act[i] = (diff>0) ? ((md.speedUp>0)   ? act[i]+(rate)/((int16_t)100*md.speedUp)   :  (int32_t)v*DEL_MULT) :
                                   ((md.speedDown>0) ? act[i]-(rate)/((int16_t)100*md.speedDown) :  (int32_t)v*DEL_MULT) ;
           }

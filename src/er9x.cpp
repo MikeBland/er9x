@@ -93,11 +93,11 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
   }
 
   if(abs(tm)<(TMR_VAROFS+MAX_DRSWITCH-1)) { //normal on-off
-    putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS) : tm+(TMR_VAROFS),attr);
+    putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS-1) : tm+(TMR_VAROFS-1),attr);
     return;
   }
 
-  putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS+MAX_DRSWITCH-1) : tm+(TMR_VAROFS+MAX_DRSWITCH-1),attr);//momentary on-off
+  putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS+MAX_DRSWITCH-1-1) : tm+(TMR_VAROFS+MAX_DRSWITCH-1-1),attr);//momentary on-off
   lcd_putcAtt(x+3*FW,  y,'m',attr);
 }
 
