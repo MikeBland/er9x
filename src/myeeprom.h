@@ -113,11 +113,14 @@ typedef struct t_MixData {
 #define CS_VNEG    2  //v<offset
 #define CS_APOS    3  //|v|>offset
 #define CS_ANEG    4  //|v|<offset
-#define CS_MAXF    4  //max function
+#define CS_AND     5  
+#define CS_OR      6  
+#define CS_XOR     7  
+#define CS_MAXF    7  //max function
 
 
 typedef struct t_CSwData { // Custom Switches data
-  uint8_t input;
+  int8_t  input;
   int8_t  offset;
   uint8_t func;
 } __attribute__((packed)) CSwData;
