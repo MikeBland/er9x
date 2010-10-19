@@ -121,21 +121,40 @@ bool getSwitch(int8_t swtch, bool nc)
   //MAX,FULL - disregard
   //ppm
   CSwData &cs = g_model.customSw[abs(swtch)-(MAX_DRSWITCH-NUM_CSW)];
-  int16_t  v = 0;
-  uint8_t  i = cs.input-1;
-  if(i<MIX_MAX) v = calibratedStick[i];//-512..512
-  else if(i<=MIX_FULL) v = 1024; //FULL/MAX
-  else if(i<MIX_FULL+NUM_PPM) v = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL];
-  else v = ex_chans[i-MIX_FULL-NUM_PPM];
+     if(cs.func<CS_AND)
+     {
+         int16_t  v = 0;
+         uint8_t  i = cs.input-1;
+         if(i<MIX_MAX) v = calibratedStick[i];//-512..512
+         else if(i<=MIX_FULL) v = 1024; //FULL/MAX
+         else if(i<MIX_FULL+NUM_PPM) v = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL];
+         else v = ex_chans[i-MIX_FULL-NUM_PPM];
 
-  int16_t ofs = calc100toRESX(cs.offset); //coffset 100 -> 1024
-  switch (cs.func) {
-    case (CS_VPOS):   return swtch>0 ? (v>ofs) : !(v>ofs);
-    case (CS_VNEG):   return swtch>0 ? (v<ofs) : !(v<ofs);
-    case (CS_APOS):   return swtch>0 ? (abs(v)>ofs) : !(abs(v)>ofs);
-    case (CS_ANEG):   return swtch>0 ? (abs(v)<ofs) : !(abs(v)<ofs);
-    default:          return false;
-  }
+         int16_t ofs = calc100toRESX(cs.offset); //coffset 100 -> 1024
+         switch (cs.func) {
+          case (CS_VPOS):   return swtch>0 ? (v>ofs) : !(v>ofs);
+          case (CS_VNEG):   return swtch>0 ? (v<ofs) : !(v<ofs);
+          case (CS_APOS):   return swtch>0 ? (abs(v)>ofs) : !(abs(v)>ofs);
+          case (CS_ANEG):   return swtch>0 ? (abs(v)<ofs) : !(abs(v)<ofs);
+          default:          return false;
+          }
+     }
+     else //cs.func>=CS_AND
+     {
+         int8_t a = cs.input;
+         int8_t b = cs.offset;
+         switch (cs.func) {
+         case (CS_OR):
+             return (getSwitch(a,0) || getSwitch(b,0));
+             break;
+         case (CS_XOR):
+             return (getSwitch(a,0) ^ getSwitch(b,0));
+             break;
+         default: //AND
+             return (getSwitch(a,0) && getSwitch(b,0));
+             break;
+         }
+     }
 }
 
 void checkMem()
