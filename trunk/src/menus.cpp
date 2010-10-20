@@ -2673,10 +2673,10 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
       {
 #define DEL_MULT 256
 
-        if(init) {
-          act[i]=(int32_t)v*DEL_MULT;
-          swTog = false;
-        }
+        //if(init) {
+          //act[i]=(int32_t)v*DEL_MULT;
+          //swTog = false;
+        //}
         int16_t diff = v-act[i]/DEL_MULT;
 
         if(swTog) {
