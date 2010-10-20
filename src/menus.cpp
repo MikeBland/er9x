@@ -375,7 +375,7 @@ static bool  s_limitCacheOk;
 void setStickCenter() // copy state of 3 primary to subtrim
 {
       int16_t zero_chans512[NUM_CHNOUT];
-      perOut(zero_chans512,false,true); // do output loop - zero input channels
+      perOut(zero_chans512,true); // do output loop - zero input channels
 
       for(uint8_t i=0; i<NUM_CHNOUT; i++)
         g_model.limitData[i].offset += g_model.limitData[i].revert ?
@@ -596,7 +596,7 @@ void menuProcSwitches(uint8_t event)  //Issue 78
     lcd_putsnAtt(  4*FW, y, PSTR(CSWITCH_STR)+CSW_LEN_FUNC*cs.func,CSW_LEN_FUNC,subSub==1 ? attr : 0);
 
     uint8_t is_and = cs.func>=CS_AND;
-    
+
     if(is_and)
     {
         putsDrSwitches(12*FW,y, cs.input  ,subSub==2 ? attr : 0);
@@ -626,7 +626,7 @@ void menuProcSwitches(uint8_t event)  //Issue 78
           if(is_and) CHECK_INCDEC_H_MODELVAR( event, cs.offset, -MAX_DRSWITCH,MAX_DRSWITCH);
           else CHECK_INCDEC_H_MODELVAR( event, cs.offset, -100,100);
           break;
-        
+
       }
   }
 }
@@ -2498,17 +2498,34 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
   return erg / 25; // 100*D5/RESX;
 }
 
+// static variables used in perOut - moved here so they don't interfere with the stack
+
 uint16_t pulses2MHz[120];
+int16_t  anas [NUM_XCHNRAW];
+int32_t  chans[NUM_CHNOUT];
+uint32_t inacCounter;
+uint16_t inacSum;
+uint8_t  bpanaCenter;
+int16_t  sDelay[MAX_MIXERS];
+int32_t  act   [MAX_MIXERS];
+uint8_t  swOn  [MAX_MIXERS];
 
-void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
+void zeroVariables()
 {
-  static int16_t  anas [NUM_XCHNRAW];
-  static int32_t  chans[NUM_CHNOUT];
-  static uint32_t inacCounter;
-  static uint16_t inacSum;
-  static uint8_t  bpanaCenter;
+  memset(&pulses2MHz,0,sizeof(pulses2MHz));
+  memset(&anas,0,sizeof(anas));
+  memset(&chans,0,sizeof(chans));
+  memset(&sDelay,0,sizeof(sDelay));
+  memset(&act,0,sizeof(act));
+  memset(&swOn,0,sizeof(swOn));
+  inacCounter = 0;
+  inacSum = 0;
+  bpanaCenter = 0;
+}
 
-  int16_t trimA[4];
+void perOut(int16_t *chanOut, uint8_t zeroInput)
+{
+  int16_t  trimA[4];
   uint8_t  anaCenter = 0;
 
   if(tick10ms) {
@@ -2630,8 +2647,6 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       if((md.destCh==0) || (md.destCh>NUM_CHNOUT)) break;
 
       //Notice 0 = NC switch means not used -> always on line
-      static uint8_t swOn[MAX_MIXERS];
-
       int16_t v  = 0;
       uint8_t swTog;
 
@@ -2656,9 +2671,6 @@ void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput)
       //========== DELAY and PAUSE ===============
       if (md.speedUp || md.speedDown || md.delayUp || md.delayDown)  // there are delay values
       {
-        static int16_t sDelay[MAX_MIXERS];
-        static int32_t act   [MAX_MIXERS];
-
 #define DEL_MULT 256
 
         if(init) {

@@ -495,7 +495,7 @@ void perMain()
   tick10ms = (g_tmr10ms != lastTMR);
   lastTMR = g_tmr10ms;
 
-  perOut(g_chans512, false, false);
+  perOut(g_chans512, false);
   eeCheck();
 
   lcd_clear();
@@ -853,7 +853,8 @@ int main(void)
   checkAlarm();
   setupPulses();
   wdt_enable(WDTO_500MS);
-  perOut(g_chans512, true, false);
+  zeroVariables();
+  perOut(g_chans512, false);
 
   pushMenu(menuProcModelSelect);
   popMenu(true);  // this is so the first instance of [MENU LONG] doesn't freak out!

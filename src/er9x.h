@@ -130,12 +130,12 @@
 
 #define INP_E_AileDR  1
 #define INP_E_ThrCt   0
-	
+
 #if (defined(JETI) || defined(FRSKY))
-	#undef INP_E_ThrCt
-	#undef INP_E_AileDR
-	#define INP_C_ThrCt   6
-	#define INP_C_AileDR  7
+  #undef INP_E_ThrCt
+  #undef INP_E_AileDR
+  #define INP_C_ThrCt   6
+  #define INP_C_AileDR  7
 #endif
 
 
@@ -299,7 +299,8 @@ void    perMain();
 /// wie z.B. einlesen aller Eingaenge, Entprellung, Key-Repeat..
 void    per10ms();
 /// Erzeugt periodisch alle Outputs ausser Bildschirmausgaben.
-void perOut(int16_t *chanOut, uint8_t init, uint8_t zeroInput);
+void zeroVariables();
+void perOut(int16_t *chanOut, uint8_t zeroInput);
 ///   Liefert den Zustand des Switches 'swtch'. Die Numerierung erfolgt ab 1
 ///   (1=SW_ON, 2=SW_ThrCt, 10=SW_Trainer). 0 Bedeutet not conected.
 ///   Negative Werte  erzeugen invertierte Ergebnisse.
