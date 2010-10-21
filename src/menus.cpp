@@ -2499,29 +2499,16 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
 }
 
 // static variables used in perOut - moved here so they don't interfere with the stack
-
-uint16_t pulses2MHz[120];
-int16_t  anas [NUM_XCHNRAW];
-int32_t  chans[NUM_CHNOUT];
-uint32_t inacCounter;
-uint16_t inacSum;
-uint8_t  bpanaCenter;
-int16_t  sDelay[MAX_MIXERS];
-int32_t  act   [MAX_MIXERS];
-uint8_t  swOn  [MAX_MIXERS];
-
-void zeroVariables()
-{
-  memset(&pulses2MHz,0,sizeof(pulses2MHz));
-  memset(&anas,0,sizeof(anas));
-  memset(&chans,0,sizeof(chans));
-  memset(&sDelay,0,sizeof(sDelay));
-  memset(&act,0,sizeof(act));
-  memset(&swOn,0,sizeof(swOn));
-  inacCounter = 0;
-  inacSum = 0;
-  bpanaCenter = 0;
-}
+// It's also easier to initialize them here.
+uint16_t pulses2MHz[120] = {0};
+int16_t  anas [NUM_XCHNRAW] = {0};
+int32_t  chans[NUM_CHNOUT] = {0};
+uint32_t inacCounter = 0;
+uint16_t inacSum = 0;
+uint8_t  bpanaCenter = 0;
+int16_t  sDelay[MAX_MIXERS] = {0};
+int32_t  act   [MAX_MIXERS] = {0};
+uint8_t  swOn  [MAX_MIXERS] = {0};
 
 void perOut(int16_t *chanOut, uint8_t zeroInput)
 {

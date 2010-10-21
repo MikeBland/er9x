@@ -853,7 +853,6 @@ int main(void)
   checkAlarm();
   setupPulses();
   wdt_enable(WDTO_500MS);
-  zeroVariables();
   perOut(g_chans512, false);
 
   pushMenu(menuProcModelSelect);
