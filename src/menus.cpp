@@ -412,7 +412,7 @@ void menuProcLimits(uint8_t event)
       s_editMode = false;
       break;
     case EVT_KEY_FIRST(KEY_MENU):
-      if(sub>=0) s_editMode = !s_editMode;
+      if((sub>=0) && (subSub!=4)) s_editMode = !s_editMode;
       break;
     case EVT_KEY_FIRST(KEY_EXIT):
       if(s_editMode) {
@@ -472,8 +472,11 @@ void menuProcLimits(uint8_t event)
           break;
         case 4:
           lcd_putsnAtt(   18*FW, y, PSTR("---INV")+ld->revert*3,3,attr);
-          if(attr && (s_editMode || p1valdiff)) {
-            CHECK_INCDEC_H_MODELVAR_BF( event, ld->revert,    0,1);
+          //if(attr && (s_editMode || p1valdiff)) {
+          if(attr && (event==EVT_KEY_FIRST(KEY_MENU))) {
+            //CHECK_INCDEC_H_MODELVAR_BF( event, ld->revert,    0,1);
+            ld->revert = !(ld->revert);
+            STORE_MODELVARS;
           }
           break;
       }
