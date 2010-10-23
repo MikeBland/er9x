@@ -234,6 +234,7 @@ void alert(const prog_char * s)
   lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
   refreshDiplay();
   lcdSetRefVolt(g_eeGeneral.contrast);
+  BACKLIGHT_ON;
   beepErr();
   while(1)
   {
@@ -526,8 +527,10 @@ void perMain()
   switch( g_tmr10ms & 0x1f ) { //alle 10ms*32
     case 1:
       //check light switch and timer
-      if( getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter) PORTB |=  (1<<OUT_B_LIGHT);
-      else                                                       PORTB &= ~(1<<OUT_B_LIGHT);
+      if( getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter) 
+        BACKLIGHT_ON;
+      else
+        BACKLIGHT_OFF;
       break;
 
     case 2:

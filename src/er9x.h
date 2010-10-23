@@ -393,7 +393,8 @@ extern uint8_t s_editMode;     //global editmode
 
 
 #define STORE_MODELVARS eeDirty(EE_MODEL)
-
+#define BACKLIGHT_ON    PORTB |=  (1<<OUT_B_LIGHT)
+#define BACKLIGHT_OFF   PORTB &= ~(1<<OUT_B_LIGHT)
 
 
 
