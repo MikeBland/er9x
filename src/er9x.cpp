@@ -234,11 +234,15 @@ void alert(const prog_char * s)
   lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
   refreshDiplay();
   lcdSetRefVolt(g_eeGeneral.contrast);
-  BACKLIGHT_ON;
   beepErr();
   while(1)
   {
     if(IS_KEY_BREAK(getEvent()))   return;  //wait for key release
+    
+    if(getSwitch(g_eeGeneral.lightSw,0))
+        BACKLIGHT_ON;
+      else
+        BACKLIGHT_OFF;;
   }
 }
 
