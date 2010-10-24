@@ -224,22 +224,22 @@ MenuFuncP g_menuStack[5];
 
 uint8_t  g_menuStackPtr = 0;
 uint8_t  g_beepCnt;
-uint8_t  g_beepVal[4];
+uint8_t  g_beepVal[5];
 
-void alert(const prog_char * s)
+void alert(const prog_char * s, bool defaults)
 {
   lcd_clear();
   lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
   lcd_puts_P(0,4*FW,s);
   lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
   refreshDiplay();
-  lcdSetRefVolt(g_eeGeneral.contrast);
+  lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
   beepErr();
   while(1)
   {
     if(IS_KEY_BREAK(getEvent()))   return;  //wait for key release
     
-    if(getSwitch(g_eeGeneral.lightSw,0))
+    if(getSwitch(g_eeGeneral.lightSw,0) || defaults)
         BACKLIGHT_ON;
       else
         BACKLIGHT_OFF;;
@@ -490,7 +490,7 @@ void pushMenu(MenuFuncP newMenu)
 }
 
 uint8_t  g_vbat100mV;
-volatile uint8_t  tick10ms;
+volatile uint8_t tick10ms = 0;
 uint16_t g_LightOffCounter;
 void evalCaptures();
 
@@ -515,8 +515,6 @@ void perMain()
   if(p1valdiff) {
       p1valdiff = (p1valprev-calibratedStick[6])/2;
       p1val = calibratedStick[6];
-      //if(p1valdiff>1) warble=true;
-      //beepKey();
   }
   p1valprev = calibratedStick[6];
 
@@ -559,13 +557,14 @@ void perMain()
     case 3:
       {
         static prog_uint8_t APM beepTab[]= {
-          0,0, 0,  0, //quiet
-          0,1,30,100, //silent
-          1,1,30,100, //normal
-          1,1,50,150, //for motor
-          10,10,50,150, //for motor
+       // 0   1   2   3    4
+          0,  0,  0,  0,   0, //quiet
+          0,  1, 10, 30, 100, //silent
+          1,  1, 10, 30, 100, //normal
+          1,  1, 10, 50, 150, //for motor
+         10, 10, 30, 50, 150, //for motor
         };
-        memcpy_P(g_beepVal,beepTab+4*BEEP_VAL,4);
+        memcpy_P(g_beepVal,beepTab+5*BEEP_VAL,5);
           //g_beepVal = BEEP_VAL;
       }
       break;

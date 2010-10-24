@@ -13,8 +13,8 @@
  * GNU General Public License for more details.
  *
  */
-#ifndef th9x_h
-#define th9x_h
+#ifndef er9x_h
+#define er9x_h
 
 #define VERS 1
 
@@ -151,10 +151,22 @@ const uint8_t modn12x3[4][4]= {
   {4, 2, 3, 1},
   {4, 3, 2, 1} };
 
+//R=1
+//E=2
+//T=3
+//A=4
+
+const uint8_t chout_ar[24][4] = { //First number is 0..23 -> template setup,  Second is relevant channel out
+{1,2,3,4},{1,2,4,3},{1,3,2,4},{1,3,4,2},{1,4,2,3},{1,4,3,2},
+{2,1,3,4},{2,1,4,3},{2,3,1,4},{2,3,4,1},{2,4,1,3},{2,4,3,1},
+{3,1,2,4},{3,1,4,2},{3,2,1,4},{3,2,4,1},{3,4,1,2},{3,4,2,1},
+{4,1,2,3},{4,1,3,2},{4,2,1,3},{4,2,3,1},{4,3,1,2},{4,3,2,1}    };
 
 //convert from mode 1 to mode g_eeGeneral.stickMode
 //NOTICE!  =>  1..4 -> 1..4
-#define CONVERT_MODE(x) (((x)<=4) ? modn12x3[g_eeGeneral.stickMode][((x)-1)] : (x))
+#define CONVERT_MODE(x)  (((x)<=4) ? modn12x3[g_eeGeneral.stickMode][((x)-1)] : (x))
+#define CHANNEL_ORDER(x) (chout_ar[g_eeGeneral.templateSetup][(x)-1])
+
 
 enum EnumKeys {
   KEY_MENU ,
@@ -291,7 +303,7 @@ MenuFuncP lastPopMenu();
 void    popMenu(bool uppermost=false);
 /// Gibt Alarm Maske auf lcd aus.
 /// Die Maske wird so lange angezeigt bis eine beliebige Taste gedrueckt wird.
-void    alert(const prog_char * s);
+void    alert(const prog_char * s, bool defaults=false);
 uint8_t question(const prog_char * s);
 /// periodisches Hauptprogramm
 void    perMain();
@@ -515,7 +527,7 @@ extern uint8_t            g_vbat100mV;
 extern volatile uint16_t  g_tmr10ms;
 extern volatile uint8_t   g_blinkTmr10ms;
 extern uint8_t            g_beepCnt;
-extern uint8_t            g_beepVal[4];
+extern uint8_t            g_beepVal[5];
 extern const PROGMEM char modi12x3[];
 //extern uint16_t           pulses2MHz[9];
 extern uint16_t           pulses2MHz[120];
@@ -538,10 +550,11 @@ inline void _beep(uint8_t b) {
 /// Erzeugt einen kurzen beep
 #define beepKey()   _beep(g_beepVal[0])
 #define beepWarn1() _beep(g_beepVal[1])
+#define beepWarn2() _beep(g_beepVal[2])
 /// Erzeugt einen langen beep
-#define beepWarn() _beep(g_beepVal[2])
+#define beepWarn() _beep(g_beepVal[3])
 /// Erzeugt einen sehr langen beep
-#define beepErr()  _beep(g_beepVal[3])
+#define beepErr()  _beep(g_beepVal[4])
 
-#endif // th9x_h
+#endif // er9x_h
 /*eof*/

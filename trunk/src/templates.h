@@ -55,11 +55,10 @@
 #define TRIM_ON  0
 #define TRIM_OFF 1
 
-#define CM(x) (CONVERT_MODE((x)))
+#define CM(x) (CONVERT_MODE(x))  //good for SRC
 #define CH(x) (CHOUT_BASE+(x))
 #define CV(x) (CURVE_BASE+(x)-1)
-#define CC(x) (chout_ar[g_eeGeneral.templateSetup][(x)-1])
-
+#define CC(x) (CHANNEL_ORDER(x)) //need to invert this to work with dest
 
 #define CURVE5(x) ((x)-1)
 #define CURVE9(x) (MAX_CURVE5+(x)-1)
@@ -73,16 +72,8 @@ const char n_Templates[][TEMPLATE_NLEN] = {
   "Heli Setup"
 };
 
-//R=1
-//E=2
-//T=3
-//A=4
 
-const uint8_t chout_ar[24][4] = { //First number is 0..23 -> template setup,  Second is relevant channel out
-{1,2,3,4},{1,2,4,3},{1,3,2,4},{1,3,4,2},{1,4,2,3},{1,4,3,2},
-{2,1,3,4},{2,1,4,3},{2,3,1,4},{2,3,4,1},{2,4,1,3},{2,4,3,1},
-{3,1,2,4},{3,1,4,2},{3,2,1,4},{3,2,4,1},{3,4,1,2},{3,4,2,1},
-{4,1,2,3},{4,1,3,2},{4,2,1,3},{4,2,3,1},{4,3,1,2},{4,3,2,1}    };
+
 
 void clearMixes();
 void clearCurves();

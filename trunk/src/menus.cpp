@@ -540,10 +540,10 @@ void menuProcTemplates(uint8_t event)  //Issue 73
   if((y+=FH)>7*FH) return;
   uint8_t attr = s_noHi ? 0 : ((sub==NUM_TEMPLATES) ? INVERS : 0);
   lcd_puts_P( 1*FW, y,PSTR("Channel Order"));//   RAET->AETR
-  lcd_putsnAtt(15*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][0],1,attr);
-  lcd_putsnAtt(16*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][1],1,attr);
-  lcd_putsnAtt(17*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][2],1,attr);
-  lcd_putsnAtt(18*FW, y, PSTR(" RETA")+chout_ar[g_eeGeneral.templateSetup][3],1,attr);
+  lcd_putsnAtt(15*FW, y, PSTR(" RETA")+CHANNEL_ORDER(1),1,attr);
+  lcd_putsnAtt(16*FW, y, PSTR(" RETA")+CHANNEL_ORDER(2),1,attr);
+  lcd_putsnAtt(17*FW, y, PSTR(" RETA")+CHANNEL_ORDER(3),1,attr);
+  lcd_putsnAtt(18*FW, y, PSTR(" RETA")+CHANNEL_ORDER(4),1,attr);
   if(attr) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.templateSetup, 0, 23);
 
   if((y+=FH)>7*FH) return;
@@ -1839,7 +1839,7 @@ void menuProcSetup(uint8_t event)
 {
   static MState2 mstate2;
   TITLE("SETUP");
-  MSTATE_CHECK_V(1,menuTabDiag,1+9);
+  MSTATE_CHECK_V(1,menuTabDiag,1+8);
   int8_t  sub    = mstate2.m_posVert;
 
   if(sub<1) s_pgOfs=0;
@@ -1991,8 +1991,17 @@ void timer(uint8_t val)
       break;
   }
 
+  if(s_timerState==TMR_RUNNING && ((s_timerVal==30)    || 
+                                   (s_timerVal==15)    ||
+                                   (s_timerVal==10)    ||
+                                   (s_timerVal<=5))) {warble=true;beepWarn2();}
+                                   
+                                   
   if(g_model.tmrDir) s_timerVal = g_model.tmrVal-s_timerVal; //if counting backwards - display backwards
+  
+  if(s_timerState==TMR_RUNNING && ((s_timerVal%60)==0)) beepWarn1();
 
+  
   if(s_timerState==TMR_BEEPING){
     static int16_t last_tmr;
     if(last_tmr != s_timerVal){
