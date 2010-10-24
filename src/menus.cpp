@@ -1886,7 +1886,7 @@ void menuProcSetup(uint8_t event)
   if(s_pgOfs<subN) {
     lcd_puts_P( 6*FW, y,PSTR("Throttle Rev"));
     lcd_putsnAtt(1*FW, y, PSTR("OFF ON")+3*g_eeGeneral.throttleReversed,3,(sub==subN ? INVERS:0));
-    if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.throttleReversed, 0, 1);
+    if(sub==subN) CHECK_INCDEC_H_GENVAR_BF(event, g_eeGeneral.throttleReversed, 0, 1);
     if((y+=FH)>7*FH) return;
   }subN++;
 
@@ -1943,7 +1943,6 @@ void timer(uint8_t val)
   static uint16_t s_cnt;
   static uint16_t s_sum;
   static uint8_t sw_toggled;
-  static uint8_t tmr_beeped;
 
   if(abs(tm)>=(TMR_VAROFS+MAX_DRSWITCH-1)){ //toggeled switch//abs(g_model.tmrMode)<(10+MAX_DRSWITCH-1)
     static uint8_t lastSwPos;
@@ -1994,7 +1993,7 @@ void timer(uint8_t val)
   
   static int16_t last_tmr;
 
-  if(s_timerState==TMR_RUNNING && (last_tmr != s_timerVal) && // beep when 30, 15, 10, 5,4,3,2,1 seconds remaining
+  if(g_eeGeneral.preBeep && s_timerState==TMR_RUNNING && (last_tmr != s_timerVal) && // beep when 30, 15, 10, 5,4,3,2,1 seconds remaining
    ((s_timerVal==30) || (s_timerVal==15) || (s_timerVal==10) || (s_timerVal<=5))) 
   {
       warble=true;
@@ -2003,7 +2002,7 @@ void timer(uint8_t val)
                                 
   if(g_model.tmrDir) s_timerVal = g_model.tmrVal-s_timerVal; //if counting backwards - display backwards
   
-  if(s_timerState==TMR_RUNNING && ((s_timerVal%60)==0) && (last_tmr != s_timerVal)) //short beep every minute
+  if(g_eeGeneral.minuteBeep && s_timerState==TMR_RUNNING && ((s_timerVal%60)==0) && (last_tmr != s_timerVal)) //short beep every minute
       beepWarn1();
   
   if((s_timerState==TMR_BEEPING) )//&& (last_tmr != s_timerVal)) //timer finished beep
@@ -2537,8 +2536,9 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
       if(tsum!=inacSum){
         inacSum = tsum;
         inacCounter=0;
-      }                                                //   s  m 1min  - using 97 instead of 100 for accuracy
-      if(inacCounter>((uint32_t)g_eeGeneral.inactivityTimer*97*60)) beepErr();
+      }                                        
+      if(inacCounter>((uint32_t)g_eeGeneral.inactivityTimer*100*60))
+        if((inacCounter&0x3F)==10) beepWarn();
     }
   }
 
