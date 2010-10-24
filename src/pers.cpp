@@ -142,7 +142,7 @@ void eeReadAll()
      !eeLoadGeneral()
   )
   {
-    alert(PSTR("Bad EEprom Data"));
+    alert(PSTR("Bad EEprom Data"), true);
     EeFsFormat();
     //alert(PSTR("format ok"));
     generalDefault();
