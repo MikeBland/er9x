@@ -1943,6 +1943,7 @@ void timer(uint8_t val)
   static uint16_t s_cnt;
   static uint16_t s_sum;
   static uint8_t sw_toggled;
+  static uint8_t tmr_beeped;
 
   if(abs(tm)>=(TMR_VAROFS+MAX_DRSWITCH-1)){ //toggeled switch//abs(g_model.tmrMode)<(10+MAX_DRSWITCH-1)
     static uint8_t lastSwPos;
@@ -1990,25 +1991,25 @@ void timer(uint8_t val)
     case TMR_STOPPED:
       break;
   }
+  
+  static int16_t last_tmr;
 
-  if(s_timerState==TMR_RUNNING && ((s_timerVal==30)    || 
-                                   (s_timerVal==15)    ||
-                                   (s_timerVal==10)    ||
-                                   (s_timerVal<=5))) {warble=true;beepWarn2();}
-                                   
-                                   
+  if(s_timerState==TMR_RUNNING && (last_tmr != s_timerVal) && // beep when 30, 15, 10, 5,4,3,2,1 seconds remaining
+   ((s_timerVal==30) || (s_timerVal==15) || (s_timerVal==10) || (s_timerVal<=5))) 
+  {
+      warble=true;
+      beepWarn2();
+  }
+                                
   if(g_model.tmrDir) s_timerVal = g_model.tmrVal-s_timerVal; //if counting backwards - display backwards
   
-  if(s_timerState==TMR_RUNNING && ((s_timerVal%60)==0)) beepWarn1();
-
+  if(s_timerState==TMR_RUNNING && ((s_timerVal%60)==0) && (last_tmr != s_timerVal)) //short beep every minute
+      beepWarn1();
   
-  if(s_timerState==TMR_BEEPING){
-    static int16_t last_tmr;
-    if(last_tmr != s_timerVal){
-      last_tmr   = s_timerVal;
+  if((s_timerState==TMR_BEEPING) )//&& (last_tmr != s_timerVal)) //timer finished beep
       beepWarn();
-    }
-  }
+  
+  last_tmr = s_timerVal;
 }
 
 
