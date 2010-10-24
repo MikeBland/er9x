@@ -393,6 +393,10 @@ extern uint8_t s_editMode;     //global editmode
   checkIncDecModVar<min,max>(event,&var,(sizeof(var)==2 ? _FL_SIZE2 : 0)|_FL_VERT|EE_MODEL) \
 
 //for bitfields
+#define CHECK_INCDEC_H_GENVAR_BF( event, var, min, max)               \
+  ( var=checkIncDec_hg(event,var,min,max),                              \
+    checkIncDec_Ret                                                     \
+  )
 #define CHECK_INCDEC_H_MODELVAR_BF( event, var, min, max)               \
   ( var=checkIncDec_hm(event,var,min,max),                              \
     checkIncDec_Ret                                                     \
