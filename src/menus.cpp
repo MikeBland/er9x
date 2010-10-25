@@ -2008,17 +2008,18 @@ void timer(uint8_t val)
 
   static int16_t last_tmr;
 
-  if(g_eeGeneral.preBeep && s_timerState==TMR_RUNNING && (last_tmr != s_timerVal) && // beep when 30, 15, 10, 5,4,3,2,1 seconds remaining
-   ((s_timerVal==30) || (s_timerVal==15) || (s_timerVal==10) || (s_timerVal<=5)))
+  if(g_eeGeneral.preBeep && s_timerState==TMR_RUNNING && (last_tmr != s_timerVal)) // beep when 30, 15, 10, 5,4,3,2,1 seconds remaining
   {
-      warble=true;
-      beepWarn2();
+      if(s_timerVal==30) {beepAgain=2; beepWarn2();} //beep three times
+      if(s_timerVal==20) {beepAgain=1; beepWarn2();} //beep two times
+      if(s_timerVal==10)  beepWarn2();
+      if(s_timerVal<= 3)  beepWarn2();
   }
 
   if(g_model.tmrDir) s_timerVal = g_model.tmrVal-s_timerVal; //if counting backwards - display backwards
 
   if(g_eeGeneral.minuteBeep && s_timerState==TMR_RUNNING && ((s_timerVal%60)==0) && (last_tmr != s_timerVal)) //short beep every minute
-      beepWarn1();
+      beepWarn2();
 
   if((s_timerState==TMR_BEEPING) )//&& (last_tmr != s_timerVal)) //timer finished beep
       beepWarn();
