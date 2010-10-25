@@ -238,7 +238,7 @@ void alert(const prog_char * s, bool defaults)
   while(1)
   {
     if(IS_KEY_BREAK(getEvent()))   return;  //wait for key release
-    
+
     if(getSwitch(g_eeGeneral.lightSw,0) || defaults)
         BACKLIGHT_ON;
       else
@@ -529,7 +529,7 @@ void perMain()
   switch( g_tmr10ms & 0x1f ) { //alle 10ms*32
     case 1:
       //check light switch and timer
-      if( getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter) 
+      if( getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
         BACKLIGHT_ON;
       else
         BACKLIGHT_OFF;
@@ -559,9 +559,9 @@ void perMain()
         static prog_uint8_t APM beepTab[]= {
        // 0   1   2   3    4
           0,  0,  0,  0,   0, //quiet
-          0,  1, 10, 30, 100, //silent
-          1,  1, 10, 30, 100, //normal
-          1,  1, 10, 50, 150, //for motor
+          0,  1,  8, 30, 100, //silent
+          1,  1,  8, 30, 100, //normal
+          1,  1, 15, 50, 150, //for motor
          10, 10, 30, 50, 150, //for motor
         };
         memcpy_P(g_beepVal,beepTab+5*BEEP_VAL,5);
@@ -733,14 +733,42 @@ uint16_t getTmr16KHz()
   }
 }
 
+uint8_t beepAgain = 0;
+uint8_t beepAgainOrig = 0;
+uint8_t beepOn = false;
+
 ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 {
   cli();
   TIMSK &= ~(1<<OCIE0); //stop reentrance
   sei();
   OCR0 = OCR0 + 156;
-  if(g_beepCnt){
-    g_beepCnt--;
+
+
+  //cnt >/=0
+  //beepon/off
+  //beepagain y/n
+  if(g_beepCnt) {
+      if(!beepAgainOrig) {
+          beepAgainOrig = g_beepCnt;
+          beepOn = true;
+      }
+      g_beepCnt--;
+  }
+  else {
+      if(beepAgain) {
+          beepOn = !beepOn;
+          g_beepCnt = beepOn ? beepAgainOrig : 8;
+          if(beepOn) beepAgain--;
+      }
+      else {
+          beepAgainOrig = 0;
+          beepOn = false;
+          warble = false;
+      }
+  }
+
+  if(beepOn){
     static bool warbleC;
     warbleC = warble && !warbleC;
     if(warbleC)
@@ -749,8 +777,8 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
       PORTE |=  (1<<OUT_E_BUZZER);//buzzer on
   }else{
     PORTE &= ~(1<<OUT_E_BUZZER);
-    warble = false;
   }
+
   per10ms();
   heartbeat |= HEART_TIMER10ms;
   cli();
