@@ -1837,9 +1837,10 @@ void menuProcSetup1(uint8_t event)
 
 void menuProcSetup(uint8_t event)
 {
+#define COUNT_ITEMS 10
   static MState2 mstate2;
   TITLE("SETUP");
-  MSTATE_CHECK_V(1,menuTabDiag,1+8);
+  MSTATE_CHECK_V(1,menuTabDiag,1+COUNT_ITEMS);
   int8_t  sub    = mstate2.m_posVert;
 
   if(sub<1) s_pgOfs=0;
@@ -1847,7 +1848,7 @@ void menuProcSetup(uint8_t event)
   else if((sub-s_pgOfs)<1) s_pgOfs = sub-1;
   if(s_pgOfs<0) s_pgOfs = 0;
 
-  if(s_pgOfs==1) s_pgOfs= sub<4 ? 0 : 2;
+  if(s_pgOfs==COUNT_ITEMS-7) s_pgOfs= sub<(COUNT_ITEMS-4) ? COUNT_ITEMS-8 : COUNT_ITEMS-6;
 
   uint8_t y = 1*FH;
 
@@ -1887,6 +1888,20 @@ void menuProcSetup(uint8_t event)
     lcd_puts_P( 6*FW, y,PSTR("Throttle Rev"));
     lcd_putsnAtt(1*FW, y, PSTR("OFF ON")+3*g_eeGeneral.throttleReversed,3,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_GENVAR_BF(event, g_eeGeneral.throttleReversed, 0, 1);
+    if((y+=FH)>7*FH) return;
+  }subN++;
+
+  if(s_pgOfs<subN) {
+    lcd_puts_P( 6*FW, y,PSTR("Minute Beep"));
+    lcd_putsnAtt(1*FW, y, PSTR("OFF ON")+3*g_eeGeneral.minuteBeep,3,(sub==subN ? INVERS:0));
+    if(sub==subN) CHECK_INCDEC_H_GENVAR_BF(event, g_eeGeneral.minuteBeep, 0, 1);
+    if((y+=FH)>7*FH) return;
+  }subN++;
+
+  if(s_pgOfs<subN) {
+    lcd_puts_P( 6*FW, y,PSTR("Beep Countdown"));
+    lcd_putsnAtt(1*FW, y, PSTR("OFF ON")+3*g_eeGeneral.preBeep,3,(sub==subN ? INVERS:0));
+    if(sub==subN) CHECK_INCDEC_H_GENVAR_BF(event, g_eeGeneral.preBeep, 0, 1);
     if((y+=FH)>7*FH) return;
   }subN++;
 
@@ -1990,24 +2005,24 @@ void timer(uint8_t val)
     case TMR_STOPPED:
       break;
   }
-  
+
   static int16_t last_tmr;
 
   if(g_eeGeneral.preBeep && s_timerState==TMR_RUNNING && (last_tmr != s_timerVal) && // beep when 30, 15, 10, 5,4,3,2,1 seconds remaining
-   ((s_timerVal==30) || (s_timerVal==15) || (s_timerVal==10) || (s_timerVal<=5))) 
+   ((s_timerVal==30) || (s_timerVal==15) || (s_timerVal==10) || (s_timerVal<=5)))
   {
       warble=true;
       beepWarn2();
   }
-                                
+
   if(g_model.tmrDir) s_timerVal = g_model.tmrVal-s_timerVal; //if counting backwards - display backwards
-  
+
   if(g_eeGeneral.minuteBeep && s_timerState==TMR_RUNNING && ((s_timerVal%60)==0) && (last_tmr != s_timerVal)) //short beep every minute
       beepWarn1();
-  
+
   if((s_timerState==TMR_BEEPING) )//&& (last_tmr != s_timerVal)) //timer finished beep
       beepWarn();
-  
+
   last_tmr = s_timerVal;
 }
 
@@ -2536,7 +2551,7 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
       if(tsum!=inacSum){
         inacSum = tsum;
         inacCounter=0;
-      }                                        
+      }
       if(inacCounter>((uint32_t)g_eeGeneral.inactivityTimer*100*60))
         if((inacCounter&0x3F)==10) beepWarn();
     }
