@@ -549,7 +549,6 @@ extern const char stamp4[];
 
 
 extern uint8_t beepAgain;
-
 /// Erzeugt einen beep der laenge b
 inline void _beep(uint8_t b) {
   g_beepCnt=b;

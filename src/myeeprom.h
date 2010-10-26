@@ -62,7 +62,8 @@ typedef struct t_EEGeneral {
   uint8_t   throttleReversed:1;
   uint8_t   minuteBeep:1;
   uint8_t   preBeep:1;
-  uint8_t   res1:5;
+  uint8_t   flashBeep:1;
+  uint8_t   res1:4;
   uint8_t   filterInput;
   uint8_t   lightAutoOff;
   uint8_t   templateSetup;  //RETA order according to chout_ar array 
