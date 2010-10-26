@@ -16,6 +16,8 @@
 #ifndef eeprom_h
 #define eeprom_h
 
+#include <inttypes.h>
+
 
 //eeprom data
 //#define EE_VERSION 2

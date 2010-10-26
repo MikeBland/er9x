@@ -16,6 +16,8 @@
 #ifndef file_h
 #define file_h
 
+#include <inttypes.h>
+
 
 /// fileId of general file
 #define FILE_GENERAL   0
