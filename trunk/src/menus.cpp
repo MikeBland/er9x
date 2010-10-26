@@ -2565,7 +2565,7 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
     if(g_eeGeneral.inactivityTimer) {
       inacCounter++;
       uint16_t tsum = 0;
-      for(uint8_t i=0;i<4;i++) tsum += anas[i]/4;//div 4 -> reduce sensitivity
+      for(uint8_t i=0;i<4;i++) tsum += anas[i]/128;//div 8 -> reduce sensitivity
       if(tsum!=inacSum){
         inacSum = tsum;
         inacCounter=0;
