@@ -380,78 +380,6 @@ int8_t checkIncDec_vg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max)
   return i_val;
 }
 
-#if 0
-//uint8_t checkSubGen(uint8_t event,uint8_t num, uint8_t sub, bool vert)
-uint8_t checkSubGen(uint8_t event,uint8_t num, uint8_t sub, uint8_t mode)
-{
-  uint8_t subOld=sub;
-
-  if(mode==SUB_MODE_H_DBL){
-    if(event==EVT_KEY_FIRST(KEY_RIGHT) && getEventDbl(KEY_RIGHT)==2)
-    {
-      beepKey();
-      if(sub < (num-1)) {
-        (sub)++;
-      }else{
-        (sub)=0;
-      }
-    }
-    else if(event==EVT_KEY_FIRST(KEY_LEFT) && getEventDbl(KEY_LEFT)==2)
-    {
-      beepKey();
-      if(sub > 0) {
-        (sub)--;
-      }else{
-        (sub)=(num-1);
-      }
-    }
-  }else{
-
-    uint8_t inc = (mode==SUB_MODE_V) ?  KEY_DOWN : KEY_RIGHT;
-    uint8_t dec = (mode==SUB_MODE_V) ?  KEY_UP   : KEY_LEFT;
-
-    if(event==EVT_KEY_REPT(inc) || event==EVT_KEY_FIRST(inc))
-    {
-      beepKey();
-      if(sub < (num-1)) {
-        (sub)++;
-      }else{
-        if(event==EVT_KEY_REPT(inc))
-        {
-          beepWarn();
-          killEvents(event);
-        }else{
-          (sub)=0;
-        }
-      }
-    }
-    else if(event==EVT_KEY_REPT(dec) || event==EVT_KEY_FIRST(dec))
-    {
-      beepKey();
-      if(sub > 0) {
-        (sub)--;
-      }else{
-        if(event==EVT_KEY_REPT(dec))
-        {
-          beepWarn();
-          killEvents(event);
-        }else{
-          (sub)=(num-1);
-        }
-      }
-    }
-    else if(event==EVT_ENTRY)
-    {
-      sub = 0;
-    }
-  }
-  if(subOld!=sub) BLINK_SYNC;
-  return sub;
-}
-#endif
-
-
-
 MenuFuncP lastPopMenu()
 {
   return  g_menuStack[g_menuStackPtr+1];
@@ -501,14 +429,21 @@ void perMain()
   lastTMR = g_tmr10ms;
 
   perOut(g_chans512, false);
+  if(!tick10ms) return; //make sure the rest happen only every 10ms.
+
   eeCheck();
 
   lcd_clear();
   uint8_t evt=getEvent();
   evt = checkTrim(evt);
 
-  if(tick10ms && g_LightOffCounter) g_LightOffCounter--;
+  if(g_LightOffCounter) g_LightOffCounter--;
   if(IS_KEY_BREAK(evt)) g_LightOffCounter = g_eeGeneral.lightAutoOff*500; // on keypress turn the light on 5*100
+
+  if( getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
+      BACKLIGHT_ON;
+  else
+      BACKLIGHT_OFF;
 
   static int16_t p1valprev;
   p1valdiff = (p1val-calibratedStick[6])/32;
@@ -526,14 +461,15 @@ void perMain()
     PORTG |=  (1<<OUT_G_SIM_CTL); // 1=ppm-in
     evalCaptures();
   }
+
   switch( g_tmr10ms & 0x1f ) { //alle 10ms*32
-    case 1:
+//    case 1:
       //check light switch and timer
-      if( getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
-        BACKLIGHT_ON;
-      else
-        BACKLIGHT_OFF;
-      break;
+//      if( getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
+//        BACKLIGHT_ON;
+//      else
+//        BACKLIGHT_OFF;
+//      break;
 
     case 2:
       {
@@ -757,7 +693,7 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
       g_beepCnt--;
   }
   else {
-      if(beepAgain) {
+      if(beepAgain && beepAgainOrig) {
           beepOn = !beepOn;
           g_beepCnt = beepOn ? beepAgainOrig : 8;
           if(beepOn) beepAgain--;
