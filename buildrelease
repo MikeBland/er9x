@@ -1,3 +1,5 @@
+#! /bin/bash
+
 svn update
 cd src
 make clean
