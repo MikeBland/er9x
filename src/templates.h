@@ -40,6 +40,8 @@
 #ifndef TEMPLATES_H
 #define TEMPLATES_H
 
+#include <inttypes.h>
+
 
 #define STK_RUD  1
 #define STK_ELE  2
