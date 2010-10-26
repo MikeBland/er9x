@@ -546,9 +546,11 @@ extern const char stamp3[];
 extern const char stamp4[];
 #include "myeeprom.h"
 
+#define FLASH_DURATION 50
 
+extern uint8_t  beepAgain;
+extern uint16_t g_LightOffCounter;
 
-extern uint8_t beepAgain;
 /// Erzeugt einen beep der laenge b
 inline void _beep(uint8_t b) {
   g_beepCnt=b;
