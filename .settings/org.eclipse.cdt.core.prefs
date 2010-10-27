@@ -1,0 +1,4 @@
+#Wed Oct 27 01:08:25 EEST 2010
+eclipse.preferences.version=1
+environment/project/de.innot.avreclipse.configuration.app.release.1888669510=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\r\n<environment append\="true" appendContributed\="true">\r\n<variable delimiter\=";" name\="BUILDARTIFACT" operation\="replace" value\="er9x-frsky.elf"/>\r\n</environment>\r\n
+environment/project/de.innot.avreclipse.configuration.app.release.1888669510.1836908785=<?xml version\="1.0" encoding\="UTF-8" standalone\="no"?>\r\n<environment append\="true" appendContributed\="true">\r\n<variable delimiter\=";" name\="BUILDARTIFACT" operation\="replace" value\="er9x-jeti.elf"/>\r\n</environment>\r\n
