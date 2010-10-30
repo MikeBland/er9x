@@ -323,7 +323,7 @@ void perOut(int16_t *chanOut, uint8_t zeroInput);
 ///     1.. MAX_DRSWITCH : SW_ON .. SW_Trainer
 ///    -1..-MAX_DRSWITCH : negierte Werte
 ///   \param nc Wert, der bei swtch==0 geliefert wird.
-bool    getSwitch(int8_t swtch, bool nc);
+bool    getSwitch(int8_t swtch, bool nc, uint8_t level=0);
 /// Zeigt den Namen des Switches 'swtch' im display an
 ///   \param x     x-koordinate 0..127
 ///   \param y     y-koordinate 0..63 (nur durch 8 teilbar)
