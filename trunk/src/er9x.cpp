@@ -101,8 +101,10 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
   lcd_putcAtt(x+3*FW,  y,'m',attr);
 }
 
-bool getSwitch(int8_t swtch, bool nc)
+bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 {
+  if(level>5) return false; //prevent recursive loop going too deep
+
   switch(swtch){
     case  0:            return  nc;
     case  MAX_DRSWITCH: return  true;
@@ -121,40 +123,42 @@ bool getSwitch(int8_t swtch, bool nc)
   //MAX,FULL - disregard
   //ppm
   CSwData &cs = g_model.customSw[abs(swtch)-(MAX_DRSWITCH-NUM_CSW)];
-     if(cs.func<CS_AND)
-     {
-         int16_t  v = 0;
-         uint8_t  i = cs.input-1;
-         if(i<MIX_MAX) v = calibratedStick[i];//-512..512
-         else if(i<=MIX_FULL) v = 1024; //FULL/MAX
-         else if(i<MIX_FULL+NUM_PPM) v = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL];
-         else v = ex_chans[i-MIX_FULL-NUM_PPM];
+  if(!cs.func) return false;
+  if(cs.func<CS_AND)
+  {
+      int16_t  v = 0;
+      uint8_t  i = cs.input-1;
+      if(i<MIX_MAX) v = calibratedStick[i];//-512..512
+      else if(i<=MIX_FULL) v = 1024; //FULL/MAX
+      else if(i<MIX_FULL+NUM_PPM) v = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL];
+      else v = ex_chans[i-MIX_FULL-NUM_PPM];
 
-         int16_t ofs = calc100toRESX(cs.offset); //coffset 100 -> 1024
-         switch (cs.func) {
-          case (CS_VPOS):   return swtch>0 ? (v>ofs) : !(v>ofs);
-          case (CS_VNEG):   return swtch>0 ? (v<ofs) : !(v<ofs);
-          case (CS_APOS):   return swtch>0 ? (abs(v)>ofs) : !(abs(v)>ofs);
-          case (CS_ANEG):   return swtch>0 ? (abs(v)<ofs) : !(abs(v)<ofs);
-          default:          return false;
-          }
-     }
-     else //cs.func>=CS_AND
-     {
-         int8_t a = cs.input;
-         int8_t b = cs.offset;
-         switch (cs.func) {
-         case (CS_OR):
-             return (getSwitch(a,0) || getSwitch(b,0));
-             break;
-         case (CS_XOR):
-             return (getSwitch(a,0) ^ getSwitch(b,0));
-             break;
-         default: //AND
-             return (getSwitch(a,0) && getSwitch(b,0));
-             break;
-         }
-     }
+      int16_t ofs = calc100toRESX(cs.offset); //coffset 100 -> 1024
+      switch (cs.func) {
+      case (CS_VPOS):   return swtch>0 ? (v>ofs) : !(v>ofs);
+       case (CS_VNEG):   return swtch>0 ? (v<ofs) : !(v<ofs);
+       case (CS_APOS):   return swtch>0 ? (abs(v)>ofs) : !(abs(v)>ofs);
+       case (CS_ANEG):   return swtch>0 ? (abs(v)<ofs) : !(abs(v)<ofs);
+       default:          return false;
+       }
+  }
+  else //cs.func>=CS_AND
+  {
+      int8_t a = cs.input;
+      int8_t b = cs.offset;
+      //make sure a and b are not SW1..SW6
+      switch (cs.func) {
+      case (CS_OR):
+          return (getSwitch(a,0,level+1) || getSwitch(b,0,level+1));
+          break;
+      case (CS_XOR):
+          return (getSwitch(a,0,level+1) ^ getSwitch(b,0,level+1));
+          break;
+      default: //AND
+          return (getSwitch(a,0,level+1) && getSwitch(b,0,level+1));
+          break;
+      }
+  }
 }
 
 void checkMem()
@@ -239,22 +243,12 @@ void alert(const prog_char * s, bool defaults)
   {
     if(IS_KEY_BREAK(getEvent()))   return;  //wait for key release
 
-    if(getSwitch(g_eeGeneral.lightSw,0) || defaults)
+    if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff || defaults)
         BACKLIGHT_ON;
       else
         BACKLIGHT_OFF;;
   }
 }
-
-
-#define RPT_TRIM(x) ( x==EVT_KEY_REPT(TRM_LH_DWN) || \
-                      x==EVT_KEY_REPT(TRM_LH_UP)  || \
-                      x==EVT_KEY_REPT(TRM_LV_DWN) || \
-                      x==EVT_KEY_REPT(TRM_LV_UP)  || \
-                      x==EVT_KEY_REPT(TRM_RV_DWN) || \
-                      x==EVT_KEY_REPT(TRM_RV_UP)  || \
-                      x==EVT_KEY_REPT(TRM_RH_DWN) || \
-                      x==EVT_KEY_REPT(TRM_RH_UP) )
 
 uint8_t checkTrim(uint8_t event)
 {
@@ -262,7 +256,7 @@ uint8_t checkTrim(uint8_t event)
   int8_t  s = g_model.trimInc;
   if (s>1) s = 1 << (s-1);  // 1=>1  2=>2  3=>4  4=>8
 
-  if((k>=0) && (k<8) && (event & _MSK_KEY_REPT))
+  if((k>=0) && (k<8))// && (event & _MSK_KEY_REPT))
   {
     //LH_DWN LH_UP LV_DWN LV_UP RV_DWN RV_UP RH_DWN RH_UP
     uint8_t idx = k/2;
@@ -280,7 +274,7 @@ uint8_t checkTrim(uint8_t event)
     else if(x>-125 && x<125){
       g_model.trim[idx] = (int8_t)x;
       STORE_MODELVARS;
-      if(RPT_TRIM(event)) warble = true;
+      if(event & _MSK_KEY_REPT) warble = true;
       beepWarn1();//beepKey();
     }
     else
@@ -438,7 +432,7 @@ void perMain()
   evt = checkTrim(evt);
 
   if(g_LightOffCounter) g_LightOffCounter--;
-  if(IS_KEY_BREAK(evt)) g_LightOffCounter = g_eeGeneral.lightAutoOff*500; // on keypress turn the light on 5*100
+  if(evt) g_LightOffCounter = g_eeGeneral.lightAutoOff*500; // on keypress turn the light on 5*100
 
   if( getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
       BACKLIGHT_ON;
@@ -831,6 +825,7 @@ int main(void)
   //g_menuStack[g_menuStackPtr+1] =
 
   lcdSetRefVolt(g_eeGeneral.contrast);
+  g_LightOffCounter = g_eeGeneral.lightAutoOff*500; //turn on light for x seconds - no need to press key Issue 152
   TIMSK |= (1<<OCIE1A); // Pulse generator enable immediately before mainloop
   while(1){
     //uint16_t old10ms=g_tmr10ms;
