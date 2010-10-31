@@ -1043,20 +1043,20 @@ void editExpoVals(uint8_t event,uint8_t stopBlink,uint8_t editMode, uint8_t edit
 
   if(which==DR_DRSW1) {
     putsDrSwitches(x,y,g_model.expoData[chn].drSw1,invBlk);
-    if(edit && editMode) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].drSw1,-MAX_DRSWITCH,MAX_DRSWITCH);
+    if(edit && (editMode || p1valdiff)) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].drSw1,-MAX_DRSWITCH,MAX_DRSWITCH);
   }
   else if(which==DR_DRSW2) {
     putsDrSwitches(x,y,g_model.expoData[chn].drSw2,invBlk);
-    if(edit && editMode) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].drSw2,-MAX_DRSWITCH,MAX_DRSWITCH);
+    if(edit && (editMode || p1valdiff)) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].drSw2,-MAX_DRSWITCH,MAX_DRSWITCH);
   }
   else
     if(exWt==DR_EXPO){
       lcd_outdezAtt(x, y, g_model.expoData[chn].expo[which][exWt][stkRL], invBlk);
-      if(edit && editMode) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expo[which][exWt][stkRL],-100, 100);
+      if(edit && (editMode || p1valdiff)) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expo[which][exWt][stkRL],-100, 100);
     }
     else {
       lcd_outdezAtt(x, y, g_model.expoData[chn].expo[which][exWt][stkRL]+100, invBlk);
-      if(edit && editMode) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expo[which][exWt][stkRL],-100, 0);
+      if(edit && (editMode || p1valdiff)) CHECK_INCDEC_H_MODELVAR(event,g_model.expoData[chn].expo[which][exWt][stkRL],-100, 0);
     }
 }
 
@@ -1117,9 +1117,9 @@ void menuProcExpoOne(uint8_t event)
   int8_t   wViewL  = g_model.expoData[s_expoChan].expo[expoDrOn][DR_WEIGHT][DR_LEFT]+100;  //NormWeightL+100;
 
 
-#define WCHART 32
-#define X0     (128-WCHART-2)
-#define Y0     32
+#define WCHART 32l
+#define X0     (128l-WCHART-2)
+#define Y0     32l
 
   if (IS_THROTTLE(s_expoChan) && g_model.thrExpo)
        for(uint8_t xv=0;xv<WCHART*2;xv++)
@@ -1152,10 +1152,10 @@ void menuProcExpoOne(uint8_t event)
       }
     }
 
-  int16_t x512  = calibratedStick[s_expoChan];
+  int32_t x512  = calibratedStick[s_expoChan];
   lcd_vline(X0+x512/(RESXu/WCHART), Y0-WCHART,WCHART*2);
 
-  int16_t y512 = 0;
+  int32_t y512 = 0;
   if (IS_THROTTLE(s_expoChan) && g_model.thrExpo) {
     y512  = 2*expo((x512+RESX)/2,kViewR);
     y512 = y512 * (wViewR / 4)/(100 / 4);
