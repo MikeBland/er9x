@@ -230,14 +230,15 @@ uint8_t  g_menuStackPtr = 0;
 uint8_t  g_beepCnt;
 uint8_t  g_beepVal[5];
 
-void alert(const prog_char * s, bool defaults)
+void alert(const prog_char * s, bool defaults, bool waitforkey)
 {
   lcd_clear();
   lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
   lcd_puts_P(0,4*FW,s);
-  lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
+  if(waitforkey) lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
   refreshDiplay();
   lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
+  if(!waitforkey) return;
   beepErr();
   while(1)
   {

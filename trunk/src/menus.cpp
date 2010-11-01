@@ -43,6 +43,9 @@
 #define WCHART 32
 #define X0     (128-WCHART-2)
 #define Y0     32
+#define WCHARTl 32l
+#define X0l     (128l-WCHARTl-2)
+#define Y0l     32l
 #define RESX    1024
 #define RESXu   1024u
 #define RESXul  1024ul
@@ -1116,56 +1119,51 @@ void menuProcExpoOne(uint8_t event)
   int8_t   wViewR  = g_model.expoData[s_expoChan].expo[expoDrOn][DR_WEIGHT][DR_RIGHT]+100;  //NormWeightR+100;
   int8_t   wViewL  = g_model.expoData[s_expoChan].expo[expoDrOn][DR_WEIGHT][DR_LEFT]+100;  //NormWeightL+100;
 
-
-#define WCHART 32l
-#define X0     (128l-WCHART-2)
-#define Y0     32l
-
   if (IS_THROTTLE(s_expoChan) && g_model.thrExpo)
-       for(uint8_t xv=0;xv<WCHART*2;xv++)
+       for(uint8_t xv=0;xv<WCHARTl*2;xv++)
     {
-      uint16_t yv=2*expo(xv*(RESXu/WCHART)/2,kViewR) / (RESXu/WCHART);
+      uint16_t yv=2*expo(xv*(RESXu/WCHARTl)/2,kViewR) / (RESXu/WCHARTl);
       yv = (yv * wViewR)/100;
-      lcd_plot(X0+xv-WCHART, 2*Y0-yv);
+      lcd_plot(X0l+xv-WCHARTl, 2*Y0l-yv);
       if((xv&3) == 0){
-        lcd_plot(X0+xv-WCHART, 2*Y0-1);
-        lcd_plot(X0-WCHART   , Y0+xv/2);
+        lcd_plot(X0l+xv-WCHARTl, 2*Y0l-1);
+        lcd_plot(X0l-WCHARTl   , Y0l+xv/2);
       }
     }
   else
-    for(uint8_t xv=0;xv<WCHART;xv++)
+    for(uint8_t xv=0;xv<WCHARTl;xv++)
     {
-      uint16_t yv=expo(xv*(RESXu/WCHART),kViewR) / (RESXu/WCHART);
+      uint16_t yv=expo(xv*(RESXu/WCHARTl),kViewR) / (RESXu/WCHARTl);
       yv = (yv * wViewR)/100;
-      lcd_plot(X0+xv, Y0-yv);
+      lcd_plot(X0l+xv, Y0l-yv);
       if((xv&3) == 0){
-        lcd_plot(X0+xv, Y0+0);
-        lcd_plot(X0  , Y0+xv);
+        lcd_plot(X0l+xv, Y0l+0);
+        lcd_plot(X0l  , Y0l+xv);
       }
 
-      yv=expo(xv*(RESXu/WCHART),kViewL) / (RESXu/WCHART);
+      yv=expo(xv*(RESXu/WCHARTl),kViewL) / (RESXu/WCHARTl);
       yv = (yv * wViewL)/100;
-      lcd_plot(X0-xv, Y0+yv);
+      lcd_plot(X0l-xv, Y0l+yv);
       if((xv&3) == 0){
-        lcd_plot(X0-xv, Y0+0);
-        lcd_plot(X0  , Y0-xv);
+        lcd_plot(X0l-xv, Y0l+0);
+        lcd_plot(X0l  , Y0l-xv);
       }
     }
 
   int32_t x512  = calibratedStick[s_expoChan];
-  lcd_vline(X0+x512/(RESXu/WCHART), Y0-WCHART,WCHART*2);
+  lcd_vline(X0l+x512/(RESXu/WCHARTl), Y0l-WCHARTl,WCHARTl*2);
 
   int32_t y512 = 0;
   if (IS_THROTTLE(s_expoChan) && g_model.thrExpo) {
     y512  = 2*expo((x512+RESX)/2,kViewR);
     y512 = y512 * (wViewR / 4)/(100 / 4);
-    lcd_hline(X0-WCHART, 2*Y0-y512/(RESXu/WCHART),WCHART*2);
+    lcd_hline(X0l-WCHARTl, 2*Y0l-y512/(RESXu/WCHARTl),WCHARTl*2);
     y512 /= 2;
   }
   else {
     y512  = expo(x512,(x512>0 ? kViewR : kViewL));
     y512 = y512 * ((x512>0 ? wViewR : wViewL) / 4)/(100 / 4);
-    lcd_hline(X0-WCHART, Y0-y512/(RESXu/WCHART),WCHART*2);
+    lcd_hline(X0l-WCHARTl, Y0l-y512/(RESXu/WCHARTl),WCHARTl*2);
   }
 
   lcd_outdezAtt( 19*FW, 6*FH,x512*25/((signed) RESXu/4), 0 );
@@ -2909,8 +2907,8 @@ void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
  if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
  for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
  uint16_t v = g_chans512[i] + 1200*2; // we allow the signal to have 2048 steps
- if(v>1720*2) v = 1720*2; //limit to between 680 - 1720. Should be enough room
- if(v<680*2) v = 680*2; // Issue 110
+ v = min(v,(uint16_t)(1200+512)*2);//limit to between 688 - 1712. Should be enough room
+ v = max(v,(uint16_t)(1200-512)*2);// Issue 110
  //pulses are limited to -640 .. 640 -> 560 .. 1840 by the limits in perOut()
  rest-=(v+q);
  pulses2MHz[j++]=q;

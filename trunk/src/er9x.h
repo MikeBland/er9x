@@ -303,7 +303,7 @@ MenuFuncP lastPopMenu();
 void    popMenu(bool uppermost=false);
 /// Gibt Alarm Maske auf lcd aus.
 /// Die Maske wird so lange angezeigt bis eine beliebige Taste gedrueckt wird.
-void    alert(const prog_char * s, bool defaults=false);
+void    alert(const prog_char * s, bool defaults=false, bool waitforkey=true);
 uint8_t question(const prog_char * s);
 /// periodisches Hauptprogramm
 void    perMain();
