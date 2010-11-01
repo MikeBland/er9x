@@ -15,6 +15,7 @@
  */
 
 #include "er9x.h"
+#include "s9xsplash.lbm"
 
 /*
 mode1 rud ele thr ail
@@ -161,6 +162,26 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
   }
 }
 
+void doSplash()
+{
+    g_eeGeneral.splashScreen = 1;
+    if(g_eeGeneral.splashScreen)
+    {
+        lcd_clear();
+        lcd_img(0, 0, s9xsplash,0,0);
+        refreshDiplay();
+        lcdSetRefVolt(g_eeGeneral.contrast);
+
+        if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff)
+            BACKLIGHT_ON;
+          else
+            BACKLIGHT_OFF;
+
+        uint16_t tgtime = g_tmr10ms + 500;  //500msec splash screen
+        while(tgtime!=g_tmr10ms);
+    }
+}
+
 void checkMem()
 {
   if(! WARN_MEM) return;
@@ -247,7 +268,7 @@ void alert(const prog_char * s, bool defaults, bool waitforkey)
     if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff || defaults)
         BACKLIGHT_ON;
       else
-        BACKLIGHT_OFF;;
+        BACKLIGHT_OFF;
   }
 }
 
@@ -811,6 +832,7 @@ int main(void)
 
   lcdSetRefVolt(25);
   eeReadAll();
+  doSplash();
   checkMem();
   //setupAdc(); //before checkTHR
   getADC_single();

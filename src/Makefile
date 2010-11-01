@@ -327,7 +327,7 @@ COPY = cp
 WINSHELL = cmd
 
 # th9x/er9x-specific
-XBM2LBM = ruby util/xbm2lbm.rb
+XBM2LBM = ruby ../util/xbm2lbm.rb
 AREV = $(shell sh -c "cat .svn/entries | sed -n '4p'")
 REV = $(shell echo $$(( $(AREV) + 1 )))
 
@@ -381,7 +381,7 @@ VER = $(shell echo $$(( $(AVER) + 1 )))
 all: begin gccversion sizebefore build sizeafter end
 
 # Change the build target to build a HEX file or a library.
-build: stamp font.lbm sticks.lbm elf hex eep lss sym
+build: stamp font.lbm sticks.lbm s9xsplash.lbm elf hex eep lss sym
 #build: lib
 
 
@@ -413,6 +413,11 @@ font.lbm: font_6x1.xbm
 	$(XBM2LBM) $<
 
 sticks.lbm: sticks_4x1.xbm
+	@echo
+	@echo "Convert font from xbm to lbm:"
+	$(XBM2LBM) $<
+
+s9xsplash.lbm: s9xsplash.xbm
 	@echo
 	@echo "Convert font from xbm to lbm:"
 	$(XBM2LBM) $<
