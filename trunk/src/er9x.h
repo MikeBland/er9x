@@ -463,7 +463,7 @@ void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2);
 
 extern inline int16_t calc100toRESX(int8_t x)
 {
-  return (int16_t)x*10 + x/4;
+  return (int16_t)x*10 + x/4 - x/64;
 }
 
 

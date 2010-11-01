@@ -123,12 +123,19 @@ bool eeDuplicateModel(uint8_t id)
   if(i==MAX_MODELS) return false; //no free space in directory left
 
   theFile.openRd(FILE_MODEL(id));
-  theFile2.create(FILE_MODEL(i),FILE_TYP_MODEL,200);
+  theFile2.create(FILE_MODEL(i),FILE_TYP_MODEL,600);
   uint8_t buf[15];
   uint8_t l;
   while((l=theFile.read(buf,15)))
   {
     theFile2.write(buf,l);
+//    if(theFile.errno()==ERR_TMO)
+//    {
+//        //wait for 10ms and try again
+//        uint16_t tgtime = g_tmr10ms + 100;
+//        while (g_tmr10ms!=tgtime);
+//        theFile2.write(buf,l);
+//    }
     wdt_reset();
   }
   theFile2.closeTrunc();
