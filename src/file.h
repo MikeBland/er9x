@@ -58,7 +58,7 @@ public:
   /// !!! if this file already exists, then all blocks are reused
   /// and all contents will be overwritten.
   /// after writing closeTrunc has to be called
-  void    create(uint8_t i_fileId, uint8_t typ, uint8_t maxTme10ms);
+  void    create(uint8_t i_fileId, uint8_t typ, uint16_t maxTme10ms);
   /// close file and truncate the blockchain if to long.
   void    closeTrunc();
 

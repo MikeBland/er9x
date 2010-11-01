@@ -295,7 +295,7 @@ uint8_t EFile::write(uint8_t*buf,uint8_t i_len){
   m_pos += i_len - len;
   return   i_len - len;
 }
-void EFile::create(uint8_t i_fileId, uint8_t typ, uint8_t maxTme10ms){
+void EFile::create(uint8_t i_fileId, uint8_t typ, uint16_t maxTme10ms){
   openRd(i_fileId); //internal use
   eeFs.files[i_fileId].typ      = typ;
   eeFs.files[i_fileId].size     = 0;

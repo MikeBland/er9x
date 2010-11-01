@@ -381,9 +381,13 @@ void setStickCenter() // copy state of 3 primary to subtrim
       perOut(zero_chans512,true); // do output loop - zero input channels
 
       for(uint8_t i=0; i<NUM_CHNOUT; i++)
-        g_model.limitData[i].offset += g_model.limitData[i].revert ?
-                                       (zero_chans512[i] - g_chans512[i]) :
-                                      -(zero_chans512[i] - g_chans512[i]);
+      {
+          int16_t v = g_model.limitData[i].offset;
+          v += g_model.limitData[i].revert ?
+               (zero_chans512[i] - g_chans512[i]) :
+               -(zero_chans512[i] - g_chans512[i]);
+          g_model.limitData[i].offset = max(min(v,1000),-1000); // make sure the offset doesn't go haywire
+      }
 
       for(uint8_t i=0; i<4; i++)
         if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
@@ -2013,33 +2017,35 @@ void timer(uint8_t val)
 
   static int16_t last_tmr;
 
-  if(g_eeGeneral.preBeep && s_timerState==TMR_RUNNING && (last_tmr != s_timerVal)) // beep when 30, 15, 10, 5,4,3,2,1 seconds remaining
+  if(last_tmr != s_timerVal)  //beep only if seconds advance
   {
-      if(s_timerVal==30) {beepAgain=2; beepWarn2();} //beep three times
-      if(s_timerVal==20) {beepAgain=1; beepWarn2();} //beep two times
-      if(s_timerVal==10)  beepWarn2();
-      if(s_timerVal<= 3)  beepWarn2();
+      if(s_timerState==TMR_RUNNING)
+      {
+          if(g_eeGeneral.preBeep) // beep when 30, 15, 10, 5,4,3,2,1 seconds remaining
+          {
+              if(s_timerVal==30) {beepAgain=2; beepWarn2();} //beep three times
+              if(s_timerVal==20) {beepAgain=1; beepWarn2();} //beep two times
+              if(s_timerVal==10)  beepWarn2();
+              if(s_timerVal<= 3)  beepWarn2();
 
-      if(g_eeGeneral.flashBeep && (s_timerVal==30 || s_timerVal==20 || s_timerVal==10 || s_timerVal<=3))
-          g_LightOffCounter = FLASH_DURATION;
+              if(g_eeGeneral.flashBeep && (s_timerVal==30 || s_timerVal==20 || s_timerVal==10 || s_timerVal<=3))
+                  g_LightOffCounter = FLASH_DURATION;
+          }
+
+          if(g_eeGeneral.minuteBeep && (((g_model.tmrDir ? g_model.tmrVal-s_timerVal : s_timerVal)%60)==0)) //short beep every minute
+          {
+              beepWarn2();
+              if(g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
+          }
+      }
+      else if(s_timerState==TMR_BEEPING)
+      {
+          beepWarn();
+          if(g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
+      }
   }
-
-  if(g_model.tmrDir) s_timerVal = g_model.tmrVal-s_timerVal; //if counting backwards - display backwards
-
-  if(g_eeGeneral.minuteBeep && s_timerState==TMR_RUNNING && ((s_timerVal%60)==0) && (last_tmr != s_timerVal)) //short beep every minute
-  {
-      beepWarn2();
-      if(g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
-    }
-
-  if((s_timerState==TMR_BEEPING) )//&& (last_tmr != s_timerVal)) //timer finished beep
-  {
-      beepWarn();
-      if(g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
-  }
-
-
   last_tmr = s_timerVal;
+  if(g_model.tmrDir) s_timerVal = g_model.tmrVal-s_timerVal; //if counting backwards - display backwards
 }
 
 
@@ -2189,7 +2195,7 @@ void menuProcJeti(uint8_t event)
 
   switch(event)
   {
-    //case EVT_KEY_FIRST(KEY_MENU):
+    //case EVT_KEY_FIRST(KEY_MENU):0.0v
     //  break;
     case EVT_KEY_FIRST(KEY_EXIT):
       FRSKY_DisableRXD();
@@ -2907,8 +2913,7 @@ void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
  if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
  for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
  uint16_t v = g_chans512[i] + 1200*2; // we allow the signal to have 2048 steps
- v = min(v,(uint16_t)(1200+512)*2);//limit to between 688 - 1712. Should be enough room
- v = max(v,(uint16_t)(1200-512)*2);// Issue 110
+ v = max(min(v,(uint16_t)(1200+512)*2),(uint16_t)(1200-512)*2);//limit to between 688 - 1712.  => -100%..100%  Issue 110
  //pulses are limited to -640 .. 640 -> 560 .. 1840 by the limits in perOut()
  rest-=(v+q);
  pulses2MHz[j++]=q;
