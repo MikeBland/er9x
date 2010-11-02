@@ -164,7 +164,6 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 
 void doSplash()
 {
-    g_eeGeneral.splashScreen = 1;
     if(g_eeGeneral.splashScreen)
     {
         lcd_clear();
@@ -172,13 +171,16 @@ void doSplash()
         refreshDiplay();
         lcdSetRefVolt(g_eeGeneral.contrast);
 
-        if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff)
-            BACKLIGHT_ON;
-          else
-            BACKLIGHT_OFF;
-
         uint16_t tgtime = g_tmr10ms + 500;  //500msec splash screen
-        while(tgtime!=g_tmr10ms);
+        while(tgtime != g_tmr10ms)
+        {
+            if(IS_KEY_BREAK(getEvent()))   return;  //wait for key release
+
+            if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff)
+                BACKLIGHT_ON;
+            else
+                BACKLIGHT_OFF;
+        }
     }
 }
 

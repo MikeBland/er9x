@@ -1839,7 +1839,7 @@ void menuProcSetup1(uint8_t event)
 
 void menuProcSetup(uint8_t event)
 {
-#define COUNT_ITEMS 11
+#define COUNT_ITEMS 12
   static MState2 mstate2;
   TITLE("SETUP");
   MSTATE_CHECK_V(1,menuTabDiag,1+COUNT_ITEMS);
@@ -1932,6 +1932,13 @@ void menuProcSetup(uint8_t event)
         lcd_putsnAtt(1*FW, y, PSTR("OFF"),3,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightAutoOff, 0, 600/5);
     if((y+=FH)>7*FH) return;
+  }subN++;
+
+  if(s_pgOfs<subN) {
+      lcd_puts_P( 6*FW, y,PSTR("Splash Screen"));
+      lcd_putsnAtt(1*FW, y, PSTR("OFF ON")+3*g_eeGeneral.splashScreen,3,(sub==subN ? INVERS:0));
+      if(sub==subN) CHECK_INCDEC_H_GENVAR_BF(event, g_eeGeneral.splashScreen, 0, 1);
+      if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
