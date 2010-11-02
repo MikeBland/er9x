@@ -1936,8 +1936,13 @@ void menuProcSetup(uint8_t event)
 
   if(s_pgOfs<subN) {
       lcd_puts_P( 6*FW, y,PSTR("Splash Screen"));
-      lcd_putsnAtt(1*FW, y, PSTR("OFF ON")+3*g_eeGeneral.splashScreen,3,(sub==subN ? INVERS:0));
-      if(sub==subN) CHECK_INCDEC_H_GENVAR_BF(event, g_eeGeneral.splashScreen, 0, 1);
+      lcd_putsnAtt(1*FW, y, PSTR("OFF ON")+3*(1-g_eeGeneral.disableSplashScreen),3,(sub==subN ? INVERS:0));
+      if(sub==subN)
+      {
+          uint8_t b = 1-g_eeGeneral.disableSplashScreen;
+          CHECK_INCDEC_H_GENVAR_BF(event, b, 0, 1);
+          g_eeGeneral.disableSplashScreen = 1-b;
+      }
       if((y+=FH)>7*FH) return;
   }subN++;
 
