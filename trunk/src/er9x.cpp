@@ -164,7 +164,7 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 
 void doSplash()
 {
-    if(g_eeGeneral.splashScreen)
+    if(!g_eeGeneral.disableSplashScreen)
     {
         lcd_clear();
         lcd_img(0, 0, s9xsplash,0,0);
