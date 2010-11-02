@@ -1587,6 +1587,7 @@ void menuProcModelSelect(uint8_t event)
         break;
     case  EVT_KEY_LONG(KEY_MENU):
       if(sel_editMode){
+        message(PSTR("Duplicating model"));
         if(eeDuplicateModel(sub)) {
           beepKey();
           sel_editMode = false;
