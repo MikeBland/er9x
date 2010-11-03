@@ -70,7 +70,8 @@ typedef struct t_EEGeneral {
   uint8_t   filterInput;
   uint8_t   lightAutoOff;
   uint8_t   templateSetup;  //RETA order according to chout_ar array 
-  uint8_t   res[2];
+  uint8_t   PPM_Multiplier;
+  uint8_t   res[1];
 } __attribute__((packed)) EEGeneral;
 
 
@@ -115,20 +116,10 @@ typedef struct t_MixData {
   int8_t  res;
 } __attribute__((packed)) MixData;
 
-#define CS_OFF     0
-#define CS_VPOS    1  //v>offset
-#define CS_VNEG    2  //v<offset
-#define CS_APOS    3  //|v|>offset
-#define CS_ANEG    4  //|v|<offset
-#define CS_AND     5  
-#define CS_OR      6  
-#define CS_XOR     7  
-#define CS_MAXF    7  //max function
-
 
 typedef struct t_CSwData { // Custom Switches data
-  int8_t  input;
-  int8_t  offset;
+  int8_t  v1; //input
+  int8_t  v2; //offset
   uint8_t func;
 } __attribute__((packed)) CSwData;
 

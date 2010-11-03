@@ -102,6 +102,15 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
   lcd_putcAtt(x+3*FW,  y,'m',attr);
 }
 
+inline int16_t getValue(uint8_t i)
+{
+    if(i<MIX_MAX) return calibratedStick[i];//-512..512
+    else if(i<=MIX_FULL) return 1024; //FULL/MAX
+    else if(i<MIX_FULL+NUM_PPM) return g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL];
+    else return ex_chans[i-MIX_FULL-NUM_PPM];
+    return 0;
+}
+
 bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 {
   if(level>5) return false; //prevent recursive loop going too deep
@@ -125,42 +134,82 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
   //ppm
   CSwData &cs = g_model.customSw[abs(swtch)-(MAX_DRSWITCH-NUM_CSW)];
   if(!cs.func) return false;
-  if(cs.func<CS_AND)
-  {
-      int16_t  v = 0;
-      uint8_t  i = cs.input-1;
-      if(i<MIX_MAX) v = calibratedStick[i];//-512..512
-      else if(i<=MIX_FULL) v = 1024; //FULL/MAX
-      else if(i<MIX_FULL+NUM_PPM) v = g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL];
-      else v = ex_chans[i-MIX_FULL-NUM_PPM];
 
-      int16_t ofs = calc100toRESX(cs.offset); //coffset 100 -> 1024
-      switch (cs.func) {
-      case (CS_VPOS):   return swtch>0 ? (v>ofs) : !(v>ofs);
-       case (CS_VNEG):   return swtch>0 ? (v<ofs) : !(v<ofs);
-       case (CS_APOS):   return swtch>0 ? (abs(v)>ofs) : !(abs(v)>ofs);
-       case (CS_ANEG):   return swtch>0 ? (abs(v)<ofs) : !(abs(v)<ofs);
-       default:          return false;
-       }
-  }
-  else //cs.func>=CS_AND
+
+  int8_t a = cs.v1;
+  int8_t b = cs.v2;
+  int16_t x = 0;
+  int16_t y = 0;
+
+  // init values only if needed
+  uint8_t s = CS_STATE(cs.func);
+  if(s == CS_VOFS)
   {
-      int8_t a = cs.input;
-      int8_t b = cs.offset;
-      //make sure a and b are not SW1..SW6
-      switch (cs.func) {
-      case (CS_OR):
-          return (getSwitch(a,0,level+1) || getSwitch(b,0,level+1));
-          break;
-      case (CS_XOR):
-          return (getSwitch(a,0,level+1) ^ getSwitch(b,0,level+1));
-          break;
-      default: //AND
-          return (getSwitch(a,0,level+1) && getSwitch(b,0,level+1));
-          break;
-      }
+      x = getValue(cs.v1-1);
+      y = calc100toRESX(cs.v2);
   }
+  else if(s == CS_VCOMP)
+  {
+      x = getValue(cs.v1-1);
+      y = getValue(cs.v2-1);
+  }
+
+  switch (cs.func) {
+  case (CS_VPOS):
+      return swtch>0 ? (x>y) : !(x>y);
+      break;
+   case (CS_VNEG):
+       return swtch>0 ? (x<y) : !(x<y);
+       break;
+   case (CS_APOS):
+       return swtch>0 ? (abs(x)>y) : !(abs(x)>y);
+       break;
+   case (CS_ANEG):
+       return swtch>0 ? (abs(x)<y) : !(abs(x)<y);
+       break;
+
+   case (CS_AND):
+       return (getSwitch(a,0,level+1) && getSwitch(b,0,level+1));
+       break;
+   case (CS_OR):
+       return (getSwitch(a,0,level+1) || getSwitch(b,0,level+1));
+       break;
+   case (CS_XOR):
+       return (getSwitch(a,0,level+1) ^ getSwitch(b,0,level+1));
+       break;
+
+   case (CS_EQUAL):
+       return (x==y);
+       break;
+   case (CS_NEQUAL):
+       return (x!=y);
+       break;
+   case (CS_GREATER):
+       return (x>y);
+       break;
+   case (CS_LESS):
+       return (x<y);
+       break;
+   case (CS_EGREATER):
+       return (x>=y);
+       break;
+   case (CS_ELESS):
+       return (x<=y);
+       break;
+   default:
+       return false;
+       break;
+   }
+
 }
+
+
+//#define CS_EQUAL     8
+//#define CS_NEQUAL    9
+//#define CS_GREATER   10
+//#define CS_LESS      11
+//#define CS_EGREATER  12
+//#define CS_ELESS     13
 
 void doSplash()
 {
@@ -253,15 +302,23 @@ uint8_t  g_menuStackPtr = 0;
 uint8_t  g_beepCnt;
 uint8_t  g_beepVal[5];
 
-void alert(const prog_char * s, bool defaults, bool waitforkey)
+void message(const prog_char * s)
+{
+  lcd_clear();
+  lcd_putsAtt(64-5*FW,0*FH,PSTR("MESSAGE"),DBLSIZE);
+  lcd_puts_P(0,4*FW,s);
+  refreshDiplay();
+  lcdSetRefVolt(g_eeGeneral.contrast);
+}
+
+void alert(const prog_char * s, bool defaults)
 {
   lcd_clear();
   lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
   lcd_puts_P(0,4*FW,s);
-  if(waitforkey) lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
+  lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
   refreshDiplay();
   lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
-  if(!waitforkey) return;
   beepErr();
   while(1)
   {
