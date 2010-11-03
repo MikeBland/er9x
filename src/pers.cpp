@@ -150,7 +150,7 @@ void eeReadAll()
   )
   {
     alert(PSTR("Bad EEprom Data"), true);
-    alert(PSTR("EEPROM Formatting"), true, false);
+    message(PSTR("EEPROM Formatting"));
     EeFsFormat();
     //alert(PSTR("format ok"));
     generalDefault();

@@ -605,38 +605,63 @@ void menuProcSwitches(uint8_t event)  //Issue 78
     lcd_outdezNAtt(3*FW,  y, k+1, LEADING0,2);
     lcd_putsnAtt(  4*FW, y, PSTR(CSWITCH_STR)+CSW_LEN_FUNC*cs.func,CSW_LEN_FUNC,subSub==1 ? attr : 0);
 
-    uint8_t is_and = cs.func>=CS_AND;
+    uint8_t cstate = CS_STATE(cs.func);
 
-    if(is_and)
+    if(cstate == CS_VOFS)
     {
-        putsDrSwitches(12*FW,y, cs.input  ,subSub==2 ? attr : 0);
-        putsDrSwitches(16*FW,y, cs.offset ,subSub==3 ? attr : 0);
+        putsChnRaw(    12*FW, y, cs.v1  ,subSub==2 ? attr : 0);
+        lcd_outdezAtt( 20*FW, y, cs.v2  ,subSub==3 ? attr : 0);
     }
-    else
+    else if(cstate == CS_VBOOL)
     {
-        putsChnRaw(    12*FW, y, cs.input  ,subSub==2 ? attr : 0);
-        lcd_outdezAtt( 20*FW, y, cs.offset ,subSub==3 ? attr : 0);
+        putsDrSwitches(12*FW, y, cs.v1  ,subSub==2 ? attr : 0);
+        putsDrSwitches(16*FW, y, cs.v2  ,subSub==3 ? attr : 0);
+    }
+    else // cstate == CS_COMP
+    {
+        putsChnRaw(    12*FW, y, cs.v1  ,subSub==2 ? attr : 0);
+        putsChnRaw(    16*FW, y, cs.v2  ,subSub==3 ? attr : 0);
     }
 
     if((s_editMode || p1valdiff) && attr)
       switch (subSub) {
         case (1):
           CHECK_INCDEC_H_MODELVAR( event, cs.func, 0,CS_MAXF);
-          if(is_and != (cs.func>=CS_AND))
+          if(cstate != CS_STATE(cs.func))
           {
-              cs.input  = 0;
-              cs.offset = 0;
+              cs.v1  = 0;
+              cs.v2 = 0;
           }
           break;
         case (2):
-          if(is_and) CHECK_INCDEC_H_MODELVAR( event, cs.input, -MAX_DRSWITCH,MAX_DRSWITCH);
-          else CHECK_INCDEC_H_MODELVAR( event, cs.input, 0,NUM_XCHNRAW);
+          switch (cstate) {
+          case (CS_VOFS):
+              CHECK_INCDEC_H_MODELVAR( event, cs.v1, 0,NUM_XCHNRAW);
+              break;
+          case (CS_VBOOL):
+              CHECK_INCDEC_H_MODELVAR( event, cs.v1, -MAX_DRSWITCH,MAX_DRSWITCH);
+              break;
+          case (CS_VCOMP):
+              CHECK_INCDEC_H_MODELVAR( event, cs.v1, 0,NUM_XCHNRAW);
+              break;
+          default:
+              break;
+          }
           break;
         case (3):
-          if(is_and) CHECK_INCDEC_H_MODELVAR( event, cs.offset, -MAX_DRSWITCH,MAX_DRSWITCH);
-          else CHECK_INCDEC_H_MODELVAR( event, cs.offset, -100,100);
-          break;
-
+          switch (cstate) {
+          case (CS_VOFS):
+              CHECK_INCDEC_H_MODELVAR( event, cs.v2, -100,100);
+              break;
+          case (CS_VBOOL):
+              CHECK_INCDEC_H_MODELVAR( event, cs.v2, -MAX_DRSWITCH,MAX_DRSWITCH);
+              break;
+          case (CS_VCOMP):
+              CHECK_INCDEC_H_MODELVAR( event, cs.v2, 0,NUM_XCHNRAW);
+              break;
+          default:
+              break;
+          }
       }
   }
 }
@@ -1772,7 +1797,7 @@ void menuProcPPMIn(uint8_t event)
       break;
   }
 
-  y    = 3*FH;
+  y    = 2*FH;
   lcd_putsnAtt(  0*FW, y, PSTR("Cal"),3, edit ? INVERS : 0);
   for(uint8_t i=0; i<8; i++)
   {
