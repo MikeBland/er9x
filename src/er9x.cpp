@@ -158,48 +158,48 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
   case (CS_VPOS):
       return swtch>0 ? (x>y) : !(x>y);
       break;
-   case (CS_VNEG):
-       return swtch>0 ? (x<y) : !(x<y);
-       break;
-   case (CS_APOS):
-       return swtch>0 ? (abs(x)>y) : !(abs(x)>y);
-       break;
-   case (CS_ANEG):
-       return swtch>0 ? (abs(x)<y) : !(abs(x)<y);
-       break;
+  case (CS_VNEG):
+      return swtch>0 ? (x<y) : !(x<y);
+      break;
+  case (CS_APOS):
+      return swtch>0 ? (abs(x)>y) : !(abs(x)>y);
+      break;
+  case (CS_ANEG):
+      return swtch>0 ? (abs(x)<y) : !(abs(x)<y);
+      break;
 
-   case (CS_AND):
-       return (getSwitch(a,0,level+1) && getSwitch(b,0,level+1));
-       break;
-   case (CS_OR):
-       return (getSwitch(a,0,level+1) || getSwitch(b,0,level+1));
-       break;
-   case (CS_XOR):
-       return (getSwitch(a,0,level+1) ^ getSwitch(b,0,level+1));
-       break;
+  case (CS_AND):
+      return (getSwitch(a,0,level+1) && getSwitch(b,0,level+1));
+      break;
+  case (CS_OR):
+      return (getSwitch(a,0,level+1) || getSwitch(b,0,level+1));
+      break;
+  case (CS_XOR):
+      return (getSwitch(a,0,level+1) ^ getSwitch(b,0,level+1));
+      break;
 
-   case (CS_EQUAL):
-       return (x==y);
-       break;
-   case (CS_NEQUAL):
-       return (x!=y);
-       break;
-   case (CS_GREATER):
-       return (x>y);
-       break;
-   case (CS_LESS):
-       return (x<y);
-       break;
-   case (CS_EGREATER):
-       return (x>=y);
-       break;
-   case (CS_ELESS):
-       return (x<=y);
-       break;
-   default:
-       return false;
-       break;
-   }
+  case (CS_EQUAL):
+      return (x==y);
+      break;
+  case (CS_NEQUAL):
+      return (x!=y);
+      break;
+  case (CS_GREATER):
+      return (x>y);
+      break;
+  case (CS_LESS):
+      return (x<y);
+      break;
+  case (CS_EGREATER):
+      return (x>=y);
+      break;
+  case (CS_ELESS):
+      return (x<=y);
+      break;
+  default:
+      return false;
+      break;
+  }
 
 }
 
