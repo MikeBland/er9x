@@ -2917,15 +2917,15 @@ void setupPulses()
 
 inline int16_t reduceRange(int16_t x)  // for in case we want to have room for subtrims
 {
-    return x-(x/8);  //640 - 640/8 => 560  - close enough to prevent mixing -make sure range is set to 560
+    return x-(x/4);  //640 - 640/4 => 480  - close enough to prevent mixing -make sure range is set to 560
 }
 
 void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
 {
-#define PPM_CENTER 1200*2
-#define PPM_RANGE  (512)*2   //(512+128)*2
-#define PPM_MAX    (PPM_CENTER+PPM_RANGE)
-#define PPM_MIN    (PPM_CENTER-PPM_RANGE)
+#define PPM_CENTER (uint16_t)1200*2
+#define PPM_RANGE  (uint16_t)560*2   //experience shows that this is still a safe value.
+#define PPM_MAX    ((uint16_t)PPM_CENTER+(uint16_t)PPM_RANGE)
+#define PPM_MIN    ((uint16_t)PPM_CENTER-(uint16_t)PPM_RANGE)
  //Total frame length = 22.5msec
  //each pulse is 0.7..1.7ms long with a 0.3ms stop tail
  //The pulse ISR is 2mhz that's why everything is multiplied by 2
@@ -2935,10 +2935,8 @@ void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
  uint16_t rest=22500u*2-q; //Minimum Framelen=22.5 ms
  if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
  for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
-// uint16_t v = reduceRange(g_chans512[i]) + PPM_CENTER; // we allow the signal to have 2048 steps
- uint16_t v =             g_chans512[i]  + PPM_CENTER; // we allow the signal to have 2048 steps
- v = max(min(v,(uint16_t)PPM_MAX),(uint16_t)PPM_MIN);//limit to between 688 - 1712.  => -100%..100%  Issue 110
- //pulses are limited to -640 .. 640 -> 560 .. 1840 by the limits in perOut()
+ uint16_t v = reduceRange(g_chans512[i]) + PPM_CENTER; // we allow the signal to have 2048 steps
+ v = max(min(v,PPM_MAX),PPM_MIN);//limit range
  rest-=(v+q);
  pulses2MHz[j++]=q;
  pulses2MHz[j++]=v;
