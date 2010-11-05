@@ -235,7 +235,7 @@ void doSplash()
 
 void checkMem()
 {
-  if(! WARN_MEM) return;
+  if(g_eeGeneral.disableMemoryWarning) return;
   if(EeFsGetFree() < 200)
   {
     alert(PSTR("EEPROM low mem"));
@@ -244,7 +244,7 @@ void checkMem()
 }
 void checkTHR()
 {
-  if(! WARN_THR) return;
+  if(g_eeGeneral.disableThrottleWarning) return;
 
   while(g_tmr10ms<20){} //wait for some ana in
 
@@ -267,13 +267,13 @@ void checkTHR()
 
 void checkAlarm() // added by Gohst
 {
-    if(! WARN_BEP) return;
-  if(! BEEP_VAL) alert(PSTR("Alarms Disabled"));
+    if(g_eeGeneral.disableAlarmWarning) return;
+  if(!g_eeGeneral.beeperVal) alert(PSTR("Alarms Disabled"));
 }
 
 void checkSwitches()
 {
-  if(! WARN_SW) return; // if warning is on
+  if(g_eeGeneral.disableSwitchWarning) return; // if warning is on
 
   // first - display warning
   lcd_clear();
@@ -576,7 +576,7 @@ void perMain()
           1,  1, 15, 50, 150, //for motor
          10, 10, 30, 50, 150, //for motor
         };
-        memcpy_P(g_beepVal,beepTab+5*BEEP_VAL,5);
+        memcpy_P(g_beepVal,beepTab+5*g_eeGeneral.beeperVal,5);
           //g_beepVal = BEEP_VAL;
       }
       break;
@@ -832,7 +832,7 @@ void evalCaptures()
     captureRd = (captureRd + 1)  % DIM(captureRing); //next read
     if(ppmInState && ppmInState<=8){
       if(val>800 && val <2200){
-        g_ppmIns[ppmInState++ - 1] = val - 1500; //+-500 != 512, Fehler ignoriert
+        g_ppmIns[ppmInState++ - 1] = (val - 1500)*(g_eeGeneral.PPM_Multiplier+10)/10; //+-500 != 512, Fehler ignoriert
       }else{
         ppmInState=0; //not triggered
       }
