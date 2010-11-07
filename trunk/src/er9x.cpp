@@ -220,7 +220,7 @@ void doSplash()
         refreshDiplay();
         lcdSetRefVolt(g_eeGeneral.contrast);
 
-        uint16_t tgtime = g_tmr10ms + 500;  //500msec splash screen
+        uint16_t tgtime = g_tmr10ms + 200;  //2sec splash screen
         while(tgtime != g_tmr10ms)
         {
             if(IS_KEY_BREAK(getEvent()))   return;  //wait for key release
