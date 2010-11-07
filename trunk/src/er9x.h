@@ -495,6 +495,12 @@ extern inline int16_t calc100toRESX(int8_t x)
   return (int16_t)x*10 + x/4 - x/64;
 }
 
+extern inline qint16 calc1000toRESX(qint16 x)
+{
+  return x + x/32 - x/128 + x/512;
+}
+
+
 
 #define TMR_VAROFS  16
 
