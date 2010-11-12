@@ -30,7 +30,6 @@ EEGeneral  g_eeGeneral;
 ModelData  g_model;
 
 bool warble = false;
-bool messageStop = false;
 
 const prog_char APM modi12x3[]=
   "RUD ELE THR AIL "
@@ -212,6 +211,23 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 //#define CS_EGREATER  12
 //#define CS_ELESS     13
 
+
+bool keyDown()
+{
+    for(uint8_t i=0; i<6; i++)
+    {
+        bool t=keyState((EnumKeys)(KEY_MENU+i));
+        if(t) return true;  //if a key is down break for loop and resume while
+    }
+    return false;
+}
+
+void clearKeyEvents()
+{
+    while(keyDown());  // loop until all keys are up
+    putEvent(0);
+}
+
 void doSplash()
 {
     if(!g_eeGeneral.disableSplashScreen)
@@ -222,10 +238,11 @@ void doSplash()
         refreshDiplay();
         lcdSetRefVolt(g_eeGeneral.contrast);        
 
+        clearKeyEvents();
         uint16_t tgtime = g_tmr10ms + 250;  //2sec splash screen
         while(tgtime != g_tmr10ms)
         {
-            if(IS_KEY_BREAK(getEvent()))   return;  //wait for key release
+            if(keyDown())   return;  //wait for key release
 
             if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff)
                 BACKLIGHT_ON;
@@ -248,28 +265,43 @@ void checkMem()
 void checkTHR()
 {
   if(g_eeGeneral.disableThrottleWarning) return;
-  messageStop = true;
-
-//  cli(); // zero output buffer - prevent output
-//  memset(&pulses2MHz,0,sizeof(pulses2MHz));
-//  sei();
-
-  while(g_tmr10ms<20){} //wait for some ana in
 
   int thrchn=(2-(g_eeGeneral.stickMode&1));//stickMode=0123 -> thr=2121
-  //int16_t v      = g_anaIns[thrchn];
-  int16_t v      = anaIn(thrchn);
 
   int16_t lowLim = g_eeGeneral.calibMid[thrchn] - g_eeGeneral.calibSpanNeg[thrchn] +
     g_eeGeneral.calibSpanNeg[thrchn]/8;
 
   int16_t highLim = g_eeGeneral.calibMid[thrchn] + g_eeGeneral.calibSpanPos[thrchn] -
     g_eeGeneral.calibSpanPos[thrchn]/8;
-  //  v -= g_eeGeneral.calibMid[thrchn];
-  //v  = v * (512/8) / (max(40,g_eeGeneral.calibSpan[thrchn]/8));
-  if(((v>lowLim) && !g_eeGeneral.throttleReversed) || ((v<highLim) && g_eeGeneral.throttleReversed))
+
+
+  // first - display warning
+  lcd_clear();
+  lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
+  lcd_puts_P(0,4*FH,PSTR("Throttle not idle"));
+  lcd_puts_P(0,5*FH,PSTR("Reset throttle"));
+  lcd_puts_P(0,6*FH,PSTR("Press any key to skip"));
+  refreshDiplay();
+  lcdSetRefVolt(g_eeGeneral.contrast);
+
+  clearKeyEvents();
+  //loop until all switches are reset
+  while (1)
   {
-    alert(PSTR("THR not idle"));
+      getADC_single();
+      int16_t v      = anaIn(thrchn);
+      if(((v<=lowLim) && !g_eeGeneral.throttleReversed) ||
+         ((v>=highLim) && g_eeGeneral.throttleReversed) ||
+         (keyDown()))
+         //(IS_KEY_BREAK(getEvent())))
+      {
+          return;
+      }
+
+      if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff)
+          BACKLIGHT_ON;
+      else
+          BACKLIGHT_OFF;
   }
 }
 
@@ -287,10 +319,12 @@ void checkSwitches()
   lcd_clear();
   lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
   lcd_puts_P(0,4*FH,PSTR("Switches not off"));
-  lcd_puts_P(0,7*FH,PSTR("Please reset them"));
+  lcd_puts_P(0,5*FH,PSTR("Please reset them"));
+  lcd_puts_P(0,6*FH,PSTR("Press any key to skip"));
   refreshDiplay();
   lcdSetRefVolt(g_eeGeneral.contrast);
 
+  clearKeyEvents();
   //loop until all switches are reset
   while (1)
   {
@@ -300,7 +334,17 @@ void checkSwitches()
         if(i==SW_ID0) continue;
         if(getSwitch(i-SW_BASE+1,0)) break;
     }
-    if(i==SW_Trainer) return;
+
+    if((i==SW_Trainer) ||
+       (keyDown()))
+    {
+        return;  //wait for key release
+    }
+
+    if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff)
+        BACKLIGHT_ON;
+    else
+        BACKLIGHT_OFF;
   }
 }
 
@@ -328,11 +372,11 @@ void alert(const prog_char * s, bool defaults)
     refreshDiplay();
     lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
     beepErr();
+    clearKeyEvents();
     while(1)
     {
-        if(IS_KEY_BREAK(getEvent()))
+        if(keyDown())
         {
-            messageStop = false; // resume processing
             return;  //wait for key release
         }
 
@@ -511,8 +555,6 @@ void evalCaptures();
 
 void perMain()
 {
-  if(messageStop) return;
-
   static uint16_t lastTMR;
   tick10ms = (g_tmr10ms != lastTMR);
   lastTMR = g_tmr10ms;
@@ -912,6 +954,8 @@ int main(void)
   checkTHR();
   checkSwitches();
   checkAlarm();
+  clearKeyEvents(); //make sure no keys are down before proceeding
+
   setupPulses();
   wdt_enable(WDTO_500MS);
   perOut(g_chans512, false);

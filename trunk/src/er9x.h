@@ -106,7 +106,7 @@
 #define OUT_B_PPM 0
 #define PORTC_LCD_CTRL PORTC
 #define OUT_C_LCD_E     5
-#define OUT_C_LCD_RnW   4eeDirty
+#define OUT_C_LCD_RnW   4
 #define OUT_C_LCD_A0    3
 #define OUT_C_LCD_RES   2
 #define OUT_C_LCD_CS1   1
@@ -323,6 +323,8 @@ bool    keyState(EnumKeys enuk);
 /// Das Ergebnis hat die Form:
 /// EVT_KEY_BREAK(key), EVT_KEY_FIRST(key), EVT_KEY_REPT(key) oder EVT_KEY_LONG(key)
 uint8_t getEvent();
+void putEvent(uint8_t evt);
+
 
 /// goto given Menu, but substitute current menu in menuStack
 void    chainMenu(MenuFuncP newMenu);
@@ -475,7 +477,7 @@ void eeCheck(bool immediately=false);
 void eeReadAll();
 void eeLoadModelName(uint8_t id,char*buf,uint8_t len);
 uint16_t eeFileSize(uint8_t id);
-void eeLoadModel(uint8_t id, uint8_t check_thr=true);
+void eeLoadModel(uint8_t id, uint8_t doChecks=true);
 //void eeSaveModel(uint8_t id);
 bool eeDuplicateModel(uint8_t id);
 
@@ -557,9 +559,11 @@ extern uint16_t anaIn(uint8_t chan);
 extern int16_t calibratedStick[7];
 extern int16_t ex_chans[NUM_CHNOUT];
 
+void getADC_single();
+void getADC_osmp();
+void getADC_filt();
 
 void checkTHR();
-extern bool messageStop;
 
 
 #ifdef JETI
