@@ -101,15 +101,22 @@ uint16_t eeFileSize(uint8_t id)
     return theFile.size();
 }
 
-void eeLoadModel(uint8_t id, uint8_t check_thr)
+void eeLoadModel(uint8_t id, uint8_t check_thrdoChecks)
 {
     if(id<MAX_MODELS)
     {
-        if(check_thr)
+        if(check_thrdoChecks)
         {
+            cli();
             PULSEGEN_OFF;
+            sei();
+            wdt_disable();
             checkTHR();
+            checkSwitches();
+            wdt_enable(WDTO_500MS);
+            cli();
             PULSEGEN_ON;
+            sei();
         }
         theFile.openRd(FILE_MODEL(id));
         memset(&g_model, 0, sizeof(ModelData));
