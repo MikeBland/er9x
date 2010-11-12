@@ -1989,7 +1989,7 @@ void menuProcSetup(uint8_t event)
     t = PARAM_OFS + NUM_OFS(g_eeGeneral.vBatWarn);
     lcd_outdezAtt(t, y, g_eeGeneral.vBatWarn, (sub==subN ? INVERS : 0)|PREC1);
     lcd_putcAtt(  t, y, 'v', 0);
-    if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatWarn, 50, 100); //5-10V
+    if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatWarn, 40, 120); //5-10V
     if((y+=FH)>7*FH) return;
   }subN++;
 
