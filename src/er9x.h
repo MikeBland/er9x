@@ -106,7 +106,7 @@
 #define OUT_B_PPM 0
 #define PORTC_LCD_CTRL PORTC
 #define OUT_C_LCD_E     5
-#define OUT_C_LCD_RnW   4
+#define OUT_C_LCD_RnW   4eeDirty
 #define OUT_C_LCD_A0    3
 #define OUT_C_LCD_RES   2
 #define OUT_C_LCD_CS1   1
@@ -226,6 +226,9 @@ enum EnumKeys {
 #define CS_VCOMP      2
 #define CS_STATE(x)   ((x)<CS_AND ? CS_VOFS : ((x)<CS_EQUAL ? CS_VBOOL : CS_VCOMP))
 
+
+const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.";
+#define NUMCHARS (sizeof(s_charTab)-1)
 
 
 //#define SW_BASE      SW_NC
@@ -363,6 +366,10 @@ void putsDrSwitches(uint8_t x,uint8_t y,int8_t swtch,uint8_t att);
 void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr);
 
 
+uint8_t char2idx(char c);
+char idx2char(uint8_t idx);
+
+
 
 
 void checkMem();
@@ -437,12 +444,13 @@ extern uint8_t s_editMode;     //global editmode
 
 
 
-#define STORE_MODELVARS eeDirty(EE_MODEL)
+#define STORE_MODELVARS   eeDirty(EE_MODEL)
+#define STORE_GENERALVARS eeDirty(EE_GENERAL)
 #define BACKLIGHT_ON    PORTB |=  (1<<OUT_B_LIGHT)
 #define BACKLIGHT_OFF   PORTB &= ~(1<<OUT_B_LIGHT)
 
-
-
+#define PULSEGEN_ON     TIMSK |=  (1<<OCIE1A)
+#define PULSEGEN_OFF    TIMSK &= ~(1<<OCIE1A)
 
 /// liefert Dimension eines Arrays
 #define DIM(arr) (sizeof((arr))/sizeof((arr)[0]))
@@ -467,7 +475,7 @@ void eeCheck(bool immediately=false);
 void eeReadAll();
 void eeLoadModelName(uint8_t id,char*buf,uint8_t len);
 uint16_t eeFileSize(uint8_t id);
-void eeLoadModel(uint8_t id);
+void eeLoadModel(uint8_t id, uint8_t check_thr=true);
 //void eeSaveModel(uint8_t id);
 bool eeDuplicateModel(uint8_t id);
 
@@ -489,6 +497,7 @@ void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att);
 /// Schreibt die Batteriespannung aufs lcd
 void putsVBat(uint8_t x,uint8_t y,uint8_t hideV,uint8_t att);
 void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2);
+
 
 extern inline int16_t calc100toRESX(int8_t x)
 {
@@ -527,7 +536,7 @@ void menuProcMain(uint8_t event);
 void menuProcModelSelect(uint8_t event);
 void menuProcTemplates(uint8_t event);
 void menuProcSwitches(uint8_t event);
-
+void menuProcSafetySwitches(uint8_t event);
 
 
 void menuProcStatistic2(uint8_t event);
@@ -547,6 +556,11 @@ extern int16_t intpol(int16_t, uint8_t);
 extern uint16_t anaIn(uint8_t chan);
 extern int16_t calibratedStick[7];
 extern int16_t ex_chans[NUM_CHNOUT];
+
+
+void checkTHR();
+extern bool messageStop;
+
 
 #ifdef JETI
 // Jeti-DUPLEX Telemetry

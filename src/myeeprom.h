@@ -21,19 +21,21 @@
 
 //eeprom data
 //#define EE_VERSION 2
-#define MAX_MODELS 16
-#define MAX_MIXERS 32
-#define MAX_CURVE5 8
-#define MAX_CURVE9 8
-#define MDVERS_r9  1
-#define MDVERS_r14 2
-#define MDVERS_r22 3
-#define MDVERS_r77 4
-#define MDVERS_r85 5
-#define MDVERS     6
+#define MAX_MODELS  16
+#define MAX_MIXERS  32
+#define MAX_CURVE5  8
+#define MAX_CURVE9  8
+#define MDVERS_r9   1
+#define MDVERS_r14  2
+#define MDVERS_r22  3
+#define MDVERS_r77  4
+#define MDVERS_r85  5
+#define MDVERS_r261 6
+#define MDVERS      7
 
 
-#define GENERAL_MYVER 3
+#define GENERAL_MYVER_r261 3
+#define GENERAL_MYVER      4
 
 
 // eeprom ver <9 => mdvers == 1
@@ -64,8 +66,7 @@ typedef struct t_EEGeneral {
   int8_t    vBatCalib;
   int8_t    lightSw;
   int16_t   ppmInCalib[8];
-  uint8_t   view;     //index of subview in main scrren
-//  uint8_t   warnOpts; //bitset for several warnings
+  uint8_t   view;
   uint8_t   disableThrottleWarning:1;
   uint8_t   disableSwitchWarning:1;
   uint8_t   disableMemoryWarning:1;
@@ -84,7 +85,11 @@ typedef struct t_EEGeneral {
   uint8_t   lightAutoOff;
   uint8_t   templateSetup;  //RETA order according to chout_ar array 
   int8_t    PPM_Multiplier;
-  uint8_t   res[1];
+
+  // ver4 and up :=>
+
+  uint8_t   res[6];
+  char      ownerName[10];
 } __attribute__((packed)) EEGeneral;
 
 
@@ -136,6 +141,11 @@ typedef struct t_CSwData { // Custom Switches data
   uint8_t func;
 } __attribute__((packed)) CSwData;
 
+typedef struct t_SafetySwData { // Custom Switches data
+  int8_t  swtch;
+  int8_t  val;
+} __attribute__((packed)) SafetySwData;
+
 
 typedef struct t_SwashRingData { // Swash Ring data
   uint8_t lim;   // 0 mean off 100 full deflection
@@ -157,7 +167,9 @@ typedef struct t_ModelData {
   int8_t    ppmDelay;
   int8_t    trimSw;
   uint8_t   beepANACenter;        //1<<0->A1.. 1<<6->A7
-  uint8_t   pulsePol;
+  uint8_t   pulsePol:1;
+  uint8_t   extendedLimits:1;
+  uint8_t   bfres:6;
   char      res[3];
   MixData   mixData[MAX_MIXERS];
   LimitData limitData[NUM_CHNOUT];
@@ -167,6 +179,7 @@ typedef struct t_ModelData {
   int8_t    curves9[MAX_CURVE9][9];
   CSwData   customSw[NUM_CSW];
   SwashRingData swashR;
+  SafetySwData  safetySw[NUM_CHNOUT];
 } __attribute__((packed)) ModelData;
 
 

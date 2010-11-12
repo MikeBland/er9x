@@ -75,6 +75,7 @@ MenuFuncP_PROGMEM APM menuTabModel[] = {
   menuProcLimits,
   menuProcCurve,
   menuProcSwitches,
+  menuProcSafetySwitches,
   menuProcTemplates
 };
 
@@ -464,18 +465,24 @@ void menuProcLimits(uint8_t event)
           break;
         case 2:
           lcd_outdezAtt(  12*FW, y, (int8_t)(ld->min-100),   attr);
-          if(attr && (s_editMode || p1valdiff)) {
-            ld->min -=  100;
-            if(CHECK_INCDEC_H_MODELVAR( event, ld->min, -100,100))  LIMITS_DIRTY;
-            ld->min +=  100;
+          if(attr && (s_editMode || p1valdiff)) {              
+              ld->min -=  100;
+              if(g_model.extendedLimits)
+              {if(CHECK_INCDEC_H_MODELVAR( event, ld->min, -125,125))  LIMITS_DIRTY;}
+              else
+              {if(CHECK_INCDEC_H_MODELVAR( event, ld->min, -100,100))  LIMITS_DIRTY;}
+              ld->min +=  100;
           }
           break;
         case 3:
           lcd_outdezAtt( 17*FW, y, (int8_t)(ld->max+100),    attr);
           if(attr && (s_editMode || p1valdiff)) {
-            ld->max +=  100;
-            if(CHECK_INCDEC_H_MODELVAR( event, ld->max, -100,100))  LIMITS_DIRTY;
-            ld->max -=  100;
+              ld->max +=  100;
+              if(g_model.extendedLimits)
+              {if(CHECK_INCDEC_H_MODELVAR( event, ld->max, -125,125))  LIMITS_DIRTY;}
+              else
+              {if(CHECK_INCDEC_H_MODELVAR( event, ld->max, -100,100))  LIMITS_DIRTY;}
+              ld->max -=  100;
           }
           break;
         case 4:
@@ -507,7 +514,7 @@ void menuProcTemplates(uint8_t event)  //Issue 73
 {
   static MState2 mstate2;
   TITLE("TEMPLATES");
-  MSTATE_CHECK_V(8,menuTabModel,NUM_TEMPLATES+3);
+  MSTATE_CHECK_V(9,menuTabModel,NUM_TEMPLATES+3);
 
   uint8_t y = 0;
   uint8_t k = 0;
@@ -559,6 +566,72 @@ void menuProcTemplates(uint8_t event)  //Issue 73
   attr = s_noHi ? 0 : ((sub==NUM_TEMPLATES+1) ? INVERS : 0);
   lcd_putsAtt(  1*FW,y,PSTR("CLEAR MIXES [MENU]"),attr);
   y+=FH;
+
+}
+
+void menuProcSafetySwitches(uint8_t event)
+{
+  static MState2 mstate2;
+  TITLE("SAFETY SWITCHES");
+  MSTATE_TAB = { 1,2};
+  MSTATE_CHECK_VxH(8,menuTabModel,NUM_CHNOUT+1);
+
+  uint8_t y = 0;
+  uint8_t k = 0;
+  int8_t  sub    = mstate2.m_posVert - 1;
+  uint8_t subSub = mstate2.m_posHorz + 1;
+  if(sub<1) s_pgOfs=0;
+  else if((sub-s_pgOfs)>5) s_pgOfs = sub-5;
+  else if((sub-s_pgOfs)<0) s_pgOfs = sub;
+  if(s_pgOfs<0) s_pgOfs = 0;
+
+  switch(event)
+  {
+    case EVT_ENTRY:
+      s_pgOfs = 0;
+      s_editMode = false;
+      break;
+    case EVT_KEY_FIRST(KEY_MENU):
+      if((sub>=0) && (subSub!=4)) s_editMode = !s_editMode;
+      break;
+    case EVT_KEY_FIRST(KEY_EXIT):
+      if(s_editMode) {
+        s_editMode = false;
+        killEvents(event);
+      }
+      break;
+  }
+
+  lcd_puts_P( 0*FW, 1*FH,PSTR("ch    sw     val"));
+  for(uint8_t i=0; i<6; i++){
+    y=(i+2)*FH;
+    k=i+s_pgOfs;
+    if(k==NUM_CHNOUT) break;
+
+    SafetySwData *sd = &g_model.safetySw[k];
+    for(uint8_t j=0; j<=2;j++){
+      uint8_t attr = ((sub==k && subSub==j) ? (s_editMode ? BLINK : INVERS) : 0);
+
+      switch(j)
+      {
+      case 0:
+          putsChn(0,y,k+1,(sub==k && subSub==0) ? INVERS : 0);
+          break;
+      case 1:
+          putsDrSwitches(5*FW, y, sd->swtch  , attr);
+          if(attr && (s_editMode || p1valdiff)) {
+              CHECK_INCDEC_H_MODELVAR( event, sd->swtch, -MAX_DRSWITCH,MAX_DRSWITCH);
+          }
+          break;
+      case 2:
+          lcd_outdezAtt(  16*FW, y, sd->val,   attr);
+          if(attr && (s_editMode || p1valdiff)) {
+              CHECK_INCDEC_H_MODELVAR( event, sd->val, -125,125);
+          }
+          break;
+      }
+    }
+  }
 
 }
 
@@ -1280,8 +1353,6 @@ void menuProcExpoAll(uint8_t event)
     }
   }
 }
-const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.";
-#define NUMCHARS (sizeof(s_charTab)-1)
 
 uint8_t char2idx(char c)
 {
@@ -1339,8 +1410,8 @@ void menuProcModel(uint8_t event)
   static MState2 mstate2;
   uint8_t x=TITLE("SETUP ");
   lcd_outdezNAtt(x+2*FW,0,g_eeGeneral.currModel+1,INVERS+LEADING0,2);
-  MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,7,3,1,1};
-  MSTATE_CHECK_VxH(2,menuTabModel,13);
+  MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,7,3,1,1,1};
+  MSTATE_CHECK_VxH(2,menuTabModel,14);
   int8_t  sub    = mstate2.m_posVert;
   uint8_t subSub = mstate2.m_posHorz + 1;
 
@@ -1537,7 +1608,14 @@ void menuProcModel(uint8_t event)
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("Shift Sel"),0);
     lcd_putsnAtt(  10*FW, y, PSTR("POSNEG")+3*g_model.pulsePol,3,(sub==subN ? INVERS:0));
-    if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.pulsePol,0,1);
+    if(sub==subN) CHECK_INCDEC_H_MODELVAR_BF(event,g_model.pulsePol,0,1);
+    if((y+=FH)>7*FH) return;
+  }subN++;
+
+  if(s_pgOfs<subN) {
+    lcd_putsAtt(    0,    y, PSTR("E. Limits"),0);
+    lcd_putsnAtt(  10*FW, y, PSTR("OFFON ")+3*g_model.extendedLimits,3,(sub==subN ? INVERS:0));
+    if(sub==subN) CHECK_INCDEC_H_MODELVAR_BF(event,g_model.extendedLimits,0,1);
     if((y+=FH)>7*FH) return;
   }subN++;
 
@@ -1825,12 +1903,13 @@ void menuProcPPMIn(uint8_t event)
 
 void menuProcSetup(uint8_t event)
 {
-#define COUNT_ITEMS 17
+#define COUNT_ITEMS 18
 #define PARAM_OFS   17*FW
   static MState2 mstate2;
   TITLE("RADIO SETUP");
   MSTATE_CHECK_V(1,menuTabDiag,1+COUNT_ITEMS);
   int8_t  sub    = mstate2.m_posVert;
+  uint8_t subSub = mstate2.m_posHorz + 1;
 
   if(sub<1) s_pgOfs=0;
   else if((sub-s_pgOfs)>7) s_pgOfs = sub-7;
@@ -1842,7 +1921,52 @@ void menuProcSetup(uint8_t event)
   uint8_t y = 1*FH;
   uint8_t t = 0;
 
+
+  switch(event){
+    case EVT_ENTRY:
+      s_editMode = false;
+      break;
+    case EVT_KEY_FIRST(KEY_MENU):
+      if(sub>=0) s_editMode = !s_editMode;
+      break;
+    case EVT_KEY_FIRST(KEY_EXIT):
+      if(s_editMode) {
+        s_editMode = false;
+        killEvents(event);
+      }
+      break;
+    case EVT_KEY_REPT(KEY_LEFT):
+    case EVT_KEY_FIRST(KEY_LEFT):
+      if(sub==1 && subSub>1 && s_editMode) mstate2.m_posHorz--;
+      break;
+    case EVT_KEY_REPT(KEY_RIGHT):
+    case EVT_KEY_FIRST(KEY_RIGHT):
+      if(sub==1 && subSub<sizeof(g_model.name) && s_editMode) mstate2.m_posHorz++;
+      break;
+    case EVT_KEY_REPT(KEY_UP):
+    case EVT_KEY_FIRST(KEY_UP):
+    case EVT_KEY_REPT(KEY_DOWN):
+    case EVT_KEY_FIRST(KEY_DOWN):
+      if (!s_editMode) mstate2.m_posHorz = 0;
+      break;
+  }
+
   uint8_t subN = 1;
+
+  if(s_pgOfs<subN) {
+    lcd_putsAtt(    0,    y, PSTR("Owner Name"),0);
+    lcd_putsnAtt(11*FW,   y, g_eeGeneral.ownerName ,sizeof(g_eeGeneral.ownerName),BSS_NO_INV | (sub==subN ? (s_editMode ? 0 : INVERS) : 0));
+    if(sub==subN && s_editMode){
+        char v = char2idx(g_eeGeneral.ownerName[subSub-1]);
+        if(p1valdiff || event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_FIRST(KEY_UP) || event==EVT_KEY_REPT(KEY_DOWN) || event==EVT_KEY_REPT(KEY_UP))
+           CHECK_INCDEC_H_GENVAR_BF( event,v ,0,NUMCHARS-1);
+        v = idx2char(v);
+        g_eeGeneral.ownerName[subSub-1]=v;
+        lcd_putcAtt((11+subSub-1)*FW, y, v,INVERS);
+    }
+    if((y+=FH)>7*FH) return;
+  }subN++;
+
   if(s_pgOfs<subN) {
     lcd_puts_P(0, y,PSTR("Beeper"));
     lcd_putsnAtt(PARAM_OFS - FW, y, PSTR("Quiet""NoKey""Norm ""Long ""xLong")+5*g_eeGeneral.beeperVal,5,(sub==subN ? INVERS:0));
@@ -2915,6 +3039,9 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
       if(q<lim_n) q = lim_n;
       if(g_model.limitData[i].revert) q=-q;// finally do the reverse.
 
+      if(g_model.safetySw[i].swtch)  //if safety sw available for channel check and replace val if needed
+          if(getSwitch(g_model.safetySw[i].swtch,0)) q = calc100toRESX(g_model.safetySw[i].val);
+
       cli();
       chanOut[i] = q; //copy consistent word to int-level
       sei();
@@ -2955,7 +3082,7 @@ void setupPulses()
 void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
 {
 #define PPM_CENTER 1200*2
-#define PPM_RANGE  512*2   //range of 0.7..1.7msec
+    int16_t PPM_range = g_model.extendedLimits ? 640*2 : 512*2;   //range of 0.7..1.7msec
 
     //Total frame length = 22.5msec
     //each pulse is 0.7..1.7ms long with a 0.3ms stop tail
@@ -2966,7 +3093,7 @@ void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
     uint16_t rest=22500u*2-q; //Minimum Framelen=22.5 ms
     if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
     for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
-        int16_t v = max(min(g_chans512[i],PPM_RANGE),-PPM_RANGE) + PPM_CENTER;
+        int16_t v = max(min(g_chans512[i],PPM_range),-PPM_range) + PPM_CENTER;
         rest-=(v+q);
         pulses2MHz[j++]=q;
         pulses2MHz[j++]=v;
