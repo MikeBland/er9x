@@ -29,6 +29,7 @@ EFile theFile2; //sometimes we need two files
       memmove(pDst, pSrc, (sizeSrc));                     \
       memset (pDst+(sizeSrc), 0,  (sizeDst)-(sizeSrc));
 #define fullCopy(size) partCopy(size,size)
+
 void generalDefault()
 {
   memset(&g_eeGeneral,0,sizeof(g_eeGeneral));
@@ -42,37 +43,42 @@ void generalDefault()
     g_eeGeneral.calibSpanNeg[i] = 0x180;
     g_eeGeneral.calibSpanPos[i] = 0x180;
   }
+  strcpy_P(g_model.name,PSTR("ME        "));
   int16_t sum=0;
   for(int i=0; i<12;i++) sum+=g_eeGeneral.calibMid[i];
   g_eeGeneral.chkSum = sum;
 }
+
 bool eeLoadGeneral()
 {
   theFile.openRd(FILE_GENERAL);
+  memset(&g_eeGeneral, 0, sizeof(EEGeneral));
   uint8_t sz = theFile.readRlc((uint8_t*)&g_eeGeneral, sizeof(EEGeneral));
-  uint16_t sum=0;
-  if(sz == sizeof(EEGeneral)  && g_eeGeneral.myVers==GENERAL_MYVER){
-    for(int i=0; i<12;i++) sum+=g_eeGeneral.calibMid[i];
-    return g_eeGeneral.chkSum == sum;
+
+  for(uint8_t i=0; i<sizeof(g_eeGeneral.ownerName);i++) // makes sure name is valid
+  {
+      uint8_t idx = char2idx(g_eeGeneral.ownerName[i]);
+      g_eeGeneral.ownerName[i] = idx2char(idx);
   }
-  return false;
+
+  g_eeGeneral.myVers   =  GENERAL_MYVER; // update myvers
+
+  uint16_t sum=0;
+  if(sz>(sizeof(EEGeneral)-20)) for(uint8_t i=0; i<12;i++) sum+=g_eeGeneral.calibMid[i];
+  return g_eeGeneral.chkSum == sum;
 }
 
 void modelDefault(uint8_t id)
 {
-  memset(&g_model, 0, sizeof(g_model));
+  memset(&g_model, 0, sizeof(ModelData));
   strcpy_P(g_model.name,PSTR("MODEL     "));
   g_model.name[5]='0'+(id+1)/10;
   g_model.name[6]='0'+(id+1)%10;
   g_model.mdVers = MDVERS;
 
-  //for(uint8_t i= 0; i<4; i++){
-  //  g_model.mixData[i].destCh = i+1;
-  //  g_model.mixData[i].srcRaw = i+1;
-  //  g_model.mixData[i].weight = 100;
-  //}
   applyTemplate(0); //default 4 channel template
 }
+
 void eeLoadModelName(uint8_t id,char*buf,uint8_t len)
 {
   if(id<MAX_MODELS)
@@ -95,22 +101,33 @@ uint16_t eeFileSize(uint8_t id)
     return theFile.size();
 }
 
-void eeLoadModel(uint8_t id)
+void eeLoadModel(uint8_t id, uint8_t check_thr)
 {
-  if(id<MAX_MODELS)
-  {
-    theFile.openRd(FILE_MODEL(id));
-    uint16_t sz = theFile.readRlc((uint8_t*)&g_model, sizeof(g_model));
-
-    switch (g_model.mdVers){
-      default:
-        if(sz != sizeof(ModelData)) {
-          //alert("Error Loading Model");
-          modelDefault(id);
+    if(id<MAX_MODELS)
+    {
+        if(check_thr)
+        {
+            PULSEGEN_OFF;
+            checkTHR();
+            PULSEGEN_ON;
         }
-        break;
+        theFile.openRd(FILE_MODEL(id));
+        memset(&g_model, 0, sizeof(ModelData));
+        uint16_t sz = theFile.readRlc((uint8_t*)&g_model, sizeof(g_model));
+
+        if(sz<256) // if not loaded a fair amount
+        {
+            modelDefault(id);
+        }
+
+        for(uint8_t i=0; i<sizeof(g_model.name);i++) // makes sure name is valid
+        {
+            uint8_t idx = char2idx(g_model.name[i]);
+            g_model.name[i] = idx2char(idx);
+        }
+
+        g_model.mdVers = MDVERS; //update mdvers
     }
-  }
 }
 
 bool eeDuplicateModel(uint8_t id)
@@ -165,7 +182,7 @@ void eeReadAll()
     //alert(PSTR("modwrite ok"));
 
   }
-  eeLoadModel(g_eeGeneral.currModel);
+  eeLoadModel(g_eeGeneral.currModel, false);
 }
 
 

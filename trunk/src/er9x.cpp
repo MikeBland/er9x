@@ -30,6 +30,7 @@ EEGeneral  g_eeGeneral;
 ModelData  g_model;
 
 bool warble = false;
+bool messageStop = false;
 
 const prog_char APM modi12x3[]=
   "RUD ELE THR AIL "
@@ -217,10 +218,11 @@ void doSplash()
     {
         lcd_clear();
         lcd_img(0, 0, s9xsplash,0,0);
+        lcd_putsnAtt(0*FW, 7*FH, g_eeGeneral.ownerName ,sizeof(g_eeGeneral.ownerName),BSS_NO_INV);
         refreshDiplay();
-        lcdSetRefVolt(g_eeGeneral.contrast);
+        lcdSetRefVolt(g_eeGeneral.contrast);        
 
-        uint16_t tgtime = g_tmr10ms + 200;  //2sec splash screen
+        uint16_t tgtime = g_tmr10ms + 250;  //2sec splash screen
         while(tgtime != g_tmr10ms)
         {
             if(IS_KEY_BREAK(getEvent()))   return;  //wait for key release
@@ -242,9 +244,15 @@ void checkMem()
   }
 
 }
+
 void checkTHR()
 {
   if(g_eeGeneral.disableThrottleWarning) return;
+  messageStop = true;
+
+//  cli(); // zero output buffer - prevent output
+//  memset(&pulses2MHz,0,sizeof(pulses2MHz));
+//  sei();
 
   while(g_tmr10ms<20){} //wait for some ana in
 
@@ -313,22 +321,26 @@ void message(const prog_char * s)
 
 void alert(const prog_char * s, bool defaults)
 {
-  lcd_clear();
-  lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
-  lcd_puts_P(0,4*FW,s);
-  lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
-  refreshDiplay();
-  lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
-  beepErr();
-  while(1)
-  {
-    if(IS_KEY_BREAK(getEvent()))   return;  //wait for key release
+    lcd_clear();
+    lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
+    lcd_puts_P(0,4*FW,s);
+    lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
+    refreshDiplay();
+    lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
+    beepErr();
+    while(1)
+    {
+        if(IS_KEY_BREAK(getEvent()))
+        {
+            messageStop = false; // resume processing
+            return;  //wait for key release
+        }
 
-    if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff || defaults)
-        BACKLIGHT_ON;
-      else
-        BACKLIGHT_OFF;
-  }
+        if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff || defaults)
+            BACKLIGHT_ON;
+        else
+            BACKLIGHT_OFF;
+    }
 }
 
 uint8_t checkTrim(uint8_t event)
@@ -499,6 +511,8 @@ void evalCaptures();
 
 void perMain()
 {
+  if(messageStop) return;
+
   static uint16_t lastTMR;
   tick10ms = (g_tmr10ms != lastTMR);
   lastTMR = g_tmr10ms;
@@ -908,19 +922,19 @@ int main(void)
 
   lcdSetRefVolt(g_eeGeneral.contrast);
   g_LightOffCounter = g_eeGeneral.lightAutoOff*500; //turn on light for x seconds - no need to press key Issue 152
-  TIMSK |= (1<<OCIE1A); // Pulse generator enable immediately before mainloop
+  PULSEGEN_ON; // Pulse generator enable immediately before mainloop
   while(1){
-    //uint16_t old10ms=g_tmr10ms;
-    uint16_t t0 = getTmr16KHz();
-    getADC[g_eeGeneral.filterInput]();
-    perMain();
-    //while(g_tmr10ms==old10ms) sleep_mode();
-    if(heartbeat == 0x3)
-    {
-      wdt_reset();
-     heartbeat = 0;
-    }
-    t0 = getTmr16KHz() - t0;
-    g_timeMain = max(g_timeMain,t0);
+      //uint16_t old10ms=g_tmr10ms;
+      uint16_t t0 = getTmr16KHz();
+      getADC[g_eeGeneral.filterInput]();
+      perMain();
+      //while(g_tmr10ms==old10ms) sleep_mode();
+      if(heartbeat == 0x3)
+      {
+          wdt_reset();
+          heartbeat = 0;
+      }
+      t0 = getTmr16KHz() - t0;
+      g_timeMain = max(g_timeMain,t0);
   }
 }
