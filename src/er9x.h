@@ -272,6 +272,9 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-.";
 #define DSW_SW5  14
 #define DSW_SW6  15
 
+#define THRCHK_DEADBAND 16
+
+#define IS_THROTTLE(x)  (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4))
 
 
 #define NUM_KEYS TRM_RH_UP+1

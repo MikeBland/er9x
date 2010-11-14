@@ -268,11 +268,8 @@ void checkTHR()
 
   int thrchn=(2-(g_eeGeneral.stickMode&1));//stickMode=0123 -> thr=2121
 
-  int16_t lowLim = g_eeGeneral.calibMid[thrchn] - g_eeGeneral.calibSpanNeg[thrchn] +
+  int16_t lowLim = THRCHK_DEADBAND + g_eeGeneral.calibMid[thrchn] - g_eeGeneral.calibSpanNeg[thrchn] +
     g_eeGeneral.calibSpanNeg[thrchn]/8;
-
-  int16_t highLim = g_eeGeneral.calibMid[thrchn] + g_eeGeneral.calibSpanPos[thrchn] -
-    g_eeGeneral.calibSpanPos[thrchn]/8;
 
 
   // first - display warning
@@ -290,10 +287,8 @@ void checkTHR()
   {
       getADC_single();
       int16_t v      = anaIn(thrchn);
-      if(((v<=lowLim) && !g_eeGeneral.throttleReversed) ||
-         ((v>=highLim) && g_eeGeneral.throttleReversed) ||
+      if((v<=lowLim) ||
          (keyDown()))
-         //(IS_KEY_BREAK(getEvent())))
       {
           return;
       }
@@ -716,7 +711,7 @@ uint16_t anaIn(uint8_t chan)
   static prog_char APM crossAna[]={3,1,2,0,4,5,6,7};
   volatile uint16_t *p = &s_anaFilt[pgm_read_byte(crossAna+chan)];
   AutoLock autoLock;
-  return *p;
+  return  *p;
 }
 
 
@@ -732,13 +727,16 @@ void getADC_filt()
       ADCSRA|=0x40;
       // Wait for the AD conversion to complete
       while ((ADCSRA & 0x10)==0);
-      ADCSRA|=0x10;
+      ADCSRA|=0x10; 
 
       s_anaFilt[adc_input] = (s_anaFilt[adc_input]/2 + t_ana[1][adc_input]) & 0xFFFE; //gain of 2 on last conversion - clear last bit
       //t_ana[2][adc_input]  =  (t_ana[2][adc_input]  + t_ana[1][adc_input]) >> 1;
       t_ana[1][adc_input]  = (t_ana[1][adc_input]  + t_ana[0][adc_input]) >> 1;
-      t_ana[0][adc_input]  = (t_ana[0][adc_input]  + ADCW               ) >> 1;
-    }
+
+      uint16_t v = ADCW;
+      if(IS_THROTTLE(adc_input) && g_eeGeneral.throttleReversed) v = 2048 - v;
+      t_ana[0][adc_input]  = (t_ana[0][adc_input]  + v) >> 1;
+  }
 }
 /*
   s_anaFilt[chan] = (s_anaFilt[chan] + sss_ana[chan]) >> 1;
@@ -761,6 +759,9 @@ void getADC_osmp()
       temp_ana[adc_input] += ADCW;
     }
     s_anaFilt[adc_input] = temp_ana[adc_input] / 2; // divide by 2^n to normalize result.
+
+    if(IS_THROTTLE(adc_input) && g_eeGeneral.throttleReversed)
+        s_anaFilt[adc_input] = 2048 - s_anaFilt[adc_input];
   }
 }
 
@@ -776,6 +777,9 @@ void getADC_single()
       while ((ADCSRA & 0x10)==0);
       ADCSRA|=0x10;
       s_anaFilt[adc_input]= ADCW * 2; // use 11 bit numbers
+
+      if(IS_THROTTLE(adc_input) && g_eeGeneral.throttleReversed)
+          s_anaFilt[adc_input] = 2048 - s_anaFilt[adc_input];
     }
 }
 
@@ -884,11 +888,11 @@ void evalCaptures()
 {
   while(captureRd != captureWr)
   {
-    uint16_t val = captureRing[captureRd] / 2; // us
+    int16_t val = captureRing[captureRd] / 2; // us
     captureRd = (captureRd + 1)  % DIM(captureRing); //next read
     if(ppmInState && ppmInState<=8){
       if(val>800 && val <2200){
-        g_ppmIns[ppmInState++ - 1] = (val - 1500)*(g_eeGeneral.PPM_Multiplier+10)/10; //+-500 != 512, Fehler ignoriert
+        g_ppmIns[ppmInState++ - 1] = (int16_t)(val - 1500)*(g_eeGeneral.PPM_Multiplier+10)/10; //+-500 != 512, Fehler ignoriert
       }else{
         ppmInState=0; //not triggered
       }
