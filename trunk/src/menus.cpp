@@ -17,7 +17,6 @@
 #include "er9x.h"
 #include "templates.h"
 
-#define IS_THROTTLE(x)  (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4))
 #define GET_DR_STATE(x) (!getSwitch(g_model.expoData[x].drSw1,0) ?   \
                           DR_HIGH :                                  \
                           !getSwitch(g_model.expoData[x].drSw2,0)?   \
@@ -2255,7 +2254,7 @@ void trace()   // called in perOut - once envery 0.01sec
   timer(v);
 
   uint16_t val = calibratedStick[CONVERT_MODE(3)-1]; //Get throttle channel value
-  val = (g_eeGeneral.throttleReversed ? RESX-val : val+RESX) / (RESX/16); //calibrate it
+  val = (val+RESX) / (RESX/16); //calibrate it
   static uint16_t s_time;
   static uint16_t s_cnt;
   static uint16_t s_sum;
@@ -2801,9 +2800,7 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
 
       //do trim -> throttle trim if applicable
       int32_t vv = 2*RESX;
-      if(IS_THROTTLE(i) && g_model.thrTrim) vv = (g_eeGeneral.throttleReversed) ?
-                                 ((int32_t)g_model.trim[i]-125)*(RESX+v)/(2*RESX) :
-                                 ((int32_t)g_model.trim[i]+125)*(RESX-v)/(2*RESX);
+      if(IS_THROTTLE(i) && g_model.thrTrim) vv = ((int32_t)g_model.trim[i]+125)*(RESX-v)/(2*RESX);
 
       //trim
       trimA[i] = (vv==2*RESX) ? g_model.trim[i]*2 : (int16_t)vv*2; //    if throttle trim -> trim low end
