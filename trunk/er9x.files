@@ -16,3 +16,5 @@ src/lcd.h
 src/myeeprom.h
 src/simpgmspace.h
 src/templates.h
+src/font.lbm
+src/dbl_font.lbm

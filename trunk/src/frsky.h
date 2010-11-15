@@ -22,7 +22,7 @@
 
 
 extern uint8_t linkBuffer[9]; // 4 bytes, worst case 8 bytes with byte stuff + 1
-extern uint8_t TelemBuffer[33];
+extern uint8_t TelemBuffer[45];
 extern uint8_t FrskyBufferReady;
 
 void FRSKY_Init(void);
