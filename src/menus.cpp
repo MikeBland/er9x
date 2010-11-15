@@ -2348,6 +2348,9 @@ void menuProcJeti(uint8_t event)
 
 #ifdef FRSKY
 
+void menuProcFrsky(uint8_t event);
+void menuProcFrsky1(uint8_t event);
+
 uint8_t hex2dec(uint8_t number, uint8_t multiplier)
 {
   uint8_t value = 0;
@@ -2378,14 +2381,17 @@ uint8_t hex2dec(uint8_t number, uint8_t multiplier)
 
 }
 
-void menuProcJeti(uint8_t event)
+void menuProcFrsky(uint8_t event)
 {
-  TITLE("FrSky");
+  TITLE("FrSky  Page 1/2");
 
   switch(event)
   {
     //case EVT_KEY_FIRST(KEY_MENU):0.0v
     //  break;
+	case EVT_KEY_FIRST(KEY_DOWN):
+       chainMenu(menuProcFrsky1);
+       break;
     case EVT_KEY_FIRST(KEY_EXIT):
       FRSKY_DisableRXD();
       chainMenu(menuProc0);
@@ -2395,6 +2401,7 @@ void menuProcJeti(uint8_t event)
   if (FrskyBufferReady)
   {
     uint8_t i=0;
+	linkBuffer[3] /= 2;		// Tx RSSI value is doubled
     if (linkBuffer[i] == 0x7D)
     {
       i++;
@@ -2402,7 +2409,7 @@ void menuProcJeti(uint8_t event)
     }
     TelemBuffer[3] = hex2dec(linkBuffer[i], 100);
     TelemBuffer[4] = hex2dec(linkBuffer[i], 10);
-    TelemBuffer[5] = hex2dec(linkBuffer[i], 1);
+    TelemBuffer[6] = hex2dec(linkBuffer[i], 1);
     i++;
     if (linkBuffer[i] == 0x7D)
     {
@@ -2421,17 +2428,103 @@ void menuProcJeti(uint8_t event)
     TelemBuffer[24] = hex2dec(linkBuffer[i], 100);
     TelemBuffer[25] = hex2dec(linkBuffer[i], 10);
     TelemBuffer[26] = hex2dec(linkBuffer[i], 1);
+	i++;
+	if (linkBuffer[i] == 0x7D)
+    {
+      i++;
+      linkBuffer[i] ^= 0x20;
+    }
+    TelemBuffer[37] = hex2dec(linkBuffer[i], 100);
+    TelemBuffer[38] = hex2dec(linkBuffer[i], 10);
+    TelemBuffer[39] = hex2dec(linkBuffer[i], 1);
     FrskyBufferReady = 0;
   }
+  
+  lcd_puts_P(  1*FW, FH*1, PSTR(" Pack Volts"));    
+  lcd_puts_P(  1*FW, FH*4,PSTR(" Rx RSSI") );
 
-
-  for (uint8_t i = 0; i < 16; i++)
+  for (uint8_t i = 3; i < 8; i++)
   {
-  lcd_putcAtt((i+2)*FW,   3*FH, TelemBuffer[i], BSS_NO_INV);
-    lcd_putcAtt((i+2)*FW,   4*FH, TelemBuffer[i+16], BSS_NO_INV);
+  lcd_putcAtt((i-2)*FW*2,   2*FH, TelemBuffer[i], DBLSIZE);
+    lcd_putcAtt((i-2)*FW*2,   5*FH, TelemBuffer[i+21], DBLSIZE);
   }
 
 }
+
+void menuProcFrsky1(uint8_t event)
+{
+  TITLE("FrSky  Page 2/2");
+
+  switch(event)
+  {
+    /*case EVT_KEY_FIRST(KEY_MENU):0.0v
+      break;
+    case EVT_KEY_FIRST(KEY_EXIT):
+      FRSKY_DisableRXD();
+      chainMenu(menuProc0);
+      break;*/
+	case EVT_KEY_FIRST(KEY_UP):
+	  chainMenu(menuProcFrsky);
+      break;
+    case EVT_KEY_FIRST(KEY_EXIT):
+      FRSKY_DisableRXD();
+      chainMenu(menuProc0);
+      break;  
+  }
+
+  if (FrskyBufferReady)
+  {
+    uint8_t i=0;
+	linkBuffer[3] /= 2;		// Tx RSSI value is doubled
+    if (linkBuffer[i] == 0x7D)
+    {
+      i++;
+      linkBuffer[i] ^= 0x20;
+    }
+    TelemBuffer[3] = hex2dec(linkBuffer[i], 100);
+    TelemBuffer[4] = hex2dec(linkBuffer[i], 10);
+    TelemBuffer[6] = hex2dec(linkBuffer[i], 1);
+    i++;
+    if (linkBuffer[i] == 0x7D)
+    {
+      i++;
+      linkBuffer[i] ^= 0x20;
+    }
+    TelemBuffer[11] = hex2dec(linkBuffer[i], 100);
+    TelemBuffer[12] = hex2dec(linkBuffer[i], 10);
+    TelemBuffer[13] = hex2dec(linkBuffer[i], 1);
+    i++;
+    if (linkBuffer[i] == 0x7D)
+    {
+      i++;
+      linkBuffer[i] ^= 0x20;
+    }
+    TelemBuffer[24] = hex2dec(linkBuffer[i], 100);
+    TelemBuffer[25] = hex2dec(linkBuffer[i], 10);
+    TelemBuffer[26] = hex2dec(linkBuffer[i], 1);
+	i++;
+	if (linkBuffer[i] == 0x7D)
+    {
+      i++;
+      linkBuffer[i] ^= 0x20;
+    }
+    TelemBuffer[37] = hex2dec(linkBuffer[i], 100);
+    TelemBuffer[38] = hex2dec(linkBuffer[i], 10);
+    TelemBuffer[39] = hex2dec(linkBuffer[i], 1);
+    FrskyBufferReady = 0;
+  }
+  
+  lcd_puts_P(  1*FW, FH*1, PSTR(" Analogue 2"));    
+  lcd_puts_P(  1*FW, FH*4,PSTR(" Tx RSSI") );
+
+  for (uint8_t i = 3; i < 8; i++)
+  {
+  lcd_putcAtt((i-2)*FW*2,   2*FH, TelemBuffer[i+8], DBLSIZE);
+    lcd_putcAtt((i-2)*FW*2,   5*FH, TelemBuffer[i+34], DBLSIZE);
+  }
+
+}
+
 #endif
 
 void menuProcStatistic(uint8_t event)
@@ -2554,7 +2647,7 @@ void menuProc0(uint8_t event)
 #endif
 #ifdef FRSKY
       FRSKY_EnableRXD(); // enable FrSky-Telemetry reception
-      chainMenu(menuProcJeti);
+      chainMenu(menuProcFrsky);
 #endif
       killEvents(event);
       break;
