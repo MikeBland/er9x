@@ -22,7 +22,7 @@ uint8_t displayBuf[DISPLAY_W*DISPLAY_H/8];
 #include "font.lbm"
 #define font_5x8_x20_x7f (font+3)
 
-#include "dbl_font.lbm"
+//#include "dbl_font.lbm"
 
 #define BITMASK(bit) (1<<(bit))
 void lcd_clear()
@@ -59,23 +59,27 @@ void lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
     bool         inv = (mode & INVERS) ? true : (mode & BLINK ? BLINK_ON_PHASE : false);
     if(mode&DBLSIZE)
     {
-//        for(char i=5; i>=0; i--){
-//            uint8_t b = i ? pgm_read_byte(q++) : 0;
-//            if(inv) b=~b;
-//            static uint8_t dbl[]={0x00,0x03,0x0c,0x0f, 0x30,0x33,0x3c,0x3f,
-//                                  0xc0,0xc3,0xcc,0xcf, 0xf0,0xf3,0xfc,0xff};
-//            if(&p[DISPLAY_W+1] < DISPLAY_END){
-//                p[0] = p[1] = dbl[b&0xf];
-//                p[DISPLAY_W]=p[DISPLAY_W+1] = dbl[b>>4];
-//                p+=2;
-//            }
-//        }
-        q = &dbl_font[(c-0x20)*10];
-        for(char i=20; i!=0; i--){
-            uint8_t b = pgm_read_byte(q++);
-            if(p<DISPLAY_END) *p++ = inv ? ~b : b;
+        for(char i=5; i>=0; i--){
+            uint8_t b = i ? pgm_read_byte(q++) : 0;
+            if(inv) b=~b;
+            static uint8_t dbl[]={0x00,0x03,0x0c,0x0f, 0x30,0x33,0x3c,0x3f,
+                                  0xc0,0xc3,0xcc,0xcf, 0xf0,0xf3,0xfc,0xff};
+            if(&p[DISPLAY_W+1] < DISPLAY_END){
+                p[0] = p[1] = dbl[b&0xf];
+                p[DISPLAY_W]=p[DISPLAY_W+1] = dbl[b>>4];
+                p+=2;
+            }
         }
-//        if(p<DISPLAY_END) *p++ = inv ? ~0 : 0;
+//        q = &dbl_font[(c-0x20)*20];
+//        for(char i=0; i<10; i++){
+//            uint8_t b = pgm_read_byte(q++);
+//            if((p+DISPLAY_W)<DISPLAY_END) *(p+DISPLAY_W) = inv ? ~b : b;
+//            b = pgm_read_byte(q++);
+//            if(p<DISPLAY_END) *p = inv ? ~b : b;
+//            p++;
+//        }
+//        if(p<DISPLAY_END) *p = inv ? ~0 : 0;
+//        if((p+DISPLAY_W)<DISPLAY_END) *(p+DISPLAY_W) = inv ? ~0 : 0;
     }
     else
     {
@@ -83,7 +87,7 @@ void lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
             uint8_t b = pgm_read_byte(q++);
             if(p<DISPLAY_END) *p++ = inv ? ~b : b;
         }
-//        if(p<DISPLAY_END) *p++ = inv ? ~0 : 0;
+        if(p<DISPLAY_END) *p++ = inv ? ~0 : 0;
     }
 }
 
