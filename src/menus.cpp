@@ -2707,7 +2707,6 @@ void menuProc0(uint8_t event)
   lcd_putsnAtt(x+4*FW,     2*FH,PSTR("ExpExFFneMedCrs")+3*g_model.trimInc,3, 0);
   lcd_putsnAtt(x+8*FW-FW/2,2*FH,PSTR("   TTm")+3*g_model.thrTrim,3, 0);
 
-
   //trim sliders
   for(uint8_t i=0; i<4; i++)
   {
@@ -2728,7 +2727,7 @@ void menuProc0(uint8_t event)
       }
       ym -= val;
     }else{
-      ym=60;
+      ym=59;
       lcd_hline(xm-TL,ym,    TL*2);
       lcd_hline(xm-1, ym-1,  3);
       lcd_hline(xm-1, ym+1,  3);
