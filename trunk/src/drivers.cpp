@@ -75,6 +75,7 @@ class Key
 #define FILTERBITS      4
 #define FFVAL          ((1<<FILTERBITS)-1)
 #define KSTATE_OFF      0
+#define KSTATE_RPTDELAY 95 // gruvin: longer dely before key repeating starts
   //#define KSTATE_SHORT   96
 #define KSTATE_START   97
 #define KSTATE_PAUSE   98
@@ -122,12 +123,27 @@ void Key::input(bool val, EnumKeys enuk)
     case KSTATE_START:
       putEvent(EVT_KEY_FIRST(enuk));
       m_dblcnt++;
+#ifdef KSTATE_RPTDELAY
+      m_state   = KSTATE_RPTDELAY;
+#else
       m_state   = 16;
+#endif
       m_cnt     = 0;
       break;
+#ifdef KSTATE_RPTDELAY
+    case KSTATE_RPTDELAY: // gruvin: longer delay before first key repeat
+      if(m_cnt == 24) putEvent(EVT_KEY_LONG(enuk)); // need to catch this inside RPTDELAY time
+      if (m_cnt == 40) {
+        m_state = 16;
+        m_cnt = 0;
+      }
+      break;
+#endif
     case 16:
-      if(m_cnt == 24)        putEvent(EVT_KEY_LONG(enuk));
+#ifndef KSTATE_RPTDELAY
+      if(m_cnt == 24) putEvent(EVT_KEY_LONG(enuk));
       //fallthrough
+#endif
     case 8:
     case 4:
     case 2:
