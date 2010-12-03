@@ -931,6 +931,10 @@ int main(void)
   FRSKY_Init();
 #endif
 
+#ifdef ARDUPILOT
+  ARDUPILOT_Init();
+#endif
+
   ADMUX=ADC_VREF_TYPE;
   ADCSRA=0x85;
 

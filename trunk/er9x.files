@@ -17,3 +17,5 @@ src/myeeprom.h
 src/simpgmspace.h
 src/templates.h
 src/font.lbm
+src/ardupilot.h
+src/ardupilot.cpp

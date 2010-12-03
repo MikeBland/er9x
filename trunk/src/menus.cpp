@@ -2638,7 +2638,7 @@ void menuProc0(uint8_t event)
       killEvents(event);
       break;
     case EVT_KEY_LONG(KEY_DOWN):
-#if (!(defined(JETI) || defined(FRSKY)))
+#if (!(defined(JETI) || defined(FRSKY) || defined(ARDUPILOT)))
       chainMenu(menuProcStatistic2);
 #endif
 #ifdef JETI
@@ -2648,6 +2648,10 @@ void menuProc0(uint8_t event)
 #ifdef FRSKY
       FRSKY_EnableRXD(); // enable FrSky-Telemetry reception
       chainMenu(menuProcFrsky);
+#endif
+#ifdef ARDUPILOT
+      ARDUPILOT_EnableRXD(); // enable ArduPilot-Telemetry reception
+      chainMenu(menuProcArduPilot);
 #endif
       killEvents(event);
       break;

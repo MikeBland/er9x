@@ -9,6 +9,9 @@ make clean
 make EXT=FRSKY
 mv er9x.hex ../er9x-frsky.hex
 make clean
+make EXT=ARDUPILOT
+mv er9x.hex ../er9x-ardupilot.hex
+make clean
 make
 mv er9x.hex ../er9x.hex
 make clean 
