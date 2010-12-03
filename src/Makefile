@@ -59,6 +59,10 @@ ifeq ($(EXT), FRSKY)
  CPPSRC += frsky.cpp
 endif
 
+ifeq ($(EXT), ARDUPILOT)
+ CPPSRC += ardupilot.cpp
+endif
+
 # List Assembler source files here.
 #     Make them always end in a capital .S.  Files ending in a lowercase .s
 #     will not be considered source files but generated files (assembler
@@ -114,6 +118,11 @@ endif
 # If FRSKY-Support is enabled
 ifeq ($(EXT), FRSKY)
  CPPDEFS += -DFRSKY
+endif
+
+# If ARDUPILOT-Support is enabled
+ifeq ($(EXT), ARDUPILOT)
+ CPPDEFS += -DARDUPILOT
 endif
 
 #---------------- Compiler Options C ----------------

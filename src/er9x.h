@@ -131,7 +131,7 @@
 #define INP_E_AileDR  1
 #define INP_E_ThrCt   0
 
-#if (defined(JETI) || defined(FRSKY))
+#if (defined(JETI) || defined(FRSKY) || defined(ARDUPILOT))
   #undef INP_E_ThrCt
   #undef INP_E_AileDR
   #define INP_C_ThrCt   6
@@ -578,6 +578,11 @@ extern uint16_t jeti_keys;
 #ifdef FRSKY
 // FrSky Telemetry
 #include "frsky.h"
+#endif
+
+#ifdef ARDUPILOT
+// ArduPilot Telemetry
+#include "ardupilot.h"
 #endif
 
 //extern TrainerData g_trainer;
