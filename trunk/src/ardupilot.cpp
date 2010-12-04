@@ -496,7 +496,7 @@ void menuProcArduPilot1(uint8_t event)
     lcd_putsAtt (2*FW, 2*FH, VALSTR(0), APSIZE);
     lcd_puts_P  (5*FW, 4*FH, PSTR(" Longitude"));  // line 4 column 5
 // second buffer into line 5 column 2
-    lcd_putsAtt (2*FW, 5*FH, VALSTR(1), APSIZE);
+    lcd_putsAtt (1*FW, 5*FH, VALSTR(1), APSIZE);
 }
 
 void menuProcArduPilot2(uint8_t event)
