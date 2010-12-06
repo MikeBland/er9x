@@ -2210,7 +2210,7 @@ void timer(uint8_t val)
   {
       if(s_timerState==TMR_RUNNING)
       {
-          if(g_eeGeneral.preBeep) // beep when 30, 15, 10, 5,4,3,2,1 seconds remaining
+          if(g_eeGeneral.preBeep && g_model.tmrVal) // beep when 30, 15, 10, 5,4,3,2,1 seconds remaining
           {
               if(s_timerVal==30) {beepAgain=2; beepWarn2();} //beep three times
               if(s_timerVal==20) {beepAgain=1; beepWarn2();} //beep two times
