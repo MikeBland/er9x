@@ -2679,6 +2679,7 @@ void menuProc0(uint8_t event)
       break;
   }
 
+
   if(getSwitch(g_model.trimSw,0) && !trimSwLock) setStickCenter();
   trimSwLock = getSwitch(g_model.trimSw,0);
 
@@ -2695,8 +2696,8 @@ void menuProc0(uint8_t event)
     uint8_t tn = (g_vbat100mV/10) % 10;
     uint8_t sn = g_vbat100mV % 10;
 
-    if(sn==2 || sn==3) ln++;
-    if(tn==1 || tn==2) {xn--;ln++;}
+    if(sn==2 || sn==3 || sn==1) ln++;
+    if(tn==2 || tn==4) {xn--;ln++;}
 
     lcd_hline(xn+2*FW,4*FH-4,ln);
     lcd_hline(xn+2*FW,4*FH-3,ln);
