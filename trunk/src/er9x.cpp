@@ -45,7 +45,7 @@ void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
 
   lcd_putcAtt(   x,    y, tme<0 ?'-':' ',att);
   x += (att&DBLSIZE) ? FWNUM*5 : FWNUM*3+2;
-  lcd_putcAtt(   x, y, ':',att);
+  lcd_putcAtt(   x+2, y, ':',att);
   lcd_outdezNAtt(x, y, abs(tme)/60,LEADING0+att,2);
   x += (att&DBLSIZE) ? FWNUM*5-1 : FWNUM*4-2;
   lcd_outdezNAtt(x, y, abs(tme)%60,LEADING0+att2,2);
@@ -396,8 +396,10 @@ uint8_t checkTrim(uint8_t event)
     //LH_DWN LH_UP LV_DWN LV_UP RV_DWN RV_UP RH_DWN RH_UP
     uint8_t idx = k/2;
     int8_t  v = (s==0) ? (abs(g_model.trim[idx])/4)+1 : s;
-    bool thro = (((2-(g_eeGeneral.stickMode&1)) == idx) && (g_model.thrTrim));
-    if (thro) v = 4; // if throttle trim and trim trottle then step=4
+    bool thrChan = ((2-(g_eeGeneral.stickMode&1)) == idx);
+    bool thro = (thrChan && (g_model.thrTrim));
+    if(thro) v = 4; // if throttle trim and trim trottle then step=4
+    if(thrChan && g_eeGeneral.throttleReversed) v = -v;  // throttle reversed = trim reversed
     int16_t x = (k&1) ? g_model.trim[idx] + v : g_model.trim[idx] - v;   // positive = k&1
 
     if(((x==0)  ||  ((x>=0) != (g_model.trim[idx]>=0))) && (!thro) && (g_model.trim[idx]!=0)){
