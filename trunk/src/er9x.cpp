@@ -236,7 +236,7 @@ void doSplash()
         lcd_img(0, 0, s9xsplash,0,0);
         lcd_putsnAtt(0*FW, 7*FH, g_eeGeneral.ownerName ,sizeof(g_eeGeneral.ownerName),BSS_NO_INV);
         refreshDiplay();
-        lcdSetRefVolt(g_eeGeneral.contrast);        
+        lcdSetRefVolt(g_eeGeneral.contrast);
 
         clearKeyEvents();
         uint16_t tgtime = g_tmr10ms + 250;  //2sec splash screen
@@ -271,6 +271,13 @@ void checkTHR()
   int16_t lowLim = THRCHK_DEADBAND + g_eeGeneral.calibMid[thrchn] - g_eeGeneral.calibSpanNeg[thrchn] +
     g_eeGeneral.calibSpanNeg[thrchn]/8;
 
+  getADC_single();   // if thr is down - do not display warning at all
+  int16_t v      = anaIn(thrchn);
+  if((v<=lowLim) ||
+     (keyDown()))
+  {
+      return;
+  }
 
   // first - display warning
   lcd_clear();
@@ -732,7 +739,7 @@ void getADC_filt()
       ADCSRA|=0x40;
       // Wait for the AD conversion to complete
       while ((ADCSRA & 0x10)==0);
-      ADCSRA|=0x10; 
+      ADCSRA|=0x10;
 
       s_anaFilt[adc_input] = (s_anaFilt[adc_input]/2 + t_ana[1][adc_input]) & 0xFFFE; //gain of 2 on last conversion - clear last bit
       //t_ana[2][adc_input]  =  (t_ana[2][adc_input]  + t_ana[1][adc_input]) >> 1;

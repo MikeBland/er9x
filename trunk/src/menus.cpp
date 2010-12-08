@@ -464,7 +464,7 @@ void menuProcLimits(uint8_t event)
           break;
         case 2:
           lcd_outdezAtt(  12*FW, y, (int8_t)(ld->min-100),   attr);
-          if(attr && (s_editMode || p1valdiff)) {              
+          if(attr && (s_editMode || p1valdiff)) {
               ld->min -=  100;
               if(g_model.extendedLimits)
               {if(CHECK_INCDEC_H_MODELVAR( event, ld->min, -125,125))  LIMITS_DIRTY;}
@@ -1682,13 +1682,15 @@ void menuProcModelSelect(uint8_t event)
         LIMITS_DIRTY;
         beepKey();
       }
-      //case EXIT handled in checkExit
       if(event==EVT_KEY_FIRST(KEY_RIGHT))  chainMenu(menuProcModel);
       if(event==EVT_KEY_FIRST(KEY_EXIT))  pushMenu(menuProcModelSelect);
       break;
     case  EVT_KEY_FIRST(KEY_MENU):
         sel_editMode = true;
         beepKey();
+        break;
+    case  EVT_KEY_LONG(KEY_EXIT):  // make sure exit long exits to main
+        popMenu(true);
         break;
     case  EVT_KEY_LONG(KEY_MENU):
       if(sel_editMode){
@@ -2389,7 +2391,7 @@ void menuProcFrsky(uint8_t event)
   {
     //case EVT_KEY_FIRST(KEY_MENU):0.0v
     //  break;
-	case EVT_KEY_FIRST(KEY_DOWN):
+        case EVT_KEY_FIRST(KEY_DOWN):
        chainMenu(menuProcFrsky1);
        break;
     case EVT_KEY_FIRST(KEY_EXIT):
@@ -2401,7 +2403,7 @@ void menuProcFrsky(uint8_t event)
   if (FrskyBufferReady)
   {
     uint8_t i=0;
-	linkBuffer[3] /= 2;		// Tx RSSI value is doubled
+        linkBuffer[3] /= 2;		// Tx RSSI value is doubled
     if (linkBuffer[i] == 0x7D)
     {
       i++;
@@ -2428,8 +2430,8 @@ void menuProcFrsky(uint8_t event)
     TelemBuffer[24] = hex2dec(linkBuffer[i], 100);
     TelemBuffer[25] = hex2dec(linkBuffer[i], 10);
     TelemBuffer[26] = hex2dec(linkBuffer[i], 1);
-	i++;
-	if (linkBuffer[i] == 0x7D)
+        i++;
+        if (linkBuffer[i] == 0x7D)
     {
       i++;
       linkBuffer[i] ^= 0x20;
@@ -2439,8 +2441,8 @@ void menuProcFrsky(uint8_t event)
     TelemBuffer[39] = hex2dec(linkBuffer[i], 1);
     FrskyBufferReady = 0;
   }
-  
-  lcd_puts_P(  1*FW, FH*1, PSTR(" Pack Volts"));    
+
+  lcd_puts_P(  1*FW, FH*1, PSTR(" Pack Volts"));
   lcd_puts_P(  1*FW, FH*4,PSTR(" Rx RSSI") );
 
   for (uint8_t i = 3; i < 8; i++)
@@ -2463,19 +2465,19 @@ void menuProcFrsky1(uint8_t event)
       FRSKY_DisableRXD();
       chainMenu(menuProc0);
       break;*/
-	case EVT_KEY_FIRST(KEY_UP):
-	  chainMenu(menuProcFrsky);
+        case EVT_KEY_FIRST(KEY_UP):
+          chainMenu(menuProcFrsky);
       break;
     case EVT_KEY_FIRST(KEY_EXIT):
       FRSKY_DisableRXD();
       chainMenu(menuProc0);
-      break;  
+      break;
   }
 
   if (FrskyBufferReady)
   {
     uint8_t i=0;
-	linkBuffer[3] /= 2;		// Tx RSSI value is doubled
+        linkBuffer[3] /= 2;		// Tx RSSI value is doubled
     if (linkBuffer[i] == 0x7D)
     {
       i++;
@@ -2502,8 +2504,8 @@ void menuProcFrsky1(uint8_t event)
     TelemBuffer[24] = hex2dec(linkBuffer[i], 100);
     TelemBuffer[25] = hex2dec(linkBuffer[i], 10);
     TelemBuffer[26] = hex2dec(linkBuffer[i], 1);
-	i++;
-	if (linkBuffer[i] == 0x7D)
+        i++;
+        if (linkBuffer[i] == 0x7D)
     {
       i++;
       linkBuffer[i] ^= 0x20;
@@ -2513,8 +2515,8 @@ void menuProcFrsky1(uint8_t event)
     TelemBuffer[39] = hex2dec(linkBuffer[i], 1);
     FrskyBufferReady = 0;
   }
-  
-  lcd_puts_P(  1*FW, FH*1, PSTR(" Analogue 2"));    
+
+  lcd_puts_P(  1*FW, FH*1, PSTR(" Analogue 2"));
   lcd_puts_P(  1*FW, FH*4,PSTR(" Tx RSSI") );
 
   for (uint8_t i = 3; i < 8; i++)
