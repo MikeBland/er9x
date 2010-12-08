@@ -105,19 +105,19 @@ void eeLoadModel(uint8_t id, uint8_t check_thrdoChecks)
 {
     if(id<MAX_MODELS)
     {
-        if(check_thrdoChecks)
-        {
-            cli();
-            PULSEGEN_OFF;
-            sei();
-            wdt_disable();
-            checkTHR();
-            checkSwitches();
-            wdt_enable(WDTO_500MS);
-            cli();
-            PULSEGEN_ON;
-            sei();
-        }
+//        if(check_thrdoChecks)
+//        {
+//            cli();
+//            PULSEGEN_OFF;
+//            sei();
+//            wdt_disable();
+//            checkTHR();
+//            checkSwitches();
+//            wdt_enable(WDTO_500MS);
+//            cli();
+//            PULSEGEN_ON;
+//            sei();
+//        }
         theFile.openRd(FILE_MODEL(id));
         memset(&g_model, 0, sizeof(ModelData));
         uint16_t sz = theFile.readRlc((uint8_t*)&g_model, sizeof(g_model));
