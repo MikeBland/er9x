@@ -42,11 +42,14 @@
 #define PREC(n)       (((n)>>5)&3)
 #define DBLSIZE       0x80
 
+/* flag for lcd_putcAtt() */
+#define CONDENSE_LETTER 0x01
+
 
 //extern unsigned char font_5x8_x20_x7f[];
 extern unsigned char displayBuf[DISPLAY_W*DISPLAY_H/8];
 
-extern void lcd_putcAtt(unsigned char x,unsigned char y,const char c,uint8_t mode);
+extern void lcd_putcAtt(unsigned char x,unsigned char y,const char c,uint8_t mode,uint8_t flag=0);
 extern unsigned char lcd_putsAtt(unsigned char x,unsigned char y,const prog_char * s,uint8_t mode);
 extern void lcd_putsnAtt(unsigned char x,unsigned char y,const prog_char * s,unsigned char len,uint8_t mode);
 
