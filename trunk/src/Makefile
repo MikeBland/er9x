@@ -390,7 +390,7 @@ VER = $(shell echo $$(( $(AVER) + 1 )))
 all: begin gccversion sizebefore build sizeafter end
 
 # Change the build target to build a HEX file or a library.
-build: stamp font.lbm sticks.lbm s9xsplash.lbm elf hex eep lss sym
+build: stamp font_dblsize.lbm font.lbm sticks.lbm s9xsplash.lbm elf hex eep lss sym
 #build: lib
 
 
@@ -421,14 +421,19 @@ font.lbm: font_6x1.xbm
 	@echo "Convert font from xbm to lbm:"
 	$(XBM2LBM) $<
 
+font_dblsize.lbm: font_dblsize.xbm
+	@echo
+	@echo "Convert doublesize font from xbm to lbm:"
+	$(XBM2LBM) $<
+
 sticks.lbm: sticks_4x1.xbm
 	@echo
-	@echo "Convert font from xbm to lbm:"
+	@echo "Convert sticks from xbm to lbm:"
 	$(XBM2LBM) $<
 
 s9xsplash.lbm: s9xsplash.xbm
 	@echo
-	@echo "Convert font from xbm to lbm:"
+	@echo "Convert splash screen from xbm to lbm:"
 	$(XBM2LBM) $<
 
 # Eye candy.

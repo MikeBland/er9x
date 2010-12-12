@@ -45,7 +45,7 @@ void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
 
   lcd_putcAtt(   x,    y, tme<0 ?'-':' ',att);
   x += (att&DBLSIZE) ? FWNUM*5 : FWNUM*3+2;
-  lcd_putcAtt(   x+2, y, ':',att);
+  lcd_putcAtt(   x+3, y, ':',att);
   lcd_outdezNAtt(x, y, abs(tme)/60,LEADING0+att,2);
   x += (att&DBLSIZE) ? FWNUM*5-1 : FWNUM*4-2;
   lcd_outdezNAtt(x, y, abs(tme)%60,LEADING0+att2,2);

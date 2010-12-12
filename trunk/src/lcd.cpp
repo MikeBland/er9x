@@ -22,7 +22,8 @@ uint8_t displayBuf[DISPLAY_W*DISPLAY_H/8];
 #include "font.lbm"
 #define font_5x8_x20_x7f (font+3)
 
-//#include "dbl_font.lbm"
+#include "font_dblsize.lbm"
+#define font_10x16_x20_x7f (font_dblsize+3)
 
 #define BITMASK(bit) (1<<(bit))
 void lcd_clear()
@@ -50,7 +51,7 @@ void lcd_img(uint8_t i_x,uint8_t i_y,const prog_uchar * imgdat,uint8_t idx,uint8
 }
 
 /// invers: 0 no 1=yes 2=blink
-void lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
+void lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode,uint8_t flag)
 {
     uint8_t *p    = &displayBuf[ y / 8 * DISPLAY_W + x ];
     //uint8_t *pmax = &displayBuf[ DISPLAY_H/8 * DISPLAY_W ];
@@ -59,14 +60,32 @@ void lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
     bool         inv = (mode & INVERS) ? true : (mode & BLINK ? BLINK_ON_PHASE : false);
     if(mode&DBLSIZE)
     {
+	/* each letter consists of ten top bytes followed by
+	 * five bottom by ten bottom bytes (20 bytes per 
+	 * char) */
+        q = &font_10x16_x20_x7f[(c-0x20)*10 + ((c-0x20)/16)*160];
         for(char i=5; i>=0; i--){
-            uint8_t b = i ? pgm_read_byte(q++) : 0;
-            if(inv) b=~b;
-            static uint8_t dbl[]={0x00,0x03,0x0c,0x0f, 0x30,0x33,0x3c,0x3f,
-                                  0xc0,0xc3,0xcc,0xcf, 0xf0,0xf3,0xfc,0xff};
+	    /*top byte*/
+            uint8_t b1 = i>0 ? pgm_read_byte(q) : 0;
+	    /*bottom byte*/
+            uint8_t b3 = i>0 ? pgm_read_byte(160+q) : 0;
+	    /*top byte*/
+            uint8_t b2 = i>0 ? pgm_read_byte(++q) : 0;
+	    /*bottom byte*/
+            uint8_t b4 = i>0 ? pgm_read_byte(160+q) : 0;
+            q++;
+            if(inv) {
+                b1=~b1;
+                b2=~b2;
+                b3=~b3;
+                b4=~b4;
+            }
+
             if(&p[DISPLAY_W+1] < DISPLAY_END){
-                p[0] = p[1] = dbl[b&0xf];
-                p[DISPLAY_W]=p[DISPLAY_W+1] = dbl[b>>4];
+                p[0]=b1;
+                p[1]=b2;
+                p[DISPLAY_W] = b3;
+                p[DISPLAY_W+1] = b4;
                 p+=2;
             }
         }
@@ -83,8 +102,19 @@ void lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
     }
     else
     {
+        uint8_t condense=0;
+
+        if (flag & CONDENSE_LETTER) {
+            *p++ = inv ? ~0 : 0;
+            condense=1;
+	}
+
         for(char i=5; i!=0; i--){
             uint8_t b = pgm_read_byte(q++);
+    	    if (condense && i==4) {
+                /*condense the letter by skipping column 4 */
+                continue;
+            }
             if(p<DISPLAY_END) *p++ = inv ? ~b : b;
         }
         if(p<DISPLAY_END) *p++ = inv ? ~0 : 0;
@@ -132,7 +162,7 @@ void lcd_outhex4(uint8_t x,uint8_t y,uint16_t val)
     x-=FWNUM;
     char c = val & 0xf;
     c = c>9 ? c+'A'-10 : c+'0';
-    lcd_putc(x,y,c);
+    lcd_putcAtt(x,y,c,false,c>='A'?CONDENSE_LETTER:0);
     val>>=4;
   }
 }
