@@ -273,6 +273,7 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define DSW_SW6  15
 
 #define THRCHK_DEADBAND 16
+#define SPLASH_TIMEOUT  (4*100)  //400 msec - 4 seconds
 
 #define IS_THROTTLE(x)  (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4))
 

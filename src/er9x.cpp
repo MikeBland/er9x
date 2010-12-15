@@ -232,6 +232,11 @@ void doSplash()
 {
     if(!g_eeGeneral.disableSplashScreen)
     {
+        if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff)
+             BACKLIGHT_ON;
+        else
+             BACKLIGHT_OFF;
+                
         lcd_clear();
         lcd_img(0, 0, s9xsplash,0,0);
         lcd_putsnAtt(0*FW, 7*FH, g_eeGeneral.ownerName ,sizeof(g_eeGeneral.ownerName),BSS_NO_INV);
@@ -239,7 +244,7 @@ void doSplash()
         lcdSetRefVolt(g_eeGeneral.contrast);
 
         clearKeyEvents();
-        uint16_t tgtime = g_tmr10ms + 250;  //2sec splash screen
+        uint16_t tgtime = g_tmr10ms + SPLASH_TIMEOUT;  
         while(tgtime != g_tmr10ms)
         {
             if(keyDown())   return;  //wait for key release
