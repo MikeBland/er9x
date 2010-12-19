@@ -381,7 +381,8 @@ char idx2char(uint8_t idx);
 void checkMem();
 void checkTHR();
 ///   Pr�ft beim Einschalten ob alle Switches 'off' sind.
-void    checkSwitches();
+void checkSwitches();
+void checkQuickSelect(); // Quick model select on startup
 
 /// Bearbeite alle events die zum gewaehlten mode passen.
 /// KEY_LEFT u. KEY_RIGHT
