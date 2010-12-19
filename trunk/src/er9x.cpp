@@ -212,14 +212,9 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 //#define CS_ELESS     13
 
 
-bool keyDown()
+inline uint8_t keyDown()
 {
-    for(uint8_t i=0; i<6; i++)
-    {
-        bool t=keyState((EnumKeys)(KEY_MENU+i));
-        if(t) return true;  //if a key is down break for loop and resume while
-    }
-    return false;
+    return (~PINB) & 0x7E;
 }
 
 void clearKeyEvents()
@@ -357,6 +352,37 @@ void checkSwitches()
         BACKLIGHT_OFF;
   }
 }
+
+void checkQuickSelect()
+{
+    uint8_t i = keyDown(); //check for keystate
+    uint8_t j;
+    for(j=1; j<8; j++)
+        if(i & (1<<j)) break;
+    j--;
+
+    if(j<6) {
+        eeLoadModel(g_eeGeneral.currModel = j, false);
+        eeDirty(EE_GENERAL);
+
+        lcd_clear();
+        lcd_putsAtt(64-7*FW,0*FH,PSTR("LOADING"),DBLSIZE);
+
+        for(uint8_t i=0;i<sizeof(g_model.name);i++)
+            lcd_putcAtt(FW*2+i*2*FW-i-2, 3*FH, g_model.name[i],DBLSIZE);
+
+        refreshDiplay();
+        lcdSetRefVolt(g_eeGeneral.contrast);
+
+        if(g_eeGeneral.lightSw || g_eeGeneral.lightAutoOff) // if lightswitch is defined or auto off
+            BACKLIGHT_ON;
+        else
+            BACKLIGHT_OFF;
+
+        clearKeyEvents(); // wait for user to release key
+    }
+}
+
 
 MenuFuncP g_menuStack[5];
 
@@ -972,6 +998,7 @@ int main(void)
 
   lcdSetRefVolt(25);
   eeReadAll();
+  checkQuickSelect();
   doSplash();
   checkMem();
   //setupAdc(); //before checkTHR

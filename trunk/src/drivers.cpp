@@ -257,11 +257,5 @@ void per10ms()
     keys[enuk].input(in & pgm_read_byte(crossTrim+i),(EnumKeys)enuk);
     ++enuk;
   }
-  //  for(int i=0; i<8; i++)
-  //  {
-  //    g_anaIns[i] = anaIn(i);
-  //  }
-
-  //  STARTADCONV;            // Analogkanäle lesen
 
 }
