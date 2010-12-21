@@ -211,7 +211,6 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 //#define CS_EGREATER  12
 //#define CS_ELESS     13
 
-
 inline uint8_t keyDown()
 {
     return (~PINB) & 0x7E;
@@ -239,10 +238,24 @@ void doSplash()
         lcdSetRefVolt(g_eeGeneral.contrast);
 
         clearKeyEvents();
+
+        for(uint8_t i=0; i<32; i++)
+            getADC_filt(); // init ADC array
+
+#define INAC_DEVISOR 256   // Issue 206 - bypass splash screen with stick movement
+        uint16_t inacSum = 0;
+        for(uint8_t i=0; i<4; i++)
+           inacSum += anaIn(i)/INAC_DEVISOR;
+
         uint16_t tgtime = g_tmr10ms + SPLASH_TIMEOUT;  
         while(tgtime != g_tmr10ms)
         {
-            if(keyDown())   return;  //wait for key release
+            getADC_filt();
+            uint16_t tsum = 0;
+            for(uint8_t i=0; i<4; i++)
+               tsum += anaIn(i)/INAC_DEVISOR;
+
+            if(keyDown() || (tsum!=inacSum))   return;  //wait for key release
 
             if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff)
                 BACKLIGHT_ON;
@@ -362,6 +375,8 @@ void checkQuickSelect()
     j--;
 
     if(j<6) {
+        if(!eeModelExists(j)) return;
+
         eeLoadModel(g_eeGeneral.currModel = j, false);
         eeDirty(EE_GENERAL);
 
@@ -731,21 +746,21 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
   heartbeat |= HEART_TIMER2Mhz;
 }
 
-class AutoLock
-{
-  uint8_t m_saveFlags;
-public:
-  AutoLock(){
-    m_saveFlags = SREG;
-    cli();
-  };
-  ~AutoLock(){
-    if(m_saveFlags & (1<<SREG_I)) sei();
-    //SREG = m_saveFlags;// & (1<<SREG_I)) sei();
-  };
-};
+//class AutoLock
+//{
+//  uint8_t m_saveFlags;
+//public:
+//  AutoLock(){
+//    m_saveFlags = SREG;
+//    cli();
+//  };
+//  ~AutoLock(){
+//    if(m_saveFlags & (1<<SREG_I)) sei();
+//    //SREG = m_saveFlags;// & (1<<SREG_I)) sei();
+//  };
+//};
 
-#define STARTADCONV (ADCSRA  = (1<<ADEN) | (1<<ADPS0) | (1<<ADPS1) | (1<<ADPS2) | (1<<ADSC) | (1 << ADIE))
+//#define STARTADCONV (ADCSRA  = (1<<ADEN) | (1<<ADPS0) | (1<<ADPS1) | (1<<ADPS2) | (1<<ADSC) | (1 << ADIE))
 static uint16_t s_anaFilt[8];
 uint16_t anaIn(uint8_t chan)
 {
@@ -753,10 +768,9 @@ uint16_t anaIn(uint8_t chan)
   //static prog_char APM crossAna[]={4,2,3,1,5,6,7,0}; // wenn schon Tabelle, dann muss sich auch lohnen
   static prog_char APM crossAna[]={3,1,2,0,4,5,6,7};
   volatile uint16_t *p = &s_anaFilt[pgm_read_byte(crossAna+chan)];
-  AutoLock autoLock;
+//  AutoLock autoLock;
   return  *p;
 }
-
 
 
 
