@@ -197,7 +197,7 @@ enum EnumKeys {
 };
 
 #define SWITCHES_STR "THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN""SW1""SW2""SW3""SW4""SW5""SW6"
-#define NUM_CSW  6 //number of custom switches
+#define NUM_CSW  12 //number of custom switches
 
 #define CURV_STR "---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
 #define CURVE_BASE 7
@@ -485,6 +485,7 @@ uint16_t eeFileSize(uint8_t id);
 void eeLoadModel(uint8_t id, uint8_t doChecks=true);
 //void eeSaveModel(uint8_t id);
 bool eeDuplicateModel(uint8_t id);
+bool eeModelExists(uint8_t id);
 
 #define NUM_PPM     8
 //number of real outputchannels CH1-CH8

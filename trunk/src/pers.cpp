@@ -101,6 +101,11 @@ uint16_t eeFileSize(uint8_t id)
     return theFile.size();
 }
 
+bool eeModelExists(uint8_t id)
+{
+    return EFile::exists(FILE_MODEL(id));
+}
+
 void eeLoadModel(uint8_t id, uint8_t check_thrdoChecks)
 {
     if(id<MAX_MODELS)
