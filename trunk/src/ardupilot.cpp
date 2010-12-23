@@ -16,7 +16,6 @@
  */
 
 #include "er9x.h"
-
 #include "ardupilot.h"
 
 #define NB_BUF 2
