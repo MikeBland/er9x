@@ -2761,7 +2761,7 @@ void menuProc0(uint8_t event)
       case 1:
 #define WBAR2 (50/2)
 #define GPERC2(x) GPERC(x/2)
-        x0       = i<4 ? 128/4+4 : 128*3/4-4;
+        x0       = i<4 ? 128/4+2 : 128*3/4-2;
         y0       = 38+(i%4)*5;
         int8_t l = (abs(GPERC2(val))+WBAR2/2) * WBAR2 / 512;
         if(l>WBAR2)  l =  WBAR2;  // prevent bars from going over the end - comment for debugging
