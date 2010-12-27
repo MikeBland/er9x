@@ -240,7 +240,7 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 //#define SWITCHES_STR "  NC  ON THR RUD ELE ID0 ID1 ID2 AILGEARTRNR"
 #define MAX_DRSWITCH (1+SW_Trainer-SW_ThrCt+1+NUM_CSW)
 
-#define SWASH_TYPE_STR   "120 ""120X""140 ""90  "
+#define SWASH_TYPE_STR   "120   ""120X  ""140   ""90    "
 
 #define SWASH_TYPE_120   1
 #define SWASH_TYPE_120X  2

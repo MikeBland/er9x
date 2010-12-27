@@ -1537,13 +1537,13 @@ void menuProcModel(uint8_t event)
 
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("Swash Type"),0);
-    lcd_putsnAtt(  10*FW, y, PSTR(SWASH_TYPE_STR)+6*g_model.trimInc,6,(sub==subN ? INVERS:0));
+    lcd_putsnAtt(  10*FW, y, PSTR(SWASH_TYPE_STR)+6*g_model.swashType,6,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_MODELVAR_BF(event,g_model.swashType,0,SWASH_TYPE_NUM);
     if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
-    lcd_putsAtt(    0,    y, PSTR("Swash Type"),0);
+    lcd_putsAtt(    0,    y, PSTR("Swash Src"),0);
     putsChnRaw(10*FW, y, g_model.swashCollectiveSource,  sub==subN ? INVERS : 0);
     if(sub==subN) CHECK_INCDEC_H_MODELVAR(event, g_model.swashCollectiveSource, 0, NUM_XCHNRAW);
     if((y+=FH)>7*FH) return;
