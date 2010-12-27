@@ -1409,8 +1409,8 @@ void menuProcModel(uint8_t event)
   static MState2 mstate2;
   uint8_t x=TITLE("SETUP ");
   lcd_outdezNAtt(x+2*FW,0,g_eeGeneral.currModel+1,INVERS+LEADING0,2);
-  MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,7,3,1,1,1};
-  MSTATE_CHECK_VxH(2,menuTabModel,14);
+  MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,1,1,7,3,1,1,1};
+  MSTATE_CHECK_VxH(2,menuTabModel,16);
   int8_t  sub    = mstate2.m_posVert;
   uint8_t subSub = mstate2.m_posHorz + 1;
 
@@ -1532,6 +1532,20 @@ void menuProcModel(uint8_t event)
     lcd_putsAtt(    0,    y, PSTR("Trim Sw"),0);
     putsDrSwitches(9*FW,y,g_model.trimSw,sub==subN ? INVERS:0);
     if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.trimSw,-MAX_DRSWITCH, MAX_DRSWITCH);
+    if((y+=FH)>7*FH) return;
+  }subN++;
+
+  if(s_pgOfs<subN) {
+    lcd_putsAtt(    0,    y, PSTR("Swash Type"),0);
+    lcd_putsnAtt(  10*FW, y, PSTR(SWASH_TYPE_STR)+6*g_model.trimInc,6,(sub==subN ? INVERS:0));
+    if(sub==subN) CHECK_INCDEC_H_MODELVAR_BF(event,g_model.swashType,0,SWASH_TYPE_NUM);
+    if((y+=FH)>7*FH) return;
+  }subN++;
+
+  if(s_pgOfs<subN) {
+    lcd_putsAtt(    0,    y, PSTR("Swash Type"),0);
+    putsChnRaw(10*FW, y, g_model.swashCollectiveSource,  sub==subN ? INVERS : 0);
+    if(sub==subN) CHECK_INCDEC_H_MODELVAR(event, g_model.swashCollectiveSource, 0, NUM_XCHNRAW);
     if((y+=FH)>7*FH) return;
   }subN++;
 
@@ -2962,8 +2976,8 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
           break;
       }
   }
-  
-  
+
+
   if(tick10ms) trace(); //trace thr 0..32  (/32)
 
   memset(chans,0,sizeof(chans));        // All outputs to 0
