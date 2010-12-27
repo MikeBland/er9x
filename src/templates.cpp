@@ -170,7 +170,7 @@ void applyTemplate(uint8_t idx)
         md=setDest(11); md->srcRaw=CM(STK_THR);  md->weight=100; md->swtch= DSW_THR; md->curve=CV(5); md->carryTrim=TRIM_OFF;  md->mltpx=MLTPX_REP;
 
         g_model.swashType = SWASH_TYPE_120;
-        g_model.swashCollectiveSource = 11;
+        g_model.swashCollectiveSource = CH(11);
 
         //Set up Curves
         setCurve(CURVE5(1),heli_ar1);

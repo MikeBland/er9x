@@ -63,7 +63,7 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
   else if((idx1>=1) && (idx1 <=4))
     lcd_putsnAtt(x,y,modi12x3+g_eeGeneral.stickMode*16+4*(idx1-1),4,att);
   else                  // 4   5   6   7   8   9
-    lcd_putsnAtt(x,y,PSTR("P1  P2  P3  MAX FULLPPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"
+    lcd_putsnAtt(x,y,PSTR("P1  P2  P3  MAX FULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"
                           "CH17CH18CH19CH20CH21CH22CH23CH24CH25CH26CH27CH28CH29CH30")+4*(idx1-5),4,att);
 }
 void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
@@ -624,10 +624,11 @@ void perMain()
   if(g_LightOffCounter) g_LightOffCounter--;
   if(evt) g_LightOffCounter = g_eeGeneral.lightAutoOff*500; // on keypress turn the light on 5*100
 
-  if( getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
+  if(getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
       BACKLIGHT_ON;
   else
       BACKLIGHT_OFF;
+
 
   static int16_t p1valprev;
   p1valdiff = (p1val-calibratedStick[6])/32;
@@ -647,13 +648,6 @@ void perMain()
   }
 
   switch( g_tmr10ms & 0x1f ) { //alle 10ms*32
-//    case 1:
-      //check light switch and timer
-//      if( getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
-//        BACKLIGHT_ON;
-//      else
-//        BACKLIGHT_OFF;
-//      break;
 
     case 2:
       {
