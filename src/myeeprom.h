@@ -146,7 +146,6 @@ typedef struct t_SafetySwData { // Custom Switches data
   int8_t  val;
 } __attribute__((packed)) SafetySwData;
 
-
 typedef struct t_SwashRingData { // Swash Ring data
   uint8_t lim;   // 0 mean off 100 full deflection
   uint8_t chX; // 2 channels to limit
@@ -169,8 +168,10 @@ typedef struct t_ModelData {
   uint8_t   beepANACenter;        //1<<0->A1.. 1<<6->A7
   uint8_t   pulsePol:1;
   uint8_t   extendedLimits:1;
-  uint8_t   bfres:6;
-  char      res[3];
+  uint8_t   bf_reserved:3;
+  uint8_t   swashType:3;
+  uint8_t   swashCollectiveSource;
+  uint8_t   res[2];
   MixData   mixData[MAX_MIXERS];
   LimitData limitData[NUM_CHNOUT];
   ExpoData  expoData[4];
