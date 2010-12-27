@@ -166,7 +166,10 @@ const prog_uint8_t APM chout_ar[] = { //First number is 0..23 -> template setup,
 //NOTICE!  =>  1..4 -> 1..4
 #define CONVERT_MODE(x)  (((x)<=4) ? pgm_read_byte(modn12x3 + g_eeGeneral.stickMode*4 + (x) - 1) : (x))
 #define CHANNEL_ORDER(x) (pgm_read_byte(chout_ar + g_eeGeneral.templateSetup*4 + (x)-1))
-
+#define THR_STICK       (2-(g_eeGeneral.stickMode&1))
+#define ELE_STICK       (1+(g_eeGeneral.stickMode&1))
+#define AIL_STICK       ((g_eeGeneral.stickMode&2) ? 0 : 3)
+#define RUD_STICK       ((g_eeGeneral.stickMode&2) ? 3 : 0)
 
 enum EnumKeys {
   KEY_MENU ,
@@ -237,14 +240,25 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 //#define SWITCHES_STR "  NC  ON THR RUD ELE ID0 ID1 ID2 AILGEARTRNR"
 #define MAX_DRSWITCH (1+SW_Trainer-SW_ThrCt+1+NUM_CSW)
 
+#define SWASH_TYPE_STR   "120 ""120X""140 ""90  "
+
+#define SWASH_TYPE_120   1
+#define SWASH_TYPE_120X  2
+#define SWASH_TYPE_140   3
+#define SWASH_TYPE_90    4
+#define SWASH_TYPE_NUM   4
+
 #define MIX_P1    5
 #define MIX_P2    6
 #define MIX_P3    7
 #define MIX_MAX   8
 #define MIX_FULL  9
+#define MIX_CYC1  10
+#define MIX_CYC2  11
+#define MIX_CYC3  12
 
-#define PPM_BASE   (MIX_FULL)
-#define CHOUT_BASE (MIX_FULL+NUM_PPM)
+#define PPM_BASE   (MIX_CYC3)
+#define CHOUT_BASE (PPM_BASE+NUM_PPM)
 
 #define DR_HIGH   0
 #define DR_MID    1
