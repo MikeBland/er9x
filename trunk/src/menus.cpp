@@ -2931,8 +2931,8 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
   for(uint8_t i=PPM_BASE;i<CHOUT_BASE;i++)    anas[i] = g_ppmIns[i-PPM_BASE] - g_eeGeneral.ppmInCalib[i-PPM_BASE]; //add ppm channels
   for(uint8_t i=CHOUT_BASE;i<NUM_XCHNRAW;i++) anas[i] = chans[i-CHOUT_BASE]; //other mixes previous outputs
 
-#define REZ_SWASH_X(x)  ((x)/2 + (x)/32 + (x)/128 + (x)/512)   //  1024 => 1024*(0.625*sin(60)) = 554
-#define REZ_SWASH_Y(x)  ((x)/2 + (x)/8)   //  1024 => 1024*0.625  = 640
+#define REZ_SWASH_X(x)  ((x) - (x)/8 - (x)/128 - (x)/512)   //  1024*sin(60) ~= 886
+#define REZ_SWASH_Y(x)  ((x))   //  1024 => 1024
 
   if(g_model.swashType)
   {

@@ -128,20 +128,9 @@ void applyTemplate(uint8_t idx)
         md=setDest(ICC(STK_AIL));  md->srcRaw=CM(STK_AIL);  md->weight=-100;
         break;
 
-        //eCCPM
-    case (4):
-        md=setDest(ICC(STK_ELE));  md->srcRaw=CM(STK_ELE);  md->weight= 72;
-        md=setDest(ICC(STK_ELE));  md->srcRaw=CM(STK_THR);  md->weight= 55;
-        md=setDest(ICC(STK_AIL));  md->srcRaw=CM(STK_ELE);  md->weight=-36;
-        md=setDest(ICC(STK_AIL));  md->srcRaw=CM(STK_AIL);  md->weight= 62;
-        md=setDest(ICC(STK_AIL));  md->srcRaw=CM(STK_THR);  md->weight= 55;
-        md=setDest(6);             md->srcRaw=CM(STK_ELE);  md->weight=-36;
-        md=setDest(6);             md->srcRaw=CM(STK_AIL);  md->weight=-62;
-        md=setDest(6);             md->srcRaw=CM(STK_THR);  md->weight= 55;
-        break;
 
         //Heli Setup
-    case (5):
+    case (4):
         clearMixes();  //This time we want a clean slate
         clearCurves();
 
@@ -160,9 +149,9 @@ void applyTemplate(uint8_t idx)
         md=setDest(5);  md->srcRaw=MIX_MAX;      md->weight=-125; md->swtch= DSW_THR; md->mltpx=MLTPX_REP; md->carryTrim=TRIM_OFF;
 
         //gyro gain
-        md=setDest(6);  md->srcRaw=MIX_MAX; md->weight= 50; md->swtch=-DSW_GEA; md->carryTrim=TRIM_OFF;
-        md=setDest(6);  md->srcRaw=MIX_MAX; md->weight=-50; md->swtch= DSW_GEA; md->carryTrim=TRIM_OFF;
-        md=setDest(6);  md->srcRaw=STK_P3;  md->weight= 40; md->carryTrim=TRIM_OFF;
+        md=setDest(6);  md->srcRaw=STK_P3; md->weight= 50; md->swtch=-DSW_GEA; md->sOffset=100;  md->carryTrim=TRIM_OFF;
+        md=setDest(6);  md->srcRaw=STK_P3; md->weight=-50; md->swtch= DSW_GEA; md->sOffset=100;  md->carryTrim=TRIM_OFF;
+
 
         //collective
         md=setDest(11); md->srcRaw=CM(STK_THR);  md->weight= 70; md->swtch= DSW_ID0; md->curve=CV(3); md->carryTrim=TRIM_OFF;
@@ -181,7 +170,7 @@ void applyTemplate(uint8_t idx)
         break;
 
         //Servo Test
-    case (6):
+    case (5):
         md=setDest(15); md->srcRaw=CH(16);   md->weight= 100; md->speedUp = 8; md->speedDown = 8;
         md=setDest(16); md->srcRaw=MIX_FULL; md->weight= 110; md->swtch=DSW_SW1;
         md=setDest(16); md->srcRaw=MIX_MAX;  md->weight=-110; md->swtch=DSW_SW2; md->mltpx=MLTPX_REP;
