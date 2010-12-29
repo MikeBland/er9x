@@ -70,7 +70,6 @@ const char n_Templates[][TEMPLATE_NLEN] = {
   "T-Cut",
   "V-Tail",
   "Elevon\\Delta",
-  "eCCPM",
   "Heli Setup",
   "Servo Test"
 };
