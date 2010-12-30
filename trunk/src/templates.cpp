@@ -136,9 +136,9 @@ void applyTemplate(uint8_t idx)
 
         //Set up Mixes
         //3 cyclic channels
-        md=setDest(1);  md->srcRaw=MIX_CYC1;  md->weight= 100; md->carryTrim=TRIM_OFF;
-        md=setDest(2);  md->srcRaw=MIX_CYC2;  md->weight= 100; md->carryTrim=TRIM_OFF;
-        md=setDest(3);  md->srcRaw=MIX_CYC3;  md->weight= 100; md->carryTrim=TRIM_OFF;
+        md=setDest(1);  md->srcRaw=MIX_CYC1;  md->weight= 100;
+        md=setDest(2);  md->srcRaw=MIX_CYC2;  md->weight= 100;
+        md=setDest(3);  md->srcRaw=MIX_CYC3;  md->weight= 100;
 
         //rudder
         md=setDest(4);  md->srcRaw=CM(STK_RUD); md->weight=100;
@@ -146,12 +146,11 @@ void applyTemplate(uint8_t idx)
         //Throttle
         md=setDest(5);  md->srcRaw=CM(STK_THR);  md->weight= 100; md->swtch= DSW_ID0; md->curve=CV(1); md->carryTrim=TRIM_OFF;
         md=setDest(5);  md->srcRaw=CM(STK_THR);  md->weight= 100; md->swtch=-DSW_ID0; md->curve=CV(2); md->carryTrim=TRIM_OFF;
-        md=setDest(5);  md->srcRaw=MIX_MAX;      md->weight=-125; md->swtch= DSW_THR; md->mltpx=MLTPX_REP; md->carryTrim=TRIM_OFF;
+        md=setDest(5);  md->srcRaw=MIX_MAX;      md->weight=-125; md->swtch= DSW_THR; md->mltpx=MLTPX_REP;
 
         //gyro gain
-        md=setDest(6);  md->srcRaw=STK_P3; md->weight= 50; md->swtch=-DSW_GEA; md->sOffset=100;  md->carryTrim=TRIM_OFF;
-        md=setDest(6);  md->srcRaw=STK_P3; md->weight=-50; md->swtch= DSW_GEA; md->sOffset=100;  md->carryTrim=TRIM_OFF;
-
+        md=setDest(6);  md->srcRaw=STK_P3; md->weight= 50; md->swtch=-DSW_GEA; md->sOffset=100;
+        md=setDest(6);  md->srcRaw=STK_P3; md->weight=-50; md->swtch= DSW_GEA; md->sOffset=100;
 
         //collective
         md=setDest(11); md->srcRaw=CM(STK_THR);  md->weight= 70; md->swtch= DSW_ID0; md->curve=CV(3); md->carryTrim=TRIM_OFF;

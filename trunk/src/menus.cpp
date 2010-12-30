@@ -2928,16 +2928,16 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
 
   anas[MIX_MAX-1]  = RESX;     // MAX
   anas[MIX_FULL-1] = RESX;     // FULL
-  for(uint8_t i=PPM_BASE;i<CHOUT_BASE;i++)    anas[i] = g_ppmIns[i-PPM_BASE] - g_eeGeneral.ppmInCalib[i-PPM_BASE]; //add ppm channels
-  for(uint8_t i=CHOUT_BASE;i<NUM_XCHNRAW;i++) anas[i] = chans[i-CHOUT_BASE]; //other mixes previous outputs
+  for(uint8_t i=0;i<NUM_PPM;i++)    anas[i+PPM_BASE]   = g_ppmIns[i] - g_eeGeneral.ppmInCalib[i]; //add ppm channels
+  for(uint8_t i=0;i<NUM_CHNOUT;i++) anas[i+CHOUT_BASE] = chans[i]; //other mixes previous outputs
 
 #define REZ_SWASH_X(x)  ((x) - (x)/8 - (x)/128 - (x)/512)   //  1024*sin(60) ~= 886
 #define REZ_SWASH_Y(x)  ((x))   //  1024 => 1024
 
   if(g_model.swashType)
   {
-      int32_t vp = anas[ELE_STICK];
-      int32_t vr = anas[AIL_STICK];
+      int16_t vp = anas[ELE_STICK]+trimA[ELE_STICK];
+      int16_t vr = anas[AIL_STICK]+trimA[AIL_STICK];
       int16_t vc = 0;
       if(g_model.swashCollectiveSource)
           vc = anas[g_model.swashCollectiveSource-1];
@@ -2977,7 +2977,6 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
       }
   }
 
-
   if(tick10ms) trace(); //trace thr 0..32  (/32)
 
   memset(chans,0,sizeof(chans));        // All outputs to 0
@@ -2988,39 +2987,6 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
         anas[i]  = 0;
         trimA[i] = 0;
       }
-
-  //========== SWASH RING ===============
-  /*
-  if(g_model.swashR.lim) {
-    int32_t chX = anas[g_model.swashR.chX];
-    int32_t chY = anas[g_model.swashR.chY];
-    int32_t lim = (g_model.swashR.lim*5 + g_model.swashR.lim/8);
-    chX *= chX;
-    chY *= chY;
-    lim *= lim;
-    if((chX+chY)>lim) {// x^2 + y^2 > lim^2
-      //limit channels ch * lim^2/(anainx^2+anainy^2)
-      //lim /= 1024;
-      chX = anas[g_model.swashR.chX];
-      chX *= chX;
-      chY = anas[g_model.swashR.chY];
-      chY *= chY;
-      chX = (chX+chY);// /1024; // need to be sqrt here
-
-      // need to implement differently.
-      // should be ch * sqrt(lim^2/(x^2 + y^2))
-      chY = anas[g_model.swashR.chX];
-      chY *= lim;
-      chY /= chX;
-      anas[g_model.swashR.chX] = (int16_t)chY;
-
-      chY = anas[g_model.swashR.chY];
-      chY *= lim;
-      chY /= chX;
-      anas[g_model.swashR.chY] = (int16_t)chY;
-    }
-  }
-  */
 
    uint8_t mixWarning = 0;
     //========== MIXER LOOP ===============

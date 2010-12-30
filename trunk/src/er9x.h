@@ -505,7 +505,7 @@ bool eeModelExists(uint8_t id);
 //number of real outputchannels CH1-CH8
 #define NUM_CHNOUT   16
 ///number of real input channels (1-9) plus virtual input channels X1-X4
-#define NUM_XCHNRAW (NUM_CHNOUT+9+NUM_PPM) // NUMCH + P1P2P3+ AIL/RUD/ELE/THR + MAX/FULL
+#define NUM_XCHNRAW (NUM_CHNOUT+12+NUM_PPM) // NUMCH + P1P2P3+ AIL/RUD/ELE/THR + MAX/FULL + CYC1/CYC2/CYC3
 ///number of real output channels (CH1-CH8) plus virtual output channels X1-X4
 #define NUM_XCHNOUT (NUM_CHNOUT) //(NUM_CHNOUT)//+NUM_VIRT)
 
