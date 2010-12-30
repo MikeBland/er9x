@@ -146,12 +146,6 @@ typedef struct t_SafetySwData { // Custom Switches data
   int8_t  val;
 } __attribute__((packed)) SafetySwData;
 
-typedef struct t_SwashRingData { // Swash Ring data
-  uint8_t lim;   // 0 mean off 100 full deflection
-  uint8_t chX; // 2 channels to limit
-  uint8_t chY; // 2 channels to limit
-} __attribute__((packed)) SwashRingData;
-
 typedef struct t_ModelData {
   char      name[10];             // 10 must be first for eeLoadModelName
   uint8_t   mdVers;
@@ -171,7 +165,8 @@ typedef struct t_ModelData {
   uint8_t   bf_reserved:3;
   uint8_t   swashType:3;
   uint8_t   swashCollectiveSource;
-  uint8_t   res[2];
+  uint8_t   swashRingValue;
+  uint8_t   res1;
   MixData   mixData[MAX_MIXERS];
   LimitData limitData[NUM_CHNOUT];
   ExpoData  expoData[4];
@@ -179,7 +174,7 @@ typedef struct t_ModelData {
   int8_t    curves5[MAX_CURVE5][5];
   int8_t    curves9[MAX_CURVE9][9];
   CSwData   customSw[NUM_CSW];
-  SwashRingData swashR;
+  uint8_t   res3[3];
   SafetySwData  safetySw[NUM_CHNOUT];
 } __attribute__((packed)) ModelData;
 

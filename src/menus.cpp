@@ -17,6 +17,8 @@
 #include "er9x.h"
 #include "templates.h"
 
+#define NUM_OFS(x) (((x<0 ? 2*FW-1 : 1*FW) + ((abs(x)>=100) ? 2*FW-2 : ((abs(x)>=10) ? 1*FW-1 : 0 ))))
+
 #define GET_DR_STATE(x) (!getSwitch(g_model.expoData[x].drSw1,0) ?   \
                           DR_HIGH :                                  \
                           !getSwitch(g_model.expoData[x].drSw2,0)?   \
@@ -779,8 +781,6 @@ void menuProcMixOne(uint8_t event)
   else if((sub-s_pgOfs)<0) s_pgOfs = sub;
   if(s_pgOfs<0) s_pgOfs = 0;
 
-
-#define NUM_OFS(x) (((x<0 ? 2*FW-1 : 1*FW) + ((abs(x)>=100) ? 2*FW-2 : ((abs(x)>=10) ? 1*FW-1 : 0 ))))
   for(uint8_t y=FH; y<8*FH; y+=FH)
   {
     uint8_t i=(y/FH)+s_pgOfs-1;
@@ -1409,8 +1409,8 @@ void menuProcModel(uint8_t event)
   static MState2 mstate2;
   uint8_t x=TITLE("SETUP ");
   lcd_outdezNAtt(x+2*FW,0,g_eeGeneral.currModel+1,INVERS+LEADING0,2);
-  MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,1,1,7,3,1,1,1};
-  MSTATE_CHECK_VxH(2,menuTabModel,16);
+  MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,1,1,1,7,3,1,1,1};
+  MSTATE_CHECK_VxH(2,menuTabModel,17);
   int8_t  sub    = mstate2.m_posVert;
   uint8_t subSub = mstate2.m_posHorz + 1;
 
@@ -1537,15 +1537,22 @@ void menuProcModel(uint8_t event)
 
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("Swash Type"),0);
-    lcd_putsnAtt(  10*FW, y, PSTR(SWASH_TYPE_STR)+6*g_model.swashType,6,(sub==subN ? INVERS:0));
+    lcd_putsnAtt(  11*FW, y, PSTR(SWASH_TYPE_STR)+6*g_model.swashType,6,(sub==subN ? INVERS:0));
     if(sub==subN) CHECK_INCDEC_H_MODELVAR_BF(event,g_model.swashType,0,SWASH_TYPE_NUM);
     if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
-    lcd_putsAtt(    0,    y, PSTR("Swash Src"),0);
-    putsChnRaw(10*FW, y, g_model.swashCollectiveSource,  sub==subN ? INVERS : 0);
+    lcd_putsAtt(    0,    y, PSTR("Collective"),0);
+    putsChnRaw(11*FW, y, g_model.swashCollectiveSource,  sub==subN ? INVERS : 0);
     if(sub==subN) CHECK_INCDEC_H_MODELVAR(event, g_model.swashCollectiveSource, 0, NUM_XCHNRAW);
+    if((y+=FH)>7*FH) return;
+  }subN++;
+
+  if(s_pgOfs<subN) {
+    lcd_putsAtt(    0,    y, PSTR("Swash Ring"),0);
+    lcd_outdezAtt(11*FW+NUM_OFS(g_model.swashRingValue), y, g_model.swashRingValue,  sub==subN ? INVERS : 0);
+    if(sub==subN) CHECK_INCDEC_H_MODELVAR(event, g_model.swashRingValue, 0, 100);
     if((y+=FH)>7*FH) return;
   }subN++;
 
@@ -1562,37 +1569,6 @@ void menuProcModel(uint8_t event)
     }
     if((y+=FH)>7*FH) return;
   }subN++;
-
-/*
-  if(s_pgOfs<subN) {
-    //12345678901234567890
-    //Sw-Ring val ch1 ch2
-    lcd_putsAtt(   0,     y, PSTR("Sw-Ring"),0);
-    if(g_model.swashR.lim) {
-      lcd_outdezAtt( 13*FW, y, g_model.swashR.lim,  (sub==subN && subSub==1 ? (s_editMode ? BLINK : INVERS):0));
-      putsChnRaw(    14*FW, y, g_model.swashR.chX+1,(sub==subN && subSub==2 ? (s_editMode ? BLINK : INVERS):0));
-      putsChnRaw(    18*FW, y, g_model.swashR.chY+1,(sub==subN && subSub==3 ? (s_editMode ? BLINK : INVERS):0));
-    }
-    else {
-      lcd_putsAtt(   10*FW,  y, PSTR("---"),(sub==subN && subSub==1 ? (s_editMode ? BLINK : INVERS):0));
-      lcd_putsAtt(   14*FW,  y, PSTR("---"),(sub==subN && subSub==2 ? (s_editMode ? BLINK : INVERS):0));
-      lcd_putsAtt(   18*FW,  y, PSTR("---"),(sub==subN && subSub==3 ? (s_editMode ? BLINK : INVERS):0));
-    }
-    if(sub==subN && s_editMode)
-      switch (subSub){
-        case 1:
-            CHECK_INCDEC_H_MODELVAR(event,g_model.swashR.lim,0,100);
-            break;
-        case 2:
-            CHECK_INCDEC_H_MODELVAR(event,g_model.swashR.chX,0,3);
-            break;
-        case 3:
-            CHECK_INCDEC_H_MODELVAR(event,g_model.swashR.chY,0,3);
-            break;
-      }
-    if((y+=FH)>7*FH) return;
-  }subN++;
-*/
 
   if(s_pgOfs<subN) {
     lcd_putsAtt(    0,    y, PSTR("Proto"),0);//sub==2 ? INVERS:0);
@@ -2822,6 +2798,21 @@ void menuProc0(uint8_t event)
   }
 }
 
+uint16_t isqrt32(uint32_t n)
+{
+    uint16_t c = 0x8000;
+    uint16_t g = 0x8000;
+
+    for(;;) {
+        if((uint32_t)g*g > n)
+            g ^= c;
+        c >>= 1;
+        if(c == 0)
+            return g;
+        g |= c;
+    }
+}
+
 int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 100
 {
 #define D9 (RESX * 2 / 8)
@@ -2930,6 +2921,20 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
   anas[MIX_FULL-1] = RESX;     // FULL
   for(uint8_t i=0;i<NUM_PPM;i++)    anas[i+PPM_BASE]   = g_ppmIns[i] - g_eeGeneral.ppmInCalib[i]; //add ppm channels
   for(uint8_t i=0;i<NUM_CHNOUT;i++) anas[i+CHOUT_BASE] = chans[i]; //other mixes previous outputs
+  
+  //===========Swash Ring================
+  if(g_model.swashRingValue)
+  {
+      uint32_t v = ((int32_t)anas[ELE_STICK]*anas[ELE_STICK] + (int32_t)anas[AIL_STICK]*anas[AIL_STICK]);
+      uint32_t q = (int32_t)RESX*g_model.swashRingValue/100;
+      q *= q;
+      if(v>q)
+      {
+          uint16_t d = isqrt32(v);
+          anas[ELE_STICK] = (int32_t)anas[ELE_STICK]*g_model.swashRingValue*RESX/((int32_t)d*100);
+          anas[AIL_STICK] = (int32_t)anas[AIL_STICK]*g_model.swashRingValue*RESX/((int32_t)d*100);
+      }
+  }
 
 #define REZ_SWASH_X(x)  ((x) - (x)/8 - (x)/128 - (x)/512)   //  1024*sin(60) ~= 886
 #define REZ_SWASH_Y(x)  ((x))   //  1024 => 1024
