@@ -548,6 +548,7 @@ void menuProcTrim(uint8_t event);
 void menuProcExpoOne(uint8_t event);
 void menuProcExpoAll(uint8_t event);
 void menuProcModel(uint8_t event);
+void menuProcHeli(uint8_t event);
 void menuProcDiagCalib(uint8_t event);
 void menuProcDiagAna(uint8_t event);
 void menuProcDiagKeys(uint8_t event);

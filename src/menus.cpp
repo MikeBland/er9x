@@ -71,6 +71,7 @@ typedef PROGMEM void (*MenuFuncP_PROGMEM)(uint8_t event);
 MenuFuncP_PROGMEM APM menuTabModel[] = {
   menuProcModelSelect,
   menuProcModel,
+  menuProcHeli,
   menuProcExpoAll,
   menuProcMix,
   menuProcLimits,
@@ -133,9 +134,10 @@ void MState2::check(uint8_t event,  uint8_t curr,MenuFuncP *menuTab, uint8_t men
           break;
       }
     }
-    lcd_putcAtt(128-FW*1,0,menuTabSize+'0',attr);
-    lcd_putcAtt(128-FW*2,0,'/',attr);
-    lcd_putcAtt(128-FW*3,0,curr+'1',attr);
+    lcd_outdezAtt(128,0,menuTabSize,attr);
+    //lcd_putcAtt(128-FW*2,0,menuTabSize+'0',attr);
+    lcd_putcAtt(128-FW*3,0,'/',attr);
+    lcd_putcAtt(128-FW*4,0,curr+'1',attr);
   }
 
 #define MAXCOL(row) (horTab ? pgm_read_byte(horTab+min( row, horTabMax ))-1 : 0)
@@ -1409,8 +1411,8 @@ void menuProcModel(uint8_t event)
   static MState2 mstate2;
   uint8_t x=TITLE("SETUP ");
   lcd_outdezNAtt(x+2*FW,0,g_eeGeneral.currModel+1,INVERS+LEADING0,2);
-  MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,1,1,1,7,3,1,1,1};
-  MSTATE_CHECK_VxH(2,menuTabModel,17);
+  MSTATE_TAB = { 1,sizeof(g_model.name),2,1,1,1,1,1,1,7,3,1,1,1};
+  MSTATE_CHECK_VxH(2,menuTabModel,14);
   int8_t  sub    = mstate2.m_posVert;
   uint8_t subSub = mstate2.m_posHorz + 1;
 
@@ -1636,6 +1638,73 @@ void menuProcModel(uint8_t event)
   }subN++;
 }
 
+void menuProcHeli(uint8_t event)
+{
+  static MState2 mstate2;
+  TITLE("HELI SETUP ");
+  MSTATE_TAB = { 1,1,1,1,1,1,1};
+  MSTATE_CHECK_VxH(3,menuTabModel,7);
+  int8_t  sub    = mstate2.m_posVert;
+
+  if(sub<1) s_pgOfs=0;
+  else if((sub-s_pgOfs)>7) s_pgOfs = sub-7;
+  else if((sub-s_pgOfs)<1) s_pgOfs = sub-1;
+  if(s_pgOfs<0) s_pgOfs = 0;
+
+  uint8_t y = 1*FH;
+
+  switch(event){
+    case EVT_ENTRY:
+      s_editMode = false;
+      break;
+    case EVT_KEY_FIRST(KEY_MENU):
+      s_editMode = !s_editMode;
+      break;
+  }
+
+  uint8_t subN = 1;
+  if(s_pgOfs<subN) {
+    lcd_putsAtt(    0,    y, PSTR("Swash Type"),0);
+    lcd_putsnAtt(  14*FW, y, PSTR(SWASH_TYPE_STR)+6*g_model.swashType,6,(sub==subN ? INVERS:0));
+    if(sub==subN) CHECK_INCDEC_H_MODELVAR_BF(event,g_model.swashType,0,SWASH_TYPE_NUM);
+    if((y+=FH)>7*FH) return;
+  }subN++;
+
+  if(s_pgOfs<subN) {
+    lcd_putsAtt(    0,    y, PSTR("Collective"),0);
+    putsChnRaw(14*FW, y, g_model.swashCollectiveSource,  sub==subN ? INVERS : 0);
+    if(sub==subN) CHECK_INCDEC_H_MODELVAR(event, g_model.swashCollectiveSource, 0, NUM_XCHNRAW);
+    if((y+=FH)>7*FH) return;
+  }subN++;
+
+  if(s_pgOfs<subN) {
+    lcd_putsAtt(    0,    y, PSTR("Swash Ring"),0);
+    lcd_outdezAtt(14*FW+NUM_OFS(g_model.swashRingValue), y, g_model.swashRingValue,  sub==subN ? INVERS : 0);
+    if(sub==subN) CHECK_INCDEC_H_MODELVAR(event, g_model.swashRingValue, 0, 100);
+    if((y+=FH)>7*FH) return;
+  }subN++;
+
+  if(s_pgOfs<subN) {
+    lcd_putsAtt(    0,    y, PSTR("ELE Direction"),0);
+    lcd_putsnAtt(  14*FW, y, PSTR("---INV")+3*g_model.swashInvertELE,3,(sub==subN ? INVERS:0));
+    if(sub==subN) CHECK_INCDEC_H_MODELVAR_BF(event, g_model.swashInvertELE, 0, 1);
+    if((y+=FH)>7*FH) return;
+  }subN++;
+
+  if(s_pgOfs<subN) {
+    lcd_putsAtt(    0,    y, PSTR("AIL Direction"),0);
+    lcd_putsnAtt(  14*FW, y, PSTR("---INV")+3*g_model.swashInvertAIL,3,(sub==subN ? INVERS:0));
+    if(sub==subN) CHECK_INCDEC_H_MODELVAR_BF(event, g_model.swashInvertAIL, 0, 1);
+    if((y+=FH)>7*FH) return;
+  }subN++;
+
+  if(s_pgOfs<subN) {
+    lcd_putsAtt(    0,    y, PSTR("COL Direction"),0);
+    lcd_putsnAtt(  14*FW, y, PSTR("---INV")+3*g_model.swashInvertCOL,3,(sub==subN ? INVERS:0));
+    if(sub==subN) CHECK_INCDEC_H_MODELVAR_BF(event, g_model.swashInvertCOL, 0, 1);
+    if((y+=FH)>7*FH) return;
+  }subN++;
+}
 
 void menuProcModelSelect(uint8_t event)
 {
@@ -1643,7 +1712,8 @@ void menuProcModelSelect(uint8_t event)
   TITLE("MODELSEL");
   lcd_puts_P(     10*FW, 0, PSTR("free"));
   lcd_outdezAtt(  18*FW, 0, EeFsGetFree(),0);
-  lcd_putsAtt(128-FW*3,0,PSTR("1/8"),INVERS);
+
+  lcd_putsAtt(128-FW*4,0,PSTR("1/10"),INVERS);
 
   int8_t subOld  = mstate2.m_posVert;
   MSTATE_CHECK0_V(MAX_MODELS);
@@ -2946,6 +3016,10 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
       int16_t vc = 0;
       if(g_model.swashCollectiveSource)
           vc = anas[g_model.swashCollectiveSource-1];
+
+      if(g_model.swashInvertELE) vp = -vp;
+      if(g_model.swashInvertAIL) vr = -vr;
+      if(g_model.swashInvertCOL) vc = -vc;
 
       switch (g_model.swashType)
       {
