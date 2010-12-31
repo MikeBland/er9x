@@ -45,7 +45,10 @@ void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
 
   lcd_putcAtt(   x,    y, tme<0 ?'-':' ',att);
   x += (att&DBLSIZE) ? FWNUM*5 : FWNUM*3+2;
-  lcd_putcAtt(   x+3, y, ':',att);
+  if(att&DBLSIZE)
+      lcd_putcAtt(   x+3, y, ':',att);
+  else
+      lcd_putcAtt(   x, y, ':',0);
   lcd_outdezNAtt(x, y, abs(tme)/60,LEADING0+att,2);
   x += (att&DBLSIZE) ? FWNUM*5-1 : FWNUM*4-2;
   lcd_outdezNAtt(x, y, abs(tme)%60,LEADING0+att2,2);
@@ -513,6 +516,12 @@ bool checkIncDecGen2(uint8_t event, void *i_pval, int16_t i_min, int16_t i_max, 
     newval=-val;
     killEvents(kmi);
     killEvents(kpl);
+  }
+  if(i_min==0 && i_max==1 && event==EVT_KEY_FIRST(KEY_MENU))
+  {
+      s_editMode = false;
+      newval=!val;
+      killEvents(event);
   }
 
   //change values based on P1

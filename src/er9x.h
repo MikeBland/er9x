@@ -439,6 +439,7 @@ extern uint8_t s_editMode;     //global editmode
 
 #define _FL_SIZE2     4
 #define _FL_VERT      8
+#define _FL_BOOL      2
 
 #define CHECK_INCDEC_H_GENVAR( event, var, min, max)     \
   checkIncDecModVar<min,max>(event,&var,(sizeof(var)==2 ? _FL_SIZE2 : 0)|EE_GENERAL) \
