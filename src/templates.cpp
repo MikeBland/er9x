@@ -84,7 +84,8 @@ void applyTemplate(uint8_t idx)
     int8_t heli_ar1[] = {-100, -20, 30, 70, 90};
     int8_t heli_ar2[] = {80, 70, 60, 70, 100};
     int8_t heli_ar3[] = {100, 90, 80, 90, 100};
-
+    int8_t heli_ar4[] = {0, 25, 50, 75, 100};
+    int8_t heli_ar5[] = {-40, -5, 30, 65, 100};
 
     MixData *md = &g_model.mixData[0];
 
@@ -152,8 +153,8 @@ void applyTemplate(uint8_t idx)
         md=setDest(6);  md->srcRaw=STK_P3; md->weight=-50; md->swtch= DSW_GEA; md->sOffset=100;
 
         //collective
-        md=setDest(11); md->srcRaw=CM(STK_THR);  md->weight= 50; md->swtch= DSW_ID0; md->sOffset=100; md->carryTrim=TRIM_OFF;
-        md=setDest(11); md->srcRaw=CM(STK_THR);  md->weight= 75; md->swtch= DSW_ID1; md->sOffset= 33; md->carryTrim=TRIM_OFF;
+        md=setDest(11); md->srcRaw=CM(STK_THR);  md->weight=100; md->swtch= DSW_ID0; md->curve=CV(4); md->carryTrim=TRIM_OFF;
+        md=setDest(11); md->srcRaw=CM(STK_THR);  md->weight=100; md->swtch= DSW_ID1; md->curve=CV(5); md->carryTrim=TRIM_OFF;
         md=setDest(11); md->srcRaw=CM(STK_THR);  md->weight=100; md->swtch= DSW_ID2; md->carryTrim=TRIM_OFF;
 
         g_model.swashType = SWASH_TYPE_120;
@@ -163,6 +164,8 @@ void applyTemplate(uint8_t idx)
         setCurve(CURVE5(1),heli_ar1);
         setCurve(CURVE5(2),heli_ar2);
         setCurve(CURVE5(3),heli_ar3);
+        setCurve(CURVE5(4),heli_ar4);
+        setCurve(CURVE5(5),heli_ar5);
         break;
 
         //Servo Test
