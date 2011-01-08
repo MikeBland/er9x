@@ -580,7 +580,7 @@ MenuFuncP lastPopMenu()
 
 void popMenu(bool uppermost)
 {
-  if(g_menuStackPtr>0){
+  if(g_menuStackPtr>0 || uppermost){
     g_menuStackPtr = uppermost ? 0 : g_menuStackPtr-1;
     beepKey();
     (*g_menuStack[g_menuStackPtr])(EVT_ENTRY_UP);
@@ -1015,6 +1015,7 @@ int main(void)
 
   lcdSetRefVolt(25);
   eeReadAll();
+  uint8_t cModel = g_eeGeneral.currModel;
   checkQuickSelect();
   doSplash();
   checkMem();
@@ -1035,6 +1036,7 @@ int main(void)
 
   lcdSetRefVolt(g_eeGeneral.contrast);
   g_LightOffCounter = g_eeGeneral.lightAutoOff*500; //turn on light for x seconds - no need to press key Issue 152
+  if(cModel!=g_eeGeneral.currModel) eeDirty(EEGeneral); // if model was quick-selected, make sure it sticks
   PULSEGEN_ON; // Pulse generator enable immediately before mainloop
   while(1){
       //uint16_t old10ms=g_tmr10ms;
