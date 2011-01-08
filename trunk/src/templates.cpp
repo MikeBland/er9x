@@ -84,8 +84,8 @@ void applyTemplate(uint8_t idx)
     int8_t heli_ar1[] = {-100, -20, 30, 70, 90};
     int8_t heli_ar2[] = {80, 70, 60, 70, 100};
     int8_t heli_ar3[] = {100, 90, 80, 90, 100};
-    int8_t heli_ar4[] = {-8, 19, 46, 73, 100};
-    int8_t heli_ar5[] = {-40, -5, 30, 65, 100};
+    int8_t heli_ar4[] = {-30,  -15, 0, 50, 100};
+    int8_t heli_ar5[] = {-100, -50, 0, 50, 100};
 
     MixData *md = &g_model.mixData[0];
 
@@ -149,13 +149,12 @@ void applyTemplate(uint8_t idx)
         md=setDest(5);  md->srcRaw=MIX_MAX;      md->weight=-100; md->swtch= DSW_THR; md->mltpx=MLTPX_REP;
 
         //gyro gain
-        md=setDest(6);  md->srcRaw=STK_P3; md->weight= 50; md->swtch=-DSW_GEA; md->sOffset=100;
-        md=setDest(6);  md->srcRaw=STK_P3; md->weight=-50; md->swtch= DSW_GEA; md->sOffset=100;
+        md=setDest(6);  md->srcRaw=MIX_FULL; md->weight=30; md->swtch=-DSW_GEA;
 
         //collective
         md=setDest(11); md->srcRaw=CM(STK_THR);  md->weight=100; md->swtch= DSW_ID0; md->curve=CV(4); md->carryTrim=TRIM_OFF;
         md=setDest(11); md->srcRaw=CM(STK_THR);  md->weight=100; md->swtch= DSW_ID1; md->curve=CV(5); md->carryTrim=TRIM_OFF;
-        md=setDest(11); md->srcRaw=CM(STK_THR);  md->weight=100; md->swtch= DSW_ID2; md->carryTrim=TRIM_OFF;
+        md=setDest(11); md->srcRaw=CM(STK_THR);  md->weight=100; md->swtch= DSW_ID2; md->curve=CV(6); md->carryTrim=TRIM_OFF;
 
         g_model.swashType = SWASH_TYPE_120;
         g_model.swashCollectiveSource = CH(11);
@@ -166,6 +165,7 @@ void applyTemplate(uint8_t idx)
         setCurve(CURVE5(3),heli_ar3);
         setCurve(CURVE5(4),heli_ar4);
         setCurve(CURVE5(5),heli_ar5);
+        setCurve(CURVE5(6),heli_ar5);
         break;
 
     //Gyro Gain

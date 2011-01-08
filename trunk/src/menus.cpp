@@ -1034,8 +1034,8 @@ void menuProcMix(uint8_t event)
     if(s_mixTab[k].hasDat){ //show data
       MixData *md2=&md[s_mixTab[k].editIdx];
       uint8_t attr = sub==s_mixTab[k].selDat ? INVERS : 0;
-      //if(!s_mixTab[k].showCh)
-       lcd_putsnAtt(   3*FW, y, PSTR("+*R")+1*md2->mltpx,1,s_moveMode ? attr : 0);
+      if(!s_mixTab[k].showCh) //show prefix only if not first mix
+          lcd_putsnAtt(   3*FW, y, PSTR("+*R")+1*md2->mltpx,1,s_moveMode ? attr : 0);
       lcd_outdezAtt(  7*FW+FW/2, y, md2->weight,attr);
       lcd_putcAtt(    7*FW+FW/2, y, '%',s_moveMode ? attr : 0);
       putsChnRaw(     9*FW, y, md2->srcRaw,s_moveMode ? attr : 0);
@@ -1395,6 +1395,7 @@ void menuDeleteModel(uint8_t event)
           }
       }
       g_eeGeneral.currModel = i;
+      STORE_GENERALVARS;
 
       eeLoadModel(g_eeGeneral.currModel); //load default values
       chainMenu(menuProcModelSelect);
@@ -1704,22 +1705,24 @@ void menuProcModelSelect(uint8_t event)
         beepKey();
         killEvents(event);
         eeLoadModel(g_eeGeneral.currModel = mstate2.m_posVert);
-        eeDirty(EE_GENERAL);
-        LIMITS_DIRTY;
+        STORE_GENERALVARS;
+        STORE_MODELVARS;
         break;
       }
       //fallthrough
+    case  EVT_KEY_FIRST(KEY_LEFT):
     case  EVT_KEY_FIRST(KEY_RIGHT):
       if(g_eeGeneral.currModel != mstate2.m_posVert)
       {
         killEvents(event);
-        eeLoadModel(g_eeGeneral.currModel = mstate2.m_posVert);
-        eeDirty(EE_GENERAL);
-        LIMITS_DIRTY;
-        beepKey();
+        g_eeGeneral.currModel = mstate2.m_posVert;
+        eeLoadModel(g_eeGeneral.currModel);
+        STORE_GENERALVARS;
+        beepWarn1();
       }
-      if(event==EVT_KEY_FIRST(KEY_RIGHT))  chainMenu(menuProcModel);
-      if(event==EVT_KEY_FIRST(KEY_EXIT))  pushMenu(menuProcModelSelect);
+      if(event==EVT_KEY_FIRST(KEY_LEFT))  {killEvents(event);popMenu(true);}
+      if(event==EVT_KEY_FIRST(KEY_RIGHT)) chainMenu(menuProcModel);
+//      if(event==EVT_KEY_FIRST(KEY_EXIT))  chainMenu(menuProcModelSelect);
       break;
     case  EVT_KEY_FIRST(KEY_MENU):
         sel_editMode = true;
