@@ -107,11 +107,11 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
 
 inline int16_t getValue(uint8_t i)
 {
-    if(i<MIX_MAX) return calibratedStick[i];//-512..512
-    else if(i<=MIX_FULL) return 1024; //FULL/MAX
-    else if(i<MIX_FULL+NUM_PPM) return g_ppmIns[i-MIX_FULL] - g_eeGeneral.ppmInCalib[i-MIX_FULL];
-    else return ex_chans[i-MIX_FULL-NUM_PPM];
+    if(i<PPM_BASE) return calibratedStick[i];//-512..512
+    else if(i<CHOUT_BASE) return g_ppmIns[i-PPM_BASE] - g_eeGeneral.ppmInCalib[i-PPM_BASE];
+    else return ex_chans[i-CHOUT_BASE];
     return 0;
+
 }
 
 bool getSwitch(int8_t swtch, bool nc, uint8_t level)
@@ -146,6 +146,7 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 
   // init values only if needed
   uint8_t s = CS_STATE(cs.func);
+
   if(s == CS_VOFS)
   {
       x = getValue(cs.v1-1);
@@ -1036,7 +1037,7 @@ int main(void)
 
   lcdSetRefVolt(g_eeGeneral.contrast);
   g_LightOffCounter = g_eeGeneral.lightAutoOff*500; //turn on light for x seconds - no need to press key Issue 152
-  if(cModel!=g_eeGeneral.currModel) eeDirty(EEGeneral); // if model was quick-selected, make sure it sticks
+  if(cModel!=g_eeGeneral.currModel) eeDirty(EE_GENERAL); // if model was quick-selected, make sure it sticks
   PULSEGEN_ON; // Pulse generator enable immediately before mainloop
   while(1){
       //uint16_t old10ms=g_tmr10ms;
