@@ -2219,7 +2219,7 @@ void timer(uint8_t val)
   s_timeCumTot               += 1;
   s_timeCumAbs               += 1;
   if(val) s_timeCumThr       += 1;
-  if(sw_toggled) s_timeCumSw += 1;
+  if(!sw_toggled) s_timeCumSw += 1;
   s_timeCum16ThrP            += val/2;
 
   s_timerVal = g_model.tmrVal;
@@ -2659,7 +2659,7 @@ void menuProc0(uint8_t event)
       pushMenu(menuProcSetup);
       killEvents(event);
       break;
-#define MAX_VIEWS 3
+#define MAX_VIEWS 5
     case EVT_KEY_BREAK(KEY_UP):
       g_eeGeneral.view++;
       if(g_eeGeneral.view>=MAX_VIEWS) g_eeGeneral.view=0;
@@ -2782,7 +2782,7 @@ void menuProc0(uint8_t event)
     DO_SQUARE(xm,ym,7)
   }
 
-  if(g_eeGeneral.view!=2) {
+  if(g_eeGeneral.view<2) {
    for(uint8_t i=0; i<8; i++)
    {
     uint8_t x0,y0;
@@ -2842,8 +2842,10 @@ void menuProc0(uint8_t event)
     V_BAR(SCREEN_WIDTH/2  ,SCREEN_HEIGHT-10,((calibratedStick[5]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P2
     V_BAR(SCREEN_WIDTH/2+5,SCREEN_HEIGHT-10,((calibratedStick[6]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P3
 
-    for(int8_t i=0; i<3; i++) lcd_putsnAtt(2*FW-2,i*FH+4*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i+1, 0) ? INVERS : 0);
-    for(int8_t i=6; i<9; i++) lcd_putsnAtt(17*FW-1,12*FH-i*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i+1, 0) ? INVERS : 0);
+    int8_t a = (g_eeGeneral.view == 2) ? 0 : 9+(g_eeGeneral.view-3)*6;
+    int8_t b = (g_eeGeneral.view == 2) ? 6 : 12+(g_eeGeneral.view-3)*6;
+    for(int8_t i=a; i<(a+3); i++) lcd_putsnAtt(2*FW-2 ,(i-a)*FH+4*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i+1, 0) ? INVERS : 0);
+    for(int8_t i=b; i<(b+3); i++) lcd_putsnAtt(17*FW-1,(i-b)*FH+4*FH,PSTR(SWITCHES_STR)+3*i,3,getSwitch(i+1, 0) ? INVERS : 0);
   }
 }
 
