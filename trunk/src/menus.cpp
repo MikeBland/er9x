@@ -2392,6 +2392,9 @@ void menuProcJeti(uint8_t event)
 
 void menuProcFrsky(uint8_t event);
 void menuProcFrsky1(uint8_t event);
+void menuProcFrskyConfig(uint8_t event);
+
+uint8_t requestStatus = 1;
 
 uint8_t hex2dec(uint8_t number, uint8_t multiplier)
 {
@@ -2425,13 +2428,11 @@ uint8_t hex2dec(uint8_t number, uint8_t multiplier)
 
 void menuProcFrsky(uint8_t event)
 {
-  TITLE("FrSky  Page 1/2");
+  TITLE("FrSky        Page 1/3");
 
   switch(event)
-  {
-    //case EVT_KEY_FIRST(KEY_MENU):0.0v
-    //  break;
-        case EVT_KEY_FIRST(KEY_DOWN):
+  {    
+	case EVT_KEY_FIRST(KEY_DOWN):
        chainMenu(menuProcFrsky1);
        break;
     case EVT_KEY_FIRST(KEY_EXIT):
@@ -2443,46 +2444,30 @@ void menuProcFrsky(uint8_t event)
   if (FrskyBufferReady)
   {
     uint8_t i=0;
-        linkBuffer[3] /= 2;		// Tx RSSI value is doubled
-    if (linkBuffer[i] == 0x7D)
-    {
-      i++;
-      linkBuffer[i] ^= 0x20;
-    }
+	linkBuffer[3] /= 2;		// Tx RSSI value is doubled
+    
     TelemBuffer[3] = hex2dec(linkBuffer[i], 100);
     TelemBuffer[4] = hex2dec(linkBuffer[i], 10);
     TelemBuffer[6] = hex2dec(linkBuffer[i], 1);
     i++;
-    if (linkBuffer[i] == 0x7D)
-    {
-      i++;
-      linkBuffer[i] ^= 0x20;
-    }
+    
     TelemBuffer[11] = hex2dec(linkBuffer[i], 100);
     TelemBuffer[12] = hex2dec(linkBuffer[i], 10);
     TelemBuffer[13] = hex2dec(linkBuffer[i], 1);
     i++;
-    if (linkBuffer[i] == 0x7D)
-    {
-      i++;
-      linkBuffer[i] ^= 0x20;
-    }
+    
     TelemBuffer[24] = hex2dec(linkBuffer[i], 100);
     TelemBuffer[25] = hex2dec(linkBuffer[i], 10);
     TelemBuffer[26] = hex2dec(linkBuffer[i], 1);
-        i++;
-        if (linkBuffer[i] == 0x7D)
-    {
-      i++;
-      linkBuffer[i] ^= 0x20;
-    }
+	i++;
+	
     TelemBuffer[37] = hex2dec(linkBuffer[i], 100);
     TelemBuffer[38] = hex2dec(linkBuffer[i], 10);
     TelemBuffer[39] = hex2dec(linkBuffer[i], 1);
     FrskyBufferReady = 0;
   }
-
-  lcd_puts_P(  1*FW, FH*1, PSTR(" Pack Volts"));
+  
+  lcd_puts_P(  1*FW, FH*1, PSTR(" Pack Volts"));    
   lcd_puts_P(  1*FW, FH*4,PSTR(" Rx RSSI") );
 
   for (uint8_t i = 3; i < 8; i++)
@@ -2495,78 +2480,274 @@ void menuProcFrsky(uint8_t event)
 
 void menuProcFrsky1(uint8_t event)
 {
-  TITLE("FrSky  Page 2/2");
+  TITLE("FrSky        Page 2/3");
 
   switch(event)
-  {
-    /*case EVT_KEY_FIRST(KEY_MENU):0.0v
-      break;
-    case EVT_KEY_FIRST(KEY_EXIT):
-      FRSKY_DisableRXD();
-      chainMenu(menuProc0);
-      break;*/
-        case EVT_KEY_FIRST(KEY_UP):
-          chainMenu(menuProcFrsky);
+  {    
+	case EVT_KEY_FIRST(KEY_UP):
+	  chainMenu(menuProcFrsky);
       break;
     case EVT_KEY_FIRST(KEY_EXIT):
       FRSKY_DisableRXD();
       chainMenu(menuProc0);
       break;
+	case EVT_KEY_FIRST(KEY_DOWN):
+       chainMenu(menuProcFrskyConfig);
+       break;  
   }
 
   if (FrskyBufferReady)
   {
     uint8_t i=0;
-        linkBuffer[3] /= 2;		// Tx RSSI value is doubled
-    if (linkBuffer[i] == 0x7D)
-    {
-      i++;
-      linkBuffer[i] ^= 0x20;
-    }
+	linkBuffer[3] /= 2;		// Tx RSSI value is doubled
+    
     TelemBuffer[3] = hex2dec(linkBuffer[i], 100);
     TelemBuffer[4] = hex2dec(linkBuffer[i], 10);
     TelemBuffer[6] = hex2dec(linkBuffer[i], 1);
     i++;
-    if (linkBuffer[i] == 0x7D)
-    {
-      i++;
-      linkBuffer[i] ^= 0x20;
-    }
+    
     TelemBuffer[11] = hex2dec(linkBuffer[i], 100);
     TelemBuffer[12] = hex2dec(linkBuffer[i], 10);
     TelemBuffer[13] = hex2dec(linkBuffer[i], 1);
     i++;
-    if (linkBuffer[i] == 0x7D)
-    {
-      i++;
-      linkBuffer[i] ^= 0x20;
-    }
+    
     TelemBuffer[24] = hex2dec(linkBuffer[i], 100);
     TelemBuffer[25] = hex2dec(linkBuffer[i], 10);
     TelemBuffer[26] = hex2dec(linkBuffer[i], 1);
-        i++;
-        if (linkBuffer[i] == 0x7D)
-    {
-      i++;
-      linkBuffer[i] ^= 0x20;
-    }
+	i++;
+	
     TelemBuffer[37] = hex2dec(linkBuffer[i], 100);
     TelemBuffer[38] = hex2dec(linkBuffer[i], 10);
     TelemBuffer[39] = hex2dec(linkBuffer[i], 1);
     FrskyBufferReady = 0;
   }
-
-  lcd_puts_P(  1*FW, FH*1, PSTR(" Analogue 2"));
+  
+  lcd_puts_P(  1*FW, FH*1, PSTR(" Analogue 2"));    
   lcd_puts_P(  1*FW, FH*4,PSTR(" Tx RSSI") );
 
   for (uint8_t i = 3; i < 8; i++)
   {
-  lcd_putcAtt((i-2)*FW*2,   2*FH, TelemBuffer[i+8], DBLSIZE);
+    lcd_putcAtt((i-2)*FW*2,   2*FH, TelemBuffer[i+8], DBLSIZE);
     lcd_putcAtt((i-2)*FW*2,   5*FH, TelemBuffer[i+34], DBLSIZE);
   }
 
 }
 
+void menuProcFrskyConfig(uint8_t event)
+{
+  
+  static uint8_t editCnt = 1;
+  uint8_t i;
+  uint16_t bigNum;
+   
+  TITLE("FrSky Config Page 3/3");
+
+  switch(event)
+  {
+	case EVT_KEY_FIRST(KEY_MENU):
+		if (fr_editMode && editCnt == 13) {
+	  
+			// transmit strings code goes here
+			FRSKY_saveAlarms();
+		  
+			editCnt = 1;			  
+		}
+		fr_editMode = !fr_editMode;	
+	  	  
+		break;
+	case EVT_KEY_FIRST(KEY_UP):
+       if (fr_editMode) {
+			if (editCnt > 1)
+				editCnt--;		
+	   }
+	   else {
+		  	FRSKY_DisableTXD();
+			chainMenu(menuProcFrsky1);		
+	   }
+	   break;
+	case EVT_KEY_FIRST(KEY_DOWN):
+       if (fr_editMode && editCnt < 13) {
+			editCnt++;
+	   }
+       break;
+    case EVT_KEY_FIRST(KEY_EXIT):
+      FRSKY_DisableRXD();
+	  FRSKY_DisableTXD();
+      chainMenu(menuProc0);
+	  if(fr_editMode) {
+		fr_editMode = false;
+	  }
+	  requestStatus = 2;
+      break;	
+  }  
+  
+  FRSKY_EnableTXD();
+     
+  if (requestStatus) {
+    for (uint8_t k=0;k<11;k++) {			// setup loop to transmit string
+	FRSKY_Transmit(alrmRequest[k]);		    // output character
+    } 										// next character	
+	requestStatus--;
+  }
+  
+  if (fr_editMode) {
+	  alrmPktRx |= 0x0F;
+  }
+  
+      
+  if(alrmPktRx & 1)
+  {
+	i=0;
+	
+	
+    if (fr_editMode && editCnt == 1) {
+		lcd_outdezAtt(15*FW, 2*FH, a11Buffer[i],INVERS);
+		bigNum = a11Buffer[i];
+		CHECK_INCDEC_H_GENVAR(event, bigNum, 0, 254);
+		a11Buffer[i] = bigNum;
+	}
+	else
+		lcd_outdezAtt(15*FW, 2*FH, a11Buffer[i],0);
+	
+	i++;
+  
+	
+	if (fr_editMode && editCnt == 2) {
+		lcd_putsnAtt(16*FW, 2*FH, PSTR("<"">")+1*a11Buffer[i],1,INVERS);
+		CHECK_INCDEC_H_GENVAR(event, a11Buffer[i], 0, 1);
+	}
+	else
+		lcd_putsnAtt(16*FW, 2*FH, PSTR("<"">")+1*a11Buffer[i],1,0);
+	i++;
+  
+	
+	if (fr_editMode && editCnt == 3) {
+		lcd_putsnAtt(18*FW, 2*FH, PSTR("Hi ""Mid""Low")+3*a11Buffer[i],3,INVERS);
+		CHECK_INCDEC_H_GENVAR(event, a11Buffer[i], 0, 2);
+	}
+	else
+		lcd_putsnAtt(18*FW, 2*FH, PSTR("Hi ""Mid""Low")+3*a11Buffer[i],3,0);
+	
+  }
+
+  if(alrmPktRx & 2)
+  {
+	i=0;
+	
+	
+    if (fr_editMode && editCnt == 4) {
+		lcd_outdezAtt(15*FW, 3*FH, a12Buffer[i],INVERS);
+		bigNum = a12Buffer[i];
+		CHECK_INCDEC_H_GENVAR(event, bigNum, 0, 254);
+		a12Buffer[i] = bigNum;
+	}
+	else
+		lcd_outdezAtt(15*FW, 3*FH, a12Buffer[i],0);
+	
+	i++;
+  
+	
+	if (fr_editMode && editCnt == 5) {
+		lcd_putsnAtt(16*FW, 3*FH, PSTR("<"">")+1*a12Buffer[i],1,INVERS);
+		CHECK_INCDEC_H_GENVAR(event, a12Buffer[i], 0, 1);
+	}
+	else
+		lcd_putsnAtt(16*FW, 3*FH, PSTR("<"">")+1*a12Buffer[i],1,0);
+	i++;
+  
+	
+	if (fr_editMode && editCnt == 6) {
+		lcd_putsnAtt(18*FW, 3*FH, PSTR("Hi ""Mid""Low")+3*a12Buffer[i],3,INVERS);
+		CHECK_INCDEC_H_GENVAR(event, a12Buffer[i], 0, 2);
+	}
+	else
+		lcd_putsnAtt(18*FW, 3*FH, PSTR("Hi ""Mid""Low")+3*a12Buffer[i],3,0);
+	
+  }
+  
+  if(alrmPktRx & 4)
+  {
+	i=0;
+	
+	
+    if (fr_editMode && editCnt == 7) {
+		lcd_outdezAtt(15*FW, 5*FH, a21Buffer[i],INVERS);
+		bigNum = a21Buffer[i];
+		CHECK_INCDEC_H_GENVAR(event, bigNum, 0, 254);
+		a21Buffer[i] = bigNum;
+	}
+	else
+		lcd_outdezAtt(15*FW, 5*FH, a21Buffer[i],0);
+	
+	i++;
+  
+	
+	if (fr_editMode && editCnt == 8) {
+		lcd_putsnAtt(16*FW, 5*FH, PSTR("<"">")+1*a21Buffer[i],1,INVERS);
+		CHECK_INCDEC_H_GENVAR(event, a21Buffer[i], 0, 1);
+	}
+	else
+		lcd_putsnAtt(16*FW, 5*FH, PSTR("<"">")+1*a21Buffer[i],1,0);
+	i++;
+  
+	
+	if (fr_editMode && editCnt == 9) {
+		lcd_putsnAtt(18*FW, 5*FH, PSTR("Hi ""Mid""Low")+3*a21Buffer[i],3,INVERS);
+		CHECK_INCDEC_H_GENVAR(event, a21Buffer[i], 0, 2);
+	}
+	else
+		lcd_putsnAtt(18*FW, 5*FH, PSTR("Hi ""Mid""Low")+3*a21Buffer[i],3,0);
+	
+  }
+  
+  if(alrmPktRx & 8)
+  {
+	i=0;
+	
+	
+    if (fr_editMode && editCnt == 10) {
+		lcd_outdezAtt(15*FW, 6*FH, a22Buffer[i],INVERS);
+		bigNum = a22Buffer[i];
+		CHECK_INCDEC_H_GENVAR(event, bigNum, 0, 254);
+		a22Buffer[i] = bigNum;
+	}
+	else
+		lcd_outdezAtt(15*FW, 6*FH, a22Buffer[i],0);
+	
+	i++;
+  
+	
+	if (fr_editMode && editCnt == 11) {
+		lcd_putsnAtt(16*FW, 6*FH, PSTR("<"">")+1*a22Buffer[i],1,INVERS);
+		CHECK_INCDEC_H_GENVAR(event, a22Buffer[i], 0, 1);
+	}
+	else
+		lcd_putsnAtt(16*FW, 6*FH, PSTR("<"">")+1*a22Buffer[i],1,0);
+	i++;
+  
+	
+	if (fr_editMode && editCnt == 12) {
+		lcd_putsnAtt(18*FW, 6*FH, PSTR("Hi ""Mid""Low")+3*a22Buffer[i],3,INVERS);
+		CHECK_INCDEC_H_GENVAR(event, a22Buffer[i], 0, 2);
+	}
+	else
+		lcd_putsnAtt(18*FW, 6*FH, PSTR("Hi ""Mid""Low")+3*a22Buffer[i],3,0);
+	
+  }
+  
+  if (fr_editMode) {
+		if (editCnt == 13)
+			lcd_putsAtt(17*FW, 7*FH, PSTR("SAVE"),INVERS);	   
+	    else		  	
+			lcd_putsAtt(17*FW, 7*FH, PSTR("SAVE"),0);
+  }
+  
+  lcd_puts_P(  1*FW, FH*2, PSTR("Alarm 1:1:"));  
+  lcd_puts_P(  1*FW, FH*3, PSTR("Alarm 1:2:"));
+  lcd_puts_P(  1*FW, FH*5, PSTR("Alarm 2:1:"));
+  lcd_puts_P(  1*FW, FH*6, PSTR("Alarm 2:2:"));    
+  
+}  
 #endif
 
 void menuProcStatistic(uint8_t event)

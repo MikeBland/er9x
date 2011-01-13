@@ -21,7 +21,16 @@
 
 uint8_t linkBuffer[9]; // 4 bytes, worst case 8 bytes with byte stuff + 1
 uint8_t TelemBuffer[] = "A1:  . VA2:     Rx RSSI:   dBTx RSSI:   dB";
+uint8_t alrmRequest[] = {0x7e,0xf8,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7e};
 uint8_t FrskyBufferReady;
+uint8_t alrmPktRx = 0;
+uint8_t stringId =0;
+uint8_t fr_editMode;
+uint8_t a11Buffer[9] = ""; // 4 bytes, worst case 8 bytes with byte stuff + 1
+uint8_t a12Buffer[9] = ""; // 4 bytes, worst case 8 bytes with byte stuff + 1
+uint8_t a21Buffer[9] = ""; // 4 bytes, worst case 8 bytes with byte stuff + 1
+uint8_t a22Buffer[9] = ""; // 4 bytes, worst case 8 bytes with byte stuff + 1
+//uint16_t a11hex;
 
 
 ISR (USART0_RX_vect)
@@ -30,9 +39,15 @@ ISR (USART0_RX_vect)
 		uint8_t data;
         static uint8_t startDet = 0;	// packet header flag
 		static uint8_t linkPkt = 0;
-		static uint8_t usrPkt = 0;        
+		static uint8_t usrPkt = 0; 
+		static uint8_t a11Pkt = 0;
+		static uint8_t a12Pkt = 0;
+		static uint8_t a21Pkt = 0;
+		static uint8_t a22Pkt = 0;
         static uint8_t linkCtr = 0;
+		static uint8_t alrmCtr = 0;
 		static uint8_t falseStart = 0;
+		static uint8_t byteStuff = 0;
         
         stat = UCSR0A;//USART control and Status Register 0 A
        
@@ -83,37 +98,161 @@ ISR (USART0_RX_vect)
 			}
 		}
 				
-		else if (startDet)
+		else if (stringId)
 		{
 			switch (data)
 			{
-				case 0x7e: // start or end detected?
-					if (falseStart)
-						falseStart = 0;	// was false start, now use real one
-					else
+				case 0x7e: // end detected?
+					//if (falseStart)
+					//	falseStart = 0;	// was false start, now use real one
+					//else
 						startDet = 0;	// end detected
 						FrskyBufferReady = 1;
 						linkCtr = 0;
-					break;
-				
-				case 0xfe:
-					linkPkt = 1;
-					falseStart = 0;
-					break;
-					
-				case 0xfd:
-					usrPkt = 1;// flag user data
-					falseStart = 0;
-					break;				
+						alrmCtr = 0;
+						linkPkt = 0;
+						usrPkt = 0;
+						a11Pkt = 0;
+						a12Pkt = 0;
+						a21Pkt = 0;
+						a22Pkt = 0;
+						stringId = 0;
+					break;			
 					
 				default:
 					if (linkPkt)
 					{
 						linkBuffer[linkCtr++] = data;						
 					}
+					if (a11Pkt)
+					{
+						if (data == 0x7d)
+							byteStuff = 1;
+						else if (byteStuff) {
+							a11Buffer[alrmCtr++] = data ^ 0x20;
+							byteStuff &= 0;
+						}
+						else
+							a11Buffer[alrmCtr++] = data;
+							
+						alrmPktRx |= 1;
+					}
+					if (a12Pkt)
+					{
+						if (data == 0x7d)
+							byteStuff = 1;
+						else if (byteStuff) {
+							a12Buffer[alrmCtr++] = data ^ 0x20;
+							byteStuff &= 0;
+						}
+						else
+							a12Buffer[alrmCtr++] = data;
+							
+						alrmPktRx |= 2;
+					}
+					if (a21Pkt)
+					{
+						if (data == 0x7d)
+							byteStuff = 1;
+						else if (byteStuff) {
+							a21Buffer[alrmCtr++] = data ^ 0x20;
+							byteStuff &= 0;
+						}
+						else
+							a21Buffer[alrmCtr++] = data;
+							
+						alrmPktRx |= 4;
+					}
+					if (a22Pkt)
+					{
+						if (data == 0x7d)
+							byteStuff = 1;
+						else if (byteStuff) {
+							a22Buffer[alrmCtr++] = data ^ 0x20;
+							byteStuff &= 0;
+						}
+						else
+							a22Buffer[alrmCtr++] = data;
+							
+						alrmPktRx |= 8;
+					}
+					break;
 					// insert user data routine here
-			}		
-		}     
+				
+			}
+		}
+		else 
+		{
+			switch (data)
+			{
+				case 0x7e: // start or end detected?
+					if (falseStart)
+						falseStart = 0;	// was false start, now use real one
+					/*else
+						startDet = 0;	// end detected
+						FrskyBufferReady = 1;
+						linkCtr = 0;
+						alrmCtr = 0;
+						linkPkt = 0;
+						usrPkt = 0;
+						a11Pkt = 0;
+						a12Pkt = 0;
+						a21Pkt = 0;
+						a22Pkt = 0;
+						stringId = 0; */
+					break;
+					
+				case 0xfe:
+					linkPkt = 1;
+					falseStart = 0;
+					stringId =1;
+					break;
+					
+				case 0xfd:
+					usrPkt = 1;// flag user data
+					falseStart = 0;
+					stringId =1;
+					break;
+
+				case 0xfc:
+					a11Pkt = 1;
+					falseStart = 0;
+					stringId =1;
+					break;
+					
+				case 0xfb:
+					a12Pkt = 1;
+					falseStart = 0;
+					stringId =1;
+					break;
+					
+				case 0xfa:
+					a21Pkt = 1;
+					falseStart = 0;
+					stringId =1;
+					break;
+					
+				case 0xf9:
+					a22Pkt = 1;
+					falseStart = 0;
+					stringId =1;
+					break;
+				
+				default: // if second byte not matched above then string corrupted - start again
+					startDet = 0;	// end detected
+					FrskyBufferReady = 1;
+					linkCtr = 0;
+					alrmCtr = 0;
+					linkPkt = 0;
+					usrPkt = 0;
+					a11Pkt = 0;
+					a12Pkt = 0;
+					a21Pkt = 0;
+					a22Pkt = 0;
+					stringId = 0;
+					break;
+			}  
+		}
 		
 }
 
@@ -166,5 +305,113 @@ void FRSKY_EnableRXD (void)
 {
         UCSR0B |=  (1 << RXEN0);        // enable RX
         UCSR0B |=  (1 << RXCIE0);       // enable Interrupt
+}
+
+/* FRSKY_Transmit sends a character passed to it out the onboard USART of 	*/
+/* an Atmel ATMEGA64 microprocessor.										*/
+
+void FRSKY_Transmit(uint8_t data)
+{
+/* Wait for empty transmit buffer */
+loop_until_bit_is_set(UCSR0A, UDRE0);
+	
+/* Put data into buffer, send data */
+UDR0 = data;
+}
+
+void FRSKY_saveAlarms (void)
+{	
+	uint8_t count;
+	uint8_t k=0;
+	
+	count = 0;
+	FRSKY_Transmit(0x7e); //Start
+	FRSKY_Transmit(0xfc); //a11
+	for (k=0;k<3;k++) {	// 3 bytes plus byte stuff
+		if (a11Buffer[count] == 0x7e) {			
+			FRSKY_Transmit(0x7d);
+			FRSKY_Transmit(0x5e);
+		}
+		else if (a11Buffer[count] == 0x7d) {			
+			FRSKY_Transmit(0x7d);
+			FRSKY_Transmit(0x5d);
+		}
+		else 
+			FRSKY_Transmit(a11Buffer[count]);
+			
+		count++;
+		
+	}
+	for (k=0;k<5;k++) {	// five 0x00 bytes
+		FRSKY_Transmit(0);
+	}
+	FRSKY_Transmit(0x7e);	// end
+
+	count = 0;
+	FRSKY_Transmit(0x7e); //Start
+	FRSKY_Transmit(0xfb); //a12
+	for (k=0;k<3;k++) {	// 3 bytes plus byte stuff
+		if (a12Buffer[count] == 0x7e) {			
+			FRSKY_Transmit(0x7d);
+			FRSKY_Transmit(0x5e);
+		}
+		else if (a12Buffer[count] == 0x7d) {			
+			FRSKY_Transmit(0x7d);
+			FRSKY_Transmit(0x5d);
+		}
+		else 
+			FRSKY_Transmit(a12Buffer[count]);
+			
+		count++;
+	}
+	for (k=0;k<5;k++) {	// five 0x00 bytes
+		FRSKY_Transmit(0);
+	}
+	FRSKY_Transmit(0x7e);	// end
+	
+	count = 0;
+	FRSKY_Transmit(0x7e); //Start
+	FRSKY_Transmit(0xfa); //a21
+	for (k=0;k<3;k++) {	// 3 bytes plus byte stuff
+		if (a21Buffer[count] == 0x7e) {			
+			FRSKY_Transmit(0x7d);
+			FRSKY_Transmit(0x5e);
+		}
+		else if (a21Buffer[count] == 0x7d) {			
+			FRSKY_Transmit(0x7d);
+			FRSKY_Transmit(0x5d);
+		}
+		else
+			FRSKY_Transmit(a21Buffer[count]);
+			
+		count++;
+	}
+	for (k=0;k<5;k++) {	// five 0x00 bytes
+		FRSKY_Transmit(0);
+	}
+	FRSKY_Transmit(0x7e);	// end
+	
+	count = 0;
+	FRSKY_Transmit(0x7e); //Start
+	FRSKY_Transmit(0xf9); //a22
+	for (k=0;k<3;k++) {	// 3 bytes plus byte stuff
+		if (a22Buffer[count] == 0x7e) {			
+			FRSKY_Transmit(0x7d);
+			FRSKY_Transmit(0x5e);
+		}
+		else if (a22Buffer[count] == 0x7d) {			
+			FRSKY_Transmit(0x7d);
+			FRSKY_Transmit(0x5d);
+		}
+		else
+			FRSKY_Transmit(a22Buffer[count]);
+			
+		count++;
+	}
+	for (k=0;k<5;k++) {	// five 0x00 bytes
+		FRSKY_Transmit(0);
+	}
+	FRSKY_Transmit(0x7e);	// end
+
 }
 
