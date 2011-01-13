@@ -1398,10 +1398,14 @@ void menuDeleteModel(uint8_t event)
       STORE_GENERALVARS;
 
       eeLoadModel(g_eeGeneral.currModel); //load default values
-      chainMenu(menuProcModelSelect);
+      killEvents(event);
+      popMenu(true);
+      pushMenu(menuProcModelSelect);
       break;
     case EVT_KEY_FIRST(KEY_EXIT):
-      popMenu();
+      killEvents(event);
+      popMenu(true);
+      pushMenu(menuProcModelSelect);
       break;
   }
 }
