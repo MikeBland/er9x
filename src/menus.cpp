@@ -3105,17 +3105,17 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
         if((inacCounter&0x3F)==10) beepWarn();
     }
   }
-  
+
   //===========Swash Ring================
   if(g_model.swashRingValue)
-  {
-      uint32_t v = (calibratedStick[ELE_STICK]*calibratedStick[ELE_STICK] +
-                    calibratedStick[AIL_STICK]*calibratedStick[AIL_STICK]);
-      uint32_t q = RESX*g_model.swashRingValue/100;
-      q *= q;
-      if(v>q)
-          d = isqrt32(v);
-  }
+    {
+        uint32_t v = (int32_t(calibratedStick[ELE_STICK])*calibratedStick[ELE_STICK] +
+                      int32_t(calibratedStick[AIL_STICK])*calibratedStick[AIL_STICK]);
+        uint32_t q = int32_t(RESX)*g_model.swashRingValue/100;
+        q *= q;
+        if(v>q)
+            d = isqrt32(v);
+    }
   //===========Swash Ring================
 
   for(uint8_t i=0;i<7;i++){        // calc Sticks
@@ -3131,14 +3131,14 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
     if(v >=  RESX) v =  RESX;
     calibratedStick[i] = v; //for show in expo
     if(!(v/16)) anaCenter |= 1<<(CONVERT_MODE((i+1))-1);
-    
-    //===========Swash Ring================
-    if(d && (i==ELE_STICK || i==AIL_STICK))
-        v = (int32_t)v*g_model.swashRingValue*RESX/(d*100);
-    //===========Swash Ring================
 
 
     if(i<4) { //only do this for sticks
+        //===========Swash Ring================
+        if(d && (i==ELE_STICK || i==AIL_STICK))
+                v = int32_t(v)*g_model.swashRingValue*RESX/(int32_t(d)*100);
+        //===========Swash Ring================
+
       uint8_t expoDrOn = GET_DR_STATE(i);
       uint8_t stkDir = v>0 ? DR_RIGHT : DR_LEFT;
 
