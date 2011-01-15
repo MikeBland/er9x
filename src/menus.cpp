@@ -2039,14 +2039,10 @@ void menuProcSetup(uint8_t event)
 
   if(s_pgOfs<subN) {
     lcd_puts_P(0, y,PSTR("Inactivity alarm"));
-    t = PARAM_OFS + NUM_OFS(g_eeGeneral.inactivityTimer);
-    lcd_outdezAtt(t, y, g_eeGeneral.inactivityTimer, (sub==subN ? INVERS : 0));
+    t = PARAM_OFS + NUM_OFS(g_eeGeneral.inactivityTimer+10);
+    lcd_outdezAtt(t, y, g_eeGeneral.inactivityTimer+10, (sub==subN ? INVERS : 0));
     lcd_putcAtt(  t, y, 'm', 0);
-    if(sub==subN) {
-        uint16_t ut = g_eeGeneral.inactivityTimer;
-        CHECK_INCDEC_H_GENVAR(event, ut, 0, 250); //0..250minutes
-        g_eeGeneral.inactivityTimer = ut;
-    }
+    if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.inactivityTimer, -10, 110); //0..120minutes
     if((y+=FH)>7*FH) return;
   }subN++;
 
@@ -3093,10 +3089,11 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
 {
   int16_t  trimA[4];
   uint8_t  anaCenter = 0;
+  uint16_t d = 0;
 
   if(tick10ms) {
     if(s_noHi) s_noHi--;
-    if(g_eeGeneral.inactivityTimer) {
+    if(g_eeGeneral.inactivityTimer && (g_vbat100mV>49)) {
       inacCounter++;
       uint16_t tsum = 0;
       for(uint8_t i=0;i<4;i++) tsum += anas[i]/128;//div 8 -> reduce sensitivity
@@ -3104,10 +3101,22 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
         inacSum = tsum;
         inacCounter=0;
       }
-      if(inacCounter>((uint32_t)g_eeGeneral.inactivityTimer*100*60))
+      if(inacCounter>((uint32_t)(g_eeGeneral.inactivityTimer+10)*100*60))
         if((inacCounter&0x3F)==10) beepWarn();
     }
   }
+  
+  //===========Swash Ring================
+  if(g_model.swashRingValue)
+  {
+      uint32_t v = (calibratedStick[ELE_STICK]*calibratedStick[ELE_STICK] +
+                    calibratedStick[AIL_STICK]*calibratedStick[AIL_STICK]);
+      uint32_t q = RESX*g_model.swashRingValue/100;
+      q *= q;
+      if(v>q)
+          d = isqrt32(v);
+  }
+  //===========Swash Ring================
 
   for(uint8_t i=0;i<7;i++){        // calc Sticks
 
@@ -3122,6 +3131,11 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
     if(v >=  RESX) v =  RESX;
     calibratedStick[i] = v; //for show in expo
     if(!(v/16)) anaCenter |= 1<<(CONVERT_MODE((i+1))-1);
+    
+    //===========Swash Ring================
+    if(d && (i==ELE_STICK || i==AIL_STICK))
+        v = (int32_t)v*g_model.swashRingValue*RESX/(d*100);
+    //===========Swash Ring================
 
 
     if(i<4) { //only do this for sticks

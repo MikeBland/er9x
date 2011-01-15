@@ -74,7 +74,7 @@ typedef struct t_EEGeneral {
   uint8_t   reserveWarning:1;
   uint8_t   disableAlarmWarning:1;
   uint8_t   stickMode;
-  uint8_t   inactivityTimer;
+  int8_t    inactivityTimer;
   uint8_t   throttleReversed:1;
   uint8_t   minuteBeep:1;
   uint8_t   preBeep:1;
