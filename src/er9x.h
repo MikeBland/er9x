@@ -285,6 +285,12 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define DSW_SW4  13
 #define DSW_SW5  14
 #define DSW_SW6  15
+#define DSW_SW7   16
+#define DSW_SW8   17
+#define DSW_SW9   18
+#define DSW_SWA   19
+#define DSW_SWB   20
+#define DSW_SWC   21
 
 #define THRCHK_DEADBAND 16
 #define SPLASH_TIMEOUT  (4*100)  //400 msec - 4 seconds

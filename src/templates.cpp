@@ -108,7 +108,13 @@ void applyTemplate(uint8_t idx)
 
         //T-Cut
     case (1):
-        md=setDest(ICC(STK_THR));  md->srcRaw=MIX_MAX;  md->weight=-100;  md->swtch=DSW_THR;  md->mltpx=MLTPX_REP;
+        md=setDest(ICC(STK_THR));  md->srcRaw=MIX_MAX;  md->weight=-100;  md->swtch=DSW_SWA;  md->mltpx=MLTPX_REP;
+        md=setDest(14);            md->srcRaw=MIX_FULL; md->weight=-100;  md->swtch=DSW_SWC;
+        md=setDest(14);            md->srcRaw=MIX_MAX;  md->weight= 100;  md->swtch=DSW_THR;  md->mltpx=MLTPX_REP;
+
+        setSwitch(0xA,CS_VPOS, CH(14), 0);
+        setSwitch(0xB,CS_VNEG, CM(STK_THR), -99);
+        setSwitch(0xC,CS_OR,  -DSW_SWA, DSW_SWB);
         break;
 
         //V-Tail
