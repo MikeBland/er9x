@@ -68,6 +68,7 @@
 const char n_Templates[][TEMPLATE_NLEN] = {
   "Simple 4-CH",
   "T-Cut",
+  "Sticky T-Cut",
   "V-Tail",
   "Elevon\\Delta",
   "Heli Setup",

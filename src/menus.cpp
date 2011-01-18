@@ -680,8 +680,10 @@ void menuProcSwitches(uint8_t event)  //Issue 78
     CSwData &cs = g_model.customSw[k];
 
     //write SW names here
-    lcd_outdezNAtt(3*FW,  y, k+1, LEADING0,2);
-    lcd_putsnAtt(  4*FW, y, PSTR(CSWITCH_STR)+CSW_LEN_FUNC*cs.func,CSW_LEN_FUNC,subSub==1 ? attr : 0);
+//    lcd_outdezNAtt(3*FW,  y, k+1, LEADING0,2);
+    lcd_putcAtt(  0*FW , y, k + '1',0);
+	lcd_putcAtt(  1*FW , y, ':'    ,0);
+    lcd_putsnAtt( 4*FW , y, PSTR(CSWITCH_STR)+CSW_LEN_FUNC*cs.func,CSW_LEN_FUNC,subSub==1 ? attr : 0);
 
     uint8_t cstate = CS_STATE(cs.func);
 
