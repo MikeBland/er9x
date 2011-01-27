@@ -22,7 +22,7 @@
 #include <string.h>
 
 ///opt/cross/avr/include/avr/pgmspace.h
-  #include <stddef.h>
+#include <stddef.h>
 #include <avr/io.h>
 #define assert(x)
 //disable whole pgmspace functionality for all avr-gcc because
