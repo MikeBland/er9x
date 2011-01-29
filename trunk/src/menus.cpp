@@ -1399,6 +1399,7 @@ void menuDeleteModel(uint8_t event)
       STORE_GENERALVARS;
 
       eeLoadModel(g_eeGeneral.currModel); //load default values
+      resetTimer();
       killEvents(event);
       popMenu(true);
       pushMenu(menuProcModelSelect);
@@ -1710,6 +1711,7 @@ void menuProcModelSelect(uint8_t event)
         beepKey();
         killEvents(event);
         eeLoadModel(g_eeGeneral.currModel = mstate2.m_posVert);
+        resetTimer();
         STORE_GENERALVARS;
         STORE_MODELVARS;
         break;
@@ -1722,6 +1724,7 @@ void menuProcModelSelect(uint8_t event)
         killEvents(event);
         g_eeGeneral.currModel = mstate2.m_posVert;
         eeLoadModel(g_eeGeneral.currModel);
+        resetTimer();
         STORE_GENERALVARS;
         beepWarn1();
       }
@@ -2800,6 +2803,15 @@ void menuProcStatistic(uint8_t event)
 
 //extern volatile uint16_t captureRing[16];
 
+void resetTimer()
+{
+    s_timerState = TMR_OFF; //is changed to RUNNING dep from mode
+    s_timeCumAbs=0;
+    s_timeCumThr=0;
+    s_timeCumSw=0;
+    s_timeCum16ThrP=0;
+    beepKey();
+}
 
 void menuProc0(uint8_t event)
 {
@@ -2886,12 +2898,7 @@ void menuProc0(uint8_t event)
       }
       break;
     case EVT_KEY_LONG(KEY_EXIT):
-      s_timerState = TMR_OFF; //is changed to RUNNING dep from mode
-      s_timeCumAbs=0;
-      s_timeCumThr=0;
-      s_timeCumSw=0;
-      s_timeCum16ThrP=0;
-      beepKey();
+      resetTimer();
       break;
     case EVT_ENTRY_UP:
       s_lastPopMenu[sub] = lastPopMenu();
