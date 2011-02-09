@@ -2604,33 +2604,33 @@ void menuProcFrskyConfig(uint8_t event)
 	i=0;
 	
 	
-    if (fr_editMode && editCnt == 1) {
-		lcd_outdezAtt(15*FW, 2*FH, a11Buffer[i],INVERS);
+    if (fr_editMode && editCnt == 2) {
+		lcd_outdezAtt(16*FW, 2*FH, a11Buffer[i],INVERS);
 		bigNum = a11Buffer[i];
 		CHECK_INCDEC_H_GENVAR(event, bigNum, 0, 254);
 		a11Buffer[i] = bigNum;
 	}
 	else
-		lcd_outdezAtt(15*FW, 2*FH, a11Buffer[i],0);
+		lcd_outdezAtt(16*FW, 2*FH, a11Buffer[i],0);
 	
 	i++;
   
 	
-	if (fr_editMode && editCnt == 2) {
-		lcd_putsnAtt(16*FW, 2*FH, PSTR("<"">")+1*a11Buffer[i],1,INVERS);
+	if (fr_editMode && editCnt == 1) {
+		lcd_putsnAtt(12*FW, 2*FH, PSTR("<"">")+1*a11Buffer[i],1,INVERS);
 		CHECK_INCDEC_H_GENVAR(event, a11Buffer[i], 0, 1);
 	}
 	else
-		lcd_putsnAtt(16*FW, 2*FH, PSTR("<"">")+1*a11Buffer[i],1,0);
+		lcd_putsnAtt(12*FW, 2*FH, PSTR("<"">")+1*a11Buffer[i],1,0);
 	i++;
   
 	
 	if (fr_editMode && editCnt == 3) {
-		lcd_putsnAtt(18*FW, 2*FH, PSTR("Hi ""Mid""Low")+3*a11Buffer[i],3,INVERS);
-		CHECK_INCDEC_H_GENVAR(event, a11Buffer[i], 0, 2);
+		lcd_putsnAtt(17*FW, 2*FH, PSTR("Off""Yel""Org""Red")+3*a11Buffer[i],3,INVERS);
+		CHECK_INCDEC_H_GENVAR(event, a11Buffer[i], 0, 3);
 	}
 	else
-		lcd_putsnAtt(18*FW, 2*FH, PSTR("Hi ""Mid""Low")+3*a11Buffer[i],3,0);
+		lcd_putsnAtt(17*FW, 2*FH, PSTR("Off""Yel""Org""Red")+3*a11Buffer[i],3,0);
 	
   }
 
@@ -2639,33 +2639,33 @@ void menuProcFrskyConfig(uint8_t event)
 	i=0;
 	
 	
-    if (fr_editMode && editCnt == 4) {
-		lcd_outdezAtt(15*FW, 3*FH, a12Buffer[i],INVERS);
+    if (fr_editMode && editCnt == 5) {
+		lcd_outdezAtt(16*FW, 3*FH, a12Buffer[i],INVERS);
 		bigNum = a12Buffer[i];
 		CHECK_INCDEC_H_GENVAR(event, bigNum, 0, 254);
 		a12Buffer[i] = bigNum;
 	}
 	else
-		lcd_outdezAtt(15*FW, 3*FH, a12Buffer[i],0);
+		lcd_outdezAtt(16*FW, 3*FH, a12Buffer[i],0);
 	
 	i++;
   
 	
-	if (fr_editMode && editCnt == 5) {
-		lcd_putsnAtt(16*FW, 3*FH, PSTR("<"">")+1*a12Buffer[i],1,INVERS);
+	if (fr_editMode && editCnt == 4) {
+		lcd_putsnAtt(12*FW, 3*FH, PSTR("<"">")+1*a12Buffer[i],1,INVERS);
 		CHECK_INCDEC_H_GENVAR(event, a12Buffer[i], 0, 1);
 	}
 	else
-		lcd_putsnAtt(16*FW, 3*FH, PSTR("<"">")+1*a12Buffer[i],1,0);
+		lcd_putsnAtt(12*FW, 3*FH, PSTR("<"">")+1*a12Buffer[i],1,0);
 	i++;
   
 	
 	if (fr_editMode && editCnt == 6) {
-		lcd_putsnAtt(18*FW, 3*FH, PSTR("Hi ""Mid""Low")+3*a12Buffer[i],3,INVERS);
-		CHECK_INCDEC_H_GENVAR(event, a12Buffer[i], 0, 2);
+		lcd_putsnAtt(17*FW, 3*FH, PSTR("Off""Yel""Org""Red")+3*a12Buffer[i],3,INVERS);
+		CHECK_INCDEC_H_GENVAR(event, a12Buffer[i], 0, 3);
 	}
 	else
-		lcd_putsnAtt(18*FW, 3*FH, PSTR("Hi ""Mid""Low")+3*a12Buffer[i],3,0);
+		lcd_putsnAtt(17*FW, 3*FH, PSTR("Off""Yel""Org""Red")+3*a12Buffer[i],3,0);
 	
   }
   
@@ -2674,33 +2674,33 @@ void menuProcFrskyConfig(uint8_t event)
 	i=0;
 	
 	
-    if (fr_editMode && editCnt == 7) {
-		lcd_outdezAtt(15*FW, 5*FH, a21Buffer[i],INVERS);
+    if (fr_editMode && editCnt == 8) {
+		lcd_outdezAtt(16*FW, 5*FH, a21Buffer[i],INVERS);
 		bigNum = a21Buffer[i];
 		CHECK_INCDEC_H_GENVAR(event, bigNum, 0, 254);
 		a21Buffer[i] = bigNum;
 	}
 	else
-		lcd_outdezAtt(15*FW, 5*FH, a21Buffer[i],0);
+		lcd_outdezAtt(16*FW, 5*FH, a21Buffer[i],0);
 	
 	i++;
   
 	
-	if (fr_editMode && editCnt == 8) {
-		lcd_putsnAtt(16*FW, 5*FH, PSTR("<"">")+1*a21Buffer[i],1,INVERS);
+	if (fr_editMode && editCnt == 7) {
+		lcd_putsnAtt(12*FW, 5*FH, PSTR("<"">")+1*a21Buffer[i],1,INVERS);
 		CHECK_INCDEC_H_GENVAR(event, a21Buffer[i], 0, 1);
 	}
 	else
-		lcd_putsnAtt(16*FW, 5*FH, PSTR("<"">")+1*a21Buffer[i],1,0);
+		lcd_putsnAtt(12*FW, 5*FH, PSTR("<"">")+1*a21Buffer[i],1,0);
 	i++;
   
 	
 	if (fr_editMode && editCnt == 9) {
-		lcd_putsnAtt(18*FW, 5*FH, PSTR("Hi ""Mid""Low")+3*a21Buffer[i],3,INVERS);
-		CHECK_INCDEC_H_GENVAR(event, a21Buffer[i], 0, 2);
+		lcd_putsnAtt(17*FW, 5*FH, PSTR("Off""Yel""Org""Red")+3*a21Buffer[i],3,INVERS);
+		CHECK_INCDEC_H_GENVAR(event, a21Buffer[i], 0, 3);
 	}
 	else
-		lcd_putsnAtt(18*FW, 5*FH, PSTR("Hi ""Mid""Low")+3*a21Buffer[i],3,0);
+		lcd_putsnAtt(17*FW, 5*FH, PSTR("Off""Yel""Org""Red")+3*a21Buffer[i],3,0);
 	
   }
   
@@ -2709,33 +2709,33 @@ void menuProcFrskyConfig(uint8_t event)
 	i=0;
 	
 	
-    if (fr_editMode && editCnt == 10) {
-		lcd_outdezAtt(15*FW, 6*FH, a22Buffer[i],INVERS);
+    if (fr_editMode && editCnt == 11) {
+		lcd_outdezAtt(16*FW, 6*FH, a22Buffer[i],INVERS);
 		bigNum = a22Buffer[i];
 		CHECK_INCDEC_H_GENVAR(event, bigNum, 0, 254);
 		a22Buffer[i] = bigNum;
 	}
 	else
-		lcd_outdezAtt(15*FW, 6*FH, a22Buffer[i],0);
+		lcd_outdezAtt(16*FW, 6*FH, a22Buffer[i],0);
 	
 	i++;
   
 	
-	if (fr_editMode && editCnt == 11) {
-		lcd_putsnAtt(16*FW, 6*FH, PSTR("<"">")+1*a22Buffer[i],1,INVERS);
+	if (fr_editMode && editCnt == 10) {
+		lcd_putsnAtt(12*FW, 6*FH, PSTR("<"">")+1*a22Buffer[i],1,INVERS);
 		CHECK_INCDEC_H_GENVAR(event, a22Buffer[i], 0, 1);
 	}
 	else
-		lcd_putsnAtt(16*FW, 6*FH, PSTR("<"">")+1*a22Buffer[i],1,0);
+		lcd_putsnAtt(12*FW, 6*FH, PSTR("<"">")+1*a22Buffer[i],1,0);
 	i++;
   
 	
 	if (fr_editMode && editCnt == 12) {
-		lcd_putsnAtt(18*FW, 6*FH, PSTR("Hi ""Mid""Low")+3*a22Buffer[i],3,INVERS);
-		CHECK_INCDEC_H_GENVAR(event, a22Buffer[i], 0, 2);
+		lcd_putsnAtt(17*FW, 6*FH, PSTR("Off""Yel""Org""Red")+3*a22Buffer[i],3,INVERS);
+		CHECK_INCDEC_H_GENVAR(event, a22Buffer[i], 0, 3);
 	}
 	else
-		lcd_putsnAtt(18*FW, 6*FH, PSTR("Hi ""Mid""Low")+3*a22Buffer[i],3,0);
+		lcd_putsnAtt(17*FW, 6*FH, PSTR("Off""Yel""Org""Red")+3*a22Buffer[i],3,0);
 	
   }
   
