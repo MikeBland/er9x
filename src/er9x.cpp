@@ -351,9 +351,9 @@ void checkSwitches()
     for(i=SW_BASE; i<SW_Trainer; i++)
     {
         if(i==SW_ID0) continue;
-#if (defined(JETI) || defined(FRSKY))
-        if(i==SW_AileDR || i==SW_ThrCt) continue; //issue 166
-#endif
+//#if (defined(JETI) || defined(FRSKY))
+//        if(i==SW_AileDR || i==SW_ThrCt) continue; //issue 166 - commented out since the issue was in error
+//#endif
         if(getSwitch(i-SW_BASE+1,0)) break;
     }
 
