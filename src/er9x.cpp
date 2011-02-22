@@ -718,6 +718,18 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
   static uint8_t   pulsePol;
   static uint16_t *pulsePtr = pulses2MHz;
 
+  if( *pulsePtr == 0) {
+    //currpulse=0;
+    pulsePtr = pulses2MHz;
+    pulsePol = g_model.pulsePol;//0;
+
+    TIMSK &= ~(1<<OCIE1A); //stop reentrance
+    sei();
+    setupPulses();
+    cli();
+    TIMSK |= (1<<OCIE1A);
+  }
+
   uint8_t i = 0;
   while((TCNT1L < 10) && (++i < 50))  // Timer does not read too fast, so i
     ;
@@ -736,17 +748,17 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
 
   OCR1A  = *pulsePtr++;
 
-  if( *pulsePtr == 0) {
-    //currpulse=0;
-    pulsePtr = pulses2MHz;
-    pulsePol = g_model.pulsePol;//0;
+//  if( *pulsePtr == 0) {
+//    //currpulse=0;
+//    pulsePtr = pulses2MHz;
+//    pulsePol = g_model.pulsePol;//0;
 
-    TIMSK &= ~(1<<OCIE1A); //stop reentrance
-    sei();
-    setupPulses();
-    cli();
-    TIMSK |= (1<<OCIE1A);
-  }
+//    TIMSK &= ~(1<<OCIE1A); //stop reentrance
+//    sei();
+//    setupPulses();
+//    cli();
+//    TIMSK |= (1<<OCIE1A);
+//  }
   heartbeat |= HEART_TIMER2Mhz;
 }
 
