@@ -533,9 +533,14 @@ extern inline int16_t calc100toRESX(int8_t x)
   return (int16_t)x*10 + x/4 - x/64;
 }
 
-extern inline int16_t calc1000toRESX(int16_t x)
+extern inline int16_t calc1000toRESX(int16_t x)  // improve calc time by Pat MacKenzie
 {
-  return x + x/32 - x/128 + x/512;
+    int16_t y = x>>5;
+    x+=y;
+    y=y>>2;
+    x-=y;
+    return x+(y>>2);
+//  return x + x/32 - x/128 + x/512;
 }
 
 
