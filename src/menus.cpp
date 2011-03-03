@@ -2448,26 +2448,37 @@ void menuProcFrsky(uint8_t event)
   if (FrskyBufferReady)
   {
     uint8_t i=0;
+	uint8_t voltAdjust;
+	
+	/* 'universal' voltage sensor cable uses divide ratio of 7.67:1 
+	    (or 0.13). V2 rx uses 1:4 or 0.25. Ratios below are multiplied 
+		by 100 so 0.13 = 13 etc.  To display the correct value for 
+		other ratios, Display = (13/voltRatio) * ADC value.
+		If ratio is 13 then obviously display = ADC			      	*/
+		
+	
+	if (g_model.a1voltRatio == 130)
+		voltAdjust = linkBuffer[0];
+	else 
+		voltAdjust = (130*linkBuffer[0])/g_model.a1voltRatio;
+		
+	
+	
 	linkBuffer[3] /= 2;		// Tx RSSI value is doubled
     
-    TelemBuffer[3] = hex2dec(linkBuffer[i], 100);
-    TelemBuffer[4] = hex2dec(linkBuffer[i], 10);
-    TelemBuffer[6] = hex2dec(linkBuffer[i], 1);
+    TelemBuffer[3] = hex2dec(voltAdjust, 100);
+    TelemBuffer[4] = hex2dec(voltAdjust, 10);
+    TelemBuffer[6] = hex2dec(voltAdjust, 1);
+    i++;
+        
     i++;
     
-    TelemBuffer[11] = hex2dec(linkBuffer[i], 100);
-    TelemBuffer[12] = hex2dec(linkBuffer[i], 10);
-    TelemBuffer[13] = hex2dec(linkBuffer[i], 1);
-    i++;
-    
-    TelemBuffer[24] = hex2dec(linkBuffer[i], 100);
-    TelemBuffer[25] = hex2dec(linkBuffer[i], 10);
-    TelemBuffer[26] = hex2dec(linkBuffer[i], 1);
+    TelemBuffer[25] = hex2dec(linkBuffer[i], 100);
+    TelemBuffer[26] = hex2dec(linkBuffer[i], 10);
+    TelemBuffer[27] = hex2dec(linkBuffer[i], 1);
 	i++;
 	
-    TelemBuffer[37] = hex2dec(linkBuffer[i], 100);
-    TelemBuffer[38] = hex2dec(linkBuffer[i], 10);
-    TelemBuffer[39] = hex2dec(linkBuffer[i], 1);
+    
     FrskyBufferReady = 0;
   }
   
@@ -2477,7 +2488,7 @@ void menuProcFrsky(uint8_t event)
   for (uint8_t i = 3; i < 8; i++)
   {
   lcd_putcAtt((i-2)*FW*2,   2*FH, TelemBuffer[i], DBLSIZE);
-    lcd_putcAtt((i-2)*FW*2,   5*FH, TelemBuffer[i+21], DBLSIZE);
+  lcd_putcAtt((i-2)*FW*2,   5*FH, TelemBuffer[i+22], DBLSIZE);
   }
 
 }
@@ -2485,7 +2496,7 @@ void menuProcFrsky(uint8_t event)
 void menuProcFrsky1(uint8_t event)
 {
   TITLE("FrSky        Page 2/3");
-
+  
   switch(event)
   {    
 	case EVT_KEY_FIRST(KEY_UP):
@@ -2497,32 +2508,37 @@ void menuProcFrsky1(uint8_t event)
       break;
 	case EVT_KEY_FIRST(KEY_DOWN):
        chainMenu(menuProcFrskyConfig);
-       break;  
+       break;
+	case EVT_KEY_FIRST(KEY_RIGHT):
+	   displayState = !displayState;
   }
 
+  
+  
   if (FrskyBufferReady)
   {
     uint8_t i=0;
+	uint8_t voltAdjust;
+	
+	if (g_model.a2voltRatio == 130)
+		voltAdjust = linkBuffer[1];
+	else 
+		voltAdjust = (130*linkBuffer[1])/g_model.a2voltRatio;
+		
 	linkBuffer[3] /= 2;		// Tx RSSI value is doubled
-    
-    TelemBuffer[3] = hex2dec(linkBuffer[i], 100);
-    TelemBuffer[4] = hex2dec(linkBuffer[i], 10);
-    TelemBuffer[6] = hex2dec(linkBuffer[i], 1);
+        
     i++;
     
-    TelemBuffer[11] = hex2dec(linkBuffer[i], 100);
-    TelemBuffer[12] = hex2dec(linkBuffer[i], 10);
-    TelemBuffer[13] = hex2dec(linkBuffer[i], 1);
+    TelemBuffer[11] = hex2dec(voltAdjust, 100);
+    TelemBuffer[12] = hex2dec(voltAdjust, 10);
+    TelemBuffer[14] = hex2dec(voltAdjust, 1);
     i++;
-    
-    TelemBuffer[24] = hex2dec(linkBuffer[i], 100);
-    TelemBuffer[25] = hex2dec(linkBuffer[i], 10);
-    TelemBuffer[26] = hex2dec(linkBuffer[i], 1);
+        
 	i++;
 	
-    TelemBuffer[37] = hex2dec(linkBuffer[i], 100);
-    TelemBuffer[38] = hex2dec(linkBuffer[i], 10);
-    TelemBuffer[39] = hex2dec(linkBuffer[i], 1);
+    TelemBuffer[38] = hex2dec(linkBuffer[i], 100);
+    TelemBuffer[39] = hex2dec(linkBuffer[i], 10);
+    TelemBuffer[40] = hex2dec(linkBuffer[i], 1);
     FrskyBufferReady = 0;
   }
   
@@ -2531,8 +2547,17 @@ void menuProcFrsky1(uint8_t event)
 
   for (uint8_t i = 3; i < 8; i++)
   {
-    lcd_putcAtt((i-2)*FW*2,   2*FH, TelemBuffer[i+8], DBLSIZE);
-    lcd_putcAtt((i-2)*FW*2,   5*FH, TelemBuffer[i+34], DBLSIZE);
+    if (displayState) {
+		lcd_putcAtt((i-2)*FW*2,   2*FH, TelemBuffer[i+8], DBLSIZE);
+	}
+	else {
+		if (i>=5)
+			lcd_putcAtt((i-2)*FW*2,   2*FH, TelemBuffer[i+9], DBLSIZE);
+		else 
+			lcd_putcAtt((i-2)*FW*2,   2*FH, TelemBuffer[i+8], DBLSIZE);
+	}
+	//lcd_putcAtt((i-2)*FW*2,   2*FH, TelemBuffer[i+8], DBLSIZE);
+    lcd_putcAtt((i-2)*FW*2,   5*FH, TelemBuffer[i+35], DBLSIZE);
   }
 
 }
@@ -2549,10 +2574,11 @@ void menuProcFrskyConfig(uint8_t event)
   switch(event)
   {
 	case EVT_KEY_FIRST(KEY_MENU):
-		if (fr_editMode && editCnt == 13) {
+		if (fr_editMode && editCnt == 15) {
 	  
 			// transmit strings code goes here
 			FRSKY_saveAlarms();
+			STORE_MODELVARS;
 		  
 			editCnt = 1;			  
 		}
@@ -2570,7 +2596,7 @@ void menuProcFrskyConfig(uint8_t event)
 	   }
 	   break;
 	case EVT_KEY_FIRST(KEY_DOWN):
-       if (fr_editMode && editCnt < 13) {
+       if (fr_editMode && editCnt < 15) {
 			editCnt++;
 	   }
        break;
@@ -2598,25 +2624,63 @@ void menuProcFrskyConfig(uint8_t event)
 	  alrmPktRx |= 0x0F;
   }
   
-      
+/* 'universal' voltage sensor cable uses divide ratio of 7.67:1 
+	(or 0.13). V2 rx uses 1:4 or 0.25. Ratios below are multiplied 
+	by 100 so 0.13 = 13 etc.  To save the correct value for 
+	alarm settings (a11 and a12) for other ratios, 
+	Display = (voltRatio/13) * alarm value.
+	If ratio is 13 then obviously display = ADC			      	*/   
+
+  if (g_model.a1voltRatio == 130) {
+		a11Adjust = a11Buffer[0];
+		a12Adjust = a12Buffer[0];
+  }
+  else {
+		a11Adjust = (130*a11Buffer[0])/g_model.a1voltRatio;
+		
+		a12Adjust = (130*a12Buffer[0])/g_model.a1voltRatio;
+  }
+  
+  if (g_model.a2voltRatio == 130) {
+		a21Adjust = a21Buffer[0];
+		a22Adjust = a22Buffer[0];
+  }
+  else {
+		a21Adjust = (130*a21Buffer[0])/g_model.a2voltRatio;
+		
+		a22Adjust = (130*a22Buffer[0])/g_model.a2voltRatio;
+  }
+  
+  if (fr_editMode && editCnt == 1) {
+  	lcd_outdezAtt(17*FW, 1*FH, g_model.a1voltRatio,INVERS);
+	bigNum = g_model.a1voltRatio;
+	CHECK_INCDEC_H_GENVAR(event, bigNum, 0, 254);
+	g_model.a1voltRatio = bigNum;
+  }
+  else
+	lcd_outdezAtt(17*FW, 1*FH, g_model.a1voltRatio,0);
+  //i++;
+ 
   if(alrmPktRx & 1)
   {
 	i=0;
 	
 	
-    if (fr_editMode && editCnt == 2) {
-		lcd_outdezAtt(16*FW, 2*FH, a11Buffer[i],INVERS);
+	
+	
+    if (fr_editMode && editCnt == 3) {
+		lcd_outdezAtt(16*FW, 2*FH, a11Adjust,INVERS);
 		bigNum = a11Buffer[i];
 		CHECK_INCDEC_H_GENVAR(event, bigNum, 0, 254);
 		a11Buffer[i] = bigNum;
 	}
 	else
-		lcd_outdezAtt(16*FW, 2*FH, a11Buffer[i],0);
+		lcd_outdezAtt(16*FW, 2*FH, a11Adjust,0);
 	
 	i++;
   
 	
-	if (fr_editMode && editCnt == 1) {
+	if (fr_editMode && editCnt == 2) {
 		lcd_putsnAtt(12*FW, 2*FH, PSTR("<"">")+1*a11Buffer[i],1,INVERS);
 		CHECK_INCDEC_H_GENVAR(event, a11Buffer[i], 0, 1);
 	}
@@ -2625,7 +2689,7 @@ void menuProcFrskyConfig(uint8_t event)
 	i++;
   
 	
-	if (fr_editMode && editCnt == 3) {
+	if (fr_editMode && editCnt == 4) {
 		lcd_putsnAtt(17*FW, 2*FH, PSTR("Off""Yel""Org""Red")+3*a11Buffer[i],3,INVERS);
 		CHECK_INCDEC_H_GENVAR(event, a11Buffer[i], 0, 3);
 	}
@@ -2639,19 +2703,19 @@ void menuProcFrskyConfig(uint8_t event)
 	i=0;
 	
 	
-    if (fr_editMode && editCnt == 5) {
-		lcd_outdezAtt(16*FW, 3*FH, a12Buffer[i],INVERS);
+    if (fr_editMode && editCnt == 6) {
+		lcd_outdezAtt(16*FW, 3*FH, a12Adjust,INVERS);
 		bigNum = a12Buffer[i];
 		CHECK_INCDEC_H_GENVAR(event, bigNum, 0, 254);
 		a12Buffer[i] = bigNum;
 	}
 	else
-		lcd_outdezAtt(16*FW, 3*FH, a12Buffer[i],0);
+		lcd_outdezAtt(16*FW, 3*FH, a12Adjust,0);
 	
 	i++;
   
 	
-	if (fr_editMode && editCnt == 4) {
+	if (fr_editMode && editCnt == 5) {
 		lcd_putsnAtt(12*FW, 3*FH, PSTR("<"">")+1*a12Buffer[i],1,INVERS);
 		CHECK_INCDEC_H_GENVAR(event, a12Buffer[i], 0, 1);
 	}
@@ -2660,7 +2724,7 @@ void menuProcFrskyConfig(uint8_t event)
 	i++;
   
 	
-	if (fr_editMode && editCnt == 6) {
+	if (fr_editMode && editCnt == 7) {
 		lcd_putsnAtt(17*FW, 3*FH, PSTR("Off""Yel""Org""Red")+3*a12Buffer[i],3,INVERS);
 		CHECK_INCDEC_H_GENVAR(event, a12Buffer[i], 0, 3);
 	}
@@ -2669,24 +2733,36 @@ void menuProcFrskyConfig(uint8_t event)
 	
   }
   
+  
+  
+  if (fr_editMode && editCnt == 8) {
+  	lcd_outdezAtt(17*FW, 4*FH, g_model.a2voltRatio,INVERS);
+	bigNum = g_model.a2voltRatio;
+	CHECK_INCDEC_H_GENVAR(event, bigNum, 0, 254);
+	g_model.a2voltRatio = bigNum;
+  }
+  else
+	lcd_outdezAtt(17*FW, 4*FH, g_model.a2voltRatio,0);
+  //i++;
+  
   if(alrmPktRx & 4)
   {
 	i=0;
 	
 	
-    if (fr_editMode && editCnt == 8) {
-		lcd_outdezAtt(16*FW, 5*FH, a21Buffer[i],INVERS);
+    if (fr_editMode && editCnt == 10) {
+		lcd_outdezAtt(16*FW, 5*FH, a21Adjust,INVERS);
 		bigNum = a21Buffer[i];
 		CHECK_INCDEC_H_GENVAR(event, bigNum, 0, 254);
 		a21Buffer[i] = bigNum;
 	}
 	else
-		lcd_outdezAtt(16*FW, 5*FH, a21Buffer[i],0);
+		lcd_outdezAtt(16*FW, 5*FH, a21Adjust,0);
 	
 	i++;
   
 	
-	if (fr_editMode && editCnt == 7) {
+	if (fr_editMode && editCnt == 9) {
 		lcd_putsnAtt(12*FW, 5*FH, PSTR("<"">")+1*a21Buffer[i],1,INVERS);
 		CHECK_INCDEC_H_GENVAR(event, a21Buffer[i], 0, 1);
 	}
@@ -2695,7 +2771,7 @@ void menuProcFrskyConfig(uint8_t event)
 	i++;
   
 	
-	if (fr_editMode && editCnt == 9) {
+	if (fr_editMode && editCnt == 11) {
 		lcd_putsnAtt(17*FW, 5*FH, PSTR("Off""Yel""Org""Red")+3*a21Buffer[i],3,INVERS);
 		CHECK_INCDEC_H_GENVAR(event, a21Buffer[i], 0, 3);
 	}
@@ -2709,19 +2785,19 @@ void menuProcFrskyConfig(uint8_t event)
 	i=0;
 	
 	
-    if (fr_editMode && editCnt == 11) {
-		lcd_outdezAtt(16*FW, 6*FH, a22Buffer[i],INVERS);
+    if (fr_editMode && editCnt == 13) {
+		lcd_outdezAtt(16*FW, 6*FH, a22Adjust,INVERS);
 		bigNum = a22Buffer[i];
 		CHECK_INCDEC_H_GENVAR(event, bigNum, 0, 254);
 		a22Buffer[i] = bigNum;
 	}
 	else
-		lcd_outdezAtt(16*FW, 6*FH, a22Buffer[i],0);
+		lcd_outdezAtt(16*FW, 6*FH, a22Adjust,0);
 	
 	i++;
   
 	
-	if (fr_editMode && editCnt == 10) {
+	if (fr_editMode && editCnt == 12) {
 		lcd_putsnAtt(12*FW, 6*FH, PSTR("<"">")+1*a22Buffer[i],1,INVERS);
 		CHECK_INCDEC_H_GENVAR(event, a22Buffer[i], 0, 1);
 	}
@@ -2730,7 +2806,7 @@ void menuProcFrskyConfig(uint8_t event)
 	i++;
   
 	
-	if (fr_editMode && editCnt == 12) {
+	if (fr_editMode && editCnt == 14) {
 		lcd_putsnAtt(17*FW, 6*FH, PSTR("Off""Yel""Org""Red")+3*a22Buffer[i],3,INVERS);
 		CHECK_INCDEC_H_GENVAR(event, a22Buffer[i], 0, 3);
 	}
@@ -2739,17 +2815,25 @@ void menuProcFrskyConfig(uint8_t event)
 	
   }
   
+  
+  
+  
   if (fr_editMode) {
-		if (editCnt == 13)
+		if (editCnt == 15)
 			lcd_putsAtt(17*FW, 7*FH, PSTR("SAVE"),INVERS);	   
 	    else		  	
 			lcd_putsAtt(17*FW, 7*FH, PSTR("SAVE"),0);
   }
   
-  lcd_puts_P(  1*FW, FH*2, PSTR("Alarm 1:1:"));  
-  lcd_puts_P(  1*FW, FH*3, PSTR("Alarm 1:2:"));
-  lcd_puts_P(  1*FW, FH*5, PSTR("Alarm 2:1:"));
-  lcd_puts_P(  1*FW, FH*6, PSTR("Alarm 2:2:"));    
+  
+	
+  
+	lcd_puts_P(  1*FW, FH*2, PSTR("Alarm 1:1:"));  
+	lcd_puts_P(  1*FW, FH*3, PSTR("Alarm 1:2:"));
+	lcd_puts_P(  1*FW, FH*1, PSTR("a1 Cal: 1000:"));
+	lcd_puts_P(  1*FW, FH*5, PSTR("Alarm 2:1:"));
+	lcd_puts_P(  1*FW, FH*6, PSTR("Alarm 2:2:"));
+	lcd_puts_P(  1*FW, FH*4, PSTR("a2 Cal: 1000:"));
   
 }  
 #endif

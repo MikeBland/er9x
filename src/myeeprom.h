@@ -176,7 +176,9 @@ typedef struct t_ModelData {
   int8_t    curves5[MAX_CURVE5][5];
   int8_t    curves9[MAX_CURVE9][9];
   CSwData   customSw[NUM_CSW];
-  uint8_t   res3[3];
+  uint8_t   a1voltRatio;  //FrSky
+  uint8_t   a2voltRatio;  //FrSky
+  uint8_t   res3;
   SafetySwData  safetySw[NUM_CHNOUT];
 } __attribute__((packed)) ModelData;
 
