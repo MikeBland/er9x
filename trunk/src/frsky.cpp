@@ -20,12 +20,15 @@
 
 
 uint8_t linkBuffer[9]; // 4 bytes, worst case 8 bytes with byte stuff + 1
-uint8_t TelemBuffer[] = "A1:  . VA2:     Rx RSSI:   dBTx RSSI:   dB";
+uint8_t TelemBuffer[] = "A1:  . VA2:  .   Rx RSSI:   dBTx RSSI:   dB";
 uint8_t alrmRequest[] = {0x7e,0xf8,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x7e};
 uint8_t FrskyBufferReady;
 uint8_t alrmPktRx = 0;
 uint8_t stringId =0;
 uint8_t fr_editMode;
+//uint8_t voltRatio = 13;
+uint8_t displayState = 0;
+uint8_t a11Adjust,a12Adjust,a21Adjust,a22Adjust;
 uint8_t a11Buffer[9] = ""; // 4 bytes, worst case 8 bytes with byte stuff + 1
 uint8_t a12Buffer[9] = ""; // 4 bytes, worst case 8 bytes with byte stuff + 1
 uint8_t a21Buffer[9] = ""; // 4 bytes, worst case 8 bytes with byte stuff + 1
@@ -122,7 +125,16 @@ ISR (USART0_RX_vect)
 				default:
 					if (linkPkt)
 					{
-						linkBuffer[linkCtr++] = data;						
+						//linkBuffer[linkCtr++] = data;
+
+						if (data == 0x7d)
+							byteStuff = 1;
+						else if (byteStuff) {
+							linkBuffer[linkCtr++] = data ^ 0x20;
+							byteStuff &= 0;
+						}
+						else
+							linkBuffer[linkCtr++] = data;
 					}
 					if (a11Pkt)
 					{

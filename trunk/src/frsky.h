@@ -22,11 +22,14 @@
 
 
 extern uint8_t linkBuffer[9]; // 4 bytes, worst case 8 bytes with byte stuff + 1
-extern uint8_t TelemBuffer[45];
+extern uint8_t TelemBuffer[46];
 extern uint8_t alrmRequest[11];
 extern uint8_t FrskyBufferReady;
 extern uint8_t alrmPktRx;
 extern uint8_t fr_editMode;
+//extern uint8_t voltRatio;
+extern uint8_t displayState;
+extern uint8_t a11Adjust,a12Adjust,a21Adjust,a22Adjust;
 extern uint8_t a11Buffer[9]; // 4 bytes, worst case 8 bytes with byte stuff + 1
 extern uint8_t a12Buffer[9]; // 4 bytes, worst case 8 bytes with byte stuff + 1
 extern uint8_t a21Buffer[9]; // 4 bytes, worst case 8 bytes with byte stuff + 1
