@@ -24,11 +24,18 @@
                           !getSwitch(g_model.expoData[x].drSw2,0)?   \
                           DR_MID : DR_LOW);
 
+//#define DO_SQUARE(xx,yy,ww)
+//    lcd_vline(xx-ww/2,yy-ww/2,ww);
+//    lcd_hline(xx-ww/2,yy+ww/2,ww);
+//    lcd_vline(xx+ww/2,yy-ww/2,ww);
+//    lcd_hline(xx-ww/2,yy-ww/2,ww);
+
 #define DO_SQUARE(xx,yy,ww)         \
-    lcd_vline(xx-ww/2,yy-ww/2,ww);  \
-    lcd_hline(xx-ww/2,yy+ww/2,ww);  \
-    lcd_vline(xx+ww/2,yy-ww/2,ww);  \
-    lcd_hline(xx-ww/2,yy-ww/2,ww);
+    {uint8_t x,y,w ; x = xx; y = yy; w = ww ; \
+    lcd_vline(x-w/2,y-w/2,w);  \
+    lcd_hline(x-w/2,y+w/2,w);  \
+    lcd_vline(x+w/2,y-w/2,w);  \
+    lcd_hline(x-w/2,y-w/2,w);}
 
 #define DO_CROSS(xx,yy,ww)          \
     lcd_vline(xx,yy-ww/2,ww);  \
@@ -47,7 +54,7 @@
 #define WCHARTl 32l
 #define X0l     (128l-WCHARTl-2)
 #define Y0l     32l
-#define RESX    1024
+#define RESX    (1<<10) // 1024
 #define RESXu   1024u
 #define RESXul  1024ul
 #define RESXl   1024l
@@ -3112,9 +3119,21 @@ void menuProc0(uint8_t event)
     DO_SQUARE(LBOX_CENTERX+(calibratedStick[0]*BOX_LIMIT/(2*RESX)), LBOX_CENTERY-(calibratedStick[1]*BOX_LIMIT/(2*RESX)), MARKER_WIDTH)
     DO_SQUARE(RBOX_CENTERX+(calibratedStick[3]*BOX_LIMIT/(2*RESX)), RBOX_CENTERY-(calibratedStick[2]*BOX_LIMIT/(2*RESX)), MARKER_WIDTH)
 
-    V_BAR(SCREEN_WIDTH/2-5,SCREEN_HEIGHT-10,((calibratedStick[4]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P1
-    V_BAR(SCREEN_WIDTH/2  ,SCREEN_HEIGHT-10,((calibratedStick[5]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P2
-    V_BAR(SCREEN_WIDTH/2+5,SCREEN_HEIGHT-10,((calibratedStick[6]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P3
+//    V_BAR(SCREEN_WIDTH/2-5,SCREEN_HEIGHT-10,((calibratedStick[4]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P1
+//    V_BAR(SCREEN_WIDTH/2  ,SCREEN_HEIGHT-10,((calibratedStick[5]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P2
+//    V_BAR(SCREEN_WIDTH/2+5,SCREEN_HEIGHT-10,((calibratedStick[6]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P3
+
+    // Optimization by Mike Blandford
+    {
+        uint8_t x, y, len ;			// declare temporary variables
+        for( x = -5, y = 4 ; y < 7 ; x += 5, y += 1 )
+        {
+            len = ((calibratedStick[y]+RESX)*BAR_HEIGHT/(RESX*2))+1l ;  // calculate once per loop
+            V_BAR(SCREEN_WIDTH/2+x,SCREEN_HEIGHT-10, len )
+        }
+    }
+
+
 
     int8_t a = (g_eeGeneral.view == 2) ? 0 : 9+(g_eeGeneral.view-3)*6;
     int8_t b = (g_eeGeneral.view == 2) ? 6 : 12+(g_eeGeneral.view-3)*6;
@@ -3572,7 +3591,7 @@ void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
         int16_t v = max(min(g_chans512[i],PPM_range),-PPM_range) + PPM_CENTER;
         rest-=(v+q);
         pulses2MHz[j++]=q;
-        pulses2MHz[j++]=v;
+        pulses2MHz[j++]=v;  //pulses2MHz[j++] = v - q +600
     }
     pulses2MHz[j++]=q;
     pulses2MHz[j++]=rest;
