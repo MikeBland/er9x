@@ -614,7 +614,35 @@ void pushMenu(MenuFuncP newMenu)
 uint8_t  g_vbat100mV;
 volatile uint8_t tick10ms = 0;
 uint16_t g_LightOffCounter;
+uint8_t beepAgain = 0;
+uint8_t beepAgainOrig = 0;
+uint8_t beepOn = false;
+
 void evalCaptures();
+
+#define SLAVE_MODE (PING & (1<<INP_G_RF_POW))
+
+inline bool checkSlaveMode()
+{
+  // no power -> only phone jack = slave mode
+
+#ifdef BUZZER_MOD
+  return SLAVE_MODE;
+#else
+  static bool lastSlaveMode = false;
+  static uint8_t checkDelay = 0;
+  if (g_beepCnt || beepAgain || beepOn) {
+    checkDelay = 20;
+  }
+  else if (checkDelay) {
+    --checkDelay;
+  }
+  else {
+    lastSlaveMode = SLAVE_MODE;
+  }
+  return lastSlaveMode;
+#endif
+}
 
 void perMain()
 {
@@ -650,7 +678,7 @@ void perMain()
 
   g_menuStack[g_menuStackPtr](evt);
   refreshDiplay();
-  if(PING & (1<<INP_G_RF_POW)) { //no power -> only phone jack = slave mode
+  if(checkSlaveMode()) {
     PORTG &= ~(1<<OUT_G_SIM_CTL); // 0=ppm out
   }else{
     PORTG |=  (1<<OUT_G_SIM_CTL); // 1=ppm-in
@@ -877,10 +905,6 @@ uint16_t getTmr16KHz()
     if(hb-g_tmr16KHz==0) return (hb<<8)|lb;
   }
 }
-
-uint8_t beepAgain = 0;
-uint8_t beepAgainOrig = 0;
-uint8_t beepOn = false;
 
 ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 {

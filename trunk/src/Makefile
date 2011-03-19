@@ -63,6 +63,10 @@ ifeq ($(EXT), ARDUPILOT)
  CPPSRC += ardupilot.cpp
 endif
 
+# BEEPER. Values = BUZZER or BUZZER_MOD
+# (without a mod, BUZZER can make PPM jack output switch from output to input at random)
+BEEPER = BUZZER
+
 # List Assembler source files here.
 #     Make them always end in a capital .S.  Files ending in a lowercase .s
 #     will not be considered source files but generated files (assembler
@@ -123,6 +127,11 @@ endif
 # If ARDUPILOT-Support is enabled
 ifeq ($(EXT), ARDUPILOT)
  CPPDEFS += -DARDUPILOT
+endif
+
+# If buzzer modified (no interference with PPM jack)
+ifeq ($(BEEPER), BUZZER_MOD)
+ CPPDEFS += -DBUZZER_MOD
 endif
 
 #---------------- Compiler Options C ----------------
