@@ -79,6 +79,11 @@ void setSwitch(uint8_t idx, uint8_t func, int8_t v1, int8_t v2)
     g_model.customSw[idx-1].v2   = v2;
 }
 
+__attribute__((noinline)) uint8_t convert_mode_helper(uint8_t x)
+{
+	return pgm_read_byte(modn12x3 + g_eeGeneral.stickMode*4 + (x) - 1) ;
+}
+
 void applyTemplate(uint8_t idx)
 {
     int8_t heli_ar1[] = {-100, -20, 30, 70, 90};
