@@ -164,7 +164,9 @@ const prog_uint8_t APM chout_ar[] = { //First number is 0..23 -> template setup,
 
 //convert from mode 1 to mode g_eeGeneral.stickMode
 //NOTICE!  =>  1..4 -> 1..4
-#define CONVERT_MODE(x)  (((x)<=4) ? pgm_read_byte(modn12x3 + g_eeGeneral.stickMode*4 + (x) - 1) : (x))
+extern uint8_t convert_mode_helper(uint8_t x) ;
+
+#define CONVERT_MODE(x)  (((x)<=4) ? convert_mode_helper(x) : (x))
 #define CHANNEL_ORDER(x) (pgm_read_byte(chout_ar + g_eeGeneral.templateSetup*4 + (x)-1))
 #define THR_STICK       (2-(g_eeGeneral.stickMode&1))
 #define ELE_STICK       (1+(g_eeGeneral.stickMode&1))
