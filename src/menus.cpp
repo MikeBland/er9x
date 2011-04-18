@@ -2380,22 +2380,22 @@ void menuProcJeti(uint8_t event)
     lcd_putcAtt((i+2)*FW,   4*FH, JetiBuffer[i+16], BSS_NO_INV);
   }
 
-  if (JetiBufferReady)
-  {
-    JETI_EnableTXD();
-    if (keyState((EnumKeys)(KEY_UP))) jeti_keys &= JETI_KEY_UP;
-    if (keyState((EnumKeys)(KEY_DOWN))) jeti_keys &= JETI_KEY_DOWN;
-    if (keyState((EnumKeys)(KEY_LEFT))) jeti_keys &= JETI_KEY_LEFT;
-    if (keyState((EnumKeys)(KEY_RIGHT))) jeti_keys &= JETI_KEY_RIGHT;
+//  if (JetiBufferReady)
+//  {
+//    JETI_EnableTXD();
+//    if (keyState((EnumKeys)(KEY_UP))) jeti_keys &= JETI_KEY_UP;
+//    if (keyState((EnumKeys)(KEY_DOWN))) jeti_keys &= JETI_KEY_DOWN;
+//    if (keyState((EnumKeys)(KEY_LEFT))) jeti_keys &= JETI_KEY_LEFT;
+//    if (keyState((EnumKeys)(KEY_RIGHT))) jeti_keys &= JETI_KEY_RIGHT;
 
-    JetiBufferReady = 0;    // invalidate buffer
+//  JetiBufferReady = 0;    // invalidate buffer
 
-    JETI_putw((uint16_t) jeti_keys);
-    _delay_ms (1);
-    JETI_DisableTXD();
+//    JETI_putw((uint16_t) jeti_keys);
+//    _delay_ms (1);
+//    JETI_DisableTXD();
 
-    jeti_keys = JETI_KEY_NOCHANGE;
-  }
+//    jeti_keys = JETI_KEY_NOCHANGE;
+//  }
 }
 #endif
 
