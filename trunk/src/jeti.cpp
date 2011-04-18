@@ -50,6 +50,22 @@ ISR (USART0_RX_vect)
                 else if (rl == 0xff)
                 {       // stop condition
                         JetiBufferReady = 1;
+			JETI_EnableTXD();
+			
+			if (keyState((EnumKeys)(KEY_UP))) jeti_keys &= JETI_KEY_UP;
+			if (keyState((EnumKeys)(KEY_DOWN))) jeti_keys &= JETI_KEY_DOWN;
+			if (keyState((EnumKeys)(KEY_LEFT))) jeti_keys &= JETI_KEY_LEFT;
+			if (keyState((EnumKeys)(KEY_RIGHT))) jeti_keys &= JETI_KEY_RIGHT;
+
+			_delay_ms (1);
+	
+			JETI_putw((uint16_t) jeti_keys);
+			JETI_DisableTXD();
+
+			jeti_keys = JETI_KEY_NOCHANGE;
+
+
+
                 }
         }
         else
