@@ -564,10 +564,21 @@ void menuProcTemplates(uint8_t event)  //Issue 73
   if(y>7*FH) return;
   uint8_t attr = s_noHi ? 0 : ((sub==NUM_TEMPLATES) ? INVERS : 0);
   lcd_puts_P( 1*FW, y,PSTR("Channel Order"));//   RAET->AETR
-  lcd_putsnAtt(15*FW, y, PSTR(" RETA")+CHANNEL_ORDER(1),1,attr);
-  lcd_putsnAtt(16*FW, y, PSTR(" RETA")+CHANNEL_ORDER(2),1,attr);
-  lcd_putsnAtt(17*FW, y, PSTR(" RETA")+CHANNEL_ORDER(3),1,attr);
-  lcd_putsnAtt(18*FW, y, PSTR(" RETA")+CHANNEL_ORDER(4),1,attr);
+
+//  lcd_putsnAtt(15*FW, y, PSTR(" RETA")+CHANNEL_ORDER(1),1,attr);
+//  lcd_putsnAtt(16*FW, y, PSTR(" RETA")+CHANNEL_ORDER(2),1,attr);
+//  lcd_putsnAtt(17*FW, y, PSTR(" RETA")+CHANNEL_ORDER(3),1,attr);
+//  lcd_putsnAtt(18*FW, y, PSTR(" RETA")+CHANNEL_ORDER(4),1,attr);
+
+	{
+		uint8_t i ;
+		for ( i = 1 ; i <= 4 ; i += 1 )
+		{
+  		lcd_putsnAtt((14+i)*FW, y, PSTR(" RETA")+CHANNEL_ORDER(i),1,attr);
+		}
+	}
+
+
   if(attr) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.templateSetup, 0, 23);
   y+=FH;
 
@@ -1377,9 +1388,14 @@ char idx2char(uint8_t idx)
   return ' ';
 }
 
-void menuDeleteModel(uint8_t event)
+uint8_t DupIfNonzero = 0 ;
+int8_t DupSub ;
+
+void menuDeleteDupModel(uint8_t event)
+//void menuDeleteModel(uint8_t event)
 {
-  lcd_putsAtt(0,1*FH,PSTR("DELETE MODEL"),0);
+  lcd_putsAtt(0,1*FH,DupIfNonzero ? PSTR("DUPLICATE MODEL") : PSTR("DELETE MODEL"),0);
+//  lcd_putsAtt(0,1*FH,PSTR("DELETE MODEL"),0);
   lcd_putsnAtt(1,2*FH, g_model.name,sizeof(g_model.name),BSS_NO_INV);
   lcd_putcAtt(sizeof(g_model.name)*FW+FW,2*FH,'?',0);
   lcd_puts_P(3*FW,5*FH,PSTR("YES     NO"));
@@ -1391,22 +1407,35 @@ void menuDeleteModel(uint8_t event)
       beepWarn();
       break;
     case EVT_KEY_FIRST(KEY_MENU):
-      EFile::rm(FILE_MODEL(g_eeGeneral.currModel)); //delete file
+			if ( DupIfNonzero )
+			{
+        message(PSTR("Duplicating model"));
+        if(eeDuplicateModel(DupSub))
+				{
+          beepKey();
+					DupIfNonzero = 2 ;		// sel_editMode = false;
+        }
+        else beepWarn();
+			}
+			else
+			{
+        EFile::rm(FILE_MODEL(g_eeGeneral.currModel)); //delete file
 
-      i = g_eeGeneral.currModel;//loop to find next available model
-      while (!EFile::exists(FILE_MODEL(i))) {
-          i--;
-          if(i>MAX_MODELS) i=MAX_MODELS-1;
-          if(i==g_eeGeneral.currModel) {
-              i=0;
-              break;
-          }
-      }
-      g_eeGeneral.currModel = i;
-      STORE_GENERALVARS;
+        i = g_eeGeneral.currModel;//loop to find next available model
+        while (!EFile::exists(FILE_MODEL(i))) {
+            i--;
+            if(i>MAX_MODELS) i=MAX_MODELS-1;
+            if(i==g_eeGeneral.currModel) {
+                i=0;
+                break;
+            }
+        }
+        g_eeGeneral.currModel = i;
+        STORE_GENERALVARS;
 
-      eeLoadModel(g_eeGeneral.currModel); //load default values
-      resetTimer();
+        eeLoadModel(g_eeGeneral.currModel); //load default values
+        resetTimer();
+			}
       killEvents(event);
       popMenu(true);
       pushMenu(menuProcModelSelect);
@@ -1608,7 +1637,9 @@ void menuProcModel(uint8_t event)
         s_editMode = false;
         s_noHi = NO_HI_LEN;
         killEvents(event);
-        pushMenu(menuDeleteModel);
+				DupIfNonzero = 0 ;
+        pushMenu(menuDeleteDupModel);
+//        pushMenu(menuDeleteModel);
 
           //EFile::rm(FILE_MODEL(g_eeGeneral.currModel)); //delete file
 
@@ -1709,6 +1740,11 @@ void menuProcModelSelect(uint8_t event)
   MSTATE_CHECK0_V(MAX_MODELS);
   int8_t  sub    = mstate2.m_posVert;
   static uint8_t sel_editMode;
+	if ( DupIfNonzero == 2 )
+	{
+		sel_editMode = false ;
+		DupIfNonzero = 0 ;
+	}
   switch(event)
   {
     //case  EVT_KEY_FIRST(KEY_MENU):
@@ -1748,12 +1784,17 @@ void menuProcModelSelect(uint8_t event)
         break;
     case  EVT_KEY_LONG(KEY_MENU):
       if(sel_editMode){
-        message(PSTR("Duplicating model"));
-        if(eeDuplicateModel(sub)) {
-          beepKey();
-          sel_editMode = false;
-        }
-        else beepWarn();
+        
+				DupIfNonzero = 1 ;
+				DupSub = sub ;
+      	pushMenu(menuDeleteDupModel);//menuProcExpoAll);
+				
+//        message(PSTR("Duplicating model"));
+//        if(eeDuplicateModel(sub)) {
+//          beepKey();
+//          sel_editMode = false;
+//        }
+//        else beepWarn();
       }
       break;
 
@@ -2219,7 +2260,7 @@ void timer(uint8_t val)
 
   s_cnt++;
   s_sum+=val;
-  if((g_tmr10ms-s_time)<100) return; //1 sec
+  if(( get_tmr10ms()-s_time)<100) return; //1 sec
   s_time += 100;
   val     = s_sum/s_cnt;
   s_sum  -= val*s_cnt; //rest
@@ -2313,9 +2354,9 @@ void trace()   // called in perOut - once envery 0.01sec
   static uint16_t s_sum;
   s_cnt++;
   s_sum+=val;
-  if((g_tmr10ms-s_time)<1000) //10 sec
+  if(( get_tmr10ms()-s_time)<1000) //10 sec
     return;
-  s_time= g_tmr10ms;
+  s_time= get_tmr10ms() ;
   val   = s_sum/s_cnt;
   s_sum = 0;
   s_cnt = 0;
@@ -3362,7 +3403,7 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
    uint8_t mixWarning = 0;
     //========== MIXER LOOP ===============
     for(uint8_t i=0;i<MAX_MIXERS;i++){
-      MixData &md = g_model.mixData[i];
+      volatile MixData &md = g_model.mixData[i];
 
       if((md.destCh==0) || (md.destCh>NUM_CHNOUT)) break;
 
@@ -3499,10 +3540,13 @@ void perOut(int16_t *chanOut, uint8_t zeroInput)
   //1= 00,08
   //2= 24,32,40
   //3= 56,64,72,80
-  if(mixWarning & 1) if(((g_tmr10ms&0xFF)==  0)) beepWarn1();
-  if(mixWarning & 2) if(((g_tmr10ms&0xFF)== 64) || ((g_tmr10ms&0xFF)== 72)) beepWarn1();
-  if(mixWarning & 4) if(((g_tmr10ms&0xFF)==128) || ((g_tmr10ms&0xFF)==136) || ((g_tmr10ms&0xFF)==144)) beepWarn1();
-
+		{
+			uint16_t tmr10ms ;
+			tmr10ms = get_tmr10ms() ;
+      if(mixWarning & 1) if(((tmr10ms&0xFF)==  0)) beepWarn1();
+      if(mixWarning & 2) if(((tmr10ms&0xFF)== 64) || ((tmr10ms&0xFF)== 72)) beepWarn1();
+      if(mixWarning & 4) if(((tmr10ms&0xFF)==128) || ((tmr10ms&0xFF)==136) || ((tmr10ms&0xFF)==144)) beepWarn1();
+		}
 
   //========== LIMITS ===============
   for(uint8_t i=0;i<NUM_CHNOUT;i++){

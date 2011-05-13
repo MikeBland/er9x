@@ -43,7 +43,11 @@ void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
   //uint8_t fw=FWNUM; //FW-1;
   //if(att&DBLSIZE) fw+=fw;
 
-  lcd_putcAtt(   x,    y, tme<0 ?'-':' ',att);
+  if ( tme<0 )
+  {
+    lcd_putcAtt(   x,    y, '-',att);
+  }
+//  lcd_putcAtt(   x,    y, tme<0 ?'-':' ',att);
   x += (att&DBLSIZE) ? FWNUM*5 : FWNUM*3+2;
   if(att&DBLSIZE)
       lcd_putcAtt(   x+3, y, ':',att);
@@ -166,21 +170,49 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
       return swtch>0 ? (x<y) : !(x<y);
       break;
   case (CS_APOS):
-      return swtch>0 ? (abs(x)>y) : !(abs(x)>y);
+  {
+      bool res = (abs(x)>y) ;
+      return swtch>0 ? res : !res ;
+  }
+//      return swtch>0 ? (abs(x)>y) : !(abs(x)>y);
       break;
   case (CS_ANEG):
-      return swtch>0 ? (abs(x)<y) : !(abs(x)<y);
+  {
+      bool res = (abs(x)<y) ;
+      return swtch>0 ? res : !res ;
+  }
+//      return swtch>0 ? (abs(x)<y) : !(abs(x)<y);
       break;
 
+//  case (CS_AND):
+//      return (getSwitch(a,0,level+1) && getSwitch(b,0,level+1));
+//      break;
+//  case (CS_OR):
+//      return (getSwitch(a,0,level+1) || getSwitch(b,0,level+1));
+//      break;
+//  case (CS_XOR):
+//      return (getSwitch(a,0,level+1) ^ getSwitch(b,0,level+1));
+//      break;
   case (CS_AND):
-      return (getSwitch(a,0,level+1) && getSwitch(b,0,level+1));
-      break;
   case (CS_OR):
-      return (getSwitch(a,0,level+1) || getSwitch(b,0,level+1));
-      break;
   case (CS_XOR):
-      return (getSwitch(a,0,level+1) ^ getSwitch(b,0,level+1));
-      break;
+  {
+    bool res1 = getSwitch(a,0,level+1) ;
+    bool res2 = getSwitch(b,0,level+1) ;
+    if ( cs.func == CS_AND )
+    {
+      return res1 && res2 ;
+    }
+    else if ( cs.func == CS_OR )
+    {
+      return res1 || res2 ;
+    }
+    else  // CS_XOR
+    {
+      return res1 ^ res2 ;
+    }
+  }
+  break;
 
   case (CS_EQUAL):
       return (x==y);
@@ -251,8 +283,8 @@ void doSplash()
         for(uint8_t i=0; i<4; i++)
            inacSum += anaIn(i)/INAC_DEVISOR;
 
-        uint16_t tgtime = g_tmr10ms + SPLASH_TIMEOUT;  
-        while(tgtime != g_tmr10ms)
+        uint16_t tgtime = get_tmr10ms() + SPLASH_TIMEOUT;  
+        while(tgtime != get_tmr10ms())
         {
             getADC_filt();
             uint16_t tsum = 0;
@@ -647,8 +679,8 @@ inline bool checkSlaveMode()
 void perMain()
 {
   static uint16_t lastTMR;
-  tick10ms = (g_tmr10ms != lastTMR);
-  lastTMR = g_tmr10ms;
+  tick10ms = (get_tmr10ms() != lastTMR);
+  lastTMR = get_tmr10ms();
 
   perOut(g_chans512, false);
   if(!tick10ms) return; //make sure the rest happen only every 10ms.
@@ -685,7 +717,7 @@ void perMain()
     evalCaptures();
   }
 
-  switch( g_tmr10ms & 0x1f ) { //alle 10ms*32
+  switch( get_tmr10ms() & 0x1f ) { //alle 10ms*32
 
     case 2:
       {
@@ -1074,13 +1106,17 @@ int main(void)
   lcdSetRefVolt(g_eeGeneral.contrast);
   g_LightOffCounter = g_eeGeneral.lightAutoOff*500; //turn on light for x seconds - no need to press key Issue 152
   if(cModel!=g_eeGeneral.currModel) eeDirty(EE_GENERAL); // if model was quick-selected, make sure it sticks
+  
+  OCR1A = 2000 ;        // set to 1mS
+  TIFR = 1 << OCF1A ;   // Clear pending interrupt
+	
   PULSEGEN_ON; // Pulse generator enable immediately before mainloop
   while(1){
-      //uint16_t old10ms=g_tmr10ms;
+      //uint16_t old10ms=get_tmr10ms();
       uint16_t t0 = getTmr16KHz();
       getADC[g_eeGeneral.filterInput]();
       perMain();
-      //while(g_tmr10ms==old10ms) sleep_mode();
+      //while(get_tmr10ms()==old10ms) sleep_mode();
       if(heartbeat == 0x3)
       {
           wdt_reset();

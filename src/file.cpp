@@ -266,7 +266,7 @@ uint8_t EFile::write(uint8_t*buf,uint8_t i_len){
   }
   while(len)
   {
-    if( (int16_t)(m_stopTime10ms - g_tmr10ms) < 0)
+    if( (int16_t)(m_stopTime10ms - get_tmr10ms()) < 0)
     {
       m_err = ERR_TMO;
       break;
@@ -299,7 +299,7 @@ void EFile::create(uint8_t i_fileId, uint8_t typ, uint16_t maxTme10ms){
   openRd(i_fileId); //internal use
   eeFs.files[i_fileId].typ      = typ;
   eeFs.files[i_fileId].size     = 0;
-  m_stopTime10ms = g_tmr10ms + maxTme10ms;
+  m_stopTime10ms = get_tmr10ms() + maxTme10ms;
 }
 void EFile::closeTrunc()
 {
