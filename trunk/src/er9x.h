@@ -545,6 +545,17 @@ extern inline int16_t calc1000toRESX(int16_t x)  // improve calc time by Pat Mac
 //  return x + x/32 - x/128 + x/512;
 }
 
+extern volatile uint16_t g_tmr10ms;
+
+extern inline uint16_t get_tmr10ms()
+{
+	uint16_t time  ;
+  cli();
+	time = g_tmr10ms ;  
+  sei();
+	return time ;
+}
+
 
 
 #define TMR_VAROFS  16

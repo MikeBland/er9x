@@ -161,8 +161,8 @@ bool eeDuplicateModel(uint8_t id)
 //    if(theFile.errno()==ERR_TMO)
 //    {
 //        //wait for 10ms and try again
-//        uint16_t tgtime = g_tmr10ms + 100;
-//        while (g_tmr10ms!=tgtime);
+//        uint16_t tgtime = get_tmr10ms() + 100;
+//        while (!=tgtime);
 //        theFile2.write(buf,l);
 //    }
     wdt_reset();
@@ -204,14 +204,14 @@ void eeDirty(uint8_t msk)
 {
   if(!msk) return;
   s_eeDirtyMsk      |= msk;
-  s_eeDirtyTime10ms  = g_tmr10ms;
+  s_eeDirtyTime10ms  = get_tmr10ms() ;
 }
 #define WRITE_DELAY_10MS 100
 void eeCheck(bool immediately)
 {
   uint8_t msk  = s_eeDirtyMsk;
   if(!msk) return;
-  if( !immediately && ((g_tmr10ms - s_eeDirtyTime10ms) < WRITE_DELAY_10MS)) return;
+  if( !immediately && (( get_tmr10ms() - s_eeDirtyTime10ms) < WRITE_DELAY_10MS)) return;
   s_eeDirtyMsk = 0;
   if(msk & EE_GENERAL){
     if(theFile.writeRlc(FILE_TMP, FILE_TYP_GENERAL, (uint8_t*)&g_eeGeneral,
@@ -221,7 +221,7 @@ void eeCheck(bool immediately)
     }else{
       if(theFile.errno()==ERR_TMO){
         s_eeDirtyMsk |= EE_GENERAL; //try again
-        s_eeDirtyTime10ms = g_tmr10ms - WRITE_DELAY_10MS;
+        s_eeDirtyTime10ms = get_tmr10ms() - WRITE_DELAY_10MS;
       }else{
         alert(PSTR("EEPROM overflow"));
       }
@@ -236,7 +236,7 @@ void eeCheck(bool immediately)
     }else{
       if(theFile.errno()==ERR_TMO){
         s_eeDirtyMsk |= EE_MODEL; //try again
-        s_eeDirtyTime10ms = g_tmr10ms - WRITE_DELAY_10MS;
+        s_eeDirtyTime10ms = get_tmr10ms() - WRITE_DELAY_10MS;
       }else{
         alert(PSTR("EEPROM overflow"));
       }
