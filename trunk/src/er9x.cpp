@@ -37,6 +37,10 @@ const prog_char APM modi12x3[]=
   "AIL ELE THR RUD "
   "AIL THR ELE RUD ";
 
+MixData *mixaddress( uint8_t idx )
+{
+	return &g_model.mixData[idx] ;
+}
 
 void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
 {
@@ -88,8 +92,13 @@ void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
     case -MAX_DRSWITCH: lcd_putsAtt(x+FW,y,PSTR("OFF"),att);return;
   }
   lcd_putcAtt(x,y, idx1<0 ? '!' : ' ',att);
-  lcd_putsnAtt(x+FW,y,PSTR(SWITCHES_STR)+3*(abs(idx1)-1),3,att);
+  lcd_putsnAtt(x+FW,y,get_switches_string()+3*(abs(idx1)-1),3,att);
 }
+
+const prog_char *get_switches_string()
+{
+  return PSTR(SWITCHES_STR)	;
+}	
 
 void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
 {
@@ -112,7 +121,8 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
 inline int16_t getValue(uint8_t i)
 {
     if(i<PPM_BASE) return calibratedStick[i];//-512..512
-    else if(i<CHOUT_BASE) return g_ppmIns[i-PPM_BASE] - g_eeGeneral.ppmInCalib[i-PPM_BASE];
+    else if(i<PPM_BASE+4) return (g_ppmIns[i-PPM_BASE] - g_eeGeneral.trainer.calib[i-PPM_BASE])*2;
+    else if(i<CHOUT_BASE) return g_ppmIns[i-PPM_BASE]*2;
     else return ex_chans[i-CHOUT_BASE];
     return 0;
 
@@ -270,6 +280,7 @@ void doSplash()
         lcd_clear();
         lcd_img(0, 0, s9xsplash,0,0);
         lcd_putsnAtt(0*FW, 7*FH, g_eeGeneral.ownerName ,sizeof(g_eeGeneral.ownerName),BSS_NO_INV);
+
         refreshDiplay();
         lcdSetRefVolt(g_eeGeneral.contrast);
 
@@ -311,6 +322,19 @@ void checkMem()
 
 }
 
+void alertMessages( const prog_char * s, const prog_char * t )
+{
+  lcd_clear();
+  lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
+  lcd_puts_P(0,4*FH,s);
+  lcd_puts_P(0,5*FH,t);
+  lcd_puts_P(0,6*FH,  PSTR("Press any key to skip") ) ;
+  refreshDiplay();
+  lcdSetRefVolt(g_eeGeneral.contrast);
+
+  clearKeyEvents();
+}
+
 void checkTHR()
 {
   if(g_eeGeneral.disableThrottleWarning) return;
@@ -329,16 +353,9 @@ void checkTHR()
   }
 
   // first - display warning
-  lcd_clear();
-  lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
-  lcd_puts_P(0,4*FH,PSTR("Throttle not idle"));
-  lcd_puts_P(0,5*FH,PSTR("Reset throttle"));
-  lcd_puts_P(0,6*FH,PSTR("Press any key to skip"));
-  refreshDiplay();
-  lcdSetRefVolt(g_eeGeneral.contrast);
-
-  clearKeyEvents();
-  //loop until all switches are reset
+  alertMessages( PSTR("Throttle not idle"), PSTR("Reset throttle") ) ;
+  
+	//loop until all switches are reset
   while (1)
   {
       getADC_single();
@@ -367,16 +384,9 @@ void checkSwitches()
   if(g_eeGeneral.disableSwitchWarning) return; // if warning is on
 
   // first - display warning
-  lcd_clear();
-  lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
-  lcd_puts_P(0,4*FH,PSTR("Switches not off"));
-  lcd_puts_P(0,5*FH,PSTR("Please reset them"));
-  lcd_puts_P(0,6*FH,PSTR("Press any key to skip"));
-  refreshDiplay();
-  lcdSetRefVolt(g_eeGeneral.contrast);
-
-  clearKeyEvents();
-  //loop until all switches are reset
+  alertMessages( PSTR("Switches not off"), PSTR("Please reset them") ) ;
+  
+	//loop until all switches are reset
   while (1)
   {
     uint8_t i;
@@ -650,10 +660,6 @@ uint8_t beepAgain = 0;
 uint8_t beepAgainOrig = 0;
 uint8_t beepOn = false;
 
-void evalCaptures();
-
-#define SLAVE_MODE (PING & (1<<INP_G_RF_POW))
-
 inline bool checkSlaveMode()
 {
   // no power -> only phone jack = slave mode
@@ -714,7 +720,6 @@ void perMain()
     PORTG &= ~(1<<OUT_G_SIM_CTL); // 0=ppm out
   }else{
     PORTG |=  (1<<OUT_G_SIM_CTL); // 1=ppm-in
-    evalCaptures();
   }
 
   switch( get_tmr10ms() & 0x1f ) { //alle 10ms*32
@@ -756,11 +761,8 @@ void perMain()
   }
 
 }
-volatile uint16_t captureRing[16];
-volatile uint8_t  captureWr;
-volatile uint8_t  captureRd;
 int16_t g_ppmIns[8];
-uint8_t ppmInState; //0=unsync 1..8= wait for value i-1
+uint8_t ppmInState = 0; //0=unsync 1..8= wait for value i-1
 
 #include <avr/interrupt.h>
 //#include <avr/wdt.h>
@@ -929,7 +931,7 @@ ISR(TIMER0_OVF_vect) //continuous timer 16ms (16MHz/1024)
   g_tmr16KHz++;
 }
 
-uint16_t getTmr16KHz()
+static uint16_t getTmr16KHz()
 {
   while(1){
     uint8_t hb  = g_tmr16KHz;
@@ -988,7 +990,11 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 }
 
 
-
+// Timer3 used for PPM_IN pulse width capture. Counter running at 16MHz / 8 = 2MHz
+// equating to one count every half millisecond. (2 counts = 1ms). Control channel
+// count delta values thus can range from about 1600 to 4400 counts (800us to 2200us),
+// corresponding to a PPM signal in the range 0.8ms to 2.2ms (1.5ms at center).
+// (The timer is free-running and is thus not reset to zero at each capture interval.)
 ISR(TIMER3_CAPT_vect, ISR_NOBLOCK) //capture ppm in 16MHz / 8 = 2MHz
 {
   uint16_t capture=ICR3;
@@ -997,49 +1003,37 @@ ISR(TIMER3_CAPT_vect, ISR_NOBLOCK) //capture ppm in 16MHz / 8 = 2MHz
   sei();
 
   static uint16_t lastCapt;
-  uint8_t nWr = (captureWr+1) % DIM(captureRing);
-  if(nWr == captureRd) //overflow
-  {
-    captureRing[(captureWr+DIM(captureRing)-1) % DIM(captureRing)] = 0; //distroy last value
-    beepErr();
-  }else{
-    captureRing[captureWr] = capture - lastCapt;
-    captureWr              = nWr;
-  }
+ 
+  uint16_t val = (capture - lastCapt) / 2;
   lastCapt = capture;
+
+  // We prcoess g_ppmInsright here to make servo movement as smooth as possible
+  //    while under trainee control
+  if(ppmInState && ppmInState<=8){
+    if(val>800 && val<2200){
+      g_ppmIns[ppmInState++ - 1] =
+        (int16_t)(val - 1500)*(g_eeGeneral.PPM_Multiplier+10)/10; //+-500 != 512, but close enough.
+    }else{
+      ppmInState=0; // not triggered
+    }
+  }else{
+    if(val>4000 && val < 16000)
+    {
+      ppmInState=1; // triggered
+    }
+  }
 
   cli();
   ETIMSK |= (1<<TICIE3);
   sei();
 }
 
-void evalCaptures()
-{
-  while(captureRd != captureWr)
-  {
-    int16_t val = captureRing[captureRd] / 2; // us
-    captureRd = (captureRd + 1)  % DIM(captureRing); //next read
-    if(ppmInState && ppmInState<=8){
-      if(val>800 && val <2200){
-        g_ppmIns[ppmInState++ - 1] = (int16_t)(val - 1500)*(g_eeGeneral.PPM_Multiplier+10)/10; //+-500 != 512, Fehler ignoriert
-      }else{
-        ppmInState=0; //not triggered
-      }
-    }else{
-      if(val>4000 && val < 16000)
-      {
-        ppmInState=1; //triggered
-      }
-    }
-  }
-}
-
-
 extern uint16_t g_timeMain;
 //void main(void) __attribute__((noreturn));
 
 int main(void)
 {
+
   DDRA = 0xff;  PORTA = 0x00;
   DDRB = 0x81;  PORTB = 0x7e; //pullups keys+nc
   DDRC = 0x3e;  PORTC = 0xc1; //pullups nc
