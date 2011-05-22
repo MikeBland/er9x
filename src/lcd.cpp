@@ -121,10 +121,10 @@ void lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode,uint8_t flag)
     }
 }
 
-void lcd_putc(uint8_t x,uint8_t y,const char c)
-{
-  lcd_putcAtt(x,y,c,false);
-}
+//void lcd_putc(uint8_t x,uint8_t y,const char c)
+//{
+//  lcd_putcAtt(x,y,c,false);
+//}
 void lcd_putsnAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t len,uint8_t mode)
 {
   while(len!=0) {
@@ -268,17 +268,6 @@ void lcdSendCtl(uint8_t val)
   PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_CS1);
 }
 
-void lcdSendDat(uint8_t val)
-{
-  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_CS1);
-  PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_A0);
-  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_RnW);
-  PORTA_LCD_DAT = val;
-  PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_E);
-  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_E);
-  PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_A0);
-  PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_CS1);
-}
 
 #define delay_1us() _delay_us(1)
 void delay_1_5us(int ms)
@@ -324,9 +313,26 @@ void refreshDiplay()
     lcdSendCtl(0x04);
     lcdSendCtl(0x10); //column addr 0
     lcdSendCtl( y | 0xB0); //page addr y
-    for(uint8_t x=0; x<128; x++){
-      lcdSendDat(*p);
-      p++;
+    PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_CS1);
+    PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_A0);
+    PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_RnW);
+    for(uint8_t x=32; x>0; x--){
+//      lcdSendDat(*p);
+      PORTA_LCD_DAT = *p++;
+      PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_E);
+      PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_E);
+      PORTA_LCD_DAT = *p++;
+      PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_E);
+      PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_E);
+      PORTA_LCD_DAT = *p++;
+      PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_E);
+      PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_E);
+      PORTA_LCD_DAT = *p++;
+      PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_E);
+      PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_E);
+//      p++;
     }
+    PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_A0);
+    PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_CS1);
   }
 }

@@ -95,11 +95,11 @@ void eeLoadModelName(uint8_t id,char*buf,uint8_t len)
   }
 }
 
-uint16_t eeFileSize(uint8_t id)
-{
-    theFile.openRd(FILE_MODEL(id));
-    return theFile.size();
-}
+//uint16_t eeFileSize(uint8_t id)
+//{
+//    theFile.openRd(FILE_MODEL(id));
+//    return theFile.size();
+//}
 
 bool eeModelExists(uint8_t id)
 {

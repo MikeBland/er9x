@@ -145,6 +145,8 @@
 #define INP_G_RF_POW   1
 #define INP_G_RuddDR   0
 
+#define SLAVE_MODE (PING & (1<<INP_G_RF_POW))
+
 const prog_uint8_t APM modn12x3[]= {
   1, 2, 3, 4,
   1, 3, 2, 4,
@@ -394,6 +396,9 @@ void putsDrSwitches(uint8_t x,uint8_t y,int8_t swtch,uint8_t att);
 void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr);
 void resetTimer();
 
+const prog_char *get_switches_string() ;
+
+
 uint8_t char2idx(char c);
 char idx2char(uint8_t idx);
 
@@ -504,7 +509,7 @@ void eeCheck(bool immediately=false);
 //void eeWriteGeneral();
 void eeReadAll();
 void eeLoadModelName(uint8_t id,char*buf,uint8_t len);
-uint16_t eeFileSize(uint8_t id);
+//uint16_t eeFileSize(uint8_t id);
 void eeLoadModel(uint8_t id, uint8_t doChecks=true);
 //void eeSaveModel(uint8_t id);
 bool eeDuplicateModel(uint8_t id);
@@ -532,8 +537,12 @@ void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2);
 
 extern inline int16_t calc100toRESX(int8_t x)
 {
-  return (int16_t)x*10 + x/4 - x/64;
+  return ((x*41)>>2) - x/64;
 }
+
+uint8_t getMixerCount();
+bool reachMixerCountLimit();
+void menuMixersLimit(uint8_t event);
 
 extern inline int16_t calc1000toRESX(int16_t x)  // improve calc time by Pat MacKenzie
 {
@@ -578,7 +587,7 @@ void menuProcDiagCalib(uint8_t event);
 void menuProcDiagAna(uint8_t event);
 void menuProcDiagKeys(uint8_t event);
 void menuProcDiagVers(uint8_t event);
-void menuProcPPMIn(uint8_t event);
+void menuProcTrainer(uint8_t event);
 void menuProcSetup(uint8_t event);
 void menuProcMain(uint8_t event);
 void menuProcModelSelect(uint8_t event);
