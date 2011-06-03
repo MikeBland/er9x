@@ -1,7 +1,8 @@
 /*
- * Author - Philip Moss
- * Adapted from jeti.h code by Karl Szmutny <shadow@privy.de>
- * 
+ * Author - Bertrand Songis <bsongis@gmail.com>
+ *
+ * frsky.cpp original authors - Bryan J.Rentoul (Gruvin) <gruvin@gmail.com> and Philip Moss Adapted from jeti.cpp code by Karl
+ * Szmutny <shadow@privy.de>* 
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -14,35 +15,30 @@
  *
  */
 
-#ifndef frsky_h
-#define frsky_h
+#ifndef FRSKY_H
+#define FRSKY_H
 
+// .20 seconds
+#define FRSKY_TIMEOUT10ms 20
 
-#include "er9x.h"
+enum AlarmLevel {
+  alarm_off = 0,
+  alarm_yellow = 1,
+  alarm_orange = 2,
+  alarm_red = 3
+};
 
+#define ALARM_GREATER(channel, alarm) ((g_model.frsky.channels[channel].alarms_greater >> alarm) & 1)
+#define ALARM_LEVEL(channel, alarm) ((g_model.frsky.channels[channel].alarms_level >> (2*alarm)) & 3)
 
-extern uint8_t linkBuffer[9]; // 4 bytes, worst case 8 bytes with byte stuff + 1
-extern uint8_t TelemBuffer[46];
-extern uint8_t alrmRequest[11];
-extern uint8_t FrskyBufferReady;
-extern uint8_t alrmPktRx;
-extern uint8_t fr_editMode;
-//extern uint8_t voltRatio;
-extern uint8_t displayState;
-extern uint8_t a11Adjust,a12Adjust,a21Adjust,a22Adjust;
-extern uint8_t a11Buffer[9]; // 4 bytes, worst case 8 bytes with byte stuff + 1
-extern uint8_t a12Buffer[9]; // 4 bytes, worst case 8 bytes with byte stuff + 1
-extern uint8_t a21Buffer[9]; // 4 bytes, worst case 8 bytes with byte stuff + 1
-extern uint8_t a22Buffer[9]; // 4 bytes, worst case 8 bytes with byte stuff + 1
-//extern uint16_t a11hex;
+// Global Fr-Sky telemetry data variables
+extern uint8_t frskyStreaming; // >0 (true) == data is streaming in. 0 = nodata detected for some time
+extern uint8_t frskyTelemetry[2];
+extern uint8_t frskyRSSI[2];
 
 void FRSKY_Init(void);
-void FRSKY_DisableTXD (void);
-void FRSKY_EnableTXD (void);
-void FRSKY_DisableRXD (void);
-void FRSKY_EnableRXD (void);
-void FRSKY_Transmit(uint8_t data);
-void FRSKY_saveAlarms (void);
+void FRSKY_setModelAlarms(void);
+bool FRSKY_alarmRaised(uint8_t idx);
 
 #endif
 

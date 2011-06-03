@@ -258,4 +258,9 @@ void per10ms()
     ++enuk;
   }
 
+#ifdef FRSKY
+  // Used to detect presence of valid FrSky telemetry packets inside the
+  // last FRSKY_TIMEOUT10ms 10ms intervals
+  if (frskyStreaming > 0) frskyStreaming--;
+#endif
 }

@@ -63,6 +63,10 @@ ifeq ($(EXT), ARDUPILOT)
  CPPSRC += ardupilot.cpp
 endif
 
+HELI = YES
+
+TEMPLATES = YES
+
 # BEEPER. Values = BUZZER or BUZZER_MOD
 # (without a mod, BUZZER can make PPM jack output switch from output to input at random)
 BEEPER = BUZZER
@@ -113,6 +117,16 @@ CDEFS = -DF_CPU=$(F_CPU)UL
 CPPDEFS = -DF_CPU=$(F_CPU)UL
 #CPPDEFS += -D__STDC_LIMIT_MACROS
 #CPPDEFS += -D__STDC_CONSTANT_MACROS
+
+# If HELI-Support is enabled
+ifeq ($(HELI), NO)
+ CPPDEFS += -DNO_HELI
+endif
+
+# If TEMPLATES-Support is enabled
+ifeq ($(TEMPLATES), NO)
+ CPPDEFS += -DNO_TEMPLATES
+endif
 
 # If JETI-Support is enabled
 ifeq ($(EXT), JETI)
