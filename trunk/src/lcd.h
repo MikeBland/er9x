@@ -31,14 +31,10 @@
 #define INVERS        0x01
 #define BLINK         0x02
 #define LEADING0      0x04
-#define SIGN          0x08
 
 #define BSS_NO_INV    0x10
-#define BSS_INVERS    0x11
-#define BSS_BLINK     0x12
 #define PREC1         0x20
 #define PREC2         0x40
-#define PREC3         0x60
 #define PREC(n)       (((n)>>5)&3)
 #define DBLSIZE       0x80
 

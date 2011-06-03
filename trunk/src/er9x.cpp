@@ -67,15 +67,14 @@ void putsVBat(uint8_t x,uint8_t y,uint8_t hideV,uint8_t att)
   if(!hideV) lcd_putcAtt(   x+ 4*FW,   y,    'V',att);
   lcd_outdezAtt( x+ 4*FW,   y,   g_vbat100mV,att);
 }
-void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
+void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
 {
-  if(!idx1)
+  if(idx==0)
     lcd_putsnAtt(x,y,PSTR("----"),4,att);
-  else if((idx1>=1) && (idx1 <=4))
-    lcd_putsnAtt(x,y,modi12x3+g_eeGeneral.stickMode*16+4*(idx1-1),4,att);
-  else                  // 4   5   6   7   8   9
-    lcd_putsnAtt(x,y,PSTR("P1  P2  P3  MAX FULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"
-                          "CH17CH18CH19CH20CH21CH22CH23CH24CH25CH26CH27CH28CH29CH30")+4*(idx1-5),4,att);
+  else if(idx<=4)
+    lcd_putsnAtt(x,y,modi12x3+g_eeGeneral.stickMode*16+4*(idx-1),4,att);
+  else if(idx<=NUM_XCHNRAW)
+    lcd_putsnAtt(x,y,PSTR("P1  P2  P3  MAX FULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"TELEMETRY_CHANNELS)+4*(idx-5),4,att);
 }
 void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 {
@@ -120,12 +119,14 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
 
 inline int16_t getValue(uint8_t i)
 {
-    if(i<PPM_BASE) return calibratedStick[i];//-512..512
-    else if(i<PPM_BASE+4) return (g_ppmIns[i-PPM_BASE] - g_eeGeneral.trainer.calib[i-PPM_BASE])*2;
-    else if(i<CHOUT_BASE) return g_ppmIns[i-PPM_BASE]*2;
-    else return ex_chans[i-CHOUT_BASE];
-    return 0;
-
+  if(i<PPM_BASE) return calibratedStick[i];//-512..512
+  else if(i<PPM_BASE+4) return (g_ppmIns[i-PPM_BASE] - g_eeGeneral.trainer.calib[i-PPM_BASE])*2;
+  else if(i<CHOUT_BASE) return g_ppmIns[i-PPM_BASE]*2;
+  else if(i<CHOUT_BASE+NUM_CHNOUT) return ex_chans[i-CHOUT_BASE];
+#ifdef FRSKY
+  else if(i<CHOUT_BASE+NUM_CHNOUT+NUM_TELEMETRY) return frskyTelemetry[i-CHOUT_BASE-NUM_CHNOUT];
+#endif
+  else return 0;
 }
 
 bool getSwitch(int8_t swtch, bool nc, uint8_t level)
@@ -164,6 +165,11 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
   if(s == CS_VOFS)
   {
       x = getValue(cs.v1-1);
+#ifdef FRSKY
+      if (cs.v1 > CHOUT_BASE+NUM_CHNOUT)
+        y = 125+cs.v2;
+      else
+#endif
       y = calc100toRESX(cs.v2);
   }
   else if(s == CS_VCOMP)
@@ -444,7 +450,6 @@ void checkQuickSelect()
     }
 }
 
-
 MenuFuncP g_menuStack[5];
 
 uint8_t  g_menuStackPtr = 0;
@@ -531,9 +536,8 @@ bool    checkIncDec_Ret;
 int16_t p1val;
 int16_t p1valdiff;
 
-bool checkIncDecGen2(uint8_t event, void *i_pval, int16_t i_min, int16_t i_max, uint8_t i_flags)
+int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flags)
 {
-  int16_t val = i_flags & _FL_SIZE2 ? *(int16_t*)i_pval : *(int8_t*)i_pval ;
   int16_t newval = val;
   uint8_t kpl=KEY_RIGHT, kmi=KEY_LEFT, kother = -1;
 
@@ -576,44 +580,49 @@ bool checkIncDecGen2(uint8_t event, void *i_pval, int16_t i_min, int16_t i_max, 
     killEvents(event);
     beepWarn();
   }
-  if(newval < i_min)
+  else if(newval < i_min)
   {
     newval = i_min;
     killEvents(event);
     beepWarn();
   }
-  if(newval != val){
+  if(newval != val) {
     if(newval==0) {
       pauseEvents(event);
       beepKey(); //beepWarn();
     }
-    if(i_flags & _FL_SIZE2 ) *(int16_t*)i_pval = newval;
-    else                     *( int8_t*)i_pval = newval;
     eeDirty(i_flags & (EE_GENERAL|EE_MODEL));
-    return checkIncDec_Ret=true;
+    checkIncDec_Ret = true;
   }
-  return checkIncDec_Ret=false;
+  else {
+    checkIncDec_Ret = false;
+  }
+  return newval;
+}
+
+int8_t checkIncDec(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max, uint8_t i_flags)
+{
+  return checkIncDec16(event,i_val,i_min,i_max,i_flags);
 }
 
 int8_t checkIncDec_hm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max)
 {
-  checkIncDecGen2(event,&i_val,i_min,i_max,EE_MODEL);
-  return i_val;
+  return checkIncDec(event,i_val,i_min,i_max,EE_MODEL);
 }
+
 int8_t checkIncDec_vm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max)
 {
-  checkIncDecGen2(event,&i_val,i_min,i_max,_FL_VERT|EE_MODEL);
-  return i_val;
+  return checkIncDec(event,i_val,i_min,i_max,_FL_VERT|EE_MODEL);
 }
+
 int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max)
 {
-  checkIncDecGen2(event,&i_val,i_min,i_max,EE_GENERAL);
-  return i_val;
+  return checkIncDec(event,i_val,i_min,i_max,EE_GENERAL);
 }
+
 int8_t checkIncDec_vg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max)
 {
-  checkIncDecGen2(event,&i_val,i_min,i_max,_FL_VERT|EE_GENERAL);
-  return i_val;
+  return checkIncDec(event,i_val,i_min,i_max,_FL_VERT|EE_GENERAL);
 }
 
 MenuFuncP lastPopMenu()
@@ -761,6 +770,7 @@ void perMain()
   }
 
 }
+
 int16_t g_ppmIns[8];
 uint8_t ppmInState = 0; //0=unsync 1..8= wait for value i-1
 
@@ -1003,7 +1013,6 @@ ISR(TIMER3_CAPT_vect, ISR_NOBLOCK) //capture ppm in 16MHz / 8 = 2MHz
   sei();
 
   static uint16_t lastCapt;
- 
   uint16_t val = (capture - lastCapt) / 2;
   lastCapt = capture;
 
@@ -1037,9 +1046,9 @@ int main(void)
   DDRA = 0xff;  PORTA = 0x00;
   DDRB = 0x81;  PORTB = 0x7e; //pullups keys+nc
   DDRC = 0x3e;  PORTC = 0xc1; //pullups nc
-  DDRD = 0x00;  PORTD = 0xff; //pullups keys
+  DDRD = 0x00;  PORTD = 0xff; //all D inputs pullups keys
   DDRE = 0x08;  PORTE = 0xff-(1<<OUT_E_BUZZER); //pullups + buzzer 0
-  DDRF = 0x00;  PORTF = 0xff; //anain
+  DDRF = 0x00;  PORTF = 0xff; //all F inputs anain
   DDRG = 0x10;  PORTG = 0xff; //pullups + SIM_CTL=1 = phonejack = ppm_in
   lcd_init();
 

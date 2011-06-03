@@ -31,7 +31,8 @@
 #define MDVERS_r77  4
 #define MDVERS_r85  5
 #define MDVERS_r261 6
-#define MDVERS      7
+#define MDVERS_r352 7
+#define MDVERS      8
 
 
 #define GENERAL_MYVER_r261 3
@@ -65,6 +66,10 @@ typedef struct t_TrainerData {
   TrainerMix     mix[4];
 } __attribute__((packed)) TrainerData;
 
+typedef struct t_FrSkyRSSIAlarm {
+  uint8_t       level:2;
+  int8_t        value:6;
+} __attribute__((packed)) FrSkyRSSIAlarm;
 
 typedef struct t_EEGeneral {
   uint8_t   myVers;
@@ -100,7 +105,8 @@ typedef struct t_EEGeneral {
 
   // ver4 and up :=>
 
-  uint8_t   res[6];
+  FrSkyRSSIAlarm frskyRssiAlarms[2];
+  uint8_t   res[4];
   char      ownerName[10];
 } __attribute__((packed)) EEGeneral;
 
@@ -158,13 +164,25 @@ typedef struct t_SafetySwData { // Custom Switches data
   int8_t  val;
 } __attribute__((packed)) SafetySwData;
 
+typedef struct t_FrSkyChannelData {
+  uint8_t   ratio;                // 0.0 means not used, 0.1V steps EG. 6.6 Volts = 66. 25.1V = 251, etc.
+  uint8_t   alarms_value[2];      // 0.1V steps EG. 6.6 Volts = 66. 25.1V = 251, etc.
+  uint8_t   alarms_level:4;
+  uint8_t   alarms_greater:2;     // 0=LT(<), 1=GT(>)
+  uint8_t   type:2;               // future use: 0=volts, ...
+} __attribute__((packed)) FrSkyChannelData;
+
+typedef struct t_FrSkyData {
+  FrSkyChannelData channels[2];
+} __attribute__((packed)) FrSkyData;
+
 typedef struct t_ModelData {
   char      name[10];             // 10 must be first for eeLoadModelName
   uint8_t   mdVers;
-  int8_t    tmrMode;   //timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
+  int8_t    tmrMode;              // timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
   uint8_t   tmrDir:1;    //0=>Count Down, 1=>Count Up
-	uint8_t   traineron:1;  // 0 disable trainer, 1 allow trainer
-	uint8_t   spare:6;
+  uint8_t   traineron:1;  // 0 disable trainer, 1 allow trainer
+  uint8_t   spare:6;
   uint16_t  tmrVal;
   uint8_t   protocol;
   int8_t    ppmNCH;
@@ -173,7 +191,7 @@ typedef struct t_ModelData {
   int8_t    trimInc;              // Trim Increments
   int8_t    ppmDelay;
   int8_t    trimSw;
-  uint8_t   beepANACenter;        //1<<0->A1.. 1<<6->A7
+  uint8_t   beepANACenter;        // 1<<0->A1.. 1<<6->A7
   uint8_t   pulsePol:1;
   uint8_t   extendedLimits:1;
   uint8_t   swashInvertELE:1;
@@ -194,9 +212,8 @@ typedef struct t_ModelData {
   uint8_t   a2voltRatio;  //FrSky
   uint8_t   res3;
   SafetySwData  safetySw[NUM_CHNOUT];
+  FrSkyData frsky;
 } __attribute__((packed)) ModelData;
-
-
 
 #define TOTAL_EEPROM_USAGE (sizeof(ModelData)*MAX_MODELS + sizeof(EEGeneral))
 

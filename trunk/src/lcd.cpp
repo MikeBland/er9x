@@ -25,7 +25,6 @@ uint8_t displayBuf[DISPLAY_W*DISPLAY_H/8];
 #include "font_dblsize.lbm"
 #define font_10x16_x20_x7f (font_dblsize+3)
 
-#define BITMASK(bit) (1<<(bit))
 void lcd_clear()
 {
   //for(unsigned i=0; i<sizeof(displayBuf); i++) displayBuf[i]=0;
@@ -207,7 +206,6 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int16_t val,uint8_t mode,uint8_t len)
     x-=fw;
   }
   if(neg) lcd_putcAtt(x-fw,y,'-',mode);
-  else  if((mode & SIGN)) lcd_putcAtt(x-fw,y,'+',mode);
 }
 
 void lcd_plot(uint8_t x,uint8_t y)

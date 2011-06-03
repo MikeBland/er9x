@@ -17,6 +17,9 @@
 #include "er9x.h"
 #include "templates.h"
 
+#ifdef FRSKY
+#include "frsky.h"
+#endif
 
 EFile theFile;  //used for any file operation
 EFile theFile2; //sometimes we need two files
@@ -139,6 +142,10 @@ void eeLoadModel(uint8_t id, uint8_t check_thrdoChecks)
         }
 
         g_model.mdVers = MDVERS; //update mdvers
+
+#ifdef FRSKY
+        FRSKY_setModelAlarms();
+#endif
     }
 }
 

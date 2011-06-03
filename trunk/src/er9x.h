@@ -261,9 +261,6 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define MIX_CYC2  11
 #define MIX_CYC3  12
 
-#define PPM_BASE   (MIX_CYC3)
-#define CHOUT_BASE (PPM_BASE+NUM_PPM)
-
 #define DR_HIGH   0
 #define DR_MID    1
 #define DR_LOW    2
@@ -411,6 +408,13 @@ void checkTHR();
 void checkSwitches();
 void checkQuickSelect(); // Quick model select on startup
 
+#define EE_GENERAL 1
+#define EE_MODEL   2
+#define _FL_VERT      8
+
+extern bool    checkIncDec_Ret;//global helper vars
+extern uint8_t s_editMode;     //global editmode
+
 /// Bearbeite alle events die zum gewaehlten mode passen.
 /// KEY_LEFT u. KEY_RIGHT
 /// oder KEY_UP u. KEY_DOWN falls _FL_VERT in i_flags gesetzt ist.
@@ -420,64 +424,21 @@ void checkQuickSelect(); // Quick model select on startup
 /// falls EE_GENERAL oder EE_MODEL in i_flags gesetzt ist wird bei Aenderung
 /// der Variablen zusaetzlich eeDirty() aufgerufen.
 /// Als Bestaetigung wird beep() aufgerufen bzw. beepWarn() wenn die Stellgrenze erreicht wird.
-bool checkIncDecGen2(uint8_t event, void *i_pval, int16_t i_min, int16_t i_max, uint8_t i_flags);
-
-///Hilfs-template zum Speichersparenden Aufruf von checkIncDecGen2
-template<int16_t min,int16_t max>
-bool checkIncDecModVar(uint8_t event, void*p, uint8_t flags)
-{
-  return checkIncDecGen2(event, p, min, max, flags);
-}
-
-//void getADC_filt();
-//void getADC_osmp();
-//void getADC_single();
-#define GETADC_SING = 0
-#define GETADC_OSMP = 1
-#define GETADC_FILT = 2
-
-
-
-///Hilfs-funktion zum Aufruf von checkIncDecGen2 fuer bitfield Variablen
+int16_t checkIncDec16(uint8_t event, int16_t i_pval, int16_t i_min, int16_t i_max, uint8_t i_flags);
+int8_t checkIncDec(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max, uint8_t i_flags);
 int8_t checkIncDec_hm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
-///Hilfs-funktion zum Aufruf von checkIncDecGen2 fuer bitfield Variablen
 int8_t checkIncDec_vm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
-///Hilfs-funktion zum Aufruf von checkIncDecGen2 fuer bitfield Variablen
 int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
-///Hilfs-funktion zum Aufruf von checkIncDecGen2 fuer bitfield Variablen
 int8_t checkIncDec_vg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 
-extern bool    checkIncDec_Ret;//global helper vars
-extern uint8_t s_editMode;     //global editmode
-
-#define _FL_SIZE2     4
-#define _FL_VERT      8
-#define _FL_BOOL      2
-
 #define CHECK_INCDEC_H_GENVAR( event, var, min, max)     \
-  checkIncDecModVar<min,max>(event,&var,(sizeof(var)==2 ? _FL_SIZE2 : 0)|EE_GENERAL) \
+  var = checkIncDec_hg(event,var,min,max)
 
 #define CHECK_INCDEC_H_MODELVAR( event, var, min, max)     \
-  checkIncDecModVar<min,max>(event,&var,(sizeof(var)==2 ? _FL_SIZE2 : 0)|EE_MODEL) \
+  var = checkIncDec_hm(event,var,min,max)
 
 #define CHECK_INCDEC_V_MODELVAR( event, var, min, max)     \
-  checkIncDecModVar<min,max>(event,&var,(sizeof(var)==2 ? _FL_SIZE2 : 0)|_FL_VERT|EE_MODEL) \
-
-//for bitfields
-#define CHECK_INCDEC_H_GENVAR_BF( event, var, min, max)               \
-  ( var=checkIncDec_hg(event,var,min,max),                              \
-    checkIncDec_Ret                                                     \
-  )
-#define CHECK_INCDEC_H_MODELVAR_BF( event, var, min, max)               \
-  ( var=checkIncDec_hm(event,var,min,max),                              \
-    checkIncDec_Ret                                                     \
-  )
-#define CHECK_INCDEC_V_MODELVAR_BF( event, var, min, max)               \
-  ( var=checkIncDec_vm(event,var,min,max),                              \
-    checkIncDec_Ret                                                     \
-  )
-
-
+  var = checkIncDec_vm(event,var,min,max)
 
 #define STORE_MODELVARS   eeDirty(EE_MODEL)
 #define STORE_GENERALVARS eeDirty(EE_GENERAL)
@@ -486,6 +447,8 @@ extern uint8_t s_editMode;     //global editmode
 
 #define PULSEGEN_ON     TIMSK |=  (1<<OCIE1A)
 #define PULSEGEN_OFF    TIMSK &= ~(1<<OCIE1A)
+
+#define BITMASK(bit) (1<<(bit))
 
 /// liefert Dimension eines Arrays
 #define DIM(arr) (sizeof((arr))/sizeof((arr)[0]))
@@ -498,9 +461,6 @@ template<class t> inline t min(t a, t b){ return a<b?a:b; }
 template<class t> inline t max(t a, t b){ return a>b?a:b; }
 template<class t> inline int8_t sgn(t a){ return a>0 ? 1 : (a < 0 ? -1 : 0); }
 
-
-#define EE_GENERAL 1
-#define EE_MODEL   2
 /// Markiert einen EEPROM-Bereich als dirty. der Bereich wird dann in
 /// eeCheck ins EEPROM zurueckgeschrieben.
 void eeWriteBlockCmp(const void *i_pointer_ram, void *i_pointer_eeprom, size_t size);
@@ -516,10 +476,21 @@ bool eeDuplicateModel(uint8_t id);
 bool eeModelExists(uint8_t id);
 
 #define NUM_PPM     8
-//number of real outputchannels CH1-CH8
-#define NUM_CHNOUT   16
+//number of real outputchannels CH1-CH16
+#define NUM_CHNOUT  16
 ///number of real input channels (1-9) plus virtual input channels X1-X4
-#define NUM_XCHNRAW (NUM_CHNOUT+12+NUM_PPM) // NUMCH + P1P2P3+ AIL/RUD/ELE/THR + MAX/FULL + CYC1/CYC2/CYC3
+#define PPM_BASE    MIX_CYC3
+#define CHOUT_BASE  (PPM_BASE+NUM_PPM)
+
+#ifdef FRSKY
+#define NUM_TELEMETRY 2
+#define TELEMETRY_CHANNELS "AD1 AD2 "
+#else
+#define NUM_TELEMETRY 0
+#define TELEMETRY_CHANNELS ""
+#endif
+
+#define NUM_XCHNRAW (CHOUT_BASE+NUM_CHNOUT+NUM_TELEMETRY) // NUMCH + P1P2P3+ AIL/RUD/ELE/THR + MAX/FULL + CYC1/CYC2/CYC3
 ///number of real output channels (CH1-CH8) plus virtual output channels X1-X4
 #define NUM_XCHNOUT (NUM_CHNOUT) //(NUM_CHNOUT)//+NUM_VIRT)
 
@@ -594,7 +565,9 @@ void menuProcModelSelect(uint8_t event);
 void menuProcTemplates(uint8_t event);
 void menuProcSwitches(uint8_t event);
 void menuProcSafetySwitches(uint8_t event);
-
+#ifdef FRSKY
+void menuProcTelemetry(uint8_t event);
+#endif
 
 void menuProcStatistic2(uint8_t event);
 void menuProcStatistic(uint8_t event);
