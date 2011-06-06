@@ -76,9 +76,13 @@ void processFrskyPacket(uint8_t *packet)
     case A21PKT:
     case A12PKT:
     case A11PKT:
-      frskyAlarms[(packet[0]-A22PKT)].value = packet[1];
-      frskyAlarms[(packet[0]-A22PKT)].greater = packet[2] & 0x01;
-      frskyAlarms[(packet[0]-A22PKT)].level = packet[3] & 0x03;
+		  {	
+			  struct FrskyAlarm *alarmptr ;
+				alarmptr = &frskyAlarms[(packet[0]-A22PKT)] ;
+        alarmptr->value = packet[1];
+        alarmptr->greater = packet[2] & 0x01;
+        alarmptr->level = packet[3] & 0x03;
+		  }
       break;
     case LINKPKT: // A1/A2/RSSI values
       frskyTelemetry[0] = packet[1];
@@ -121,7 +125,9 @@ ISR(USART0_RX_vect)
   
   static uint8_t numPktBytes = 0;
   static uint8_t dataState = frskyDataIdle;
-
+  
+	UCSR0B &= ~(1 << RXCIE0); // disable Interrupt
+	sei() ;
   stat = UCSR0A; // USART control and Status Register 0 A
 
     /*
@@ -206,6 +212,8 @@ ISR(USART0_RX_vect)
       } // switch
     } // if (FrskyRxBufferReady == 0)
   }
+	cli() ;
+  UCSR0B |= (1 << RXCIE0); // enable Interrupt
 }
 
 /*
@@ -242,14 +250,19 @@ void FRSKY_setModelAlarms(void)
       frskyTxBuffer[i++] = START_STOP;        // Start of packet
       frskyTxBuffer[i++] = (A11PKT-alarm-2*channel); // fc - fb - fa - f9
       frskyPushValue(i, g_model.frsky.channels[channel].alarms_value[alarm]);
-      frskyTxBuffer[i++] = ALARM_GREATER(channel, alarm);
-      frskyTxBuffer[i++] = ALARM_LEVEL(channel, alarm);
-      frskyTxBuffer[i++] = 0x00;
-      frskyTxBuffer[i++] = 0x00;
-      frskyTxBuffer[i++] = 0x00;
-      frskyTxBuffer[i++] = 0x00;
-      frskyTxBuffer[i++] = 0x00;
-      frskyTxBuffer[i++] = START_STOP;        // End of packet
+      {
+        uint8_t *ptr ;
+        ptr = &frskyTxBuffer[i] ;
+        *ptr++ = ALARM_GREATER(channel, alarm);
+        *ptr++ = ALARM_LEVEL(channel, alarm);
+        *ptr++ = 0x00 ;
+        *ptr++ = 0x00 ;
+        *ptr++ = 0x00 ;
+        *ptr++ = 0x00 ;
+        *ptr++ = 0x00 ;
+        *ptr++ = START_STOP;        // End of packet
+        i += 8 ;
+      }
     }
   }
 
@@ -268,14 +281,19 @@ void FRSKY_setRSSIAlarms(void)
     frskyTxBuffer[i++] = START_STOP;        // Start of packet
     frskyTxBuffer[i++] = (RSSI1PKT-alarm);  // f7 - f6
     frskyPushValue(i, g_eeGeneral.frskyRssiAlarms[alarm].value+50-(10*i));
-    frskyTxBuffer[i++] = 0x00;
-    frskyTxBuffer[i++] = g_eeGeneral.frskyRssiAlarms[alarm].level;
-    frskyTxBuffer[i++] = 0x00;
-    frskyTxBuffer[i++] = 0x00;
-    frskyTxBuffer[i++] = 0x00;
-    frskyTxBuffer[i++] = 0x00;
-    frskyTxBuffer[i++] = 0x00;
-    frskyTxBuffer[i++] = START_STOP;        // End of packet
+    {
+      uint8_t *ptr ;
+      ptr = &frskyTxBuffer[i] ;
+      *ptr++ = 0x00 ;
+      *ptr++ = g_eeGeneral.frskyRssiAlarms[alarm].level;
+      *ptr++ = 0x00 ;
+      *ptr++ = 0x00 ;
+      *ptr++ = 0x00 ;
+      *ptr++ = 0x00 ;
+      *ptr++ = 0x00 ;
+      *ptr++ = START_STOP;        // End of packet
+      i += 8 ;
+    }
   }
 
   frskyTxBufferCount = i;
@@ -358,23 +376,26 @@ void FRSKY_Init(void)
 // Send packet requesting all alarm settings be sent back to us
 void frskyAlarmsRefresh()
 {
-  uint8_t i = 0;
 
   if (frskyTxBufferCount) return; // we only have one buffer. If it's in use, then we can't send. Sorry.
 
-  frskyTxBuffer[i++] = START_STOP; // Start of packet
-  frskyTxBuffer[i++] = ALRM_REQUEST;
-  frskyTxBuffer[i++] = 0x00;
-  frskyTxBuffer[i++] = 0x00;
-  frskyTxBuffer[i++] = 0x00;
-  frskyTxBuffer[i++] = 0x00;
-  frskyTxBuffer[i++] = 0x00;
-  frskyTxBuffer[i++] = 0x00;
-  frskyTxBuffer[i++] = 0x00;
-  frskyTxBuffer[i++] = 0x00;
-  frskyTxBuffer[i++] = START_STOP; // End of packet
+  {
+    uint8_t *ptr ;
+    ptr = &frskyTxBuffer[0] ;
+    *ptr++ = START_STOP; // Start of packet
+    *ptr++ = ALRM_REQUEST;
+    *ptr++ = 0x00 ;
+    *ptr++ = 0x00 ;
+    *ptr++ = 0x00 ;
+    *ptr++ = 0x00 ;
+    *ptr++ = 0x00 ;
+    *ptr++ = 0x00 ;
+    *ptr++ = 0x00 ;
+    *ptr++ = 0x00 ;
+    *ptr++ = START_STOP;        // End of packet
+  }
 
-  frskyTxBufferCount = i;
+  frskyTxBufferCount = 11;
   frskyTransmitBuffer();
 }
 #endif

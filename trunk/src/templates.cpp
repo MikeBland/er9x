@@ -40,6 +40,26 @@
 #include "er9x.h"
 #include "templates.h"
 
+static prog_char APM string_1[] = "Simple 4-CH";
+static prog_char APM string_2[] = "T-Cut";
+static prog_char APM string_3[] = "Sticky T-Cut";
+static prog_char APM string_4[] = "V-Tail";
+static prog_char APM string_5[] = "Elevon\\Delta";
+static prog_char APM string_6[] = "Heli Setup";
+static prog_char APM string_7[] = "Gyro Setup";
+static prog_char APM string_8[] = "Servo Test";
+
+PGM_P n_Templates[] PROGMEM = {
+string_1,
+string_2,
+string_3,
+string_4,
+string_5,
+string_6,
+string_7,
+string_8
+};
+
 MixData* setDest(uint8_t dch)
 {
     uint8_t i = 0;
