@@ -50,7 +50,7 @@
 #define STK_P1   5
 #define STK_P2   6
 #define STK_P3   7
-#define NUM_TEMPLATES    DIM(n_Templates)
+#define NUM_TEMPLATES    8  // DIM(n_Templates)
 #define NUM_TEMPLATE_MIX 8
 #define TEMPLATE_NLEN    15
 
@@ -65,16 +65,7 @@
 #define CURVE5(x) ((x)-1)
 #define CURVE9(x) (MAX_CURVE5+(x)-1)
 
-const char n_Templates[][TEMPLATE_NLEN] = {
-  "Simple 4-CH",
-  "T-Cut",
-  "Sticky T-Cut",
-  "V-Tail",
-  "Elevon\\Delta",
-  "Heli Setup",
-  "Gyro Setup",
-  "Servo Test"
-};
+extern PGM_P n_Templates[] ;
 
 
 

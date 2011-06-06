@@ -42,6 +42,11 @@ MixData *mixaddress( uint8_t idx )
 	return &g_model.mixData[idx] ;
 }
 
+LimitData *limitaddress( uint8_t idx )
+{
+  return &g_model.limitData[idx];
+}
+
 void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
 {
   //uint8_t fw=FWNUM; //FW-1;
@@ -691,6 +696,16 @@ inline bool checkSlaveMode()
 #endif
 }
 
+uint8_t Timer2_running = 0 ;
+uint8_t Timer2_pre = 0 ;
+uint16_t Timer2 = 0 ;
+
+void reset_timer2()
+{
+  Timer2_pre = 0 ;
+  Timer2 = 0 ;
+}
+
 void perMain()
 {
   static uint16_t lastTMR;
@@ -699,6 +714,15 @@ void perMain()
 
   perOut(g_chans512, false);
   if(!tick10ms) return; //make sure the rest happen only every 10ms.
+
+  if ( Timer2_running )
+  {
+    if ( (Timer2_pre += 1 ) >= 100 )
+    {
+      Timer2_pre -= 100 ;
+      Timer2 += 1 ;		
+    }
+  }
 
   eeCheck();
 
@@ -996,7 +1020,7 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
   heartbeat |= HEART_TIMER10ms;
   cli();
   TIMSK |= (1<<OCIE0);
-  sei();
+//  sei();	The RETI will do this
 }
 
 
@@ -1034,11 +1058,27 @@ ISR(TIMER3_CAPT_vect, ISR_NOBLOCK) //capture ppm in 16MHz / 8 = 2MHz
 
   cli();
   ETIMSK |= (1<<TICIE3);
-  sei();
+//  sei();	The RETI will do this
 }
 
 extern uint16_t g_timeMain;
 //void main(void) __attribute__((noreturn));
+
+extern unsigned char __bss_end ;
+
+unsigned int stack_free()
+{
+  unsigned char *p ;
+
+  p = &__bss_end + 1 ;
+  while ( *p == 0x55 )
+  {
+    p+= 1 ;			
+  }
+  return p - &__bss_end ;
+}
+
+
 
 int main(void)
 {
@@ -1081,6 +1121,23 @@ int main(void)
   TCCR3A  = 0;
   TCCR3B  = (1<<ICNC3) | (2<<CS30);      //ICNC3 16MHz / 8
   ETIMSK |= (1<<TICIE3);
+
+
+	// Init Stack while interrupts are disabled
+#define STACKPTR     _SFR_IO16(0x3D)
+  {
+    
+    unsigned char *p ;
+    unsigned char *q ;
+
+    p = (unsigned char *) STACKPTR ;
+    q = &__bss_end ;
+    p -= 2 ;
+    while ( p > q )
+    {
+      *p-- = 0x55 ;			
+    }
+  }
 
   sei(); //damit alert in eeReadGeneral() nicht haengt
   g_menuStack[0] =  menuProc0;
