@@ -1799,14 +1799,17 @@ void menuProcHeli(uint8_t event)
 
 void menuProcModelSelect(uint8_t event)
 {
-  SIMPLE_SUBMENU("MODELSEL", MAX_MODELS);
-
+  
+  static MState2 mstate2;
+  TITLE("MODELSEL");
+  int8_t subOld  = mstate2.m_posVert;
+  mstate2.check_submenu_simple(event,MAX_MODELS-1) ;
+	
   lcd_puts_P(     9*FW, 0, PSTR("free"));
   lcd_outdezAtt(  17*FW, 0, EeFsGetFree(),0);
 
   DisplayScreenIndex(e_ModelSelect, DIM(menuTabModel), INVERS);
 
-  int8_t subOld  = mstate2.m_posVert;
   int8_t  sub    = mstate2.m_posVert;
   static uint8_t sel_editMode;
 	if ( DupIfNonzero == 2 )
