@@ -35,10 +35,12 @@ enum AlarmLevel {
 extern uint8_t frskyStreaming; // >0 (true) == data is streaming in. 0 = nodata detected for some time
 extern uint8_t frskyTelemetry[2];
 extern uint8_t frskyRSSI[2];
+extern uint8_t FrskyActive ;
 
 void FRSKY_Init(void);
 void FRSKY_setModelAlarms(void);
 bool FRSKY_alarmRaised(uint8_t idx);
+void FRSKY10mspoll(void) ;
 
 #endif
 
