@@ -33,7 +33,7 @@
 #define STUFF_MASK      0x20
 
 uint8_t frskyRxBuffer[19];   // Receive buffer. 9 bytes (full packet), worst case 18 bytes with byte-stuffing (+1)
-uint8_t frskyTxBuffer[48];   // Ditto for transmit buffer
+uint8_t frskyTxBuffer[19];   // Ditto for transmit buffer
 uint8_t frskyTxBufferCount = 0;
 uint8_t FrskyRxBufferReady = 0;
 uint8_t frskyStreaming = 0;
@@ -239,35 +239,108 @@ void frskyTransmitBuffer()
   UCSR0B |= (1 << UDRIE0); // enable  UDRE0 interrupt
 }
 
+
+uint8_t FrskyAlarmSendState = 0 ;
+uint8_t FrskyActive = 0 ;
+uint8_t FrskyDelay = 0 ;
+
+
+void FRSKY10mspoll(void)
+{
+  if ( FrskyDelay )
+  {
+    FrskyDelay -= 1 ;
+		return ;
+  }
+  if (frskyTxBufferCount)
+  {
+    return; // we only have one buffer. If it's in use, then we can't send yet.
+  }
+	// Now send a packet
+  {
+    uint8_t channel ;
+    uint8_t alarm ;
+    uint8_t i = 0;
+		switch ( FrskyAlarmSendState )
+		{
+      case 4 :
+        channel = 0 ;
+        alarm = 0 ;
+      break ;
+      case 3 :
+        channel = 0 ;
+        alarm = 1 ;
+      break ;
+      case 2 :
+        channel = 1 ;
+        alarm = 0 ;
+      break ;
+      case 1 :
+        channel = 1 ;
+        alarm = 1 ;
+      break ;
+      default :
+        FrskyAlarmSendState = 0 ;
+        FrskyActive = 0 ;
+				return ;
+      break ;
+		}
+		FrskyAlarmSendState -= 1 ;
+    frskyTxBuffer[i++] = START_STOP;        // Start of packet
+    frskyTxBuffer[i++] = (A22PKT + FrskyAlarmSendState ) ; //A11PKT-alarm-2*channel); // fc - fb - fa - f9
+    frskyPushValue(i, g_model.frsky.channels[channel].alarms_value[alarm]);
+    {
+      uint8_t *ptr ;
+      ptr = &frskyTxBuffer[i] ;
+      *ptr++ = ALARM_GREATER(channel, alarm);
+      *ptr++ = ALARM_LEVEL(channel, alarm);
+      *ptr++ = 0x00 ;
+      *ptr++ = 0x00 ;
+      *ptr++ = 0x00 ;
+      *ptr++ = 0x00 ;
+      *ptr++ = 0x00 ;
+      *ptr++ = START_STOP;        // End of packet
+      i += 8 ;
+    }
+    FrskyDelay = 5 ;							// 50mS
+    frskyTxBufferCount = i;
+    frskyTransmitBuffer(); 
+  }
+}
+
 void FRSKY_setModelAlarms(void)
 {
-  if (frskyTxBufferCount) return; // we only have one buffer. If it's in use, then we can't send. Sorry.
+  FrskyAlarmSendState = 4 ;
+  FrskyActive = 1 ;
+	
+	
+//  if (frskyTxBufferCount) return; // we only have one buffer. If it's in use, then we can't send. Sorry.
  
-  uint8_t i = 0;
+//  uint8_t i = 0;
 
-  for (int channel=0; channel<2; channel++) {
-    for (int alarm=0; alarm<2; alarm++) {
-      frskyTxBuffer[i++] = START_STOP;        // Start of packet
-      frskyTxBuffer[i++] = (A11PKT-alarm-2*channel); // fc - fb - fa - f9
-      frskyPushValue(i, g_model.frsky.channels[channel].alarms_value[alarm]);
-      {
-        uint8_t *ptr ;
-        ptr = &frskyTxBuffer[i] ;
-        *ptr++ = ALARM_GREATER(channel, alarm);
-        *ptr++ = ALARM_LEVEL(channel, alarm);
-        *ptr++ = 0x00 ;
-        *ptr++ = 0x00 ;
-        *ptr++ = 0x00 ;
-        *ptr++ = 0x00 ;
-        *ptr++ = 0x00 ;
-        *ptr++ = START_STOP;        // End of packet
-        i += 8 ;
-      }
-    }
-  }
+//  for (int channel=0; channel<2; channel++) {
+//    for (int alarm=0; alarm<2; alarm++) {
+//      frskyTxBuffer[i++] = START_STOP;        // Start of packet
+//      frskyTxBuffer[i++] = (A11PKT-alarm-2*channel); // fc - fb - fa - f9
+//      frskyPushValue(i, g_model.frsky.channels[channel].alarms_value[alarm]);
+//      {
+//        uint8_t *ptr ;
+//        ptr = &frskyTxBuffer[i] ;
+//        *ptr++ = ALARM_GREATER(channel, alarm);
+//        *ptr++ = ALARM_LEVEL(channel, alarm);
+//        *ptr++ = 0x00 ;
+//        *ptr++ = 0x00 ;
+//        *ptr++ = 0x00 ;
+//        *ptr++ = 0x00 ;
+//        *ptr++ = 0x00 ;
+//        *ptr++ = START_STOP;        // End of packet
+//        i += 8 ;
+//      }
+//    }
+//  }
 
-  frskyTxBufferCount = i;
-  frskyTransmitBuffer(); 
+//  frskyTxBufferCount = i;
+//  frskyTransmitBuffer(); 
 }
 
 // Send packet requesting all alarm settings be sent back to us
