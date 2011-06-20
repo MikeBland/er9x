@@ -143,6 +143,8 @@ void eeLoadModel(uint8_t id, uint8_t check_thrdoChecks)
 
         g_model.mdVers = MDVERS; //update mdvers
 
+        resetTimer2();
+
 #ifdef FRSKY
         FRSKY_setModelAlarms();
 #endif

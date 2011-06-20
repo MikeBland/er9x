@@ -38,8 +38,8 @@ uint8_t frskyTxBufferCount = 0;
 uint8_t FrskyRxBufferReady = 0;
 uint8_t frskyStreaming = 0;
 
-uint8_t frskyTelemetry[2];
-uint8_t frskyRSSI[2];        // RSSI (virtual 10 slot) running average
+FrskyData frskyTelemetry[2];
+FrskyData frskyRSSI[2];
 
 struct FrskyAlarm {
   uint8_t level;    // The alarm's 'urgency' level. 0=disabled, 1=yellow, 2=orange, 3=red
@@ -76,19 +76,19 @@ void processFrskyPacket(uint8_t *packet)
     case A21PKT:
     case A12PKT:
     case A11PKT:
-		  {	
-			  struct FrskyAlarm *alarmptr ;
-				alarmptr = &frskyAlarms[(packet[0]-A22PKT)] ;
+      {
+        struct FrskyAlarm *alarmptr ;
+        alarmptr = &frskyAlarms[(packet[0]-A22PKT)] ;
         alarmptr->value = packet[1];
         alarmptr->greater = packet[2] & 0x01;
         alarmptr->level = packet[3] & 0x03;
-		  }
+      }
       break;
     case LINKPKT: // A1/A2/RSSI values
-      frskyTelemetry[0] = packet[1];
-      frskyTelemetry[1] = packet[2];
-      frskyRSSI[0] = packet[3];
-      frskyRSSI[1] = packet[4] / 2;
+      frskyTelemetry[0].set(packet[1]);
+      frskyTelemetry[1].set(packet[2]);
+      frskyRSSI[0].set(packet[3]);
+      frskyRSSI[1].set(packet[4] / 2);
       break;
 
     case USRPKT: // User Data packet -- not yet implemented
@@ -241,53 +241,31 @@ void frskyTransmitBuffer()
 
 
 uint8_t FrskyAlarmSendState = 0 ;
-uint8_t FrskyActive = 0 ;
 uint8_t FrskyDelay = 0 ;
 
 
 void FRSKY10mspoll(void)
 {
-  if ( FrskyDelay )
+  if (FrskyDelay)
   {
     FrskyDelay -= 1 ;
-		return ;
+    return ;
   }
+
   if (frskyTxBufferCount)
   {
     return; // we only have one buffer. If it's in use, then we can't send yet.
   }
-	// Now send a packet
+
+  // Now send a packet
   {
-    uint8_t channel ;
-    uint8_t alarm ;
+    FrskyAlarmSendState -= 1 ;
+    uint8_t channel = FrskyAlarmSendState / 2;
+    uint8_t alarm = FrskyAlarmSendState % 2;
+    
     uint8_t i = 0;
-		switch ( FrskyAlarmSendState )
-		{
-      case 4 :
-        channel = 0 ;
-        alarm = 0 ;
-      break ;
-      case 3 :
-        channel = 0 ;
-        alarm = 1 ;
-      break ;
-      case 2 :
-        channel = 1 ;
-        alarm = 0 ;
-      break ;
-      case 1 :
-        channel = 1 ;
-        alarm = 1 ;
-      break ;
-      default :
-        FrskyAlarmSendState = 0 ;
-        FrskyActive = 0 ;
-				return ;
-      break ;
-		}
-		FrskyAlarmSendState -= 1 ;
-    frskyTxBuffer[i++] = START_STOP;        // Start of packet
-    frskyTxBuffer[i++] = (A22PKT + FrskyAlarmSendState ) ; //A11PKT-alarm-2*channel); // fc - fb - fa - f9
+    frskyTxBuffer[i++] = START_STOP; // Start of packet
+    frskyTxBuffer[i++] = (A22PKT + FrskyAlarmSendState); // fc - fb - fa - f9
     frskyPushValue(i, g_model.frsky.channels[channel].alarms_value[alarm]);
     {
       uint8_t *ptr ;
@@ -302,45 +280,10 @@ void FRSKY10mspoll(void)
       *ptr++ = START_STOP;        // End of packet
       i += 8 ;
     }
-    FrskyDelay = 5 ;							// 50mS
+    FrskyDelay = 5 ; // 50mS
     frskyTxBufferCount = i;
     frskyTransmitBuffer(); 
   }
-}
-
-void FRSKY_setModelAlarms(void)
-{
-  FrskyAlarmSendState = 4 ;
-  FrskyActive = 1 ;
-	
-	
-//  if (frskyTxBufferCount) return; // we only have one buffer. If it's in use, then we can't send. Sorry.
- 
-//  uint8_t i = 0;
-
-//  for (int channel=0; channel<2; channel++) {
-//    for (int alarm=0; alarm<2; alarm++) {
-//      frskyTxBuffer[i++] = START_STOP;        // Start of packet
-//      frskyTxBuffer[i++] = (A11PKT-alarm-2*channel); // fc - fb - fa - f9
-//      frskyPushValue(i, g_model.frsky.channels[channel].alarms_value[alarm]);
-//      {
-//        uint8_t *ptr ;
-//        ptr = &frskyTxBuffer[i] ;
-//        *ptr++ = ALARM_GREATER(channel, alarm);
-//        *ptr++ = ALARM_LEVEL(channel, alarm);
-//        *ptr++ = 0x00 ;
-//        *ptr++ = 0x00 ;
-//        *ptr++ = 0x00 ;
-//        *ptr++ = 0x00 ;
-//        *ptr++ = 0x00 ;
-//        *ptr++ = START_STOP;        // End of packet
-//        i += 8 ;
-//      }
-//    }
-//  }
-
-//  frskyTxBufferCount = i;
-//  frskyTransmitBuffer(); 
 }
 
 // Send packet requesting all alarm settings be sent back to us
@@ -373,17 +316,16 @@ void FRSKY_setRSSIAlarms(void)
   frskyTransmitBuffer(); 
 }
 
-
 bool FRSKY_alarmRaised(uint8_t idx)
 {
   for (int i=0; i<2; i++) {
     if (ALARM_LEVEL(idx, i) != alarm_off) {
       if (ALARM_GREATER(idx, i)) {
-        if (frskyTelemetry[idx] > g_model.frsky.channels[idx].alarms_value[i])
+        if (frskyTelemetry[idx].value > g_model.frsky.channels[idx].alarms_value[i])
           return true;
       }
       else {
-        if (frskyTelemetry[idx] < g_model.frsky.channels[idx].alarms_value[i])
+        if (frskyTelemetry[idx].value < g_model.frsky.channels[idx].alarms_value[i])
           return true;
       }
     }
@@ -419,8 +361,9 @@ void FRSKY_DisableRXD(void)
 
 void FRSKY_Init(void)
 {
-  // clear alarm variables
+  // clear frsky variables
   memset(frskyAlarms, 0, sizeof(frskyAlarms));
+  resetTelemetry();
 
   DDRE &= ~(1 << DDE0);    // set RXD0 pin as input
   PORTE &= ~(1 << PORTE0); // disable pullup on RXD0 pin
@@ -487,5 +430,20 @@ void frskyPushValue(uint8_t & i, uint8_t value)
   else {
     frskyTxBuffer[i++] = value;
   }
+}
+
+void FrskyData::set(uint8_t value)
+{
+   this->value = value;
+   if (!max || max < value)
+     max = value;
+   if (!min || min > value)
+     min = value;
+ }
+
+void resetTelemetry()
+{
+  memset(frskyTelemetry, 0, sizeof(frskyTelemetry));
+  memset(frskyRSSI, 0, sizeof(frskyRSSI));
 }
 

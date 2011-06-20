@@ -263,7 +263,7 @@ void per10ms()
   // last FRSKY_TIMEOUT10ms 10ms intervals
   if (frskyStreaming > 0) frskyStreaming--;
 	
-  if ( FrskyActive )
+  if ( FrskyAlarmSendState )
   {
     FRSKY10mspoll() ;
   }

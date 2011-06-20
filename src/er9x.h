@@ -371,7 +371,10 @@ void    perMain();
 void    per10ms();
 /// Erzeugt periodisch alle Outputs ausser Bildschirmausgaben.
 void zeroVariables();
-void perOut(int16_t *chanOut, uint8_t zeroInput);
+
+#define NO_TRAINER 0x01
+#define NO_INPUT   0x02
+void perOut(int16_t *chanOut, uint8_t att);
 ///   Liefert den Zustand des Switches 'swtch'. Die Numerierung erfolgt ab 1
 ///   (1=SW_ON, 2=SW_ThrCt, 10=SW_Trainer). 0 Bedeutet not conected.
 ///   Negative Werte  erzeugen invertierte Ergebnisse.
@@ -391,7 +394,17 @@ bool    getSwitch(int8_t swtch, bool nc, uint8_t level=0);
 ///
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t swtch,uint8_t att);
 void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr);
+
+extern uint8_t  s_timerState;
+#define TMR_OFF     0
+#define TMR_RUNNING 1
+#define TMR_BEEPING 2
+#define TMR_STOPPED 3
 void resetTimer();
+
+extern uint8_t Timer2_running ;
+extern uint16_t Timer2 ;
+void resetTimer2() ;
 
 const prog_char *get_switches_string() ;
 
@@ -502,9 +515,13 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att);
 /// Schreibt [CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8] aufs lcd
 void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att);
 /// Schreibt die Batteriespannung aufs lcd
-void putsVBat(uint8_t x,uint8_t y,uint8_t hideV,uint8_t att);
+void putsVolts(uint8_t x,uint8_t y, uint8_t volts, uint8_t att);
+void putsVBat(uint8_t x,uint8_t y,uint8_t att);
 void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2);
 
+#ifdef FRSKY
+void putsTelemetry(uint8_t x, uint8_t y, uint8_t val, uint8_t unit, uint8_t att);
+#endif
 
 extern inline int16_t calc100toRESX(int8_t x)
 {
