@@ -31,16 +31,30 @@ enum AlarmLevel {
 #define ALARM_GREATER(channel, alarm) ((g_model.frsky.channels[channel].alarms_greater >> alarm) & 1)
 #define ALARM_LEVEL(channel, alarm) ((g_model.frsky.channels[channel].alarms_level >> (2*alarm)) & 3)
 
+struct FrskyData {
+  uint8_t value;
+  uint8_t min;
+  uint8_t max;
+  void set(uint8_t value);
+};
+
 // Global Fr-Sky telemetry data variables
 extern uint8_t frskyStreaming; // >0 (true) == data is streaming in. 0 = nodata detected for some time
-extern uint8_t frskyTelemetry[2];
-extern uint8_t frskyRSSI[2];
-extern uint8_t FrskyActive ;
+extern uint8_t FrskyAlarmSendState;
+extern FrskyData frskyTelemetry[2];
+extern FrskyData frskyRSSI[2];
 
 void FRSKY_Init(void);
-void FRSKY_setModelAlarms(void);
+void FRSKY10mspoll(void);
+
+inline void FRSKY_setModelAlarms(void)
+{
+  FrskyAlarmSendState = 4 ;
+}
+
 bool FRSKY_alarmRaised(uint8_t idx);
-void FRSKY10mspoll(void) ;
+
+void resetTelemetry();
 
 #endif
 

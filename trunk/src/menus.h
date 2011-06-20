@@ -74,11 +74,6 @@ typedef PROGMEM void (*MenuFuncP_PROGMEM)(uint8_t event);
 #define TITLEP(pstr) lcd_putsAtt(0,0,pstr,INVERS)
 #define TITLE(str)   TITLEP(PSTR(str))
 
-// Used to calculate correct positioning of deciamal numbers (y coord. offset)
-#define NUM_OFS(x) (((x<0 ? 2*FW-1 : 1*FW) + ((abs(x)>=100) ? 2*FW-2 : ((abs(x)>=10) ? 1*FW-1 : 0 ))))
-// Same again but for PREC1 number (leading '0.')
-#define NUM_OFSP1(x) ((abs(x)>=100) ? 3*FW-2 : 2*FW-1)
-
 #define MENU(title, tab, menu, lines_count, lines...) \
 TITLE(title); \
 static MState2 mstate2; \

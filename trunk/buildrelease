@@ -22,6 +22,15 @@ echo ">>>  moving"
 mv er9x.hex ../er9x-frsky.hex
 
 echo
+echo "===== Making FRSKY - NOHELI/NOTEMPLATE Version ====="
+echo ">>> cleaning"
+make clean
+echo ">>>  making"
+make EXT=FRSKY TEMPLATES=NO HELI=NO
+echo ">>>  moving"
+mv er9x.hex ../er9x-frsky-noht.hex
+
+echo
 echo "===== Making ARDUPILOT Version ====="
 echo ">>> cleaning"
 make clean

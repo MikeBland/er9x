@@ -21,7 +21,7 @@
 #define NB_BUF 2
 #define LG_BUF 11
 #define VALSTR(val)  (rbuf[val][0] ? rbuf[val] : val_unknown)
-#define APSIZE (BSS_NO_INV | DBLSIZE)
+#define APSIZE (BSS | DBLSIZE)
 
 /*    Received data
 

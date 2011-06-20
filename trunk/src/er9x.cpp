@@ -49,28 +49,26 @@ LimitData *limitaddress( uint8_t idx )
 
 void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
 {
-  //uint8_t fw=FWNUM; //FW-1;
-  //if(att&DBLSIZE) fw+=fw;
-
   if ( tme<0 )
   {
     lcd_putcAtt(   x,    y, '-',att);
+    tme = abs(tme);
   }
-//  lcd_putcAtt(   x,    y, tme<0 ?'-':' ',att);
-  x += (att&DBLSIZE) ? FWNUM*5 : FWNUM*3+2;
-  if(att&DBLSIZE)
-      lcd_putcAtt(   x+3, y, ':',att);
-  else
-      lcd_putcAtt(   x, y, ':',0);
-  lcd_outdezNAtt(x, y, abs(tme)/60,LEADING0+att,2);
-  x += (att&DBLSIZE) ? FWNUM*5-1 : FWNUM*4-2;
-  lcd_outdezNAtt(x, y, abs(tme)%60,LEADING0+att2,2);
+
+  lcd_putcAtt(x, y, ':',att&att2);
+  lcd_outdezNAtt(x, y, tme/60, LEADING0|att,2);
+  x += (att&DBLSIZE) ? FWNUM*6-1 : FW*3-1;
+  lcd_outdezNAtt(x, y, tme%60, LEADING0|att2,2);
 }
-void putsVBat(uint8_t x,uint8_t y,uint8_t hideV,uint8_t att)
+void putsVolts(uint8_t x,uint8_t y, uint8_t volts, uint8_t att)
+{
+  lcd_outdezAtt(x, y, volts, att|PREC1);
+  if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, 'v', att);
+}
+void putsVBat(uint8_t x,uint8_t y,uint8_t att)
 {
   //att |= g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0;
-  if(!hideV) lcd_putcAtt(   x+ 4*FW,   y,    'V',att);
-  lcd_outdezAtt( x+ 4*FW,   y,   g_vbat100mV,att);
+  putsVolts(x, y, g_vbat100mV, att);
 }
 void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
 {
@@ -122,6 +120,18 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
   lcd_putcAtt(x+3*FW,  y,'m',attr);
 }
 
+#ifdef FRSKY
+void putsTelemetry(uint8_t x, uint8_t y, uint8_t val, uint8_t unit, uint8_t att)
+{
+  if (unit == 0/*v*/) {
+    putsVolts(x, y, val, att);
+  }
+  else {
+    lcd_outdezAtt(x, y, val, att);
+  }
+}
+#endif
+
 inline int16_t getValue(uint8_t i)
 {
   if(i<PPM_BASE) return calibratedStick[i];//-512..512
@@ -129,7 +139,7 @@ inline int16_t getValue(uint8_t i)
   else if(i<CHOUT_BASE) return g_ppmIns[i-PPM_BASE]*2;
   else if(i<CHOUT_BASE+NUM_CHNOUT) return ex_chans[i-CHOUT_BASE];
 #ifdef FRSKY
-  else if(i<CHOUT_BASE+NUM_CHNOUT+NUM_TELEMETRY) return frskyTelemetry[i-CHOUT_BASE-NUM_CHNOUT];
+  else if(i<CHOUT_BASE+NUM_CHNOUT+NUM_TELEMETRY) return frskyTelemetry[i-CHOUT_BASE-NUM_CHNOUT].value;
 #endif
   else return 0;
 }
@@ -290,7 +300,7 @@ void doSplash()
                 
         lcd_clear();
         lcd_img(0, 0, s9xsplash,0,0);
-        lcd_putsnAtt(0*FW, 7*FH, g_eeGeneral.ownerName ,sizeof(g_eeGeneral.ownerName),BSS_NO_INV);
+        lcd_putsnAtt(0*FW, 7*FH, g_eeGeneral.ownerName ,sizeof(g_eeGeneral.ownerName),BSS);
 
         refreshDiplay();
         lcdSetRefVolt(g_eeGeneral.contrast);
@@ -700,7 +710,7 @@ uint8_t Timer2_running = 0 ;
 uint8_t Timer2_pre = 0 ;
 uint16_t Timer2 = 0 ;
 
-void reset_timer2()
+void resetTimer2()
 {
   Timer2_pre = 0 ;
   Timer2 = 0 ;
@@ -712,7 +722,7 @@ void perMain()
   tick10ms = (get_tmr10ms() != lastTMR);
   lastTMR = get_tmr10ms();
 
-  perOut(g_chans512, false);
+  perOut(g_chans512, 0);
   if(!tick10ms) return; //make sure the rest happen only every 10ms.
 
   if ( Timer2_running )
@@ -1157,7 +1167,7 @@ int main(void)
 
   setupPulses();
   wdt_enable(WDTO_500MS);
-  perOut(g_chans512, false);
+  perOut(g_chans512, 0);
 
   pushMenu(menuProcModelSelect);
   popMenu(true);  // this is so the first instance of [MENU LONG] doesn't freak out!
