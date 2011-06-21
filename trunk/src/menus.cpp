@@ -2747,15 +2747,14 @@ void menuProc0(uint8_t event)
         break;
       case e_outputBars:
 #define WBAR2 (50/2)
-#define GPERC2(x) GPERC(x/2)
         x0       = i<4 ? 128/4+2 : 128*3/4-2;
         y0       = 38+(i%4)*5;
-        int8_t l = (abs(GPERC2(val))+WBAR2/2) * WBAR2 / 512;
+        int8_t l = (abs(val) * WBAR2 + 512) / 1024;
         if(l>WBAR2)  l =  WBAR2;  // prevent bars from going over the end - comment for debugging
 
         lcd_hlineStip(x0-WBAR2,y0,WBAR2*2+1,0x55);
         lcd_vline(x0,y0-2,5);
-        if(g_chans512[i]>0){
+        if(val>0){
           x0+=1;
         }else{
           x0-=l;
