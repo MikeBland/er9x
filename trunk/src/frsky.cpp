@@ -260,8 +260,8 @@ void FRSKY10mspoll(void)
   // Now send a packet
   {
     FrskyAlarmSendState -= 1 ;
-    uint8_t channel = FrskyAlarmSendState / 2;
-    uint8_t alarm = FrskyAlarmSendState % 2;
+    uint8_t channel = 1 - (FrskyAlarmSendState / 2);
+    uint8_t alarm = 1 - (FrskyAlarmSendState % 2);
     
     uint8_t i = 0;
     frskyTxBuffer[i++] = START_STOP; // Start of packet

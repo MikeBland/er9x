@@ -556,9 +556,6 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
   int16_t newval = val;
   uint8_t kpl=KEY_RIGHT, kmi=KEY_LEFT, kother = -1;
 
-  if(i_flags&_FL_VERT){
-    kpl=KEY_UP; kmi=KEY_DOWN;
-  }
   if(event & _MSK_KEY_DBL){
     uint8_t hlp=kpl;
     kpl=kmi;
@@ -625,19 +622,9 @@ int8_t checkIncDec_hm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max)
   return checkIncDec(event,i_val,i_min,i_max,EE_MODEL);
 }
 
-int8_t checkIncDec_vm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max)
-{
-  return checkIncDec(event,i_val,i_min,i_max,_FL_VERT|EE_MODEL);
-}
-
 int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max)
 {
   return checkIncDec(event,i_val,i_min,i_max,EE_GENERAL);
-}
-
-int8_t checkIncDec_vg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max)
-{
-  return checkIncDec(event,i_val,i_min,i_max,_FL_VERT|EE_GENERAL);
 }
 
 MenuFuncP lastPopMenu()

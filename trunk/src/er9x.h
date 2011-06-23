@@ -423,7 +423,6 @@ void checkQuickSelect(); // Quick model select on startup
 
 #define EE_GENERAL 1
 #define EE_MODEL   2
-#define _FL_VERT      8
 
 extern bool    checkIncDec_Ret;//global helper vars
 extern uint8_t s_editMode;     //global editmode
@@ -442,16 +441,12 @@ int8_t checkIncDec(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max, uint
 int8_t checkIncDec_hm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 int8_t checkIncDec_vm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
-int8_t checkIncDec_vg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 
 #define CHECK_INCDEC_H_GENVAR( event, var, min, max)     \
   var = checkIncDec_hg(event,var,min,max)
 
 #define CHECK_INCDEC_H_MODELVAR( event, var, min, max)     \
   var = checkIncDec_hm(event,var,min,max)
-
-#define CHECK_INCDEC_V_MODELVAR( event, var, min, max)     \
-  var = checkIncDec_vm(event,var,min,max)
 
 #define STORE_MODELVARS   eeDirty(EE_MODEL)
 #define STORE_GENERALVARS eeDirty(EE_GENERAL)

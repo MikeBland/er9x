@@ -488,7 +488,7 @@ void menuProcLimits(uint8_t event)
         case 0:
           lcd_outdezAtt(  8*FW, y,  ld->offset, attr|PREC1);
           if(attr && (s_editMode || p1valdiff)) {
-            ld->offset = checkIncDec16(event, ld->offset, -1000, 1000, 0);
+            ld->offset = checkIncDec16(event, ld->offset, -1000, 1000, EE_MODEL);
           }
           break;
         case 1:
