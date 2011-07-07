@@ -32,11 +32,13 @@
 #define MDVERS_r85  5
 #define MDVERS_r261 6
 #define MDVERS_r352 7
-#define MDVERS      8
+#define MDVERS_r365 8
+#define MDVERS      9
 
-
-#define GENERAL_MYVER_r261 3
-#define GENERAL_MYVER      4
+//OBSOLETE - USE ONLY MDVERS NOW
+//#define GENERAL_MYVER_r261 3
+//#define GENERAL_MYVER_r365 4
+//#define GENERAL_MYVER      5
 
 
 // eeprom ver <9 => mdvers == 1
