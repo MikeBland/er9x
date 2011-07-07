@@ -363,13 +363,11 @@ void checkTHR()
 
   int thrchn=(2-(g_eeGeneral.stickMode&1));//stickMode=0123 -> thr=2121
 
-  int16_t lowLim = THRCHK_DEADBAND + g_eeGeneral.calibMid[thrchn] - g_eeGeneral.calibSpanNeg[thrchn] +
-    g_eeGeneral.calibSpanNeg[thrchn]/8;
+  int16_t lowLim = THRCHK_DEADBAND + g_eeGeneral.calibMid[thrchn] - g_eeGeneral.calibSpanNeg[thrchn];// + g_eeGeneral.calibSpanNeg[thrchn]/8;
 
   getADC_single();   // if thr is down - do not display warning at all
   int16_t v      = anaIn(thrchn);
-  if((v<=lowLim) ||
-     (keyDown()))
+  if((v<=lowLim) || (keyDown()))
   {
       return;
   }
@@ -382,8 +380,7 @@ void checkTHR()
   {
       getADC_single();
       int16_t v      = anaIn(thrchn);
-      if((v<=lowLim) ||
-         (keyDown()))
+      if((v<=lowLim) || (keyDown()))
       {
           return;
       }
