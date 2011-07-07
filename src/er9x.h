@@ -478,7 +478,7 @@ void eeCheck(bool immediately=false);
 void eeReadAll();
 void eeLoadModelName(uint8_t id,char*buf,uint8_t len);
 //uint16_t eeFileSize(uint8_t id);
-void eeLoadModel(uint8_t id, uint8_t doChecks=true);
+void eeLoadModel(uint8_t id);
 //void eeSaveModel(uint8_t id);
 bool eeDuplicateModel(uint8_t id);
 bool eeModelExists(uint8_t id);
@@ -647,6 +647,10 @@ extern const char stamp4[];
 
 extern uint8_t  beepAgain;
 extern uint16_t g_LightOffCounter;
+
+
+#define sysFLAG_OLD_EEPROM (0x01)
+extern uint8_t sysFlags;
 
 /// Erzeugt einen beep der laenge b
 inline void _beep(uint8_t b) {

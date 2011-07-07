@@ -292,21 +292,20 @@ void lcd_hline(uint8_t x,uint8_t y, int8_t w)
 {
   lcd_hlineStip(x,y,w,0xff);
 }
+
 void lcd_vline(uint8_t x,uint8_t y, int8_t h)
 {
-  //while(h){
-  //    lcd_plot(x,y++);
-  //    h--;
-  //  }
-  uint8_t *p  = &displayBuf[ y / 8 * DISPLAY_W + x ];
-  uint8_t *q  = &displayBuf[ (y+h) / 8 * DISPLAY_W + x ];
-  *p ^= ~(BITMASK(y%8)-1);
-  while(p<q){
-    p  += DISPLAY_W;
-    *p ^= 0xff;
-  }
-  *p ^= ~(BITMASK((y+h)%8)-1);
+//    while ((y+h)>=DISPLAY_H) h--;
+    uint8_t *p  = &displayBuf[ y / 8 * DISPLAY_W + x ];
+    uint8_t *q  = &displayBuf[ (y+h) / 8 * DISPLAY_W + x ];
+    *p ^= ~(BITMASK(y%8)-1);
+    while(p<q){
+        p  += DISPLAY_W;
+        *p ^= 0xff;
+    }
+    *p ^= ~(BITMASK((y+h)%8)-1);
 }
+
 
 void lcdSendCtl(uint8_t val)
 {

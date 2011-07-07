@@ -36,7 +36,7 @@ EFile theFile2; //sometimes we need two files
 void generalDefault()
 {
   memset(&g_eeGeneral,0,sizeof(g_eeGeneral));
-  g_eeGeneral.myVers   =  GENERAL_MYVER;
+  g_eeGeneral.myVers   =  MDVERS;
   g_eeGeneral.currModel=  0;
   g_eeGeneral.contrast = 25;
   g_eeGeneral.vBatWarn = 90;
@@ -64,7 +64,10 @@ bool eeLoadGeneral()
       g_eeGeneral.ownerName[i] = idx2char(idx);
   }
 
-  g_eeGeneral.myVers   =  GENERAL_MYVER; // update myvers
+  if(g_eeGeneral.myVers<MDVERS)
+      sysFlags |= sysFLAG_OLD_EEPROM; // if old EEPROM - Raise flag
+
+  g_eeGeneral.myVers   =  MDVERS; // update myvers
 
   uint16_t sum=0;
   if(sz>(sizeof(EEGeneral)-20)) for(uint8_t i=0; i<12;i++) sum+=g_eeGeneral.calibMid[i];
@@ -109,23 +112,10 @@ bool eeModelExists(uint8_t id)
     return EFile::exists(FILE_MODEL(id));
 }
 
-void eeLoadModel(uint8_t id, uint8_t check_thrdoChecks)
+void eeLoadModel(uint8_t id)
 {
     if(id<MAX_MODELS)
     {
-//        if(check_thrdoChecks)
-//        {
-//            cli();
-//            PULSEGEN_OFF;
-//            sei();
-//            wdt_disable();
-//            checkTHR();
-//            checkSwitches();
-//            wdt_enable(WDTO_500MS);
-//            cli();
-//            PULSEGEN_ON;
-//            sei();
-//        }
         theFile.openRd(FILE_MODEL(id));
         memset(&g_model, 0, sizeof(ModelData));
         uint16_t sz = theFile.readRlc((uint8_t*)&g_model, sizeof(g_model));
@@ -203,7 +193,7 @@ void eeReadAll()
     //alert(PSTR("modwrite ok"));
 
   }
-  eeLoadModel(g_eeGeneral.currModel, false);
+  eeLoadModel(g_eeGeneral.currModel);
 }
 
 

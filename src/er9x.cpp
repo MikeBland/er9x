@@ -30,6 +30,7 @@ EEGeneral  g_eeGeneral;
 ModelData  g_model;
 
 bool warble = false;
+uint8_t sysFlags = 0;
 
 const prog_char APM modi12x3[]=
   "RUD ELE THR AIL "
@@ -400,6 +401,15 @@ void checkAlarm() // added by Gohst
   if(!g_eeGeneral.beeperVal) alert(PSTR("Alarms Disabled"));
 }
 
+void checkWarnings()
+{
+    if(sysFlags && sysFLAG_OLD_EEPROM)
+    {
+        alert(PSTR(" Old Version EEPROM   CHECK SETTINGS/CALIB")); //will update on next save
+        sysFlags &= ~(sysFLAG_OLD_EEPROM); //clear flag
+    }
+}
+
 void checkSwitches()
 {
   if(g_eeGeneral.disableSwitchWarning) return; // if warning is on
@@ -444,7 +454,7 @@ void checkQuickSelect()
     if(j<6) {
         if(!eeModelExists(j)) return;
 
-        eeLoadModel(g_eeGeneral.currModel = j, false);
+        eeLoadModel(g_eeGeneral.currModel = j);
         eeDirty(EE_GENERAL);
 
         lcd_clear();
@@ -705,90 +715,91 @@ void resetTimer2()
 
 void perMain()
 {
-  static uint16_t lastTMR;
-  tick10ms = (get_tmr10ms() != lastTMR);
-  lastTMR = get_tmr10ms();
+    static uint16_t lastTMR;
+    tick10ms = (get_tmr10ms() != lastTMR);
+    lastTMR = get_tmr10ms();
 
-  perOut(g_chans512, 0);
-  if(!tick10ms) return; //make sure the rest happen only every 10ms.
+    perOut(g_chans512, 0);
+    if(!tick10ms) return; //make sure the rest happen only every 10ms.
 
-  if ( Timer2_running )
-  {
-    if ( (Timer2_pre += 1 ) >= 100 )
+    if ( Timer2_running )
     {
-      Timer2_pre -= 100 ;
-      Timer2 += 1 ;		
+        if ( (Timer2_pre += 1 ) >= 100 )
+        {
+            Timer2_pre -= 100 ;
+            Timer2 += 1 ;
+        }
     }
-  }
 
-  eeCheck();
+    eeCheck();
 
-  lcd_clear();
-  uint8_t evt=getEvent();
-  evt = checkTrim(evt);
+    lcd_clear();
+    uint8_t evt=getEvent();
+    evt = checkTrim(evt);
 
-  if(g_LightOffCounter) g_LightOffCounter--;
-  if(evt) g_LightOffCounter = g_eeGeneral.lightAutoOff*500; // on keypress turn the light on 5*100
+    if(g_LightOffCounter) g_LightOffCounter--;
+    if(evt) g_LightOffCounter = g_eeGeneral.lightAutoOff*500; // on keypress turn the light on 5*100
 
-  if(getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
-      BACKLIGHT_ON;
-  else
-      BACKLIGHT_OFF;
+    if(getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
+        BACKLIGHT_ON;
+    else
+        BACKLIGHT_OFF;
 
 
-  static int16_t p1valprev;
-  p1valdiff = (p1val-calibratedStick[6])/32;
-  if(p1valdiff) {
-      p1valdiff = (p1valprev-calibratedStick[6])/2;
-      p1val = calibratedStick[6];
-  }
-  p1valprev = calibratedStick[6];
+    static int16_t p1valprev;
+    p1valdiff = (p1val-calibratedStick[6])/32;
+    if(p1valdiff) {
+        p1valdiff = (p1valprev-calibratedStick[6])/2;
+        p1val = calibratedStick[6];
+    }
+    p1valprev = calibratedStick[6];
 
-  g_menuStack[g_menuStackPtr](evt);
-  refreshDiplay();
-  if(checkSlaveMode()) {
-    PORTG &= ~(1<<OUT_G_SIM_CTL); // 0=ppm out
-  }else{
-    PORTG |=  (1<<OUT_G_SIM_CTL); // 1=ppm-in
-  }
+    g_menuStack[g_menuStackPtr](evt);
+    refreshDiplay();
+    if(checkSlaveMode()) {
+        PORTG &= ~(1<<OUT_G_SIM_CTL); // 0=ppm out
+    }else{
+        PORTG |=  (1<<OUT_G_SIM_CTL); // 1=ppm-in
+    }
 
-  switch( get_tmr10ms() & 0x1f ) { //alle 10ms*32
+    switch( get_tmr10ms() & 0x1f ) { //alle 10ms*32
 
     case 2:
-      {
+    {
         //check v-bat
-        //14.2246465682983   -> 10.7 V  ((2.65+5.07)/2.65*5/1024)*1000  mV
-        //0.142246465682983   -> 10.7 V  ((2.65+5.07)/2.65*5/1024)*10    1/10 V
-        //0.137176291331963    k=((2.65+5.07)/2.65*5/1024)*10*9.74/10.1
-        // g_vbat100mV=g_anaIns[7]*35/256; //34/239;
-        // g_vbat100mV += g_vbat100mV*g_eeGeneral.vBatCalib/256;
-        //g_vbat100mV = (g_anaIns[7]*35+g_anaIns[7]/4*g_eeGeneral.vBatCalib) / 256;
+//        Calculation By Mike Blandford
+//        Resistor divide on battery voltage is 5K1 and 2K7 giving a fraction of 2.7/7.8
+//        If battery voltage = 10V then A2D voltage = 3.462V
+//        11 bit A2D count is 1417 (3.462/5*2048).
+//        1417*18/256 = 99 (actually 99.6) to represent 9.9 volts.
+//        Erring on the side of low is probably best.
+
         uint16_t ab = anaIn(7);
-        g_vbat100mV = (ab*35 + ab / 4 * g_eeGeneral.vBatCalib) / 512;
+        g_vbat100mV = ab*35/512 + g_eeGeneral.vBatCalib;
 
         static uint8_t s_batCheck;
         s_batCheck+=32;
         if((s_batCheck==0) && (g_vbat100mV<g_eeGeneral.vBatWarn) && (g_vbat100mV>49)){
-          beepErr();
-          if (g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
+            beepErr();
+            if (g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
         }
-      }
-      break;
+    }
+        break;
     case 3:
-      {
+    {
         static prog_uint8_t APM beepTab[]= {
-       // 0   1   2   3    4
-          0,  0,  0,  0,   0, //quiet
-          0,  1,  8, 30, 100, //silent
-          1,  1,  8, 30, 100, //normal
-          1,  1, 15, 50, 150, //for motor
-         10, 10, 30, 50, 150, //for motor
+            // 0   1   2   3    4
+            0,  0,  0,  0,   0, //quiet
+            0,  1,  8, 30, 100, //silent
+            1,  1,  8, 30, 100, //normal
+            1,  1, 15, 50, 150, //for motor
+            10, 10, 30, 50, 150, //for motor
         };
         memcpy_P(g_beepVal,beepTab+5*g_eeGeneral.beeperVal,5);
-          //g_beepVal = BEEP_VAL;
-      }
-      break;
-  }
+        //g_beepVal = BEEP_VAL;
+    }
+        break;
+    }
 
 }
 
@@ -1085,7 +1096,7 @@ int main(void)
   DDRC = 0x3e;  PORTC = 0xc1; //pullups nc
   DDRD = 0x00;  PORTD = 0xff; //all D inputs pullups keys
   DDRE = 0x08;  PORTE = 0xff-(1<<OUT_E_BUZZER); //pullups + buzzer 0
-  DDRF = 0x00;  PORTF = 0xff; //all F inputs anain
+  DDRF = 0x00;  PORTF = 0x00; //all F inputs anain - pullups are off
   DDRG = 0x10;  PORTG = 0xff; //pullups + SIM_CTL=1 = phonejack = ppm_in
   lcd_init();
 
@@ -1150,6 +1161,7 @@ int main(void)
   checkTHR();
   checkSwitches();
   checkAlarm();
+  checkWarnings();
   clearKeyEvents(); //make sure no keys are down before proceeding
 
   setupPulses();
