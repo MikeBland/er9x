@@ -636,6 +636,8 @@ extern int16_t            g_ppmIns[8];
 extern int16_t            g_chans512[NUM_CHNOUT];
 extern volatile uint8_t   tick10ms;
 
+extern int16_t VccV ;
+
 #include "lcd.h"
 extern const char stamp1[];
 extern const char stamp2[];

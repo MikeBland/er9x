@@ -108,7 +108,8 @@ typedef struct t_EEGeneral {
   // ver4 and up :=>
 
   FrSkyRSSIAlarm frskyRssiAlarms[2];
-  uint8_t   res[4];
+  int8_t   vBgcal;
+  uint8_t   res[3];
   char      ownerName[10];
 } __attribute__((packed)) EEGeneral;
 
