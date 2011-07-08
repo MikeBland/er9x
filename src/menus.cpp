@@ -1944,15 +1944,17 @@ void menuProcDiagAna(uint8_t event)
   SIMPLE_MENU("ANA", menuTabDiag, e_Ana, 2);
 
   int8_t  sub    = mstate2.m_posVert ;
-
   for(uint8_t i=0; i<8; i++)
   {
     uint8_t y=i*FH;
     lcd_putsn_P( 4*FW, y,PSTR("A1A2A3A4A5A6A7A8")+2*i,2);
-    lcd_outhex4( 8*FW, y,anaIn(i));
-    if(i<7)  lcd_outdez(17*FW, y, (int32_t)calibratedStick[i]*100/1024);
-    if(i==7) putsVBat(17*FW,y,(sub==1 ? INVERS : 0)|PREC1);
+    lcd_outhex4( 7*FW, y,anaIn(i));
+    if(i<7)  lcd_outdez(15*FW, y, (int32_t)calibratedStick[i]*100/1024);
+    if(i==7) putsVBat(15*FW,y,(sub==1 ? INVERS : 0)|PREC1);
   }
+  lcd_putsn_P( 18*FW, 5*FH,PSTR("BG"),2) ;
+  lcd_outdezAtt(20*FW, 6*FH, VccV, PREC2);
+  lcd_outdezAtt(20*FW, 7*FH, anaIn(7)*35/512, PREC1);
   if(sub==1) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatCalib, -127, 127);
 }
 
@@ -2943,7 +2945,7 @@ void perOut(int16_t *chanOut, uint8_t att)
 
   if(tick10ms) {
     if(s_noHi) s_noHi--;
-    if(g_eeGeneral.inactivityTimer && (g_vbat100mV>49)) {
+    if( (g_eeGeneral.inactivityTimer + 10) && (g_vbat100mV>49)) {
       inacCounter++;
       uint16_t tsum = 0;
       for(uint8_t i=0;i<4;i++) tsum += anas[i]/128;//div 8 -> reduce sensitivity

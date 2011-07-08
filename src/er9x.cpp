@@ -771,8 +771,28 @@ void perMain()
 //        1417*18/256 = 99 (actually 99.6) to represent 9.9 volts.
 //        Erring on the side of low is probably best.
 
-        uint16_t ab = anaIn(7);
-        g_vbat100mV = ab*35/512 + g_eeGeneral.vBatCalib;
+        int32_t ab = anaIn(7);
+        g_vbat100mV += (ab*35+ab*g_eeGeneral.vBatCalib/4)/512 * VccV / 512 + 1;
+        g_vbat100mV >>= 1 ;  // Filter it a bit => more stable display
+        if ( g_vbat100mV > 70)
+        {
+          int8_t difference ;
+          static uint8_t count ;
+          if ( count == 0 )
+          { // auto-calibrate bandgap
+            if ( abs( g_eeGeneral.vBgcal) < 31 )
+            {
+              difference = VccV - 512 ;
+              g_eeGeneral.vBgcal -= sgn(difference) ;
+            }
+            if ( abs( g_eeGeneral.vBgcal) > 31 )
+            {
+              g_eeGeneral.vBgcal = 0 ;  // Had a bad value in it
+            }
+            count = 31 ;
+          }
+          count -= 1 ;
+        }
 
         static uint8_t s_batCheck;
         s_batCheck+=32;
@@ -878,6 +898,8 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
 //};
 
 //#define STARTADCONV (ADCSRA  = (1<<ADEN) | (1<<ADPS0) | (1<<ADPS1) | (1<<ADPS2) | (1<<ADSC) | (1 << ADIE))
+int16_t VccV ;
+
 static uint16_t s_anaFilt[8];
 uint16_t anaIn(uint8_t chan)
 {
@@ -955,6 +977,22 @@ void getADC_single()
       if(IS_THROTTLE(adc_input) && g_eeGeneral.throttleReversed)
           s_anaFilt[adc_input] = 2048 - s_anaFilt[adc_input];
     }
+}
+
+void getADC_bandgap()
+{
+  ADMUX=0x1E|ADC_VREF_TYPE;
+  // Start the AD conversion
+  ADCSRA|=0x40;
+  // Wait for the AD conversion to complete
+  while ((ADCSRA & 0x10)==0);
+  ADCSRA|=0x10;
+  // Do it twice, first conversion may be wrong
+  ADCSRA|=0x40;
+  // Wait for the AD conversion to complete
+  while ((ADCSRA & 0x10)==0);
+  ADCSRA|=0x10;
+  VccV = (int16_t)(62564 / ADCW * 2) + g_eeGeneral.vBgcal ;
 }
 
 getADCp getADC[3] = {
@@ -1181,6 +1219,7 @@ int main(void)
       //uint16_t old10ms=get_tmr10ms();
       uint16_t t0 = getTmr16KHz();
       getADC[g_eeGeneral.filterInput]();
+      getADC_bandgap() ;
       perMain();
       //while(get_tmr10ms()==old10ms) sleep_mode();
       if(heartbeat == 0x3)
