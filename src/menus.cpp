@@ -1953,7 +1953,7 @@ void menuProcDiagAna(uint8_t event)
     if(i==7) putsVBat(15*FW,y,(sub==1 ? INVERS : 0)|PREC1);
   }
   lcd_putsn_P( 18*FW, 5*FH,PSTR("BG"),2) ;
-  lcd_outdezAtt(20*FW, 6*FH, VccV, PREC2);
+  lcd_outdezAtt(20*FW, 6*FH, BandGap, 0);
   lcd_outdezAtt(20*FW, 7*FH, anaIn(7)*35/512, PREC1);
   if(sub==1) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatCalib, -127, 127);
 }
