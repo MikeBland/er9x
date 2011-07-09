@@ -771,28 +771,10 @@ void perMain()
 //        1417*18/256 = 99 (actually 99.6) to represent 9.9 volts.
 //        Erring on the side of low is probably best.
 
-        int32_t ab = anaIn(7);
-        g_vbat100mV += (ab*35+ab*g_eeGeneral.vBatCalib/4)/512 * VccV / 512 + 1;
-        g_vbat100mV >>= 1 ;  // Filter it a bit => more stable display
-        if ( g_vbat100mV > 70)
-        {
-          int8_t difference ;
-          static uint8_t count ;
-          if ( count == 0 )
-          { // auto-calibrate bandgap
-            if ( abs( g_eeGeneral.vBgcal) < 31 )
-            {
-              difference = VccV - 512 ;
-              g_eeGeneral.vBgcal -= sgn(difference) ;
-            }
-            if ( abs( g_eeGeneral.vBgcal) > 31 )
-            {
-              g_eeGeneral.vBgcal = 0 ;  // Had a bad value in it
-            }
-            count = 31 ;
-          }
-          count -= 1 ;
-        }
+        int16_t ab = anaIn(7);
+        ab = ab*16 + (ab*(12+g_eeGeneral.vBatCalib))/8 ;
+        ab /= BandGap ;
+        g_vbat100mV = (ab + g_vbat100mV + 1) >> 1 ;  // Filter it a bit => more stable display
 
         static uint8_t s_batCheck;
         s_batCheck+=32;
@@ -898,7 +880,7 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
 //};
 
 //#define STARTADCONV (ADCSRA  = (1<<ADEN) | (1<<ADPS0) | (1<<ADPS1) | (1<<ADPS2) | (1<<ADSC) | (1 << ADIE))
-int16_t VccV ;
+int16_t BandGap ;
 
 static uint16_t s_anaFilt[8];
 uint16_t anaIn(uint8_t chan)
@@ -992,7 +974,9 @@ void getADC_bandgap()
   // Wait for the AD conversion to complete
   while ((ADCSRA & 0x10)==0);
   ADCSRA|=0x10;
-  VccV = (int16_t)(62564 / ADCW * 2) + g_eeGeneral.vBgcal ;
+  BandGap = ADCW;
+  if(BandGap<256)
+      BandGap = 256;
 }
 
 getADCp getADC[3] = {
