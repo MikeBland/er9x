@@ -827,7 +827,7 @@ void insertMix(uint8_t idx)
 
 void menuProcMixOne(uint8_t event)
 {
-    SIMPLE_SUBMENU_NOTITLE(13);
+    SIMPLE_SUBMENU_NOTITLE(14);
     uint8_t x = TITLEP(s_currMixInsMode ? PSTR("INSERT MIX ") : PSTR("EDIT MIX "));
 
     MixData *md2 = mixaddress( s_currMixIdx ) ;
@@ -915,6 +915,7 @@ void menuProcMixOne(uint8_t event)
             if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->speedUp, 0,15); //!! bitfield
             break;
         case 13:
+            lcd_putsAtt(  2*FW,y,PSTR("DELETE MIX [MENU]"),attr);
             if(attr && event==EVT_KEY_LONG(KEY_MENU)){
                 killEvents(event);
                 deleteMix(s_currMixIdx);
