@@ -511,6 +511,14 @@ void alert(const prog_char * s, bool defaults)
     }
 }
 
+int8_t *TrimPtr[4] = 
+{
+  &g_model.trim[0],
+  &g_model.trim[1],
+  &g_model.trim[2],
+  &g_model.trim[3]
+} ;
+
 uint8_t checkTrim(uint8_t event)
 {
   int8_t  k = (event & EVT_KEY_MASK) - TRM_BASE;
@@ -521,28 +529,29 @@ uint8_t checkTrim(uint8_t event)
   {
     //LH_DWN LH_UP LV_DWN LV_UP RV_DWN RV_UP RH_DWN RH_UP
     uint8_t idx = k/2;
-    int8_t  v = (s==0) ? (abs(g_model.trim[idx])/4)+1 : s;
+    int8_t tm = *TrimPtr[idx] ;
+    int8_t  v = (s==0) ? (abs(tm)/4)+1 : s;
     bool thrChan = ((2-(g_eeGeneral.stickMode&1)) == idx);
     bool thro = (thrChan && (g_model.thrTrim));
     if(thro) v = 4; // if throttle trim and trim trottle then step=4
     if(thrChan && g_eeGeneral.throttleReversed) v = -v;  // throttle reversed = trim reversed
-    int16_t x = (k&1) ? g_model.trim[idx] + v : g_model.trim[idx] - v;   // positive = k&1
+    int16_t x = (k&1) ? tm + v : tm - v;   // positive = k&1
 
-    if(((x==0)  ||  ((x>=0) != (g_model.trim[idx]>=0))) && (!thro) && (g_model.trim[idx]!=0)){
-      g_model.trim[idx]=0;
+    if(((x==0)  ||  ((x>=0) != (tm>=0))) && (!thro) && (tm!=0)){
+      *TrimPtr[idx]=0;
       killEvents(event);
       warble = false;
       beepWarn();
     }
     else if(x>-125 && x<125){
-      g_model.trim[idx] = (int8_t)x;
+      *TrimPtr[idx] = (int8_t)x;
       STORE_MODELVARS;
       if(event & _MSK_KEY_REPT) warble = true;
       beepWarn1();//beepKey();
     }
     else
     {
-      g_model.trim[idx] = (x>0) ? 125 : -125;
+      *TrimPtr[idx] = (x>0) ? 125 : -125;
       STORE_MODELVARS;
       warble = false;
       beepWarn();
@@ -772,7 +781,7 @@ void perMain()
 //        Erring on the side of low is probably best.
 
         int16_t ab = anaIn(7);
-        ab = ab*16 + (ab*(12+g_eeGeneral.vBatCalib))/8 ;
+        ab = ab*16 + ab/8*(12+g_eeGeneral.vBatCalib) ;
         ab /= BandGap ;
         g_vbat100mV = (ab + g_vbat100mV + 1) >> 1 ;  // Filter it a bit => more stable display
 
