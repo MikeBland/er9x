@@ -436,6 +436,7 @@ void setStickCenter() // copy state of 3 primary to subtrim
           g_model.limitData[i].offset = max(min(v,1000),-1000); // make sure the offset doesn't go haywire
       }
 
+      // For this operation, keep using the 'MASTER' trims
       for(uint8_t i=0; i<4; i++)
         if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
       STORE_MODELVARS;
@@ -826,98 +827,103 @@ void insertMix(uint8_t idx)
 
 void menuProcMixOne(uint8_t event)
 {
-  SIMPLE_SUBMENU_NOTITLE(13);
-  uint8_t x = TITLEP(s_currMixInsMode ? PSTR("INSERT MIX ") : PSTR("EDIT MIX "));
-  
-  MixData *md2 = mixaddress( s_currMixIdx ) ;
-  putsChn(x+1*FW,0,md2->destCh,0);
-  int8_t  sub    = mstate2.m_posVert;
+    SIMPLE_SUBMENU_NOTITLE(13);
+    uint8_t x = TITLEP(s_currMixInsMode ? PSTR("INSERT MIX ") : PSTR("EDIT MIX "));
 
-  evalOffset(sub, 6);
+    MixData *md2 = mixaddress( s_currMixIdx ) ;
+    putsChn(x+1*FW,0,md2->destCh,0);
+    int8_t  sub    = mstate2.m_posVert;
 
-  for(uint8_t k=0; k<7; k++)
-  {
-    uint8_t y = (k+1) * FH;
-    uint8_t i = k + s_pgOfs;
-    uint8_t attr = sub==i ? INVERS : 0;
-    switch(i){
-      case 0:
-        lcd_puts_P(  2*FW,y,PSTR("Source"));
-        putsChnRaw(   FW*10,y,md2->srcRaw,attr);
-        if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->srcRaw, 1,NUM_XCHNRAW);
-        break;
-      case 1:
-        lcd_puts_P(  2*FW,y,PSTR("Weight"));
-        lcd_outdezAtt(FW*10,y,md2->weight,attr|LEFT);
-        if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->weight, -125,125);
-        break;
-      case 2:
-        lcd_puts_P(  2*FW,y,PSTR("Offset"));
-        lcd_outdezAtt(FW*10,y,md2->sOffset,attr|LEFT);
-        if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->sOffset, -125,125);
-        break;
-      case 3:
-        lcd_puts_P(  2*FW,y,PSTR("Trim"));
-        lcd_putsnAtt(FW*10,y, PSTR("ON OFF")+3*md2->carryTrim,3,attr);  //default is 0=ON
-        if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->carryTrim, 0,1);
-        break;
-      case 4:
-        lcd_putsAtt(  2*FW,y,PSTR("Curves"),0);
-        lcd_putsnAtt( FW*10,y,PSTR(CURV_STR)+md2->curve*3,3,attr);
-        if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->curve, 0,MAX_CURVE5+MAX_CURVE9+7-1);
-        if(attr && md2->curve>=CURVE_BASE && event==EVT_KEY_FIRST(KEY_MENU)){
-          s_curveChan = md2->curve-CURVE_BASE;
-          pushMenu(menuProcCurveOne);
+    evalOffset(sub, 6);
+
+    for(uint8_t k=0; k<7; k++)
+    {
+        uint8_t y = (k+1) * FH;
+        uint8_t i = k + s_pgOfs;
+        uint8_t attr = sub==i ? INVERS : 0;
+        switch(i){
+        case 0:
+            lcd_puts_P(  2*FW,y,PSTR("Source"));
+            putsChnRaw(   FW*14,y,md2->srcRaw,attr);
+            if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->srcRaw, 1,NUM_XCHNRAW);
+            break;
+        case 1:
+            lcd_puts_P(  2*FW,y,PSTR("Weight"));
+            lcd_outdezAtt(FW*14,y,md2->weight,attr|LEFT);
+            if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->weight, -125,125);
+            break;
+        case 2:
+            lcd_puts_P(  2*FW,y,md2->enableFmTrim ? PSTR("FmTrimVal") : PSTR("Offset"));
+            lcd_outdezAtt(FW*14,y,md2->sOffset,attr|LEFT);
+            if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->sOffset, -125,125);
+            break;
+        case 3:
+            lcd_puts_P(  2*FW,y,PSTR("FlModetrim"));
+            lcd_putsnAtt(FW*14,y, PSTR("OFFON ")+3*md2->enableFmTrim,3,attr);  //default is 0=ON
+            if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->enableFmTrim, 0,1);
+            break;
+        case 4:
+            lcd_puts_P(  2*FW,y,PSTR("Trim"));
+            lcd_putsnAtt(FW*14,y, PSTR("ON OFF")+3*md2->carryTrim,3,attr);  //default is 0=ON
+            if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->carryTrim, 0,1);
+            break;
+        case 5:
+            lcd_putsAtt(  2*FW,y,PSTR("Curves"),0);
+            lcd_putsnAtt( FW*14,y,PSTR(CURV_STR)+md2->curve*3,3,attr);
+            if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->curve, 0,MAX_CURVE5+MAX_CURVE9+7-1);
+            if(attr && md2->curve>=CURVE_BASE && event==EVT_KEY_FIRST(KEY_MENU)){
+                s_curveChan = md2->curve-CURVE_BASE;
+                pushMenu(menuProcCurveOne);
+            }
+            break;
+        case 6:
+            lcd_puts_P(  2*FW,y,PSTR("Switch"));
+            putsDrSwitches(13*FW,  y,md2->swtch,attr);
+            if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->swtch, -MAX_DRSWITCH, MAX_DRSWITCH);
+            break;
+        case 7:
+            lcd_puts_P(  2*FW,y,PSTR("Warning"));
+            if(md2->mixWarn)
+                lcd_outdezAtt(FW*14,y,md2->mixWarn,attr|LEFT);
+            else
+                lcd_putsAtt(  FW*14,y,PSTR("OFF"),attr);
+            if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->mixWarn, 0,3);
+            break;
+        case 8:
+            lcd_puts_P(  2*FW,y,PSTR("Multpx"));
+            lcd_putsnAtt(14*FW, y,PSTR("Add     MultiplyReplace ")+8*md2->mltpx,8,attr);
+            if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->mltpx, 0, 2); //!! bitfield
+            break;
+        case 9:
+            lcd_puts_P(  2*FW,y,PSTR("Delay Down"));
+            lcd_outdezAtt(FW*16,y,md2->delayDown,attr);
+            if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->delayDown, 0,15); //!! bitfield
+            break;
+        case 10:
+            lcd_puts_P(  2*FW,y,PSTR("Delay Up"));
+            lcd_outdezAtt(FW*16,y,md2->delayUp,attr);
+            if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->delayUp, 0,15); //!! bitfield
+            break;
+        case 11:
+            lcd_puts_P(  2*FW,y,PSTR("Slow  Down"));
+            lcd_outdezAtt(FW*16,y,md2->speedDown,attr);
+            if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->speedDown, 0,15); //!! bitfield
+            break;
+        case 12:
+            lcd_puts_P(  2*FW,y,PSTR("Slow  Up"));
+            lcd_outdezAtt(FW*16,y,md2->speedUp,attr);
+            if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->speedUp, 0,15); //!! bitfield
+            break;
+        case 13:
+            if(attr && event==EVT_KEY_LONG(KEY_MENU)){
+                killEvents(event);
+                deleteMix(s_currMixIdx);
+                beepWarn1();
+                popMenu();
+            }
+            break;
         }
-        break;
-      case 5:
-        lcd_puts_P(  2*FW,y,PSTR("Switch"));
-        putsDrSwitches(9*FW,  y,md2->swtch,attr);
-        if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->swtch, -MAX_DRSWITCH, MAX_DRSWITCH);
-        break;
-      case 6:
-        lcd_puts_P(  2*FW,y,PSTR("Warning"));
-        if(md2->mixWarn)
-          lcd_outdezAtt(FW*10,y,md2->mixWarn,attr|LEFT);
-        else
-          lcd_putsAtt(  FW*10,y,PSTR("OFF"),attr);
-        if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->mixWarn, 0,3);
-        break;
-      case 7:
-        lcd_puts_P(  2*FW,y,PSTR("Multpx"));
-        lcd_putsnAtt(10*FW, y,PSTR("Add     MultiplyReplace ")+8*md2->mltpx,8,attr);
-        if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->mltpx, 0, 2); //!! bitfield
-        break;
-      case 8:
-        lcd_puts_P(  2*FW,y,PSTR("Delay Down"));
-        lcd_outdezAtt(FW*16,y,md2->delayDown,attr);
-        if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->delayDown, 0,15); //!! bitfield
-        break;
-      case 9:
-        lcd_puts_P(  2*FW,y,PSTR("Delay Up"));
-        lcd_outdezAtt(FW*16,y,md2->delayUp,attr);
-        if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->delayUp, 0,15); //!! bitfield
-        break;
-      case 10:
-        lcd_puts_P(  2*FW,y,PSTR("Slow  Down"));
-        lcd_outdezAtt(FW*16,y,md2->speedDown,attr);
-        if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->speedDown, 0,15); //!! bitfield
-        break;
-      case 11:
-        lcd_puts_P(  2*FW,y,PSTR("Slow  Up"));
-        lcd_outdezAtt(FW*16,y,md2->speedUp,attr);
-        if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->speedUp, 0,15); //!! bitfield
-        break;
-      case 12:   lcd_putsAtt(  2*FW,y,PSTR("DELETE MIX [MENU]"),attr);
-        if(attr && event==EVT_KEY_LONG(KEY_MENU)){
-          killEvents(event);
-          deleteMix(s_currMixIdx);
-          beepWarn1();
-          popMenu();
-        }
-        break;
     }
-  }
 }
 
 struct MixTab{
@@ -1954,7 +1960,6 @@ void menuProcDiagAna(uint8_t event)
   }
   lcd_putsn_P( 18*FW, 5*FH,PSTR("BG"),2) ;
   lcd_outdezAtt(20*FW, 6*FH, BandGap, 0);
-  lcd_outdezAtt(20*FW, 7*FH, anaIn(7)*35/512, PREC1);
   if(sub==1) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatCalib, -127, 127);
 }
 
@@ -2567,6 +2572,8 @@ void resetTimer()
     s_timeCum16ThrP=0;
 }
 
+extern int8_t *TrimPtr[4] ;
+
 void menuProc0(uint8_t event)
 {
   static uint8_t trimSwLock;
@@ -2702,7 +2709,7 @@ void menuProc0(uint8_t event)
       static uint8_t vert[4] = {0,1,1,0};
       uint8_t xm,ym;
       xm=x[i];
-      int8_t val = max((int8_t)-(TL+1),min((int8_t)(TL+1),(int8_t)(g_model.trim[i]/4)));
+      int8_t val = max((int8_t)-(TL+1),min((int8_t)(TL+1),(int8_t)(*TrimPtr[i]/4)));
       if(vert[i]){
         ym=31;
         lcd_vline(xm,   ym-TL, TL*2);
@@ -3024,10 +3031,10 @@ void perOut(int16_t *chanOut, uint8_t att)
 
       //do trim -> throttle trim if applicable
       int32_t vv = 2*RESX;
-      if(IS_THROTTLE(i) && g_model.thrTrim) vv = ((int32_t)g_model.trim[i]+125)*(RESX-v)/(2*RESX);
+      if(IS_THROTTLE(i) && g_model.thrTrim) vv = ((int32_t)*TrimPtr[i]+125)*(RESX-v)/(2*RESX);
 
       //trim
-      trimA[i] = (vv==2*RESX) ? g_model.trim[i]*2 : (int16_t)vv*2; //    if throttle trim -> trim low end
+      trimA[i] = (vv==2*RESX) ? *TrimPtr[i]*2 : (int16_t)vv*2; //    if throttle trim -> trim low end
     }
     anas[i] = v; //set values for mixer
   }
@@ -3123,6 +3130,13 @@ void perOut(int16_t *chanOut, uint8_t att)
 
     uint8_t mixWarning = 0;
     //========== MIXER LOOP ===============
+  
+  // Set the trim pointers back to the master set
+  TrimPtr[0] = &g_model.trim[0] ;
+  TrimPtr[1] = &g_model.trim[1] ;
+  TrimPtr[2] = &g_model.trim[2] ;
+  TrimPtr[3] = &g_model.trim[3] ;
+
     for(uint8_t i=0;i<MAX_MIXERS;i++){
       MixData *md = mixaddress( i ) ;
 
@@ -3147,10 +3161,20 @@ void perOut(int16_t *chanOut, uint8_t att)
         v = anas[k]; //Switch is on. MAX=FULL=512 or value.
         if(k>=CHOUT_BASE && (k<i)) v = chans[k]; // if we've already calculated the value - take it instead // anas[i+CHOUT_BASE] = chans[i]
         if(md->mixWarn) mixWarning |= 1<<(md->mixWarn-1); // Mix warning
+        if ( md->enableFmTrim )
+        {
+          if ( md->srcRaw <= 4 )
+          {
+            TrimPtr[md->srcRaw-1] = &md->sOffset ;		// Use the value stored here for the trim
+          }
+        }
       }
 
       //========== INPUT OFFSET ===============
-      if(md->sOffset) v += calc100toRESX(md->sOffset);
+      if ( md->enableFmTrim == 0 )
+      {
+        if(md->sOffset) v += calc100toRESX(md->sOffset);
+      }
 
       //========== DELAY and PAUSE ===============
       if (md->speedUp || md->speedDown || md->delayUp || md->delayDown)  // there are delay values
