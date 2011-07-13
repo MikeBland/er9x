@@ -781,7 +781,7 @@ void perMain()
 //        Erring on the side of low is probably best.
 
         int16_t ab = anaIn(7);
-        ab = ab*16 + ab/8*(12+g_eeGeneral.vBatCalib) ;
+        ab = ab*16 + ab/8*(6+g_eeGeneral.vBatCalib) ;
         ab /= BandGap ;
         g_vbat100mV = (ab + g_vbat100mV + 1) >> 1 ;  // Filter it a bit => more stable display
 
@@ -984,8 +984,8 @@ void getADC_bandgap()
   while ((ADCSRA & 0x10)==0);
   ADCSRA|=0x10;
   BandGap = ADCW;
-  if(BandGap<256)
-      BandGap = 256;
+//  if(BandGap<256)
+//      BandGap = 256;
 }
 
 getADCp getADC[3] = {
