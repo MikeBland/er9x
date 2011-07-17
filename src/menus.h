@@ -54,7 +54,8 @@
 #define RESX_PLUS_TRIM (RESX+128)
 
 extern bool warble;*/
-extern int16_t p1valdiff;
+//extern int16_t p1valdiff;
+//extern uint8_t scroll_disabled;
 
 // Menus related stuff ...
 struct MState2

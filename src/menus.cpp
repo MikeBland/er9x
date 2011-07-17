@@ -79,6 +79,9 @@ int16_t ex_chans[NUM_CHNOUT];          // Outputs + intermidiates
 uint8_t s_pgOfs;
 uint8_t s_editMode;
 uint8_t s_noHi;
+uint8_t scroll_disabled;
+int8_t scrollLR;
+int8_t scrollUD;
 
 int16_t g_chans512[NUM_CHNOUT];
 
@@ -181,93 +184,153 @@ void DisplayScreenIndex(uint8_t index, uint8_t count, uint8_t attr)
 #define DEC(val,max) if(val>0  ) {val--;} else {val=max;}
 void MState2::check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t menuTabSize, prog_uint8_t *horTab, uint8_t horTabMax, uint8_t maxrow)
 {
-  if (menuTab) {
-    uint8_t attr = m_posVert==0 ? INVERS : 0;
+    scrollLR = 0;
+    scrollUD = 0;
 
-    if (m_posVert==0){
-      switch(event)
-      {
-        case EVT_KEY_FIRST(KEY_LEFT):
-          if(curr>0){
-            chainMenu((MenuFuncP)pgm_read_adr(&menuTab[curr-1]));
-          }
-          break;
-        case EVT_KEY_FIRST(KEY_RIGHT):
-          if(curr < (menuTabSize-1)){
-            chainMenu((MenuFuncP)pgm_read_adr(&menuTab[curr+1]));
-          }
-          break;
-      }
+    //check pot 2 - if changed -> scroll menu
+    //check pot 3 if changed -> cursor down/up
+    //we do this in these brackets to prevent it from happening in the main screen
+    static int16_t p2valprev,p3valprev;
+    scrollLR = (p2valprev-calibratedStick[4])/SCROLL_TH;
+    scrollUD = (p3valprev-calibratedStick[5])/SCROLL_TH;
+
+    if(scrollLR) p2valprev = calibratedStick[4];
+    if(scrollUD) p3valprev = calibratedStick[5];
+
+    if(scroll_disabled)
+    {
+        scrollLR = 0;
+        scrollUD = 0;
+        scroll_disabled = 0;
     }
-    DisplayScreenIndex(curr, menuTabSize, attr);
-  }
 
-  uint8_t maxcol = MAXCOL(m_posVert);
-  switch(event)
-  {
+    if (menuTab) {
+        uint8_t attr = m_posVert==0 ? INVERS : 0;
+
+
+        if(scrollLR && !s_editMode)
+        {
+            int8_t cc = curr - scrollLR;
+            if(cc<1) cc = 0;
+            if(cc>(menuTabSize-1)) cc = menuTabSize-1;
+
+            if(cc!=curr)
+            {
+                if(((MenuFuncP)pgm_read_adr(&menuTab[cc])) == menuProcModelSelect)
+                    chainMenu(menuProcModel);
+                else if(((MenuFuncP)pgm_read_adr(&menuTab[cc])) == menuProcDiagCalib)
+                    chainMenu(menuProcDiagAna);
+                else chainMenu((MenuFuncP)pgm_read_adr(&menuTab[cc]));
+            }
+
+            scrollLR = 0;
+        }
+
+
+        if(m_posVert==0)
+        {
+            if(event==EVT_KEY_FIRST(KEY_LEFT))
+            {
+                if(curr>0)
+                    chainMenu((MenuFuncP)pgm_read_adr(&menuTab[curr-1]));
+                else
+                    chainMenu((MenuFuncP)pgm_read_adr(&menuTab[menuTabSize-1]));
+            }
+
+            if(event==EVT_KEY_FIRST(KEY_RIGHT))
+            {
+                if(curr < (menuTabSize-1))
+                    chainMenu((MenuFuncP)pgm_read_adr(&menuTab[curr+1]));
+                else
+                    chainMenu((MenuFuncP)pgm_read_adr(&menuTab[0]));
+            }
+        }
+
+//        scrollLR = 0;
+        DisplayScreenIndex(curr, menuTabSize, attr);
+    }
+
+    uint8_t maxcol = MAXCOL(m_posVert);
+
+    if(!s_editMode && scrollUD)
+    {
+        int8_t cc = m_posVert + scrollUD;
+        if(cc<1) cc = 0;
+        if(cc>=maxrow) cc = maxrow;
+        m_posVert = cc;
+
+        m_posHorz = min(m_posHorz, MAXCOL(m_posVert));
+        m_posHorz = min(m_posHorz, MAXCOL(m_posVert));
+        BLINK_SYNC;
+
+        scrollUD = 0;
+    }
+
+    switch(event)
+    {
     case EVT_ENTRY:
-      //if(m_posVert>maxrow)
+        //if(m_posVert>maxrow)
         init();
         s_editMode = false;
-      //init();BLINK_SYNC;
-      break;
-    case EVT_KEY_FIRST(KEY_MENU):
-      if (maxcol > 0)
-        s_editMode = !s_editMode;
-      break;
-    case EVT_KEY_LONG(KEY_EXIT):
-      s_editMode = false;
-      //popMenu(true); //return to uppermost, beeps itself
-      popMenu(false);
-      break;
-      //fallthrough
-    case EVT_KEY_BREAK(KEY_EXIT):
-      if(s_editMode) {
-        s_editMode = false;
+        //init();BLINK_SYNC;
         break;
-      }
-      if(m_posVert==0 || !menuTab) {
-        popMenu();  //beeps itself
-      } else {
-        beepKey();
-        init();BLINK_SYNC;
-      }
-      break;
+    case EVT_KEY_FIRST(KEY_MENU):
+        if (maxcol > 0)
+            s_editMode = !s_editMode;
+        break;
+    case EVT_KEY_LONG(KEY_EXIT):
+        s_editMode = false;
+        //popMenu(true); //return to uppermost, beeps itself
+        popMenu(false);
+        break;
+        //fallthrough
+    case EVT_KEY_BREAK(KEY_EXIT):
+        if(s_editMode) {
+            s_editMode = false;
+            break;
+        }
+        if(m_posVert==0 || !menuTab) {
+            popMenu();  //beeps itself
+        } else {
+            beepKey();
+            init();BLINK_SYNC;
+        }
+        break;
 
     case EVT_KEY_REPT(KEY_RIGHT):  //inc
-      if(m_posHorz==maxcol) break;
+        if(m_posHorz==maxcol) break;
     case EVT_KEY_FIRST(KEY_RIGHT)://inc
-      if(!horTab || s_editMode)break;
-      INC(m_posHorz,maxcol);
-      BLINK_SYNC;
-      break;
+        if(!horTab || s_editMode)break;
+        INC(m_posHorz,maxcol);
+        BLINK_SYNC;
+        break;
 
     case EVT_KEY_REPT(KEY_LEFT):  //dec
-      if(m_posHorz==0) break;
+        if(m_posHorz==0) break;
     case EVT_KEY_FIRST(KEY_LEFT)://dec
-      if(!horTab || s_editMode)break;
-      DEC(m_posHorz,maxcol);
-      BLINK_SYNC;
-      break;
+        if(!horTab || s_editMode)break;
+        DEC(m_posHorz,maxcol);
+        BLINK_SYNC;
+        break;
 
     case EVT_KEY_REPT(KEY_DOWN):  //inc
-      if(m_posVert==maxrow) break;
+        if(m_posVert==maxrow) break;
     case EVT_KEY_FIRST(KEY_DOWN): //inc
-      if(s_editMode)break;
-      INC(m_posVert,maxrow);
-      m_posHorz = min(m_posHorz, MAXCOL(m_posVert));
-      BLINK_SYNC;
-      break;
+        if(s_editMode)break;
+        INC(m_posVert,maxrow);
+        m_posHorz = min(m_posHorz, MAXCOL(m_posVert));
+        BLINK_SYNC;
+        break;
 
     case EVT_KEY_REPT(KEY_UP):  //dec
-      if(m_posVert==0) break;
+        if(m_posVert==0) break;
     case EVT_KEY_FIRST(KEY_UP): //dec
-      if(s_editMode)break;
-      DEC(m_posVert,maxrow);
-      m_posHorz = min(m_posHorz, MAXCOL(m_posVert));
-      BLINK_SYNC;
-      break;
-  }
+        if(s_editMode)break;
+        DEC(m_posVert,maxrow);
+        m_posHorz = min(m_posHorz, MAXCOL(m_posVert));
+        BLINK_SYNC;
+        break;
+    }
 }
 
 static uint8_t s_curveChan;
@@ -1785,12 +1848,12 @@ void menuProcHeli(uint8_t event)
 
 void menuProcModelSelect(uint8_t event)
 {
-  
+    scrollLR = 0;
   static MState2 mstate2;
   TITLE("MODELSEL");
   int8_t subOld  = mstate2.m_posVert;
   mstate2.check_submenu_simple(event,MAX_MODELS-1) ;
-	
+
   lcd_puts_P(     9*FW, 0, PSTR("free"));
   lcd_outdezAtt(  17*FW, 0, EeFsGetFree(),0);
 
@@ -1798,11 +1861,12 @@ void menuProcModelSelect(uint8_t event)
 
   int8_t  sub    = mstate2.m_posVert;
   static uint8_t sel_editMode;
-	if ( DupIfNonzero == 2 )
-	{
-		sel_editMode = false ;
-		DupIfNonzero = 0 ;
-	}
+  if ( DupIfNonzero == 2 )
+  {
+      sel_editMode = false ;
+      DupIfNonzero = 0 ;
+  }
+
   switch(event)
   {
     //case  EVT_KEY_FIRST(KEY_MENU):
@@ -1829,7 +1893,7 @@ void menuProcModelSelect(uint8_t event)
         STORE_GENERALVARS;
         beepWarn1();
       }
-      if(event==EVT_KEY_FIRST(KEY_LEFT))  {killEvents(event);popMenu(true);}
+      if(event==EVT_KEY_FIRST(KEY_LEFT))  chainMenu(menuProcTemplates);//{killEvents(event);popMenu(true);}
       if(event==EVT_KEY_FIRST(KEY_RIGHT)) chainMenu(menuProcModel);
 //      if(event==EVT_KEY_FIRST(KEY_EXIT))  chainMenu(menuProcModelSelect);
       break;
@@ -1885,6 +1949,7 @@ void menuProcModelSelect(uint8_t event)
 
 void menuProcDiagCalib(uint8_t event)
 {
+  scroll_disabled = 1; // make sure we don't flick out of the screen
   SIMPLE_MENU("CALIBRATION", menuTabDiag, e_Calib, 4);
 
   int8_t  sub    = mstate2.m_posVert ;
@@ -2956,8 +3021,8 @@ void perOut(int16_t *chanOut, uint8_t att)
     if( (g_eeGeneral.inactivityTimer + 10) && (g_vbat100mV>49)) {
       inacCounter++;
       uint16_t tsum = 0;
-      for(uint8_t i=0;i<4;i++) tsum += anas[i]/128;//div 8 -> reduce sensitivity
-      if(tsum!=inacSum){
+      for(uint8_t i=0;i<4;i++) tsum += anas[i];
+      if(abs(int16_t(tsum-inacSum))>INACTIVITY_THRESHOLD){
         inacSum = tsum;
         inacCounter=0;
       }
