@@ -220,9 +220,7 @@ void MState2::check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t men
 
                 if(cc!=curr)
                 {
-                    if(((MenuFuncP)pgm_read_adr(&menuTab[cc])) == menuProcModelSelect)
-                        chainMenu(menuProcModel);
-                    else if(((MenuFuncP)pgm_read_adr(&menuTab[cc])) == menuProcDiagCalib)
+                    if(((MenuFuncP)pgm_read_adr(&menuTab[cc])) == menuProcDiagCalib)
                         chainMenu(menuProcDiagAna);
                     else chainMenu((MenuFuncP)pgm_read_adr(&menuTab[cc]));
                 }
@@ -247,6 +245,7 @@ void MState2::check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t men
             }
         }
 
+
 //        scrollLR = 0;
         DisplayScreenIndex(curr, menuTabSize, attr);
     }
@@ -269,6 +268,16 @@ void MState2::check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t men
             scrollUD = 0;
         }
 
+//        if(scrollLR<0 && (((MenuFuncP)pgm_read_adr(&menuTab[curr])) == menuProcModelSelect))
+//        {
+//            uint8_t cc = -scrollLR;
+//            if(cc>(menuTabSize-1)) cc = menuTabSize-1;
+
+//            chainMenu((MenuFuncP)pgm_read_adr(&menuTabModel[cc]));
+
+//            scrollLR = 0;
+//        }
+
         if(m_posVert>0 && scrollLR)
         {
             int8_t cc = m_posHorz - scrollLR;
@@ -277,8 +286,10 @@ void MState2::check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t men
             m_posHorz = cc;
 
             BLINK_SYNC;
-            scrollLR = 0;
+//            scrollLR = 0;
         }
+
+
     }
 
     switch(event)
@@ -1863,9 +1874,23 @@ void menuProcHeli(uint8_t event)
 
 void menuProcModelSelect(uint8_t event)
 {
-    scrollLR = 0;
   static MState2 mstate2;
   TITLE("MODELSEL");
+
+  if(!s_editMode)
+  {
+      if(scrollLR<0)
+      {
+          uint8_t cc = -scrollLR;
+          if(cc>(DIM(menuTabModel)-1)) cc = DIM(menuTabModel)-1;
+
+          chainMenu((MenuFuncP)pgm_read_adr(&menuTabModel[cc]));
+
+          scrollLR = 0;
+      }
+  }
+
+
   int8_t subOld  = mstate2.m_posVert;
   mstate2.check_submenu_simple(event,MAX_MODELS-1) ;
 
