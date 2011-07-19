@@ -56,6 +56,9 @@
 #define WARN_MEM     (!(g_eeGeneral.warnOpts & WARN_MEM_BIT))
 #define BEEP_VAL     ( (g_eeGeneral.warnOpts & WARN_BVAL_BIT) >>3 )
 
+#define GENERAL_OWNER_NAME_LEN 10
+#define MODEL_NAME_LEN         10
+
 typedef struct t_TrainerMix {
   uint8_t srcChn:3; //0-7 = ch1-8
   int8_t  swtch:5;
@@ -109,7 +112,7 @@ typedef struct t_EEGeneral {
 
   FrSkyRSSIAlarm frskyRssiAlarms[2];
   uint8_t   res[4];
-  char      ownerName[10];
+  char      ownerName[GENERAL_OWNER_NAME_LEN];
 } __attribute__((packed)) EEGeneral;
 
 
@@ -181,7 +184,7 @@ typedef struct t_FrSkyData {
 } __attribute__((packed)) FrSkyData;
 
 typedef struct t_ModelData {
-  char      name[10];             // 10 must be first for eeLoadModelName
+  char      name[MODEL_NAME_LEN];             // 10 must be first for eeLoadModelName
   uint8_t   mdVers;
   int8_t    tmrMode;              // timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
   uint8_t   tmrDir:1;    //0=>Count Down, 1=>Count Up
