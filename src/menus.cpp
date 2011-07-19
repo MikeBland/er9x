@@ -204,31 +204,32 @@ void MState2::check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t men
         scroll_disabled = 0;
     }
 
+    if(scrollLR || scrollUD || p1valdiff) g_LightOffCounter = g_eeGeneral.lightAutoOff*500; // on keypress turn the light on 5*100
+
     if (menuTab) {
         uint8_t attr = m_posVert==0 ? INVERS : 0;
 
 
-        if(scrollLR && !s_editMode)
-        {
-            int8_t cc = curr - scrollLR;
-            if(cc<1) cc = 0;
-            if(cc>(menuTabSize-1)) cc = menuTabSize-1;
-
-            if(cc!=curr)
-            {
-                if(((MenuFuncP)pgm_read_adr(&menuTab[cc])) == menuProcModelSelect)
-                    chainMenu(menuProcModel);
-                else if(((MenuFuncP)pgm_read_adr(&menuTab[cc])) == menuProcDiagCalib)
-                    chainMenu(menuProcDiagAna);
-                else chainMenu((MenuFuncP)pgm_read_adr(&menuTab[cc]));
-            }
-
-            scrollLR = 0;
-        }
-
-
         if(m_posVert==0)
         {
+            if(scrollLR && !s_editMode)
+            {
+                int8_t cc = curr - scrollLR;
+                if(cc<1) cc = 0;
+                if(cc>(menuTabSize-1)) cc = menuTabSize-1;
+
+                if(cc!=curr)
+                {
+                    if(((MenuFuncP)pgm_read_adr(&menuTab[cc])) == menuProcModelSelect)
+                        chainMenu(menuProcModel);
+                    else if(((MenuFuncP)pgm_read_adr(&menuTab[cc])) == menuProcDiagCalib)
+                        chainMenu(menuProcDiagAna);
+                    else chainMenu((MenuFuncP)pgm_read_adr(&menuTab[cc]));
+                }
+
+                scrollLR = 0;
+            }
+
             if(event==EVT_KEY_FIRST(KEY_LEFT))
             {
                 if(curr>0)
@@ -252,18 +253,32 @@ void MState2::check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t men
 
     uint8_t maxcol = MAXCOL(m_posVert);
 
-    if(!s_editMode && scrollUD)
+    if(!s_editMode)
     {
-        int8_t cc = m_posVert + scrollUD;
-        if(cc<1) cc = 0;
-        if(cc>=maxrow) cc = maxrow;
-        m_posVert = cc;
+        if(scrollUD)
+        {
+            int8_t cc = m_posVert - scrollUD;
+            if(cc<1) cc = 0;
+            if(cc>=maxrow) cc = maxrow;
+            m_posVert = cc;
 
-        m_posHorz = min(m_posHorz, MAXCOL(m_posVert));
-        m_posHorz = min(m_posHorz, MAXCOL(m_posVert));
-        BLINK_SYNC;
+            m_posHorz = min(m_posHorz, MAXCOL(m_posVert));
+            m_posHorz = min(m_posHorz, MAXCOL(m_posVert));
+            BLINK_SYNC;
 
-        scrollUD = 0;
+            scrollUD = 0;
+        }
+
+        if(m_posVert>0 && scrollLR)
+        {
+            int8_t cc = m_posHorz - scrollLR;
+            if(cc<1) cc = 0;
+            if(cc>=MAXCOL(m_posVert)) cc = MAXCOL(m_posVert);
+            m_posHorz = cc;
+
+            BLINK_SYNC;
+            scrollLR = 0;
+        }
     }
 
     switch(event)
