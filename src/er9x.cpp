@@ -52,13 +52,13 @@ void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
 {
   if ( tme<0 )
   {
-    lcd_putcAtt(   x,    y, '-',att);
-    tme = abs(tme);
+    lcd_putcAtt( x - ((att&DBLSIZE) ? FWNUM*6-2 : FWNUM*3),    y, '-',att);
+    tme = -tme;
   }
 
   lcd_putcAtt(x, y, ':',att&att2);
-  lcd_outdezNAtt(x, y, tme/60, LEADING0|att,2);
-  x += (att&DBLSIZE) ? FWNUM*6-1 : FW*3-1;
+  lcd_outdezNAtt(x+ ((att&DBLSIZE) ? 2 : 0), y, tme/60, LEADING0|att,2);
+  x += (att&DBLSIZE) ? FWNUM*6-2 : FW*3-1;
   lcd_outdezNAtt(x, y, tme%60, LEADING0|att2,2);
 }
 void putsVolts(uint8_t x,uint8_t y, uint8_t volts, uint8_t att)
@@ -122,15 +122,42 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
 }
 
 #ifdef FRSKY
-void putsTelemetry(uint8_t x, uint8_t y, uint8_t val, uint8_t unit, uint8_t att)
+void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t att, uint8_t scale)
 {
-  if (unit == 0/*v*/) {
-    putsVolts(x, y, val, att);
+  uint16_t value ;
+  uint8_t ratio ;
+
+  value = val ;
+
+  if ( scale )
+  {
+    ratio = g_model.frsky.channels[channel].ratio ;
+    value *= ratio ;
+    if ( ratio < 100 )
+    {
+      value *= 2 ;
+      value /= 51 ;  // Same as *10 /255 but without overflow
+      att |= PREC2 ;		
+    }
+    else
+    {
+      value /= 255 ;
+    }
   }
-  else {
-    lcd_outdezAtt(x, y, val, att);
+//              val = (uint16_t)staticTelemetry[i]*g_model.frsky.channels[i].ratio / 255;
+//              putsTelemetry(x0-2, 2*FH, val, g_model.frsky.channels[i].type, blink|DBLSIZE|LEFT);
+  if (g_model.frsky.channels[channel].type == 0/*v*/)
+  {
+    lcd_outdezNAtt(x, y, value, att|PREC1, 5) ;
+    if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, 'v', att);
+  }
+  else
+  {
+    lcd_outdezAtt(x, y, value, att);
   }
 }
+
+
 #endif
 
 inline int16_t getValue(uint8_t i)
