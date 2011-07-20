@@ -268,16 +268,6 @@ void MState2::check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t men
             scrollUD = 0;
         }
 
-//        if(scrollLR<0 && (((MenuFuncP)pgm_read_adr(&menuTab[curr])) == menuProcModelSelect))
-//        {
-//            uint8_t cc = -scrollLR;
-//            if(cc>(menuTabSize-1)) cc = menuTabSize-1;
-
-//            chainMenu((MenuFuncP)pgm_read_adr(&menuTabModel[cc]));
-
-//            scrollLR = 0;
-//        }
-
         if(m_posVert>0 && scrollLR)
         {
             int8_t cc = m_posHorz - scrollLR;
@@ -288,8 +278,6 @@ void MState2::check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t men
             BLINK_SYNC;
 //            scrollLR = 0;
         }
-
-
     }
 
     switch(event)
@@ -1644,17 +1632,25 @@ void menuProcModel(uint8_t event)
 
   uint8_t subN = 1;
   if(s_pgOfs<subN) {
-    lcd_puts_P(    0,    y, PSTR("Name"));
-    lcd_putsnAtt(10*FW,   y, g_model.name ,sizeof(g_model.name),BSS | (sub==subN ? (s_editMode ? 0 : INVERS) : 0));
-    if(sub==subN && s_editMode){
-        char v = char2idx(g_model.name[subSub]);
-        if(p1valdiff || event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_FIRST(KEY_UP) || event==EVT_KEY_REPT(KEY_DOWN) || event==EVT_KEY_REPT(KEY_UP))
-           CHECK_INCDEC_H_MODELVAR( event,v ,0,NUMCHARS-1);
-        v = idx2char(v);
-        g_model.name[subSub]=v;
-        lcd_putcAtt((10+subSub)*FW, y, v,INVERS);
-    }
-    if((y+=FH)>7*FH) return;
+      lcd_puts_P(    0,    y, PSTR("Name"));
+      lcd_putsnAtt(10*FW,   y, g_model.name ,sizeof(g_model.name),BSS | (sub==subN ? (s_editMode ? 0 : INVERS) : 0));
+      if(!s_editMode && scrollLR<0) { s_editMode = true; scrollLR = 0; mstate2.m_posHorz = 0; }
+      if(s_editMode && scrollLR>subSub) { s_editMode = false; scrollLR = 0; mstate2.m_posHorz = 0; }
+
+      if(sub==subN && s_editMode){
+          mstate2.m_posHorz -= scrollLR;
+          if((int8_t(mstate2.m_posHorz))<0) mstate2.m_posHorz = 0;
+          if((int8_t(mstate2.m_posHorz))>(MODEL_NAME_LEN-1)) mstate2.m_posHorz = MODEL_NAME_LEN-1;
+          scrollLR = 0;
+
+          char v = char2idx(g_model.name[subSub]);
+          if(p1valdiff || event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_FIRST(KEY_UP) || event==EVT_KEY_REPT(KEY_DOWN) || event==EVT_KEY_REPT(KEY_UP))
+              CHECK_INCDEC_H_MODELVAR( event,v ,0,NUMCHARS-1);
+          v = idx2char(v);
+          g_model.name[subSub]=v;
+          lcd_putcAtt((10+subSub)*FW, y, v,INVERS);
+      }
+      if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
@@ -2231,17 +2227,25 @@ void menuProcSetup(uint8_t event)
   uint8_t subN = 1;
 
   if(s_pgOfs<subN) {
-    lcd_puts_P(    0,    y, PSTR("Owner Name"));
-    lcd_putsnAtt(11*FW,   y, g_eeGeneral.ownerName ,sizeof(g_eeGeneral.ownerName),BSS | (sub==subN ? (s_editMode ? 0 : INVERS) : 0));
-    if(sub==subN && s_editMode){
-        char v = char2idx(g_eeGeneral.ownerName[subSub]);
-        if(p1valdiff || event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_FIRST(KEY_UP) || event==EVT_KEY_REPT(KEY_DOWN) || event==EVT_KEY_REPT(KEY_UP))
-           CHECK_INCDEC_H_GENVAR( event,v ,0,NUMCHARS-1);
-        v = idx2char(v);
-        g_eeGeneral.ownerName[subSub]=v;
-        lcd_putcAtt((11+subSub)*FW, y, v,INVERS);
-    }
-    if((y+=FH)>7*FH) return;
+      lcd_puts_P(    0,    y, PSTR("Owner Name"));
+      lcd_putsnAtt(11*FW,   y, g_eeGeneral.ownerName ,sizeof(g_eeGeneral.ownerName),BSS | (sub==subN ? (s_editMode ? 0 : INVERS) : 0));
+      if(!s_editMode && scrollLR<0) { s_editMode = true; scrollLR = 0; mstate2.m_posHorz = 0; }
+      if(s_editMode && scrollLR>subSub) { s_editMode = false; scrollLR = 0; mstate2.m_posHorz = 0; }
+
+      if(sub==subN && s_editMode){
+          mstate2.m_posHorz -= scrollLR;
+          if((int8_t(mstate2.m_posHorz))<0) mstate2.m_posHorz = 0;
+          if((int8_t(mstate2.m_posHorz))>(MODEL_NAME_LEN-1)) mstate2.m_posHorz = MODEL_NAME_LEN-1;
+          scrollLR = 0;
+
+          char v = char2idx(g_eeGeneral.ownerName[subSub]);
+          if(p1valdiff || event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_FIRST(KEY_UP) || event==EVT_KEY_REPT(KEY_DOWN) || event==EVT_KEY_REPT(KEY_UP))
+              CHECK_INCDEC_H_GENVAR( event,v ,0,NUMCHARS-1);
+          v = idx2char(v);
+          g_eeGeneral.ownerName[subSub]=v;
+          lcd_putcAtt((11+subSub)*FW, y, v,INVERS);
+      }
+      if((y+=FH)>7*FH) return;
   }subN++;
 
   if(s_pgOfs<subN) {
