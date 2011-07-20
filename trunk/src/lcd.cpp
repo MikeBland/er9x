@@ -186,35 +186,53 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int16_t val,uint8_t mode,uint8_t len)
   uint8_t xn = 0;
   uint8_t ln = 2;
   char c;
+  uint8_t xinc ;
 
-  if (mode & DBLSIZE) {
-    fw += FWNUM;
-    if (mode & LEFT) {
-      if (tmp >= 100)
-        x += 2*FW;
-      if (tmp >= 10)
-        x += 2*FW;
-    }
-    else {
-      x -= 2*FW;
-    }
-    lcd_lastPos = x + 2*FW;
+  if (mode & DBLSIZE)
+  {
+    fw += FWNUM ;
+    xinc = 2*FW;
+    lcd_lastPos = 2*FW;
   }
-  else {
-    if (mode & LEFT) {
-      if (prec)
-        x += 2;
-      if (val < 0)
-        x += FWNUM;
-      if (tmp >= 100)
-        x += FWNUM;
-      if (tmp >= 10)
-        x += FWNUM;
+  else
+  {
+    xinc = FW ;
+    lcd_lastPos = FW;
+  }
+
+  if (mode & LEFT) {
+//    if (tmp >= 10000)
+//      x += fw;
+    if (tmp >= 1000)
+      x += fw;
+    if (tmp >= 100)
+      x += fw;
+    if (tmp >= 10)
+      x += fw;
+    if ( prec )
+    {
+      if ( prec == 2 )
+      {
+        if ( tmp < 100 )
+        {
+          x += fw;
+        }
+      }
+      if ( tmp < 10 )
+      {
+        x+= fw;
+      }
     }
-    else {
-      x -= FW;
-    }
-    lcd_lastPos = x + FW;
+  }
+  else
+  {
+    x -= xinc;
+  }
+  lcd_lastPos += x ;
+
+  if ( prec == 2 )
+  {
+    mode -= LEADING0;  // Can't have PREC2 and LEADING0
   }
 
   for (uint8_t i=1; i<=len; i++) {
@@ -245,9 +263,22 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int16_t val,uint8_t mode,uint8_t len)
         prec = 0;
     }
     tmp /= 10;
-    if (!tmp) {
+    if (!tmp)
+    {
       if (prec)
-        prec = 0;
+      {
+        if ( prec == 2 )
+        {
+          if ( i > 1 )
+          {
+            prec = 0 ;
+          }
+        }
+        else
+        {
+          prec = 0 ;
+        }
+      }
       else if (mode & LEADING0)
         mode -= LEADING0;
       else
