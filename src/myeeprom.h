@@ -207,7 +207,7 @@ typedef struct t_ModelData {
   uint8_t   swashType:3;
   uint8_t   swashCollectiveSource;
   uint8_t   swashRingValue;
-  uint8_t   res1;
+  int8_t    ppmFrameLength;    //0=22.5  (10msec-30msec) 0.5msec increments
   MixData   mixData[MAX_MIXERS];
   LimitData limitData[NUM_CHNOUT];
   ExpoData  expoData[4];

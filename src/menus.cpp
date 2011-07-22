@@ -1646,7 +1646,7 @@ void menuDeleteDupModel(uint8_t event)
 
 void menuProcModel(uint8_t event)
 {
-    MENU("SETUP", menuTabModel, e_Model, 15, {0,sizeof(g_model.name)-1,1,0,0,0,0,0,0,6,2,0/*repeated...*/});
+    MENU("SETUP", menuTabModel, e_Model, 16, {0,sizeof(g_model.name)-1,1,0,0,0,0,0,0,6,2,0/*repeated...*/});
 
 int8_t  sub    = mstate2.m_posVert;
 uint8_t subSub = mstate2.m_posHorz;
@@ -1796,6 +1796,13 @@ if(s_pgOfs<subN) {
             CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
             break;
         }
+    if((y+=FH)>7*FH) return;
+}subN++;
+
+if(s_pgOfs<subN) {
+    lcd_puts_P(    0,    y, PSTR("PPM FrLen    mSec"));
+    lcd_outdezAtt(  13*FW, y, (int16_t)g_model.ppmFrameLength*5 + 225 ,(sub==subN ? INVERS:0) | PREC1);
+    if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.ppmFrameLength,-20,20);
     if((y+=FH)>7*FH) return;
 }subN++;
 
@@ -1967,7 +1974,13 @@ void menuProcModelSelect(uint8_t event)
             STORE_GENERALVARS;
             beepWarn1();
         }
+#ifndef NO_TEMPLATES
         if(event==EVT_KEY_FIRST(KEY_LEFT))  chainMenu(menuProcTemplates);//{killEvents(event);popMenu(true);}
+#elif defined(FRSKY)
+        if(event==EVT_KEY_FIRST(KEY_LEFT))  chainMenu(menuProcTelemetry);//{killEvents(event);popMenu(true);}
+#else
+        if(event==EVT_KEY_FIRST(KEY_LEFT))  chainMenu(menuProcSafetySwitches);//{killEvents(event);popMenu(true);}
+#endif
         if(event==EVT_KEY_FIRST(KEY_RIGHT)) chainMenu(menuProcModel);
         //      if(event==EVT_KEY_FIRST(KEY_EXIT))  chainMenu(menuProcModelSelect);
         break;
@@ -2118,7 +2131,11 @@ void menuProcDiagAna(uint8_t event)
     }
     lcd_putsn_P( 18*FW, 5*FH,PSTR("BG"),2) ;
     lcd_outdezAtt(20*FW, 6*FH, BandGap, 0);
-    if(sub==1) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatCalib, -127, 127);
+    if(sub==1)
+    {
+        scroll_disabled = 1;
+        CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.vBatCalib, -127, 127);
+    }
 }
 
 void menuProcDiagKeys(uint8_t event)
@@ -3314,9 +3331,12 @@ void perOut(int16_t *chanOut, uint8_t att)
         if(!getSwitch(md->swtch,1)){ // switch on?  if no switch selected => on
             swTog = swOn[i];
             swOn[i] = false;
-            if(md->srcRaw!=MIX_MAX && md->srcRaw!=MIX_FULL) continue;// if not MAX or FULL - next loop
-            if(md->mltpx==MLTPX_REP) continue; // if switch is off and REPLACE then off
-            v = (md->srcRaw == MIX_FULL ? -RESX : 0); // switch is off and it is either MAX=0 or FULL=-512
+            if(md->srcRaw!=MIX_FULL) continue;// if not FULL - next loop
+            v = -RESX; // switch is off  => FULL=-RESX
+
+//            if(md->srcRaw!=MIX_MAX && md->srcRaw!=MIX_FULL) continue;// if not MAX or FULL - next loop
+//            if(md->mltpx==MLTPX_REP) continue; // if switch is off and REPLACE then off
+//            v = (md->srcRaw == MIX_FULL ? -RESX : 0); // switch is off and it is either MAX=0 or FULL=-512
         }
         else {
             swTog = !swOn[i];
@@ -3539,7 +3559,8 @@ void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
     uint8_t p=8+g_model.ppmNCH*2; //Channels *2
     uint16_t q=(g_model.ppmDelay*50+300)*2; //Stoplen *2
     uint16_t rest=22500u*2-q; //Minimum Framelen=22.5 ms
-    if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
+    rest += (int16_t(g_model.ppmFrameLength))*1000;
+//    if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
     for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
         int16_t v = max(min(g_chans512[i],PPM_range),-PPM_range) + PPM_CENTER;
         rest-=(v+q);
