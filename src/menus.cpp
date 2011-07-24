@@ -2052,7 +2052,7 @@ void menuProcDiagCalib(uint8_t event)
         //if(i>=4) midVals[i] = (loVals[i] + hiVals[i])/2;
     }
 
-    if(sub==0 || idxState==3)
+    if(sub==0)
         idxState = 0;
 
     scroll_disabled = idxState; // make sure we don't scroll while calibrating
@@ -2065,6 +2065,12 @@ void menuProcDiagCalib(uint8_t event)
 
     case EVT_KEY_BREAK(KEY_MENU): // !! achtung sub schon umgesetzt
         idxState++;
+        if(idxState==3)
+        {
+            beepKey();
+            eeDirty(EE_GENERAL); //eeWriteGeneral();
+            idxState = 0;
+        }
         break;
     }
 
@@ -2076,6 +2082,7 @@ void menuProcDiagCalib(uint8_t event)
         lcd_putsnAtt(2*FW, 2*FH, PSTR("START CALIBRATION "), 18, sub>0 ? INVERS : 0);
         lcd_putsnAtt(2*FW, 3*FH, PSTR(" [MENU] TO START  "), 18, sub>0 ? INVERS : 0);
         break;
+
     case 1: //get mid
         //SET MIDPOINT
         //[MENU]
@@ -2088,9 +2095,8 @@ void menuProcDiagCalib(uint8_t event)
             hiVals[i] = -15000;
             midVals[i] = anaIn(i);
         }
-
-        beepKey();
         break;
+
     case 2:
         //MOVE STICKS/POTS
         //[MENU]
@@ -2108,8 +2114,6 @@ void menuProcDiagCalib(uint8_t event)
         int16_t sum=0;
         for(uint8_t i=0; i<12;i++) sum+=g_eeGeneral.calibMid[i];
         g_eeGeneral.chkSum = sum;
-        eeDirty(EE_GENERAL); //eeWriteGeneral();
-        beepKey();
         break;
     }
 
