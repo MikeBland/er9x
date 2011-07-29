@@ -3335,13 +3335,13 @@ void perOut(int16_t *chanOut, uint8_t att)
         if(!getSwitch(md->swtch,1)){ // switch on?  if no switch selected => on
             swTog = swOn[i];
             swOn[i] = false;
-            if(md->srcRaw==MIX_MAX) act[i] = 0;// MAX back to 0 for slow up
-            if(md->srcRaw!=MIX_FULL) continue;// if not FULL - next loop
-            v = -RESX; // switch is off  => FULL=-RESX
+//            if(md->srcRaw==MIX_MAX) act[i] = 0;// MAX back to 0 for slow up
+//            if(md->srcRaw!=MIX_FULL) continue;// if not FULL - next loop
+//            v = -RESX; // switch is off  => FULL=-RESX
 
-//            if(md->srcRaw!=MIX_MAX && md->srcRaw!=MIX_FULL) continue;// if not MAX or FULL - next loop
-//            if(md->mltpx==MLTPX_REP) continue; // if switch is off and REPLACE then off
-//            v = (md->srcRaw == MIX_FULL ? -RESX : 0); // switch is off and it is either MAX=0 or FULL=-512
+            if(md->srcRaw!=MIX_MAX && md->srcRaw!=MIX_FULL) continue;// if not MAX or FULL - next loop
+            if(md->mltpx==MLTPX_REP) continue; // if switch is off and REPLACE then off
+            v = (md->srcRaw == MIX_FULL ? -RESX : 0); // switch is off and it is either MAX=0 or FULL=-512
         }
         else {
             swTog = !swOn[i];
