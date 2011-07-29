@@ -373,6 +373,7 @@ void    perMain();
 void    per10ms();
 /// Erzeugt periodisch alle Outputs ausser Bildschirmausgaben.
 void zeroVariables();
+void mainSequence() ;
 
 #define NO_TRAINER 0x01
 #define NO_INPUT   0x02
@@ -425,6 +426,7 @@ void checkQuickSelect(); // Quick model select on startup
 
 #define EE_GENERAL 1
 #define EE_MODEL   2
+#define EE_TRIM    4           // Store model because of trim
 
 extern bool    checkIncDec_Ret;//global helper vars
 extern uint8_t s_editMode;     //global editmode
@@ -450,6 +452,7 @@ int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 #define CHECK_INCDEC_H_MODELVAR( event, var, min, max)     \
   var = checkIncDec_hm(event,var,min,max)
 
+#define STORE_MODELVARS_TRIM   eeDirty(EE_MODEL|EE_TRIM)
 #define STORE_MODELVARS   eeDirty(EE_MODEL)
 #define STORE_GENERALVARS eeDirty(EE_GENERAL)
 #define BACKLIGHT_ON    PORTB |=  (1<<OUT_B_LIGHT)
@@ -633,8 +636,7 @@ extern volatile uint8_t   g_blinkTmr10ms;
 extern uint8_t            g_beepCnt;
 extern uint8_t            g_beepVal[5];
 extern const PROGMEM char modi12x3[];
-//extern uint16_t           pulses2MHz[9];
-extern uint16_t           pulses2MHz[120];
+extern uint16_t           pulses2MHz[70];
 extern int16_t            g_ppmIns[8];
 extern int16_t            g_chans512[NUM_CHNOUT];
 extern volatile uint8_t   tick10ms;

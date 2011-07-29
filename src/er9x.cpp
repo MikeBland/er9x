@@ -1237,6 +1237,12 @@ int main(void)
   PULSEGEN_ON; // Pulse generator enable immediately before mainloop
   while(1){
       //uint16_t old10ms=get_tmr10ms();
+      mainSequence() ;
+  }
+}
+
+void mainSequence()
+{
       uint16_t t0 = getTmr16KHz();
       getADC[g_eeGeneral.filterInput]();
       getADC_bandgap() ;
@@ -1249,5 +1255,5 @@ int main(void)
       }
       t0 = getTmr16KHz() - t0;
       g_timeMain = max(g_timeMain,t0);
-  }
 }
+
