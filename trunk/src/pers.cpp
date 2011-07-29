@@ -206,12 +206,18 @@ void eeDirty(uint8_t msk)
   s_eeDirtyTime10ms  = get_tmr10ms() ;
 }
 #define WRITE_DELAY_10MS 100
+
+uint8_t Ee_lock = 0 ;
+
 void eeCheck(bool immediately)
 {
   uint8_t msk  = s_eeDirtyMsk;
   if(!msk) return;
   if( !immediately && (( get_tmr10ms() - s_eeDirtyTime10ms) < WRITE_DELAY_10MS)) return;
+  if ( Ee_lock ) return ;
+  Ee_lock = 1 ;      	// Lock eeprom writing from recursion
   s_eeDirtyMsk = 0;
+
   if(msk & EE_GENERAL){
     if(theFile.writeRlc(FILE_TMP, FILE_TYP_GENERAL, (uint8_t*)&g_eeGeneral,
                         sizeof(EEGeneral),20) == sizeof(EEGeneral))
@@ -237,9 +243,14 @@ void eeCheck(bool immediately)
         s_eeDirtyMsk |= EE_MODEL; //try again
         s_eeDirtyTime10ms = get_tmr10ms() - WRITE_DELAY_10MS;
       }else{
-        alert(PSTR("EEPROM overflow"));
+        if ( ( msk & EE_TRIM ) == 0 )		// Don't stop if trim adjust
+        {
+          alert(PSTR("EEPROM overflow"));
+        }
       }
     }
   }
+  Ee_lock = 0 ;				// UnLock eeprom writing
+
   //beepWarn1();
 }

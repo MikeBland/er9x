@@ -3119,7 +3119,7 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
 
 // static variables used in perOut - moved here so they don't interfere with the stack
 // It's also easier to initialize them here.
-uint16_t pulses2MHz[120] = {0};
+uint16_t pulses2MHz[70] = {0};
 int16_t  anas [NUM_XCHNRAW] = {0};
 int32_t  chans[NUM_CHNOUT] = {0};
 uint32_t inacCounter = 0;
@@ -3335,6 +3335,7 @@ void perOut(int16_t *chanOut, uint8_t att)
         if(!getSwitch(md->swtch,1)){ // switch on?  if no switch selected => on
             swTog = swOn[i];
             swOn[i] = false;
+            if(md->srcRaw==MIX_MAX) act[i] = 0;// MAX back to 0 for slow up
             if(md->srcRaw!=MIX_FULL) continue;// if not FULL - next loop
             v = -RESX; // switch is off  => FULL=-RESX
 
