@@ -26,7 +26,10 @@ eeprom_write_byte_cmp (uint8_t dat, uint16_t pointer_eeprom)
   //see /home/thus/work/avr/avrsdk4/avr-libc-1.4.4/libc/misc/eeprom.S:98 143
   while(EECR & (1<<EEWE)) /* make sure EEPROM is ready */
   {
-    mainSequence() ;      // Keep the controls running while waiting		
+    if (Ee_lock & EE_TRIM_LOCK)    // Only if writing trim changes
+    {
+      mainSequence() ;      // Keep the controls running while waiting		
+    }
   } ;
   EEAR  = pointer_eeprom;
 

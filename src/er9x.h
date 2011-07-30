@@ -642,6 +642,11 @@ extern int16_t            g_chans512[NUM_CHNOUT];
 extern volatile uint8_t   tick10ms;
 
 extern int16_t BandGap ; // VccV ;
+extern uint8_t Ee_lock ;
+
+// Bit masks in Ee_lock
+#define EE_LOCK      1
+#define EE_TRIM_LOCK 2
 
 #include "lcd.h"
 extern const char stamp1[];
