@@ -215,7 +215,12 @@ void eeCheck(bool immediately)
   if(!msk) return;
   if( !immediately && (( get_tmr10ms() - s_eeDirtyTime10ms) < WRITE_DELAY_10MS)) return;
   if ( Ee_lock ) return ;
-  Ee_lock = 1 ;      	// Lock eeprom writing from recursion
+  Ee_lock = EE_LOCK ;      	// Lock eeprom writing from recursion
+  if ( msk & EE_TRIM )
+  {
+    Ee_lock |= EE_TRIM_LOCK ;    // So the lower levels know what is happening
+  }
+  
   s_eeDirtyMsk = 0;
 
   if(msk & EE_GENERAL){
@@ -241,6 +246,10 @@ void eeCheck(bool immediately)
     }else{
       if(theFile.errno()==ERR_TMO){
         s_eeDirtyMsk |= EE_MODEL; //try again
+        if ( msk & EE_TRIM )
+        {
+          s_eeDirtyMsk |= EE_TRIM; //try again
+        }
         s_eeDirtyTime10ms = get_tmr10ms() - WRITE_DELAY_10MS;
       }else{
         if ( ( msk & EE_TRIM ) == 0 )		// Don't stop if trim adjust

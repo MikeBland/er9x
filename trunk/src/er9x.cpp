@@ -514,6 +514,8 @@ void message(const prog_char * s)
   lcdSetRefVolt(g_eeGeneral.contrast);
 }
 
+uint8_t heartbeat;
+
 void alert(const prog_char * s, bool defaults)
 {
     lcd_clear();
@@ -529,6 +531,11 @@ void alert(const prog_char * s, bool defaults)
         if(keyDown())
         {
             return;  //wait for key release
+        }
+        if(heartbeat == 0x3)
+        {
+            wdt_reset();
+            heartbeat = 0;
         }
 
         if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff || defaults)
@@ -846,7 +853,6 @@ uint8_t ppmInState = 0; //0=unsync 1..8= wait for value i-1
 #define HEART_TIMER2Mhz 1;
 #define HEART_TIMER10ms 2;
 
-uint8_t heartbeat;
 
 extern uint16_t g_tmr1Latency_max;
 extern uint16_t g_tmr1Latency_min;
