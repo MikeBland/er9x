@@ -1,2 +1,3 @@
  * [About About]
  * [Licence Licence]
+ * [Howto Howto Guides]
