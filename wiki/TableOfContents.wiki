@@ -1,3 +1,5 @@
  * [About About]
  * [Licence Licence]
  * [Howto Howto Guides]
+    *[SoftwareGuides Software]
+    *[HardwareGuides Hardware]
