@@ -1,0 +1,6 @@
+#sidebar TableOfContents
+
+= Licence =
+
+eePe and er9x are free to use under the GNU v2.0 License. Feel free to use, copy and modify it as you wish!
+I have spent a lot of time (and will continue to) to make this software as good as possible. If you feel that this software has been beneficial to you please show your support by donating. This will be greatly appreciated and you'll be added to the "contributors" list in the code (optional of-course). 
