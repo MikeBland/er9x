@@ -10,12 +10,10 @@ This project aims to replace the software that comes with the standard transmitt
 
 Some planned improvements are: Up to 16 Models in memory Up to 16 output channels Multi-level mixes Any function can be assigned to any output 5pt and 9pt curves
 
-This project is based on he th9x project. http://code.google.com/p/th9x/ 
+This project is based on he th9x project. http://code.google.com/p/th9x/
 
 
-= Details =
+= Licence =
 
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+eePe and er9x are free to use under the GNU v2.0 License. Feel free to use, copy and modify it as you wish!
+I have spent a lot of time (and will continue to) to make this software as good as possible. If you feel that this software has been beneficial to you please show your support by donating. This will be greatly appreciated and you'll be added to the "contributors" list in the code (optional of-course). 
