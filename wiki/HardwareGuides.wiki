@@ -1,0 +1,5 @@
+#sidebar TableOfContents
+
+= How to modify your hardware =
+
+Coming soon..
