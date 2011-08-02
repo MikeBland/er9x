@@ -1,0 +1,5 @@
+#sidebar TableOfContents
+
+= Why use er9x? =
+
+One of the most common questions people who are new to er9x ask is..  Why should I change my firmware.  What are the negatives, what are the positives.
