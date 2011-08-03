@@ -6,7 +6,7 @@ The following guides have been created by different members of the community to 
 
 A good suggestion would be to read all of them!  Then decide which method you would like to follow.  As a general rule they all follow much the same formular, just with different hardware configurations.
 
- * <a href="http://er9x.googlecode.com/svn/trunk/doc/FrSky%20Telemetry%20%20details.pdf">FrSky Telemetry details</a> by Phil.
- * <a href="http://code.google.com/p/gruvin9x/wiki/FrskyInterfacing">FrSky interfacing tutorial</a> by gruvin.
- * <a href="http://er9x.googlecode.com/svn/trunk/doc/TelemetryMods.pdf">FrSky Telemetry mods</a> by Mike Blandford.
+ * <a href="http://er9x.googlecode.com/svn/trunk/doc/FrSky%20Telemetry%20%20details.pdf">FRSKY Telemetry details</a> by Phil.
+ * <a href="http://code.google.com/p/gruvin9x/wiki/FrskyInterfacing">FRSKY interfacing tutorial</a> by gruvin.
+ * <a href="http://er9x.googlecode.com/svn/trunk/doc/TelemetryMods.pdf">FRSKY Telemetry mods</a> by Mike Blandford.
  * <a href="http://er9x.googlecode.com/svn/trunk/doc/FRSKYTelemetry.pdf">FRSKY telemetry guide</a> by Rob Thomson. 
