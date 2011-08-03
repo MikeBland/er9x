@@ -4,6 +4,6 @@
  * [Howto Howto Guides]
     * [SoftwareGuides Software Tutorials]
     * [HardwareGuides Hardware Mods]
-         * [Flashing9x] Flashing the 9x]
-         * [TelemeryMods] Telemetry Mods]
+         * [Flashing9x Flashing the 9x]
+         * [TelemeryMods Telemetry Mods]
          
