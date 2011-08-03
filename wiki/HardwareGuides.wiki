@@ -2,9 +2,11 @@
 
 = Hardware Mods =
 
-<img align="right" width="120" src="http://static.rcgroups.net/forums/attachments/3/2/9/0/3/2/a4112276-247-front.jpg">The 9x is a hackers dream!  As such it should come as no suprise that there are many people who have painted, chopped up and re-wired their radios.
+The 9x is a hackers dream!  As such it should come as no suprise that there are many people who have painted, chopped up and re-wired their radios.
 
 My personal favourite is the complete re-wire to FRSKY telemetry, followed by a custom spray job.
+
+<img  width="120" src="http://static.rcgroups.net/forums/attachments/3/2/9/0/3/2/a4112276-247-front.jpg">
 
 
 The following are a list of tutorials that have been sourced from the community to show you how to modify your own 9x!
