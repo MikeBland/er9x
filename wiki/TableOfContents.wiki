@@ -3,7 +3,7 @@
  * [Licence Licence]
  * [Howto Howto Guides]
     * [SoftwareGuides Software Tutorials]
-    * [HardwareGuides Hardware]
+    * [HardwareGuides Hardware Mods]
          * [Flashing9x] Flashing the 9x]
          * [TelemeryMods] Telemetry Mods]
          
