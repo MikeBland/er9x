@@ -8,5 +8,6 @@ There are however many proven methods to configure the hardware & software.  Muc
 
 The Guides shown on in this section are a selection of the best - and widely used mods to help you get started!
 
- * [SoftwareGuides Software]
- * [HardwareGuides Hardware]
+
+ * [SoftwareGuides Software Tutorials]
+ * [HardwareGuides Hardware Mods]
