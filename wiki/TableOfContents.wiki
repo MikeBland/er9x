@@ -2,8 +2,8 @@
  * [WhyER9X Why use er9x]
  * [Licence Licence]
  * [Howto Howto Guides]
-    * [SoftwareGuides Software Tutorials]
+    * [Flashing9x Flashing the 9x]
     * [HardwareGuides Hardware Mods]
-         * [Flashing9x Flashing the 9x]
+
          * [TelemeryMods Telemetry Mods]
          
