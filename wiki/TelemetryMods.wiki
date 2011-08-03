@@ -1,6 +1,6 @@
 = How to modify your 9x for frsky telemetry =
 
-To run the FrSky build of er9x you will need to make some modifications to the hardware in your radio.  These modifications require soldering of small tracks on the radio circuit board.  Be warned that it is possible to damage the board permanently if care is not taken.
+To run the FRSKY build of er9x you will need to make some modifications to the hardware in your radio.  These modifications require soldering of small tracks on the radio circuit board.  Be warned that it is possible to damage the board permanently if care is not taken.
  
 The following guides have been created by different members of the community to explain how they approached the mods.  
 
