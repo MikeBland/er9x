@@ -9,17 +9,21 @@ As can be seen from the above picture this can be quite dramatic!
 The process to respray your radio is quite simple.
 
 *Step 1:* - Remove All Electronics
+
 This involves removing all the electronic components, switches and dials from the radio, and is simply a case of unscrewing everything that can be unscrewed!  This will eventually leave you with a bare case, with the LCD plastic screen & the silver stickers attached.
 
 *Step 2:* - Remove the decals and plastic screen
+
 This job is best undertaken using a bit of WD40.  Simply soaking the decals and the lcd screen with WD40 for 5 minutes will break down the glue enough to enable you to slide the items off the case.  Once these are off, clean them with methalated spirits and a sponge.  (you do not want to scrap off the paint/damage these)
 
 *Step 3:* - Re-Spray.
+
 Experimentation has shown that it is best to first sprary with an Acrylic based white primer, followed by an Acrylic Auto Paint of your choice.  The key here is to ensure you have a good quality gloss paint as the last thing you want is a pva matt!
 
 Remember.  Patience is key.  Take your time and work through loads of thin coats with a light wet & dry sanding and you will get a good finish.
 
 *Step 4:* - Put the decals and lcd cover back on.
+
 The trick here is to use 2/3mm double sided tape.  Do not use any type of glue here as you will risk it reacting with the silver paint on the decals and lcd cover. 
 
 *Step 5:* - Install electronics.
@@ -27,5 +31,3 @@ This is the simple job of re-screwing in everything you took out!  Nothing compl
 
 *Step 6:* - Testing.
 All going well you will now have your own customised 'uber 9x'.
-
-
