@@ -7,3 +7,4 @@ The 9x is a hackers dream!  As such it should come as no suprise that there are 
 The following are a list of tutorials that have been sourced from the community to show you how to modify your own 9x!
 
  * [TelemetryMods Telemetry Mods]
+ * [CustomSpray Custom Spray]
