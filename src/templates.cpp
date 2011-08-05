@@ -49,7 +49,8 @@ static prog_char APM string_6[] = "Heli Setup";
 static prog_char APM string_7[] = "Gyro Setup";
 static prog_char APM string_8[] = "Servo Test";
 
-PGM_P n_Templates[] PROGMEM = {
+typedef PGM_P PROG_PTR PROGMEM ;
+PROG_PTR n_Templates[8] = {
 string_1,
 string_2,
 string_3,
@@ -236,5 +237,9 @@ void applyTemplate(uint8_t idx)
 
  
     STORE_MODELVARS;
+    eeWaitComplete() ;
 
 }
+
+
+

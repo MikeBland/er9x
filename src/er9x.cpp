@@ -124,10 +124,14 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
 #ifdef FRSKY
 void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t att, uint8_t scale)
 {
-  uint16_t value ;
+  uint32_t value ;
   uint8_t ratio ;
 
   value = val ;
+//  if (g_model.frsky.channels[channel].type == 2/*v*/)
+//  {
+//    value <<= 1 ;
+//  }
 
   if ( scale )
   {
@@ -147,6 +151,7 @@ void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t 
 //              val = (uint16_t)staticTelemetry[i]*g_model.frsky.channels[i].ratio / 255;
 //              putsTelemetry(x0-2, 2*FH, val, g_model.frsky.channels[i].type, blink|DBLSIZE|LEFT);
   if (g_model.frsky.channels[channel].type == 0/*v*/)
+//  if ( (g_model.frsky.channels[channel].type == 0/*v*/) || (g_model.frsky.channels[channel].type == 2/*v*/) )
   {
     lcd_outdezNAtt(x, y, value, att|PREC1, 5) ;
     if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, 'v', att);
@@ -479,15 +484,16 @@ void checkQuickSelect()
         if(!eeModelExists(j)) return;
 
         eeLoadModel(g_eeGeneral.currModel = j);
-        eeDirty(EE_GENERAL);
+        STORE_GENERALVARS;
+//        eeDirty(EE_GENERAL);
 
         lcd_clear();
         lcd_putsAtt(64-7*FW,0*FH,PSTR("LOADING"),DBLSIZE);
 
         for(uint8_t i=0;i<sizeof(g_model.name);i++)
-            lcd_putcAtt(FW*2+i*2*FW-i-2, 3*FH, g_model.name[i],DBLSIZE);
+          lcd_putcAtt(FW*2+i*2*FW-i-2, 3*FH, g_model.name[i],DBLSIZE);
 
-        refreshDiplay();
+        	refreshDiplay();
         lcdSetRefVolt(g_eeGeneral.contrast);
 
         if(g_eeGeneral.lightSw || g_eeGeneral.lightAutoOff) // if lightswitch is defined or auto off
@@ -579,14 +585,14 @@ uint8_t checkTrim(uint8_t event)
     }
     else if(x>-125 && x<125){
       *TrimPtr[idx] = (int8_t)x;
-      STORE_MODELVARS;
+      STORE_MODELVARS_TRIM;
       if(event & _MSK_KEY_REPT) warble = true;
       beepWarn1();//beepKey();
     }
     else
     {
       *TrimPtr[idx] = (x>0) ? 125 : -125;
-      STORE_MODELVARS;
+      STORE_MODELVARS_TRIM;
       warble = false;
       beepWarn();
     }
@@ -857,11 +863,14 @@ uint8_t ppmInState = 0; //0=unsync 1..8= wait for value i-1
 extern uint16_t g_tmr1Latency_max;
 extern uint16_t g_tmr1Latency_min;
 
+//uint16_t PulseTotal ;
+
 //ISR(TIMER1_OVF_vect)
 ISR(TIMER1_COMPA_vect) //2MHz pulse generation
 {
   static uint8_t   pulsePol;
   static uint16_t *pulsePtr = pulses2MHz;
+//  static uint8_t   channel = 0 ;
 
 //  if( *pulsePtr == 0) {
 //    //currpulse=0;
@@ -891,12 +900,31 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
   g_tmr1Latency_max = max(dt,g_tmr1Latency_max);    // max has leap, therefore vary in length
   g_tmr1Latency_min = min(dt,g_tmr1Latency_min);    // min has leap, therefore vary in length
 
+//  if (g_model.protocol==PROTO_PPM)
+//  {
+//    if ( *(pulsePtr+1) != 0 )  // Not the sync pulse
+//    {
+//      if ( channel & 1 )  // Channel pulse, not gap pulse
+//      {
+//        *pulsePtr = max(min(g_chans512[channel>>1],PPM_range),-PPM_range) + PPM_CENTER - PPM_gap + 600;
+//      }
+//    }
+//    else // sync pulse
+//    {
+//      uint16_t rest ;
+//      rest = PPM_frame - PulseTotal ;      
+//    }
+//    channel += 1 ;
+//  }
+//  PulseTotal += (OCR1A  = *pulsePtr++);
   OCR1A  = *pulsePtr++;
 
   if( *pulsePtr == 0) {
     //currpulse=0;
     pulsePtr = pulses2MHz;
     pulsePol = g_model.pulsePol;//0;
+//    channel = 0 ;
+//    PulseTotal = 0 ;
 
     TIMSK &= ~(1<<OCIE1A); //stop reentrance
     sei();
@@ -1235,11 +1263,16 @@ int main(void)
 
   lcdSetRefVolt(g_eeGeneral.contrast);
   g_LightOffCounter = g_eeGeneral.lightAutoOff*500; //turn on light for x seconds - no need to press key Issue 152
-  if(cModel!=g_eeGeneral.currModel) eeDirty(EE_GENERAL); // if model was quick-selected, make sure it sticks
+  if(cModel!=g_eeGeneral.currModel)
+  {
+    STORE_GENERALVARS ;    // if model was quick-selected, make sure it sticks
+//    eeDirty(EE_GENERAL); // if model was quick-selected, make sure it sticks
+    eeWaitComplete() ;
+  }
   
   OCR1A = 2000 ;        // set to 1mS
   TIFR = 1 << OCF1A ;   // Clear pending interrupt
-	
+
   PULSEGEN_ON; // Pulse generator enable immediately before mainloop
   while(1){
       //uint16_t old10ms=get_tmr10ms();
@@ -1262,4 +1295,6 @@ void mainSequence()
       t0 = getTmr16KHz() - t0;
       g_timeMain = max(g_timeMain,t0);
 }
+
+
 
