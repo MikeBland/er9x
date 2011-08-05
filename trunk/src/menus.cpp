@@ -442,7 +442,9 @@ else  if(sub>0){ //make sure we're not on "EDIT"
     if (checkIncDec_Ret) {
         if(cv9) for (uint8_t i = 0; i < 9; i++) crv[i] = (i-4)*dfltCrv* 100 / 16;
         else    for (uint8_t i = 0; i < 5; i++) crv[i] = (i-2)*dfltCrv* 100 /  8;
-        eeDirty(EE_MODEL);
+        STORE_MODELVARS;        
+//        eeDirty(EE_MODEL);
+        eeWaitComplete() ;
     }
 }
 
@@ -555,7 +557,7 @@ void setStickCenter() // copy state of 3 primary to subtrim
     // For this operation, keep using the 'MASTER' trims
     for(uint8_t i=0; i<4; i++)
         if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
-    STORE_MODELVARS;
+    STORE_MODELVARS_TRIM;
     beepWarn1();
 }
 
@@ -582,6 +584,7 @@ switch(event)
             case 0:
                 ld->offset = (ld->revert) ? -v : v;
                 STORE_MODELVARS;
+                eeWaitComplete() ;
                 break;
             }
         }
@@ -679,6 +682,7 @@ for (int i=0; i<2; i++) {
     lcd_outdezAtt(2*FW, y, 1+i, 0);
     putsTelemValue(16*FW, y, g_model.frsky.channels[i].ratio, i, (sub==subN && subSub==0 ? blink:0)|NO_UNIT, 0 ) ;
     lcd_putsnAtt(16*FW, y, PSTR("v-")+g_model.frsky.channels[i].type, 1, (sub==subN && subSub==1 ? blink:0));
+//    lcd_putsnAtt(16*FW, y, PSTR("v-V")+g_model.frsky.channels[i].type, 1, (sub==subN && subSub==1 ? blink:0));
 
     if (sub==subN && (s_editMode || p1valdiff)) {
         switch (subSub) {
@@ -687,6 +691,7 @@ for (int i=0; i<2; i++) {
             break;
         case 1:
             CHECK_INCDEC_H_MODELVAR(event, g_model.frsky.channels[i].type, 0, 1);
+//            CHECK_INCDEC_H_MODELVAR(event, g_model.frsky.channels[i].type, 0, 2);
             break;
         }
     }
@@ -927,6 +932,7 @@ void deleteMix(uint8_t idx)
             (MAX_MIXERS-(idx+1))*sizeof(MixData));
     memset(&g_model.mixData[MAX_MIXERS-1],0,sizeof(MixData));
     STORE_MODELVARS;
+    eeWaitComplete() ;
 }
 
 void insertMix(uint8_t idx)
@@ -938,6 +944,7 @@ void insertMix(uint8_t idx)
     g_model.mixData[idx].srcRaw      = s_currDestCh; //1;   //
     g_model.mixData[idx].weight      = 100;
     STORE_MODELVARS;
+    eeWaitComplete() ;
 }
 
 void menuProcMixOne(uint8_t event)
@@ -1143,6 +1150,7 @@ void moveMix(uint8_t idx,uint8_t mcopy, uint8_t dir) //true=inc=down false=dec=u
     //flip between idx and tgt
     memswap( tgt, src, sizeof(MixData) ) ;
     STORE_MODELVARS;
+    eeWaitComplete() ;
 
 }
 
@@ -1628,7 +1636,7 @@ void menuDeleteDupModel(uint8_t event)
             }
             g_eeGeneral.currModel = i;
             STORE_GENERALVARS;
-
+            eeWaitComplete() ;
             eeLoadModel(g_eeGeneral.currModel); //load default values
             resetTimer();
         }
@@ -1770,6 +1778,7 @@ if(s_pgOfs<subN) {
             s_editMode = false;
             g_model.beepANACenter ^= (1<<(subSub));
             STORE_MODELVARS;
+            eeWaitComplete() ;
         }
     }
     if((y+=FH)>7*FH) return;
@@ -1956,10 +1965,13 @@ void menuProcModelSelect(uint8_t event)
             sel_editMode = false;
             beepKey();
             killEvents(event);
+            eeWaitComplete();    // Wait to load model if writing something
             eeLoadModel(g_eeGeneral.currModel = mstate2.m_posVert);
             resetTimer();
             STORE_GENERALVARS;
+            eeWaitComplete();
             STORE_MODELVARS;
+            eeWaitComplete();
             break;
         }
         //fallthrough
@@ -1969,9 +1981,11 @@ void menuProcModelSelect(uint8_t event)
         {
             killEvents(event);
             g_eeGeneral.currModel = mstate2.m_posVert;
+            eeWaitComplete();    // Wait to load model if writing something
             eeLoadModel(g_eeGeneral.currModel);
             resetTimer();
             STORE_GENERALVARS;
+            eeWaitComplete();
             beepWarn1();
         }
 #ifndef NO_TEMPLATES
@@ -2068,7 +2082,8 @@ void menuProcDiagCalib(uint8_t event)
         if(idxState==3)
         {
             beepKey();
-            eeDirty(EE_GENERAL); //eeWriteGeneral();
+            STORE_GENERALVARS;     //eeWriteGeneral();
+//            eeDirty(EE_GENERAL); //eeWriteGeneral();
             idxState = 0;
         }
         break;
@@ -2253,7 +2268,8 @@ for (uint8_t i=0; i<4; i++) {
 if (edit) {
     if (event==EVT_KEY_FIRST(KEY_MENU)){
         memcpy(g_eeGeneral.trainer.calib, g_ppmIns, sizeof(g_eeGeneral.trainer.calib));
-        eeDirty(EE_GENERAL);
+        STORE_GENERALVARS;     //eeWriteGeneral();
+//        eeDirty(EE_GENERAL);
         beepKey();
     }
 }
@@ -2787,14 +2803,16 @@ void menuProc0(uint8_t event)
     case EVT_KEY_BREAK(KEY_RIGHT):
         if(view == e_telemetry) {
             g_eeGeneral.view = (g_eeGeneral.view + 0x10) % 0x20;
-            eeDirty(EE_GENERAL);
+            STORE_GENERALVARS;     //eeWriteGeneral();
+//            eeDirty(EE_GENERAL);
             beepKey();
         }
         break;
     case EVT_KEY_BREAK(KEY_LEFT):
         if(view == e_telemetry) {
             g_eeGeneral.view = (g_eeGeneral.view - 0x10) % 0x20;
-            eeDirty(EE_GENERAL);
+            STORE_GENERALVARS;     //eeWriteGeneral();
+//            eeDirty(EE_GENERAL);
             beepKey();
         }
         break;
@@ -2806,7 +2824,8 @@ void menuProc0(uint8_t event)
     case EVT_KEY_BREAK(KEY_UP):
         g_eeGeneral.view = view+1;
         if(g_eeGeneral.view>=MAX_VIEWS) g_eeGeneral.view=0;
-        eeDirty(EE_GENERAL);
+        STORE_GENERALVARS;     //eeWriteGeneral();
+//        eeDirty(EE_GENERAL);
         beepKey();
         break;
     case EVT_KEY_BREAK(KEY_DOWN):
@@ -2814,7 +2833,8 @@ void menuProc0(uint8_t event)
             g_eeGeneral.view = view - 1;
         else
             g_eeGeneral.view = MAX_VIEWS-1;
-        eeDirty(EE_GENERAL);
+        STORE_GENERALVARS;     //eeWriteGeneral();
+//        eeDirty(EE_GENERAL);
         beepKey();
         break;
     case EVT_KEY_LONG(KEY_UP):
@@ -3551,6 +3571,9 @@ void setupPulses()
 //{
 //    return x-(x/4);  //512+128 =? 640,  640 - 640/4  == 640 * 3/4 => 480 (just below 500msec - it can still reach 500 with offset)
 //}
+//int16_t PPM_range = 512*2;   //range of 0.7..1.7msec
+//uint16_t PPM_gap = 300 * 2; //Stoplen *2
+//uint16_t PPM_frame ;
 
 void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
 {
@@ -3575,6 +3598,28 @@ void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
     pulses2MHz[j++]=q;
     pulses2MHz[j++]=rest;
     pulses2MHz[j++]=0;
+
+//    //Total frame length = 22.5long with a 0.3ms stop tail
+//    //The pulse ISR is 2mhz thamsec
+//    //each pulse is 0.7..1.7ms t's why everything is multiplied by 2
+////    uint8_t j=0;
+//    uint16_t pulseTotal = 0 ;
+//    uint16_t *pulseptr = pulses2MHz ;
+//    uint8_t p=8+g_model.ppmNCH*2; //Channels *2
+//    PPM_gap = (g_model.ppmDelay*50+300)*2; //Stoplen *2
+//    PPM_range = g_model.extendedLimits ? 640*2 : 512*2;   //range of 0.7..1.7msec
+////    uint16_t rest=22500u*2-PPM_gap; //Minimum Framelen=22.5 ms
+////    rest += (int16_t(g_model.ppmFrameLength))*1000;
+//    PPM_frame = 22500u * 2 + g_model.ppmFrameLength * 500 * 2 ;
+////    if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
+//    for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
+//        int16_t v = max(min(g_chans512[i],PPM_range),-PPM_range) + PPM_CENTER;
+//        pulseTotal += (*pulseptr++ = PPM_gap);
+//        pulseTotal += (*pulseptr++ = v - PPM_gap + 600); /* as Pat MacKenzie suggests */
+//    }
+//    pulseTotal += (*pulseptr++ =PPM_gap);
+//    *pulseptr++ = 10000 - PPM_gap + 600 ;
+//    *pulseptr++ =0;
 }
 
 
@@ -3736,3 +3781,5 @@ void evalOffset(int8_t sub, uint8_t max)
     else if(sub-s_pgOfs>max) s_pgOfs = sub-max;
     else if(sub-s_pgOfs<max-6) s_pgOfs = sub-max+6;
 }
+
+

@@ -463,6 +463,11 @@ int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 
 #define BITMASK(bit) (1<<(bit))
 
+//#define PPM_CENTER 1200*2
+//extern int16_t PPM_range ;
+//extern uint16_t PPM_gap;
+//extern uint16_t PPM_frame ;
+
 /// liefert Dimension eines Arrays
 #define DIM(arr) (sizeof((arr))/sizeof((arr)[0]))
 
@@ -477,6 +482,7 @@ template<class t> inline int8_t sgn(t a){ return a>0 ? 1 : (a < 0 ? -1 : 0); }
 /// Markiert einen EEPROM-Bereich als dirty. der Bereich wird dann in
 /// eeCheck ins EEPROM zurueckgeschrieben.
 void eeWriteBlockCmp(const void *i_pointer_ram, void *i_pointer_eeprom, size_t size);
+void eeWaitComplete();
 void eeDirty(uint8_t msk);
 void eeCheck(bool immediately=false);
 //void eeWriteGeneral();
@@ -680,3 +686,5 @@ inline void _beep(uint8_t b) {
 
 #endif // er9x_h
 /*eof*/
+
+

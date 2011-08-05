@@ -23,6 +23,7 @@
 
 EFile theFile;  //used for any file operation
 EFile theFile2; //sometimes we need two files
+EFile theWriteFile; //separate write file
 
 #define FILE_TYP_GENERAL 1
 #define FILE_TYP_MODEL   2
@@ -208,6 +209,22 @@ void eeDirty(uint8_t msk)
 #define WRITE_DELAY_10MS 100
 
 uint8_t Ee_lock = 0 ;
+extern uint8_t heartbeat;
+
+
+void eeWaitComplete()
+{
+  while(s_eeDirtyMsk)
+  {
+		eeCheck(true) ;
+    if(heartbeat == 0x3)
+    {
+      wdt_reset();
+      heartbeat = 0;
+    }
+  }
+}
+
 
 void eeCheck(bool immediately)
 {
@@ -224,12 +241,12 @@ void eeCheck(bool immediately)
   s_eeDirtyMsk = 0;
 
   if(msk & EE_GENERAL){
-    if(theFile.writeRlc(FILE_TMP, FILE_TYP_GENERAL, (uint8_t*)&g_eeGeneral,
+    if(theWriteFile.writeRlc(FILE_TMP, FILE_TYP_GENERAL, (uint8_t*)&g_eeGeneral,
                         sizeof(EEGeneral),20) == sizeof(EEGeneral))
     {
       EFile::swap(FILE_GENERAL,FILE_TMP);
     }else{
-      if(theFile.errno()==ERR_TMO){
+      if(theWriteFile.errno()==ERR_TMO){
         s_eeDirtyMsk |= EE_GENERAL; //try again
         s_eeDirtyTime10ms = get_tmr10ms() - WRITE_DELAY_10MS;
       }else{
@@ -239,12 +256,12 @@ void eeCheck(bool immediately)
     //first finish GENERAL, then MODEL !!avoid Toggle effect
   }
   else if(msk & EE_MODEL){
-    if(theFile.writeRlc(FILE_TMP, FILE_TYP_MODEL, (uint8_t*)&g_model,
+    if(theWriteFile.writeRlc(FILE_TMP, FILE_TYP_MODEL, (uint8_t*)&g_model,
                         sizeof(g_model),20) == sizeof(g_model))
     {
       EFile::swap(FILE_MODEL(g_eeGeneral.currModel),FILE_TMP);
     }else{
-      if(theFile.errno()==ERR_TMO){
+      if(theWriteFile.errno()==ERR_TMO){
         s_eeDirtyMsk |= EE_MODEL; //try again
         if ( msk & EE_TRIM )
         {
@@ -263,3 +280,5 @@ void eeCheck(bool immediately)
 
   //beepWarn1();
 }
+
+
