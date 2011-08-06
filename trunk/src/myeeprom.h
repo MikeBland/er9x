@@ -189,7 +189,9 @@ typedef struct t_ModelData {
   int8_t    tmrMode;              // timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
   uint8_t   tmrDir:1;    //0=>Count Down, 1=>Count Up
   uint8_t   traineron:1;  // 0 disable trainer, 1 allow trainer
-  uint8_t   spare:6;
+//  uint8_t   spare:6;
+  uint8_t   t2throttle:1 ;  // Start timer2 using throttle
+  uint8_t   spare:5;
   uint16_t  tmrVal;
   uint8_t   protocol;
   int8_t    ppmNCH;
@@ -239,3 +241,5 @@ extern ModelData g_model;
 
 #endif
 /*eof*/
+
+

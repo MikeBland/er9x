@@ -1654,7 +1654,7 @@ void menuDeleteDupModel(uint8_t event)
 
 void menuProcModel(uint8_t event)
 {
-    MENU("SETUP", menuTabModel, e_Model, 16, {0,sizeof(g_model.name)-1,1,0,0,0,0,0,0,6,2,0/*repeated...*/});
+    MENU("SETUP", menuTabModel, e_Model, 17, {0,sizeof(g_model.name)-1,1,0,0,0,0,0,0,6,2,0/*repeated...*/});
 
 int8_t  sub    = mstate2.m_posVert;
 uint8_t subSub = mstate2.m_posHorz;
@@ -1834,6 +1834,13 @@ if(s_pgOfs<subN) {
     menu_lcd_onoff( 10*FW, y, g_model.traineron, sub==subN ) ;
     if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.traineron,0,1);
     if((y+=FH)>7*FH) return;
+}subN++;
+
+if(s_pgOfs<subN) {
+  lcd_puts_P(    0,    y, PSTR("T2ThTrig"));
+  menu_lcd_onoff( 10*FW, y, g_model.t2throttle, sub==subN ) ;
+  if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.t2throttle,0,1);
+  if((y+=FH)>7*FH) return;
 }subN++;
 
 if(s_pgOfs<subN) {
@@ -2621,6 +2628,16 @@ void trace()   // called in perOut - once envery 0.01sec
 
     uint16_t val = calibratedStick[CONVERT_MODE(3)-1]; //Get throttle channel value
     val = (val+RESX) / (RESX/16); //calibrate it
+    if ( g_model.t2throttle )
+    {
+      if ( val >= 5 )
+      {
+        if ( Timer2_running == 0 )
+        {
+          Timer2_running = 3 ;  // Running (bit 0) and Started by throttle (bit 1)
+        }
+      }
+    }
     static uint16_t s_time;
     static uint16_t s_cnt;
     static uint16_t s_sum;
@@ -2787,7 +2804,8 @@ void menuProc0(uint8_t event)
     case EVT_KEY_BREAK(KEY_MENU):
         if(view == e_timer2)
         {
-            Timer2_running = !Timer2_running;
+//            Timer2_running = !Timer2_running;
+            Timer2_running ^= 1 ;
             beepKey();
         }
         break;
