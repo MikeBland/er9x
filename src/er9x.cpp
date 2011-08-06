@@ -757,6 +757,7 @@ void resetTimer2()
 {
   Timer2_pre = 0 ;
   Timer2 = 0 ;
+  Timer2_running &= 0x01 ;   // Clear throttle started flag
 }
 
 void perMain()
@@ -768,7 +769,8 @@ void perMain()
     perOut(g_chans512, 0);
     if(!tick10ms) return; //make sure the rest happen only every 10ms.
 
-    if ( Timer2_running )
+  //  if ( Timer2_running )
+    if ( Timer2_running & 1)  // ignore throttle started flag
     {
         if ( (Timer2_pre += 1 ) >= 100 )
         {
