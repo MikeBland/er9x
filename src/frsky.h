@@ -18,6 +18,36 @@
 #ifndef FRSKY_H
 #define FRSKY_H
 
+/*  FrSky Hub Info
+DataID Meaning       Unit   Range   Note
+0x01   GPS altitude  m              Before”.”
+0x09                                After “.”
+0x02   Temperature1  °C     -30-250
+0x03   RPM           BPS    0-60000
+0x04   Fuel Level    %      0, 25, 50, 75, 100
+0x05   Temperature2  °C     -30-250
+0x06   Volt          1/500v 0-4.2v
+0x10   Altitude      m      0-9999
+0x11   GPS speed     Knots          Before “.”
+0x19                                After “.”
+0x12   Longitude     dddmm.mmmm     Before “.”
+0x1A                                After “.”
+0x22   E/W
+0x13   Latitude      ddmm.mmmm      Before “.”
+0x1B                                After “.”
+0x23   N/S
+0x14   Course        degree 0-360   Before “.”
+0x1C                                After “.”
+0x15   Date/Month
+0x16   Year
+0x17   Hour /Minute
+0x18   Second
+0x24   Acc-x         1/256g -8g ~ +8g
+0x25   Acc-y         1/256g -8g ~ +8g
+0x26   Acc-z         1/256g -8g ~ +8g
+ */
+
+
 // .20 seconds
 #define FRSKY_TIMEOUT10ms 20
 
@@ -40,9 +70,11 @@ struct FrskyData {
 
 // Global Fr-Sky telemetry data variables
 extern uint8_t frskyStreaming; // >0 (true) == data is streaming in. 0 = nodata detected for some time
+extern uint8_t frskyUsrStreaming; // >0 (true) == user data is streaming in. 0 = no user data detected for some time
 extern uint8_t FrskyAlarmSendState;
 extern FrskyData frskyTelemetry[2];
 extern FrskyData frskyRSSI[2];
+extern int16_t FrskyHubData[] ;
 
 void FRSKY_Init(void);
 void FRSKY10mspoll(void);
@@ -57,4 +89,5 @@ bool FRSKY_alarmRaised(uint8_t idx);
 void resetTelemetry();
 
 #endif
+
 

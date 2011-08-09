@@ -657,7 +657,7 @@ if(k==NUM_CHNOUT){
 #ifdef FRSKY
 void menuProcTelemetry(uint8_t event)
 {
-    MENU("TELEMETRY", menuTabModel, e_Telemetry, 7, {0, 1, 2, 2, 1, 2/*, 2*/});
+    MENU("TELEMETRY", menuTabModel, e_Telemetry, 7, {1, 1, 2, 2, 1, 2/*, 2*/});
 
 int8_t  sub    = mstate2.m_posVert;
 uint8_t subSub = mstate2.m_posHorz;
@@ -676,6 +676,11 @@ switch(event){
 blink = s_editMode ? BLINK : INVERS ;
 uint8_t subN = 1;
 uint8_t t;
+
+  lcd_puts_P(    0,    FH, PSTR("UsrProto"));
+  lcd_putsnAtt(  10*FW, FH, PSTR("FrHubWSHhi")+5*g_model.FrSkyUsrProto,5,(sub==subN ? INVERS:0));
+  if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.FrSkyUsrProto,0,1);
+subN++;
 
 for (int i=0; i<2; i++) {
     lcd_putsAtt(0, y, PSTR("A  channel"), 0);
@@ -2613,7 +2618,7 @@ void timer(uint8_t val)
 
 #define MAXTRACE 120
 uint8_t s_traceBuf[MAXTRACE];
-uint16_t s_traceWr;
+uint8_t s_traceWr;
 uint16_t s_traceCnt;
 void trace()   // called in perOut - once envery 0.01sec
 {
@@ -2820,16 +2825,16 @@ void menuProc0(uint8_t event)
 #ifdef FRSKY
     case EVT_KEY_BREAK(KEY_RIGHT):
         if(view == e_telemetry) {
-            g_eeGeneral.view = (g_eeGeneral.view + 0x10) % 0x20;
-            STORE_GENERALVARS;     //eeWriteGeneral();
+            g_eeGeneral.view = (g_eeGeneral.view + 0x10) & 0x3F;
+//            STORE_GENERALVARS;     //eeWriteGeneral();
 //            eeDirty(EE_GENERAL);
             beepKey();
         }
         break;
     case EVT_KEY_BREAK(KEY_LEFT):
         if(view == e_telemetry) {
-            g_eeGeneral.view = (g_eeGeneral.view - 0x10) % 0x20;
-            STORE_GENERALVARS;     //eeWriteGeneral();
+            g_eeGeneral.view = (g_eeGeneral.view - 0x10) & 0x3F;
+//            STORE_GENERALVARS;     //eeWriteGeneral();
 //            eeDirty(EE_GENERAL);
             beepKey();
         }
@@ -2956,10 +2961,10 @@ void menuProc0(uint8_t event)
     }
     else {
         lcd_putsnAtt(0, 0, g_model.name, sizeof(g_model.name), BSS|INVERS);
-        uint8_t att = (g_vbat100mV < g_eeGeneral.vBatWarn ? INVERS|BLINK : INVERS);
+        uint8_t att = (g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0);
         putsVBat(14*FW,0,att);
         if(s_timerState != TMR_OFF){
-            att = (s_timerState==TMR_BEEPING ? INVERS|BLINK : INVERS);
+            att = (s_timerState==TMR_BEEPING ? BLINK : 0);
             putsTime(18*FW+3, 0, s_timerVal, att, att);
         }
     }
@@ -3015,7 +3020,8 @@ void menuProc0(uint8_t event)
                 }
             }
             displayCount = (displayCount+1) % 50;
-            if (g_eeGeneral.view & 0x10) {
+            if ((g_eeGeneral.view & 0x30) == 0x10 )
+						{
                 if (g_model.frsky.channels[0].ratio || g_model.frsky.channels[1].ratio) {
                     x0 = 0;
                     for (int i=0; i<2; i++) {
@@ -3032,15 +3038,39 @@ void menuProc0(uint8_t event)
                     }
                 }
                 lcd_puts_P(0, 6*FH, PSTR("Rx="));
-                lcd_outdezAtt(3 * FW - 2, 5*FH+2, staticRSSI[0], DBLSIZE|LEFT);
+                lcd_outdezAtt(3 * FW - 2, 5*FH, staticRSSI[0], DBLSIZE|LEFT);
                 lcd_outdezAtt(4 * FW, 7*FH, frskyRSSI[0].min, 0);
                 lcd_outdezAtt(6 * FW, 7*FH, frskyRSSI[0].max, LEFT);
                 lcd_puts_P(11 * FW - 2, 6*FH, PSTR("Tx="));
-                lcd_outdezAtt(14 * FW - 4, 5*FH+2, staticRSSI[1], DBLSIZE|LEFT);
+                lcd_outdezAtt(14 * FW - 4, 5*FH, staticRSSI[1], DBLSIZE|LEFT);
                 lcd_outdezAtt(15 * FW - 2, 7*FH, frskyRSSI[1].min, 0);
                 lcd_outdezAtt(17 * FW - 2, 7*FH, frskyRSSI[1].max, LEFT);
             }
-            else {
+            else if ((g_eeGeneral.view & 0x30) == 0x20 )
+						{
+        				if (frskyUsrStreaming)
+								{
+                	lcd_puts_P(0, 2*FH, PSTR("T1="));
+                	lcd_outdezAtt(3*FW+4, 1*FH, FrskyHubData[2], DBLSIZE|LEFT);
+                	lcd_puts_P(8*FW, 2*FH, PSTR("RPM="));
+                	lcd_outdezAtt(12*FW, 1*FH, FrskyHubData[3]*30, DBLSIZE|LEFT);
+                	lcd_puts_P(0, 4*FH, PSTR("Alt="));
+                	lcd_outdezAtt(4*FW, 3*FH, FrskyHubData[16], DBLSIZE|LEFT);
+
+                	lcd_puts_P(14 * FW, 7*FH, PSTR("T2="));
+                	lcd_outdezAtt(18 * FW, 7*FH, FrskyHubData[5], LEFT);
+								}	
+                lcd_puts_P(0, 7*FH, PSTR("Rx="));
+                lcd_outdezAtt(3 * FW, 7*FH, staticRSSI[0], LEFT);
+                lcd_puts_P(8 * FW, 7*FH, PSTR("Tx="));
+                lcd_outdezAtt(11 * FW, 7*FH, staticRSSI[1], LEFT);
+						}
+            else if ((g_eeGeneral.view & 0x30) == 0x30 )
+						{
+            	lcd_putsAtt(6, 2*FH, PSTR("To Be Done"), DBLSIZE);
+						}
+						else
+						{
                 y0 = 5*FH;
                 //lcd_puts_P(2*FW-3, y0, PSTR("Tele:"));
                 x0 = 4*FW-3;
@@ -3062,7 +3092,7 @@ void menuProc0(uint8_t event)
             }
         }
         else {
-            lcd_putsAtt(22, 40, PSTR("NO DATA"), DBLSIZE);
+            lcd_putsAtt(22, 5*FH, PSTR("NO DATA"), DBLSIZE);
         }
     }
 #endif
@@ -3160,7 +3190,8 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
 uint16_t pulses2MHz[70] = {0};
 int16_t  anas [NUM_XCHNRAW] = {0};
 int32_t  chans[NUM_CHNOUT] = {0};
-uint32_t inacCounter = 0;
+uint8_t inacPrescale ;
+uint16_t inacCounter = 0;
 uint16_t inacSum = 0;
 uint8_t  bpanaCenter = 0;
 int16_t  sDelay[MAX_MIXERS] = {0};
@@ -3176,15 +3207,19 @@ void perOut(int16_t *chanOut, uint8_t att)
     if(tick10ms) {
         if(s_noHi) s_noHi--;
         if( (g_eeGeneral.inactivityTimer + 10) && (g_vbat100mV>49)) {
-            inacCounter++;
+					  if (++inacPrescale > 15 )
+						{
+              inacCounter++;
+							inacPrescale = 0 ;
+						}
             uint16_t tsum = 0;
             for(uint8_t i=0;i<4;i++) tsum += anas[i];
             if(abs(int16_t(tsum-inacSum))>INACTIVITY_THRESHOLD){
                 inacSum = tsum;
                 inacCounter=0;
             }
-            if(inacCounter>((uint32_t)(g_eeGeneral.inactivityTimer+10)*100*60))
-                if((inacCounter&0x3F)==10) beepWarn();
+            if(inacCounter>((uint16_t)(g_eeGeneral.inactivityTimer+10)*100*60/16))
+                if((inacCounter&0x3)==1) beepWarn();
         }
     }
 
@@ -3799,5 +3834,7 @@ void evalOffset(int8_t sub, uint8_t max)
     else if(sub-s_pgOfs>max) s_pgOfs = sub-max;
     else if(sub-s_pgOfs<max-6) s_pgOfs = sub-max+6;
 }
+
+
 
 

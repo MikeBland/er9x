@@ -37,6 +37,7 @@ uint8_t frskyTxBuffer[19];   // Ditto for transmit buffer
 uint8_t frskyTxBufferCount = 0;
 uint8_t FrskyRxBufferReady = 0;
 uint8_t frskyStreaming = 0;
+uint8_t frskyUsrStreaming = 0;
 
 FrskyData frskyTelemetry[2];
 FrskyData frskyRSSI[2];
@@ -47,6 +48,79 @@ struct FrskyAlarm {
   uint8_t value;    // The threshold above or below which the alarm will sound
 };
 struct FrskyAlarm frskyAlarms[4];
+
+uint8_t Frsky_user_state ;
+uint8_t Frsky_user_stuff ;
+uint8_t Frsky_user_id ;
+uint8_t Frsky_user_lobyte ;
+
+int16_t FrskyHubData[20] ;  // For now only 20 bytes
+
+void frsky_proc_user_byte( uint8_t byte )
+{
+	if (g_model.FrSkyUsrProto == 0)  // FrSky Hub
+	{
+	
+  	if ( Frsky_user_state == 0 )
+		{ // Waiting for 0x5E
+			if ( byte == 0x5E )
+			{
+				Frsky_user_state = 1 ;			
+			}		
+		}
+		else
+		{ // In a packet
+			if ( byte == 0x5E )
+			{ // 
+				Frsky_user_state = 1 ;			
+			}
+			else
+			{
+				if ( byte == 0x5D )
+				{
+					Frsky_user_stuff = 1 ;  // Byte stuffing active
+				}
+				else
+				{
+					if ( Frsky_user_stuff )
+					{
+						Frsky_user_stuff = 0 ;
+						byte ^= 0x60 ;  // Unstuff
+					}
+  	      if ( Frsky_user_state == 1 )
+					{
+					  Frsky_user_id	= byte ;
+						Frsky_user_state = 2 ;
+					}
+  	      else if ( Frsky_user_state == 2 )
+					{
+					  Frsky_user_lobyte	= byte ;
+						Frsky_user_state = 3 ;
+					}
+					else
+					{
+						if ( Frsky_user_id < 20 )
+						{
+						  FrskyHubData[Frsky_user_id] = ( byte << 8 ) + Frsky_user_lobyte ;
+						}	
+						Frsky_user_state = 0 ;
+					}
+				}
+			}		 
+		}
+	}
+	else if (g_model.FrSkyUsrProto == 1)  // WS How High
+	{
+    if ( frskyUsrStreaming < (FRSKY_TIMEOUT10ms*3 - 10))  // At least 100mS passed since last data received
+		{
+			Frsky_user_lobyte = byte ;
+		}
+		else
+		{
+			FrskyHubData[16] = ( byte << 8 ) + Frsky_user_lobyte ;  // Store altitude info
+		}				
+	}
+}
 
 void frskyPushValue(uint8_t & i, uint8_t value);
 
@@ -61,10 +135,6 @@ void frskyPushValue(uint8_t & i, uint8_t value);
     - A1/A2/RSSI telemtry data
     - Alarm level/mode/threshold settings for Ch1A, Ch1B, Ch2A, Ch2B
     - User Data packets
-
-   User Data packets are not yet implementedi (they are simply ignored), 
-   but will likely one day contain the likes of GPS long/lat/alt/speed, 
-   AoA, airspeed, etc.
 */
 
 void processFrskyPacket(uint8_t *packet)
@@ -91,8 +161,19 @@ void processFrskyPacket(uint8_t *packet)
       frskyRSSI[1].set(packet[4] / 2);
       break;
 
-    case USRPKT: // User Data packet -- not yet implemented
-      break;
+    case USRPKT: // User Data packet
+    {
+			uint8_t i, j ;
+			i = packet[1] + 3 ;  // User bytes end
+			j = 3 ;              // Index to user bytes
+			while ( j < i )
+			{
+				frsky_proc_user_byte( packet[j] ) ;								
+				j += 1 ; 
+			}
+    }	
+    frskyUsrStreaming = FRSKY_TIMEOUT10ms*3; // reset counter only if valid frsky packets are being detected
+    break;
   }
 
   FrskyRxBufferReady = 0;
@@ -418,18 +499,22 @@ void frskyAlarmsRefresh()
 
 void frskyPushValue(uint8_t & i, uint8_t value)
 {
+	uint8_t j ;
+	j = 0 ;
   // byte stuff the only byte than might need it
   if (value == START_STOP) {
-    frskyTxBuffer[i++] = BYTESTUFF;
-    frskyTxBuffer[i++] = 0x5e;
+    j = 1 ;
+    value = 0x5e;
   }
   else if (value == BYTESTUFF) {
-    frskyTxBuffer[i++] = BYTESTUFF;
-    frskyTxBuffer[i++] = 0x5d;
+    j = 1 ;
+    value = 0x5d;
   }
-  else {
-    frskyTxBuffer[i++] = value;
-  }
+	if ( j )
+	{
+		frskyTxBuffer[i++] = BYTESTUFF;
+	}
+  frskyTxBuffer[i++] = value;
 }
 
 void FrskyData::set(uint8_t value)

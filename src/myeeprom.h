@@ -191,7 +191,8 @@ typedef struct t_ModelData {
   uint8_t   traineron:1;  // 0 disable trainer, 1 allow trainer
 //  uint8_t   spare:6;
   uint8_t   t2throttle:1 ;  // Start timer2 using throttle
-  uint8_t   spare:5;
+  uint8_t   FrSkyUsrProto:2 ;  // Protocol in FrSky User Data, 0=FrSky Hub, 1=WS HowHigh
+  uint8_t   spare:3;
   uint16_t  tmrVal;
   uint8_t   protocol;
   int8_t    ppmNCH;
@@ -241,5 +242,6 @@ extern ModelData g_model;
 
 #endif
 /*eof*/
+
 
 
