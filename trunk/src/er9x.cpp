@@ -757,7 +757,7 @@ void resetTimer2()
 {
   Timer2_pre = 0 ;
   Timer2 = 0 ;
-  Timer2_running &= 0x01 ;   // Clear throttle started flag
+  Timer2_running = 0 ;   // Stop and clear throttle started flag
 }
 
 void perMain()
@@ -1046,7 +1046,7 @@ void getADC_bandgap()
   // Wait for the AD conversion to complete
   while ((ADCSRA & 0x10)==0);
   ADCSRA|=0x10;
-  BandGap = ADCW;
+  BandGap = (BandGap * 7 + ADCW + 4 ) >> 3 ;
 //  if(BandGap<256)
 //      BandGap = 256;
 }
@@ -1254,7 +1254,9 @@ int main(void)
   checkAlarm();
   checkWarnings();
   clearKeyEvents(); //make sure no keys are down before proceeding
-
+  
+  BandGap = 240 ;
+  
   setupPulses();
   wdt_enable(WDTO_500MS);
   perOut(g_chans512, 0);
@@ -1297,6 +1299,7 @@ void mainSequence()
       t0 = getTmr16KHz() - t0;
       g_timeMain = max(g_timeMain,t0);
 }
+
 
 
 
