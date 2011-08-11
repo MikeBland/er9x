@@ -169,10 +169,10 @@ void processFrskyPacket(uint8_t *packet)
 			while ( j < i )
 			{
 				frsky_proc_user_byte( packet[j] ) ;								
+        frskyUsrStreaming = FRSKY_TIMEOUT10ms*3; // reset counter only if valid frsky packets are being detected
 				j += 1 ; 
 			}
     }	
-    frskyUsrStreaming = FRSKY_TIMEOUT10ms*3; // reset counter only if valid frsky packets are being detected
     break;
   }
 
