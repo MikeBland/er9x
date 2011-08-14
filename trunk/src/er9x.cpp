@@ -125,17 +125,27 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
 void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t att, uint8_t scale)
 {
   uint32_t value ;
-  uint8_t ratio ;
+//  uint8_t ratio ;
+  uint16_t ratio ;
+  uint8_t times2 ;
 
   value = val ;
-//  if (g_model.frsky.channels[channel].type == 2/*v*/)
-//  {
-//    value <<= 1 ;
-//  }
+  if (g_model.frsky.channels[channel].type == 2/*V*/)
+  {
+    times2 = 1 ;
+  }
+  else
+  {
+    times2 = 0 ;
+  }
 
   if ( scale )
   {
     ratio = g_model.frsky.channels[channel].ratio ;
+    if ( times2 )
+    {
+      ratio <<= 1 ;
+    }
     value *= ratio ;
     if ( ratio < 100 )
     {
@@ -147,11 +157,18 @@ void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t 
     {
       value /= 255 ;
     }
+	}
+  else
+  {
+    if ( times2 )
+    {
+      value <<= 1 ;
+    }
   }
 //              val = (uint16_t)staticTelemetry[i]*g_model.frsky.channels[i].ratio / 255;
 //              putsTelemetry(x0-2, 2*FH, val, g_model.frsky.channels[i].type, blink|DBLSIZE|LEFT);
-  if (g_model.frsky.channels[channel].type == 0/*v*/)
-//  if ( (g_model.frsky.channels[channel].type == 0/*v*/) || (g_model.frsky.channels[channel].type == 2/*v*/) )
+//  if (g_model.frsky.channels[channel].type == 0/*v*/)
+  if ( (g_model.frsky.channels[channel].type == 0/*v*/) || (g_model.frsky.channels[channel].type == 2/*v*/) )
   {
     lcd_outdezNAtt(x, y, value, att|PREC1, 5) ;
     if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, 'v', att);
@@ -765,6 +782,10 @@ void perMain()
     static uint16_t lastTMR;
     tick10ms = (get_tmr10ms() != lastTMR);
     lastTMR = get_tmr10ms();
+//    uint16_t time10ms ;
+//		time10ms = get_tmr10ms();
+//    tick10ms = (time10ms != lastTMR);
+//    lastTMR = time10ms;
 
     perOut(g_chans512, 0);
     if(!tick10ms) return; //make sure the rest happen only every 10ms.
@@ -915,6 +936,7 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
 //    {
 //      uint16_t rest ;
 //      rest = PPM_frame - PulseTotal ;      
+//      *pulsePtr = rest ;
 //    }
 //    channel += 1 ;
 //  }
@@ -1299,7 +1321,5 @@ void mainSequence()
       t0 = getTmr16KHz() - t0;
       g_timeMain = max(g_timeMain,t0);
 }
-
-
 
 
