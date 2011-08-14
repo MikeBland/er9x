@@ -54,7 +54,7 @@ uint8_t Frsky_user_stuff ;
 uint8_t Frsky_user_id ;
 uint8_t Frsky_user_lobyte ;
 
-int16_t FrskyHubData[20] ;  // For now only 20 bytes
+int16_t FrskyHubData[20] ;  // For now only 20 words
 
 void frsky_proc_user_byte( uint8_t byte )
 {
@@ -531,4 +531,5 @@ void resetTelemetry()
   memset(frskyTelemetry, 0, sizeof(frskyTelemetry));
   memset(frskyRSSI, 0, sizeof(frskyRSSI));
 }
+
 

@@ -45,6 +45,47 @@ DataID Meaning       Unit   Range   Note
 0x24   Acc-x         1/256g -8g ~ +8g
 0x25   Acc-y         1/256g -8g ~ +8g
 0x26   Acc-z         1/256g -8g ~ +8g
+ 
+DataID Meaning       Unit   Range   Note
+0x01   GPS altitude  m              Before”.”
+0x02   Temperature1  °C     -30-250
+0x03   RPM           BPS    0-60000
+0x04   Fuel Level    %      0, 25, 50, 75, 100
+0x05   Temperature2  °C     -30-250
+0x06   Volt          1/500v 0-4.2v
+0x07
+0x08
+0x09   GPS altitude  m              After “.”
+0x0A
+0x0B
+0x0C
+0x0D
+0x0E
+0x0F
+0x10   Altitude      m      0-9999
+0x11   GPS speed     Knots          Before “.”
+0x12   Longitude     dddmm.mmmm     Before “.”
+0x13   Latitude      ddmm.mmmm      Before “.”
+0x14   Course        degree 0-360   Before “.”
+0x15   Date/Month
+0x16   Year
+0x17   Hour /Minute
+0x18   Second
+0x19   GPS speed     Knots          After “.”
+0x1A   Longitude     dddmm.mmmm     After “.”
+0x1B   Latitude      ddmm.mmmm      After “.”
+0x1C   Course        degree 0-360   After “.”
+0x1D
+0x1E
+0x1F
+0x20
+0x21
+0x22   E/W
+0x23   N/S
+0x24   Acc-x         1/256g -8g ~ +8g
+0x25   Acc-y         1/256g -8g ~ +8g
+0x26   Acc-z         1/256g -8g ~ +8g
+  
  */
 
 
@@ -89,5 +130,6 @@ bool FRSKY_alarmRaised(uint8_t idx);
 void resetTelemetry();
 
 #endif
+
 
 
