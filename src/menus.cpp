@@ -663,7 +663,7 @@ if(k==NUM_CHNOUT){
 #ifdef FRSKY
 void menuProcTelemetry(uint8_t event)
 {
-    MENU("TELEMETRY", menuTabModel, e_Telemetry, 7, {1, 1, 2, 2, 1, 2/*, 2*/});
+    MENU("TELEMETRY", menuTabModel, e_Telemetry, 8, {0, 1, 1, 2, 2, 1, 2/*, 2*/});
 
 int8_t  sub    = mstate2.m_posVert;
 uint8_t subSub = mstate2.m_posHorz;
@@ -3891,6 +3891,5 @@ void evalOffset(int8_t sub, uint8_t max)
     else if(sub-s_pgOfs>max) s_pgOfs = sub-max;
     else if(sub-s_pgOfs<max-6) s_pgOfs = sub-max+6;
 }
-
 
 
