@@ -40,6 +40,15 @@ echo ">>>  moving"
 mv er9x.hex ../er9x-ardupilot.hex
 
 echo
+echo "===== Making MAIN - NOHELI/NOTEMPLATE Version ====="
+echo ">>> cleaning"
+make clean
+echo ">>>  making"
+make TEMPLATES=NO HELI=NO
+echo ">>>  moving"
+mv er9x.hex ../er9x-noht.hex
+
+echo
 echo "===== Making MAIN Version ====="
 echo ">>> cleaning"
 make clean
