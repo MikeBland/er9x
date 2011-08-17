@@ -29,6 +29,13 @@ mode4 ail thr ele rud
 EEGeneral  g_eeGeneral;
 ModelData  g_model;
 
+#ifdef BEEPSPKR
+// gruvin: Tone Generator Globals  - ported by rob.thomson
+uint8_t toneFreq = BEEP_DEFAULT_FREQ;
+uint8_t toneOn = false;
+#endif
+
+
 bool warble = false;
 uint8_t sysFlags = 0;
 
@@ -598,20 +605,37 @@ uint8_t checkTrim(uint8_t event)
       *TrimPtr[idx]=0;
       killEvents(event);
       warble = false;
+//gruvin speaker mod ported by rob.thomson
+#ifdef BEEPSPKR
+      beepWarn2Spkr(60);
+#else
       beepWarn();
+#endif
     }
     else if(x>-125 && x<125){
       *TrimPtr[idx] = (int8_t)x;
       STORE_MODELVARS_TRIM;
       if(event & _MSK_KEY_REPT) warble = true;
-      beepWarn1();//beepKey();
+//gruvin speaker mod - ported by rob.thomson
+#ifdef BEEPSPKR
+      // toneFreq higher/lower according to trim position
+      // beepTrimSpkr((x/3)+60);  // Range -125 to 125 = toneFreq: 19 to 101
+      beepTrimSpkr((x/4)+60);  // Divide by 4 more efficient. Range -125 to 125 = toneFreq: 28 to 91
+#else
+      beepWarn1();
+#endif
     }
     else
     {
       *TrimPtr[idx] = (x>0) ? 125 : -125;
       STORE_MODELVARS_TRIM;
       warble = false;
+//grucin speaker mod ported by rob.thomson
+#ifdef BEEPSPKR
+      beepWarn2Spkr((x/4)+60);
+#else
       beepWarn();
+#endif
     }
 
     return 0;
@@ -637,11 +661,21 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
   }
   if(event==EVT_KEY_FIRST(kpl) || event== EVT_KEY_REPT(kpl) || (s_editMode && (event==EVT_KEY_FIRST(KEY_UP) || event== EVT_KEY_REPT(KEY_UP))) ) {
     newval++;
+//gruvin speaker mod - ported by rob.thomson
+#ifdef BEEPSPKR
+    beepKeySpkr(BEEP_KEY_UP_FREQ);
+#else
     beepKey();
+#endif
     kother=kmi;
   }else if(event==EVT_KEY_FIRST(kmi) || event== EVT_KEY_REPT(kmi) || (s_editMode && (event==EVT_KEY_FIRST(KEY_DOWN) || event== EVT_KEY_REPT(KEY_DOWN))) ) {
     newval--;
+//gruvin speaker mod - ported by rob.thomson
+#ifdef BEEPSPKR
+    beepKeySpkr(BEEP_KEY_DOWN_FREQ);
+#else
     beepKey();
+#endif
     kother=kpl;
   }
   if((kother != (uint8_t)-1) && keyState((EnumKeys)kother)){
@@ -663,18 +697,36 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
   {
     newval = i_max;
     killEvents(event);
+//gruvin speaker mod - ported by rob.thomson
+#ifdef BEEPSPKR
+    beepWarn2Spkr(BEEP_KEY_UP_FREQ);
+#else
     beepWarn();
+#endif
   }
   else if(newval < i_min)
   {
     newval = i_min;
     killEvents(event);
+//gruvin speaker mod - ported by rob.thomson
+#ifdef BEEPSPKR
+    beepWarn2Spkr(BEEP_KEY_DOWN_FREQ);
+#else
     beepWarn();
+#endif
   }
   if(newval != val) {
     if(newval==0) {
       pauseEvents(event);
-      beepKey(); //beepWarn();
+//gruvin speaker mod - ported by rob.thomson      
+#ifdef BEEPSPKR
+      if (newval>val)
+        beepWarn2Spkr(BEEP_KEY_UP_FREQ);
+      else
+        beepWarn2Spkr(BEEP_KEY_DOWN_FREQ);
+#else
+      beepKey();
+#endif
     }
     eeDirty(i_flags & (EE_GENERAL|EE_MODEL));
     checkIncDec_Ret = true;
@@ -1100,7 +1152,52 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
   cli();
   TIMSK &= ~(1<<OCIE0); //stop reentrance
   sei();
+  
+// gruvin speaker mod ported by rob.thomson
+#ifdef BEEPSPKR
+  OCR0 += 2;
+#else  
   OCR0 = OCR0 + 156;
+#endif
+
+// gruvin speaker mod - ported by rob.thomson
+#ifdef BEEPSPKR
+  // gruvin: Begin Tone Generator
+  static uint8_t toneCounter;
+
+  if (toneOn)
+  {
+    toneCounter += toneFreq;
+    if ((toneCounter & 0x80) == 0x80)
+      PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
+    else
+      PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
+  } 
+  else
+      PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
+  // gruvin: END Tone Generator
+
+  static uint8_t cnt10ms = 77; // execute 10ms code once every 78 ISRs
+  if (cnt10ms-- == 0) // BEGIN { ... every 10ms ... }
+  {
+    // Begin 10ms event
+    cnt10ms = 77; 
+    
+/*
+    // DEBUG: gruvin: crude test to time if I have in fact still got 10ms
+    // Test confirms 1 second bips. Too accurate to count error offset over 6 full minutes. (Good.)
+    static uint8_t test10ms = 100;
+    if (test10ms-- == 0)
+    {
+      test10ms = 100;
+      g_beepCnt = 5;
+      beepOn = true; // beep each second (beepOn function turns beep off)
+    }
+*/
+
+#endif
+    // Record start time from TCNT1 to record excution time
+//    uint16_t dt=TCNT1;// TCNT1 (used for PPM out pulse generation) is running at 2MHz
 
 
   //cnt >/=0
@@ -1126,19 +1223,43 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
       }
   }
 
-  if(beepOn){
+  //gruvin speaker mod - ported by rob.thomson
+#ifdef BEEPSPKR
+    // G: use new tone generator for beeps
+    if(beepOn)
+    {
+      static bool warbleC;
+      warbleC = warble && !warbleC;
+      if(warbleC)
+        toneOn = false;
+      else
+        toneOn = true;
+    }else{
+      toneOn = false;
+    }
+
+#else
+    // G: use original external buzzer for beeps
+    if(beepOn){
     static bool warbleC;
     warbleC = warble && !warbleC;
     if(warbleC)
       PORTE &= ~(1<<OUT_E_BUZZER);//buzzer off
     else
       PORTE |=  (1<<OUT_E_BUZZER);//buzzer on
-  }else{
-    PORTE &= ~(1<<OUT_E_BUZZER);
-  }
+    }else{
+      PORTE &= ~(1<<OUT_E_BUZZER);
+    }
+#endif
 
   per10ms();
   heartbeat |= HEART_TIMER10ms;
+
+//gruvin speaker mod - ported by rob.thomson
+#ifdef BEEPSPKR
+  } // end 10ms event
+#endif
+
   cli();
   TIMSK |= (1<<OCIE0);
 //  sei();	The RETI will do this
