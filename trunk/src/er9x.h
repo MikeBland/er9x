@@ -138,6 +138,13 @@
   #define INP_C_AileDR  7
 #endif
 
+//gruvin speaker mod - ported by rob.thomson
+#ifdef BEEPSPKR
+#define BEEP_KEY_TIME 5
+#define BEEP_DEFAULT_FREQ 50
+#define BEEP_KEY_UP_FREQ 55
+#define BEEP_KEY_DOWN_FREQ 45
+#endif
 
 
 #define OUT_G_SIM_CTL  4 //1 : phone-jack=ppm_in
@@ -675,14 +682,39 @@ inline void _beep(uint8_t b) {
   g_beepCnt=b;
 }
 
-/// Erzeugt einen kurzen beep
+// gruvin speaker mod - ported by rob.thomson
+#ifdef BEEPSPKR
+extern uint8_t toneFreq;
+inline void _beepSpkr(uint8_t d, uint8_t f)
+{
+  g_beepCnt=d;
+  toneFreq=f;
+}
+#endif
+
+// gruvin speaker - ported by rob.thomson
+#ifdef BEEPSPKR
+
+#define beepKeySpkr(freq) _beepSpkr(g_beepVal[0],freq)
+#define beepTrimSpkr(freq) _beepSpkr(g_beepVal[0],freq)
+#define beepWarn1Spkr(freq) _beepSpkr(g_beepVal[1],freq)
+#define beepWarn2Spkr(freq) _beepSpkr(g_beepVal[2],freq)
+#define beepKey() _beepSpkr(g_beepVal[0],BEEP_DEFAULT_FREQ)
+#define beepWarn() _beepSpkr(g_beepVal[3],BEEP_DEFAULT_FREQ)
+#define beepWarn1() _beepSpkr(g_beepVal[1],BEEP_DEFAULT_FREQ)
+#define beepWarn2() _beepSpkr(g_beepVal[2],BEEP_DEFAULT_FREQ)
+#define beepErr()  _beepSpkr(g_beepVal[4],BEEP_DEFAULT_FREQ)
+
+#else
+
+// default beeper
 #define beepKey()   _beep(g_beepVal[0])
+#define beepWarn() _beep(g_beepVal[3])
 #define beepWarn1() _beep(g_beepVal[1])
 #define beepWarn2() _beep(g_beepVal[2])
-/// Erzeugt einen langen beep
-#define beepWarn() _beep(g_beepVal[3])
-/// Erzeugt einen sehr langen beep
 #define beepErr()  _beep(g_beepVal[4])
+
+#endif
 
 #endif // er9x_h
 /*eof*/

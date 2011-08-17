@@ -47,6 +47,9 @@ OBJDIR = obj
 # More information at [insertURLhere]
 EXT = STD
 
+# gruvin: BEEPER. Values = BUZZER or SPEAKER  - ported by rob.thomson
+BEEPER = BEEPER
+
 
 # List C++ source files here. (C dependencies are automatically generated.)
 CPPSRC = $(TARGET).cpp stamp.cpp menus.cpp pers.cpp file.cpp lcd.cpp drivers.cpp templates.cpp
@@ -136,6 +139,11 @@ endif
 # If FRSKY-Support is enabled
 ifeq ($(EXT), FRSKY)
  CPPDEFS += -DFRSKY
+endif
+
+# gruvin: If buzzer speaker replacment supported - ported by rob.thomson
+ifeq ($(BEEPER), SPEAKER)
+ CPPDEFS += -DBEEPSPKR
 endif
 
 # If ARDUPILOT-Support is enabled
