@@ -8,3 +8,4 @@ The following are a list of tutorials that have been sourced from the community 
 
  * [TelemetryMods Telemetry Mods]
  * [CustomSpray Custom Spray]
+ * [SpeakerMod Speaker Mod]
