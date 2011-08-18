@@ -33,6 +33,7 @@ ModelData  g_model;
 // gruvin: Tone Generator Globals  - ported by rob.thomson
 uint8_t toneFreq = BEEP_DEFAULT_FREQ;
 uint8_t toneOn = false;
+
 #endif
 
 
@@ -350,6 +351,8 @@ void doSplash()
 {
     if(!g_eeGeneral.disableSplashScreen)
     {
+
+
         if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff)
              BACKLIGHT_ON;
         else
@@ -607,7 +610,7 @@ uint8_t checkTrim(uint8_t event)
       warble = false;
 //gruvin speaker mod ported by rob.thomson
 #ifdef BEEPSPKR
-      beepWarn2Spkr(60);
+      beepWarn2Spkr(60 + BEEP_TONE);
 #else
       beepWarn();
 #endif
@@ -620,7 +623,7 @@ uint8_t checkTrim(uint8_t event)
 #ifdef BEEPSPKR
       // toneFreq higher/lower according to trim position
       // beepTrimSpkr((x/3)+60);  // Range -125 to 125 = toneFreq: 19 to 101
-      beepTrimSpkr((x/4)+60);  // Divide by 4 more efficient. Range -125 to 125 = toneFreq: 28 to 91
+      beepTrimSpkr((x+(BEEP_TONE)/2/4)+60);  // Divide by 4 more efficient. Range -125 to 125 = toneFreq: 28 to 91
 #else
       beepWarn1();
 #endif
@@ -632,7 +635,7 @@ uint8_t checkTrim(uint8_t event)
       warble = false;
 //grucin speaker mod ported by rob.thomson
 #ifdef BEEPSPKR
-      beepWarn2Spkr((x/4)+60);
+      beepWarn2Spkr((x+(BEEP_TONE)/2/4)+60);
 #else
       beepWarn();
 #endif

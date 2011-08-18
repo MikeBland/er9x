@@ -140,10 +140,19 @@
 
 //gruvin speaker mod - ported by rob.thomson
 #ifdef BEEPSPKR
+
 #define BEEP_KEY_TIME 5
-#define BEEP_DEFAULT_FREQ 50
-#define BEEP_KEY_UP_FREQ 55
-#define BEEP_KEY_DOWN_FREQ 45
+
+//increase or decrease this value to alter the pitch of the beeps sent to the speaker
+// typically this would sit at a range of 10 to 50
+#define BEEP_TONE 20
+
+//automatically calculate the up & down frequency from the default
+#define BEEP_DEFAULT_FREQ (BEEP_TONE+60)
+#define BEEP_KEY_UP_FREQ  (BEEP_DEFAULT_FREQ+5)
+#define BEEP_KEY_DOWN_FREQ (BEEP_DEFAULT_FREQ-5)
+
+
 #endif
 
 
@@ -334,12 +343,13 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define MAX_ALERT_TIME   60
 
 #define PROTO_PPM        0
-#define PROTO_SILV_A     1
-#define PROTO_SILV_B     2
-#define PROTO_SILV_C     3
-#define PROTO_TRACER_CTP1009 4
-#define PROT_MAX         4
-#define PROT_STR "PPM   SILV_ASILV_BSILV_CTRAC09"
+#define PROTO_PXX        1
+#define PROTO_SILV_A     2
+#define PROTO_SILV_B     3
+#define PROTO_SILV_C     4
+#define PROTO_TRACER_CTP1009 5
+#define PROT_MAX         5
+#define PROT_STR "PPM   PXX   SILV_ASILV_BSILV_CTRAC09"
 #define PROT_STR_LEN     6
 
 typedef void (*MenuFuncP)(uint8_t event);
@@ -606,6 +616,7 @@ void menuProc0(uint8_t event);
 
 void setupPulses();
 void setupPulsesPPM();
+void setupPulsesPXX();
 void setupPulsesSilver();
 void setupPulsesTracerCtp1009();
 
