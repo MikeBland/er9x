@@ -2394,8 +2394,15 @@ void menuProcSetup(uint8_t event)
         uint8_t b ;
         b = g_eeGeneral.beeperVal ;
         lcd_puts_P(0, y,PSTR("Beeper"));
+//under speaker mod, length of beep servers no purpose
+#ifdef BEEPSPKR
+        lcd_putsnAtt(PARAM_OFS - FW, y, PSTR("Quiet""NoKey""Norm ")+5*b,5,(sub==subN ? INVERS:0));
+        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 2); g_eeGeneral.beeperVal = b ; }
+#else
         lcd_putsnAtt(PARAM_OFS - FW, y, PSTR("Quiet""NoKey""Norm ""Long ""xLong")+5*b,5,(sub==subN ? INVERS:0));
         if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 4); g_eeGeneral.beeperVal = b ; }
+#endif
+
         if((y+=FH)>7*FH) return;
     }subN++;
 
@@ -3666,6 +3673,9 @@ void setupPulses()
     case PROTO_PPM:
         setupPulsesPPM();
         break;
+    case PROTO_PXX:
+        setupPulsesPXX();
+        break;
     case PROTO_SILV_A:
     case PROTO_SILV_B:
     case PROTO_SILV_C:
@@ -3708,30 +3718,98 @@ void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
     pulses2MHz[j++]=q;
     pulses2MHz[j++]=rest;
     pulses2MHz[j++]=0;
-
-//    //Total frame length = 22.5long with a 0.3ms stop tail
-//    //The pulse ISR is 2mhz thamsec
-//    //each pulse is 0.7..1.7ms t's why everything is multiplied by 2
-////    uint8_t j=0;
-//    uint16_t pulseTotal = 0 ;
-//    uint16_t *pulseptr = pulses2MHz ;
-//    uint8_t p=8+g_model.ppmNCH*2; //Channels *2
-//    PPM_gap = (g_model.ppmDelay*50+300)*2; //Stoplen *2
-//    PPM_range = g_model.extendedLimits ? 640*2 : 512*2;   //range of 0.7..1.7msec
-////    uint16_t rest=22500u*2-PPM_gap; //Minimum Framelen=22.5 ms
-////    rest += (int16_t(g_model.ppmFrameLength))*1000;
-//    PPM_frame = 22500u * 2 + g_model.ppmFrameLength * 500 * 2 ;
-////    if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
-//    for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
-//        int16_t v = max(min(g_chans512[i],PPM_range),-PPM_range) + PPM_CENTER;
-//        pulseTotal += (*pulseptr++ = PPM_gap);
-//        pulseTotal += (*pulseptr++ = v - PPM_gap + 600); /* as Pat MacKenzie suggests */
-//    }
-//    pulseTotal += (*pulseptr++ =PPM_gap);
-//    *pulseptr++ = 10000 - PPM_gap + 600 ;
-//    *pulseptr++ =0;
 }
 
+
+typedef struct t_PXXData {
+  uint8_t   header1;
+  uint8_t   rxnum;
+  uint16_t  flags;
+  int16_t   ch1:12;
+  int16_t   ch2:12;
+  int16_t   ch3:12;
+  int16_t   ch4:12;
+  int16_t   ch5:12;
+  int16_t   ch6:12;
+  int16_t   ch7:12;
+  int16_t   ch8:12;
+  uint8_t   crc;
+} __attribute__((packed)) PXXData;
+
+PXXData pxxd;
+
+void setupPulsesPXX() // PXX - FrSky pcm protocol
+{
+    /*
+Protocol details:
+pulse duration:
+
+15us = 0
+25us = 1
+
+sync pulse = no activity for more than 100us
+
+header:  (4 * 8 bits = 3 bytes)
+Byte 1: 0xF0 (sync byte - start of header)
+Byte 2: rx number:  0..255
+Byte 3,4 flags:
+bit 1: set rx number -> if this bit is set, every rx listening should change it's rx number to the one described in byte 2
+bit 2: set failsafe position -> if set the following positions should be used as "Failsafe" positions
+bits 3..16: reserved for future use
+
+After the header comes the main position data.
+12*8 bits of information => 8 channels with 12 bits each.
+
+last - CRC byte.
+1 byte holding a checksum of the header and position data
+
+*/
+
+#define PPM_CENTER 1200*2
+    int16_t PPM_range = g_model.extendedLimits ? 640*2 : 512*2;   //range of 0.7..1.7msec
+
+    pxxd.header1 = 0xf0; //first byte
+    pxxd.rxnum = g_model.rxnum; // TODO - set rx num from setup
+    pxxd.flags = 0;
+
+    pxxd.ch1 = max(min(g_chans512[0],PPM_range),-PPM_range);
+    pxxd.ch2 = max(min(g_chans512[1],PPM_range),-PPM_range);
+    pxxd.ch3 = max(min(g_chans512[2],PPM_range),-PPM_range);
+    pxxd.ch4 = max(min(g_chans512[3],PPM_range),-PPM_range);
+    pxxd.ch5 = max(min(g_chans512[4],PPM_range),-PPM_range);
+    pxxd.ch6 = max(min(g_chans512[5],PPM_range),-PPM_range);
+    pxxd.ch7 = max(min(g_chans512[6],PPM_range),-PPM_range);
+    pxxd.ch8 = max(min(g_chans512[7],PPM_range),-PPM_range);
+
+    pxxd.crc = pxxd.header1;
+    pxxd.crc += pxxd.rxnum;
+    pxxd.crc += pxxd.flags % 256;
+    pxxd.crc += pxxd.flags / 256;
+    pxxd.crc += pxxd.ch1;
+    pxxd.crc += pxxd.ch2;
+    pxxd.crc += pxxd.ch3;
+    pxxd.crc += pxxd.ch4;
+    pxxd.crc += pxxd.ch5;
+    pxxd.crc += pxxd.ch6;
+    pxxd.crc += pxxd.ch7;
+    pxxd.crc += pxxd.ch8;
+
+
+    uint16_t k = 0;
+    uint8_t * p = (uint8_t *)&pxxd;
+    // build output pulses
+    for(uint8_t i=0; i<sizeof(pxxd); i++)
+    {
+        uint8_t b = *p;
+        for(uint8_t j=0; j<8; j++)
+        {
+            pulses2MHz[k++] = 20;
+            pulses2MHz[k++] = (b & 1) ? 30 : 10;
+            b <<= 1;
+        }
+        p++;
+    }
+}
 
 uint16_t *pulses2MHzPtr;
 #define BITLEN (600u*2)

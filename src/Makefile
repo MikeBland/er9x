@@ -47,8 +47,7 @@ OBJDIR = obj
 # More information at [insertURLhere]
 EXT = STD
 
-# gruvin: BEEPER. Values = BUZZER or SPEAKER  - ported by rob.thomson
-BEEPER = BEEPER
+
 
 
 # List C++ source files here. (C dependencies are automatically generated.)
@@ -70,8 +69,10 @@ HELI = YES
 
 TEMPLATES = YES
 
-# BEEPER. Values = BUZZER or BUZZER_MOD
+
+# BEEPER. Values = BUZZER or BUZZER_MOD  or SPEAKER
 # (without a mod, BUZZER can make PPM jack output switch from output to input at random)
+# (SPEAKER is used if you have modified your radio gruvin style for the variable sound)
 BEEPER = BUZZER
 
 # List Assembler source files here.
