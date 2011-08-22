@@ -1,6 +1,6 @@
 = Smartie Backlight Driver & Programmer =
 
-The Smartie parts board is an all in one programmer & backlight driver for the er9x radio.
+The Smartie Parts board is an all in one programmer & backlight driver for the er9x radio.
 
 This board makes is simple for non electronic biased users to upgrade their radios firmware and achieve a low power backlight without even having to touch a soldering iron!
 
