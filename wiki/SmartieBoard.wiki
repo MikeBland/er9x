@@ -8,7 +8,7 @@ This board makes is simple for non electronic biased users to upgrade their radi
 
 http://www.smartieparts.com/shop/index.php?main_page=product_info&cPath=3&products_id=331
 
-<b>A comprehensive install guide can be found here:</b>
+<b>An install guide can be found here:</b>
 
 http://er9x.googlecode.com/svn/trunk/doc/9x-addon-instructions.pdf
 
