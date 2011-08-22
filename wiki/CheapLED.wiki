@@ -1,0 +1,10 @@
+= Cheap LED Backlight =
+
+HobbyKing have released a range of cheap LED based lights for the radio.
+
+http://www.hobbyking.com/hobbyking/store/__17129__Turnigy_9X_LCD_Backlight_Kit_White_DIY_.html
+
+These lights are functional, and will deliver a basic light system.  However you should be warned of the following key points.
+
+ * Power Usage is much higher than the EL backlight methods.
+ * The er9x firmware will not be able to turn this light on or off without some modification to the led board and an install of a switching system - this will require some soldering.
