@@ -2326,7 +2326,14 @@ if (edit) {
 
 void menuProcSetup(uint8_t event)
 {
+  
+#ifdef BEEPSPKR
+#define COUNT_ITEMS 19
+#else
 #define COUNT_ITEMS 18
+#endif
+
+
 #define PARAM_OFS   17*FW
 
     SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, COUNT_ITEMS+1);
@@ -2405,6 +2412,19 @@ void menuProcSetup(uint8_t event)
 
         if((y+=FH)>7*FH) return;
     }subN++;
+
+#ifdef BEEPSPKR
+    if(s_pgOfs<subN) {
+        lcd_puts_P(0, y,PSTR("Speaker Pitch"));
+        lcd_outdezAtt(PARAM_OFS,y,g_eeGeneral.speakerPitch,(sub==subN ? INVERS : 0)|LEFT);
+        if(sub==subN) {
+            CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.speakerPitch, 1, 100);
+        }
+        if((y+=FH)>7*FH) return;
+    }subN++;
+
+#endif
+
 
     if(s_pgOfs<subN) {
         lcd_puts_P(0, y,PSTR("Contrast"));

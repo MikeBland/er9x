@@ -1,2 +1,10 @@
 #! /bin/bash
 ./domake | tee make.log
+
+echo
+echo "=======  errors ======="
+cat make.log | grep error
+
+echo
+echo "=======  warnings ======="
+cat make.log | grep warning
