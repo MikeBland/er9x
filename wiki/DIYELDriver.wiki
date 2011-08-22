@@ -1,0 +1,3 @@
+# DIY Backlight Driver #
+
+The DIY Approach to installing a backlight driver involved a small amount of soldering.  
