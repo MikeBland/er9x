@@ -107,11 +107,9 @@ typedef struct t_EEGeneral {
   uint8_t   lightAutoOff;
   uint8_t   templateSetup;  //RETA order according to chout_ar array 
   int8_t    PPM_Multiplier;
-
-  // ver4 and up :=>
-
   FrSkyRSSIAlarm frskyRssiAlarms[2];
-  uint8_t   res[4];
+  uint8_t   speakerPitch;
+  uint8_t   res[3];
   char      ownerName[GENERAL_OWNER_NAME_LEN];
 } __attribute__((packed)) EEGeneral;
 

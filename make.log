@@ -1,10 +1,10 @@
 ===== Starting build =====
 Timestamp
-Thu Aug 18 13:03:13 UTC 2011
+Mon Aug 22 12:36:09 UTC 2011
 ==========================
 
 ===== Updating from SVN =====
-At revision 442.
+At revision 444.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -36,10 +36,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "18.08.2011"
-#define TIME_STR "09:09:14"
-#define SUB_VERS 4682-erez
-#define SVN_VERS "trunk-r443"
+#define DATE_STR "22.08.2011"
+#define TIME_STR "08:08:11"
+#define SUB_VERS 4702-erez
+#define SVN_VERS "trunk-r445"
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -131,10 +131,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "18.08.2011"
-#define TIME_STR "09:09:17"
-#define SUB_VERS 4683-erez
-#define SVN_VERS "trunk-r443"
+#define DATE_STR "22.08.2011"
+#define TIME_STR "08:08:13"
+#define SUB_VERS 4703-erez
+#define SVN_VERS "trunk-r445"
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -226,10 +226,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "18.08.2011"
-#define TIME_STR "09:09:19"
-#define SUB_VERS 4684-erez
-#define SVN_VERS "trunk-r443"
+#define DATE_STR "22.08.2011"
+#define TIME_STR "08:08:16"
+#define SUB_VERS 4704-erez
+#define SVN_VERS "trunk-r445"
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -279,7 +279,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   58830 bytes (89.8% Full)
+Program:   59066 bytes (90.1% Full)
 (.text + .data + .bootloader)
 
 Data:       3572 bytes (87.2% Full)
@@ -321,10 +321,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "18.08.2011"
-#define TIME_STR "09:09:22"
-#define SUB_VERS 4685-erez
-#define SVN_VERS "trunk-r443"
+#define DATE_STR "22.08.2011"
+#define TIME_STR "08:08:19"
+#define SUB_VERS 4705-erez
+#define SVN_VERS "trunk-r445"
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -416,10 +416,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "18.08.2011"
-#define TIME_STR "09:09:25"
-#define SUB_VERS 4686-erez
-#define SVN_VERS "trunk-r443"
+#define DATE_STR "22.08.2011"
+#define TIME_STR "08:08:22"
+#define SUB_VERS 4706-erez
+#define SVN_VERS "trunk-r445"
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -469,7 +469,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   57516 bytes (87.8% Full)
+Program:   57748 bytes (88.1% Full)
 (.text + .data + .bootloader)
 
 Data:       3568 bytes (87.1% Full)
@@ -511,10 +511,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "18.08.2011"
-#define TIME_STR "09:09:28"
-#define SUB_VERS 4687-erez
-#define SVN_VERS "trunk-r443"
+#define DATE_STR "22.08.2011"
+#define TIME_STR "08:08:24"
+#define SUB_VERS 4707-erez
+#define SVN_VERS "trunk-r445"
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -564,7 +564,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   56722 bytes (86.6% Full)
+Program:   56724 bytes (86.6% Full)
 (.text + .data + .bootloader)
 
 Data:       3474 bytes (84.8% Full)
@@ -606,10 +606,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "18.08.2011"
-#define TIME_STR "09:09:30"
-#define SUB_VERS 4688-erez
-#define SVN_VERS "trunk-r443"
+#define DATE_STR "22.08.2011"
+#define TIME_STR "08:08:27"
+#define SUB_VERS 4708-erez
+#define SVN_VERS "trunk-r445"
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -656,7 +656,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   53314 bytes (81.4% Full)
+Program:   53546 bytes (81.7% Full)
 (.text + .data + .bootloader)
 
 Data:       3440 bytes (84.0% Full)
@@ -698,10 +698,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "18.08.2011"
-#define TIME_STR "09:09:33"
-#define SUB_VERS 4689-erez
-#define SVN_VERS "trunk-r443"
+#define DATE_STR "22.08.2011"
+#define TIME_STR "08:08:30"
+#define SUB_VERS 4709-erez
+#define SVN_VERS "trunk-r445"
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -748,7 +748,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   54628 bytes (83.4% Full)
+Program:   54864 bytes (83.7% Full)
 (.text + .data + .bootloader)
 
 Data:       3444 bytes (84.1% Full)
@@ -790,10 +790,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "18.08.2011"
-#define TIME_STR "09:09:36"
-#define SUB_VERS 4690-erez
-#define SVN_VERS "trunk-r443"
+#define DATE_STR "22.08.2011"
+#define TIME_STR "08:08:32"
+#define SUB_VERS 4710-erez
+#define SVN_VERS "trunk-r445"
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -882,10 +882,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "18.08.2011"
-#define TIME_STR "09:09:38"
-#define SUB_VERS 4691-erez
-#define SVN_VERS "trunk-r443"
+#define DATE_STR "22.08.2011"
+#define TIME_STR "08:08:35"
+#define SUB_VERS 4711-erez
+#define SVN_VERS "trunk-r445"
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o

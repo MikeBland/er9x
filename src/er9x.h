@@ -145,10 +145,11 @@
 
 //increase or decrease this value to alter the pitch of the beeps sent to the speaker
 // typically this would sit at a range of 10 to 50
-#define BEEP_TONE 20
+//
+//#define BEEP_TONE 20   //removed as now take value from eprom
 
 //automatically calculate the up & down frequency from the default
-#define BEEP_DEFAULT_FREQ (BEEP_TONE+60)
+#define BEEP_DEFAULT_FREQ (60)
 #define BEEP_KEY_UP_FREQ  (BEEP_DEFAULT_FREQ+5)
 #define BEEP_KEY_DOWN_FREQ (BEEP_DEFAULT_FREQ-5)
 
@@ -699,7 +700,7 @@ extern uint8_t toneFreq;
 inline void _beepSpkr(uint8_t d, uint8_t f)
 {
   g_beepCnt=d;
-  toneFreq=f;
+  toneFreq=f + g_eeGeneral.speakerPitch;
 }
 #endif
 
