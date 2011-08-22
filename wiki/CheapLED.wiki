@@ -7,4 +7,4 @@ http://www.hobbyking.com/hobbyking/store/__17129__Turnigy_9X_LCD_Backlight_Kit_W
 These lights are functional, and will deliver a basic light system.  However you should be warned of the following key points.
 
  * Power Usage is much higher than the EL backlight methods.
- * The er9x firmware will not be able to turn this light on or off without some modification to the led board and an install of a switching system - this will require some soldering.
+ * The er9x firmware will not be able to turn this light on or off without some <a href="http://www.rcgroups.com/forums/showpost.php?p=18732545&postcount=7855">modification to the led board and an install of a switching system</a> - this will require some soldering.
