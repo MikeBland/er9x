@@ -686,8 +686,11 @@ uint8_t subN = 1;
   {
     uint8_t b ;
     b = g_model.FrSkyUsrProto ;
-    lcd_putsnAtt(  10*FW, FH, PSTR("FrHubWSHhi")+5*b,5,(sub==subN ? INVERS:0));
-    if(sub==subN) { CHECK_INCDEC_H_MODELVAR(event,b,0,1); g_model.FrSkyUsrProto = b ; }
+    lcd_putsnAtt(  10*FW, FH, PSTR("FrHubWSHhi")+5*b,5,(sub==subN && subSub==0 ? INVERS:0));
+    if(sub==subN && subSub==0 && s_editMode) { CHECK_INCDEC_H_MODELVAR(event,b,0,1); g_model.FrSkyUsrProto = b ; }
+    b = g_model.FrSkyImperial ;
+    lcd_putsnAtt(  16*FW, FH, PSTR("MetImp")+3*b,3,(sub==subN && subSub==1 ? INVERS:0));
+    if(sub==subN && subSub==1 && s_editMode) { CHECK_INCDEC_H_MODELVAR(event,b,0,1); g_model.FrSkyImperial = b ; }
   }
 subN++;
 
@@ -2250,6 +2253,7 @@ void menuProcDiagVers(uint8_t event)
     lcd_puts_P(0, 3*FH,stamp1 );
     lcd_puts_P(0, 4*FH,stamp2 );
     lcd_puts_P(0, 5*FH,stamp3 );
+    lcd_puts_P(0, 6*FH,stamp5 );
 }
 
 // From Bertrand, allow trainer inputs without using mixers.
@@ -2949,6 +2953,9 @@ void menuProc0(uint8_t event)
 #elif defined(ARDUPILOT)
         ARDUPILOT_EnableRXD(); // enable ArduPilot-Telemetry reception
         chainMenu(menuProcArduPilot);
+#elif defined(NMEA)
+        NMEA_EnableRXD(); // enable NMEA-Telemetry reception
+        chainMenu(menuProcNMEA);
 #else
         chainMenu(menuProcStatistic2);
 #endif
@@ -3128,15 +3135,45 @@ void menuProc0(uint8_t event)
             {
                 if (frskyUsrStreaming)
                 {
+                  int16_t value ;
+                  int8_t unit ;
                   lcd_puts_P(0, 2*FH, PSTR("T1="));
-                  lcd_outdezAtt(3*FW+4, 1*FH, FrskyHubData[2], DBLSIZE|LEFT);
-                  lcd_puts_P(8*FW, 2*FH, PSTR("RPM="));
-                  lcd_outdezAtt(12*FW, 1*FH, FrskyHubData[3]*30, DBLSIZE|LEFT);
-                  lcd_puts_P(0, 4*FH, PSTR("Alt="));
-                  lcd_outdezAtt(4*FW, 3*FH, FrskyHubData[16], DBLSIZE|LEFT);
-
+                  unit = 'C' ;
+                  value = FrskyHubData[2] ;
+                  if ( g_model.FrSkyImperial )
+                  {
+                    value += 18 ;
+                    value *= 115 ;
+                    value >>= 6 ; 
+                    unit = 'F' ;
+                  }
+                  lcd_putc( 2*FW, 1*FH, unit ) ;
+                  lcd_outdezAtt(3*FW+4, 1*FH, value, DBLSIZE|LEFT);
+                  
                   lcd_puts_P(14 * FW, 7*FH, PSTR("T2="));
-                  lcd_outdezAtt(18 * FW, 7*FH, FrskyHubData[5], LEFT);
+                  lcd_putc( 20*FW, 7*FH, unit ) ;
+                  value = FrskyHubData[5] ;
+                  if ( g_model.FrSkyImperial )
+                  {
+                    value += 18 ;
+                    value *= 115 ;
+                    value >>= 6 ; 
+                  }
+                  lcd_outdezAtt(17 * FW, 7*FH, value, LEFT);
+                  
+                  lcd_puts_P(9*FW, 2*FH, PSTR("RPM="));
+                  lcd_outdezAtt(13*FW, 1*FH, FrskyHubData[3]*30, DBLSIZE|LEFT);
+                  lcd_puts_P(0, 4*FH, PSTR("Alt="));
+                  unit = 'm' ;
+                  value = FrskyHubData[16] ;
+                  if ( g_model.FrSkyImperial )
+                  {
+                    // m to ft *105/32
+                    value = value * 3 + ( value >> 2 ) + (value >> 5) ;
+                    unit = 'f' ;
+                  }
+                  lcd_putc( 3*FW, 3*FH, unit ) ;
+                  lcd_outdezAtt(4*FW, 3*FH, value, DBLSIZE|LEFT);
                 }	
                 if (g_model.frsky.channels[0].ratio)
                 {
@@ -3784,7 +3821,9 @@ last - CRC byte.
 1 byte holding a checksum of the header and position data
 
 */
-
+  int16_t array[8] ;
+  uint8_t i ;
+  
 #define PPM_CENTER 1200*2
     int16_t PPM_range = g_model.extendedLimits ? 640*2 : 512*2;   //range of 0.7..1.7msec
 
@@ -3792,35 +3831,49 @@ last - CRC byte.
     pxxd.rxnum = g_model.rxnum; // TODO - set rx num from setup
     pxxd.flags = 0;
 
-    pxxd.ch1 = max(min(g_chans512[0],PPM_range),-PPM_range);
-    pxxd.ch2 = max(min(g_chans512[1],PPM_range),-PPM_range);
-    pxxd.ch3 = max(min(g_chans512[2],PPM_range),-PPM_range);
-    pxxd.ch4 = max(min(g_chans512[3],PPM_range),-PPM_range);
-    pxxd.ch5 = max(min(g_chans512[4],PPM_range),-PPM_range);
-    pxxd.ch6 = max(min(g_chans512[5],PPM_range),-PPM_range);
-    pxxd.ch7 = max(min(g_chans512[6],PPM_range),-PPM_range);
-    pxxd.ch8 = max(min(g_chans512[7],PPM_range),-PPM_range);
+    for ( i = 0 ; i < 7 ; i += 1 )
+    {
+      array[i] = max(min(g_chans512[i],PPM_range),-PPM_range);
+    }
+    pxxd.ch1 = array[0];
+    pxxd.ch2 = array[1];
+    pxxd.ch3 = array[2];
+    pxxd.ch4 = array[3];
+    pxxd.ch5 = array[4];
+    pxxd.ch6 = array[5];
+    pxxd.ch7 = array[6];
+    pxxd.ch8 = array[7];
 
-    pxxd.crc = pxxd.header1;
-    pxxd.crc += pxxd.rxnum;
-    pxxd.crc += pxxd.flags % 256;
-    pxxd.crc += pxxd.flags / 256;
-    pxxd.crc += pxxd.ch1;
-    pxxd.crc += pxxd.ch2;
-    pxxd.crc += pxxd.ch3;
-    pxxd.crc += pxxd.ch4;
-    pxxd.crc += pxxd.ch5;
-    pxxd.crc += pxxd.ch6;
-    pxxd.crc += pxxd.ch7;
-    pxxd.crc += pxxd.ch8;
+//    pxxd.crc = pxxd.header1;
+//    pxxd.crc += pxxd.rxnum;
+//    pxxd.crc += pxxd.flags % 256;
+//    pxxd.crc += pxxd.flags / 256;
+//    pxxd.crc += pxxd.ch1;
+//    pxxd.crc += pxxd.ch2;
+//    pxxd.crc += pxxd.ch3;
+//    pxxd.crc += pxxd.ch4;
+//    pxxd.crc += pxxd.ch5;
+//    pxxd.crc += pxxd.ch6;
+//    pxxd.crc += pxxd.ch7;
+//    pxxd.crc += pxxd.ch8;
 
 
     uint16_t k = 0;
     uint8_t * p = (uint8_t *)&pxxd;
+    uint8_t crc ;
+    crc = 0;
     // build output pulses
     for(uint8_t i=0; i<sizeof(pxxd); i++)
     {
         uint8_t b = *p;
+        if ( i < sizeof(pxxd)-1 )
+        {
+          crc += b;
+        }
+        else
+        {
+          b = crc ;
+        }
         for(uint8_t j=0; j<8; j++)
         {
             pulses2MHz[k++] = 20;

@@ -71,10 +71,10 @@ typedef struct t_TrainerData {
   TrainerMix     mix[4];
 } __attribute__((packed)) TrainerData;
 
-typedef struct t_FrSkyRSSIAlarm {
-  uint8_t       level:2;
-  int8_t        value:6;
-} __attribute__((packed)) FrSkyRSSIAlarm;
+//typedef struct t_FrSkyRSSIAlarm {
+//  uint8_t       level:2;
+//  int8_t        value:6;
+//} __attribute__((packed)) FrSkyRSSIAlarm;
 
 typedef struct t_EEGeneral {
   uint8_t   myVers;
@@ -107,7 +107,8 @@ typedef struct t_EEGeneral {
   uint8_t   lightAutoOff;
   uint8_t   templateSetup;  //RETA order according to chout_ar array 
   int8_t    PPM_Multiplier;
-  FrSkyRSSIAlarm frskyRssiAlarms[2];
+//  FrSkyRSSIAlarm frskyRssiAlarms[2];
+  uint8_t   respre[2];
   uint8_t   speakerPitch;
   uint8_t   res[3];
   char      ownerName[GENERAL_OWNER_NAME_LEN];
@@ -190,7 +191,8 @@ typedef struct t_ModelData {
 //  uint8_t   spare:6;
   uint8_t   t2throttle:1 ;  // Start timer2 using throttle
   uint8_t   FrSkyUsrProto:2 ;  // Protocol in FrSky User Data, 0=FrSky Hub, 1=WS HowHigh
-  uint8_t   spare:3;
+  uint8_t   FrSkyImperial:1 ;  // Convert FrSky values to imperial units
+  uint8_t   spare:2;
   uint16_t  tmrVal;
   uint8_t   protocol;
   int8_t    ppmNCH;

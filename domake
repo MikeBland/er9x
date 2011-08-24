@@ -64,6 +64,15 @@ echo ">>>  moving"
 mv er9x.hex ../er9x-ardupilot.hex
 
 echo
+echo "===== Making nmea Version ====="
+echo ">>> cleaning"
+make clean
+echo ">>>  making"
+make EXT=NMEA
+echo ">>>  moving"
+mv er9x.hex ../er9x-nmea.hex
+
+echo
 echo "===== Making MAIN - NOHELI/NOTEMPLATE, SPKR Version ====="
 echo ">>> cleaning"
 make clean

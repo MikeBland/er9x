@@ -203,6 +203,10 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int16_t val,uint8_t mode,uint8_t len)
   if (mode & LEFT) {
 //    if (tmp >= 10000)
 //      x += fw;
+    if(val<0)
+    {
+      x += fw;
+    }
     if (tmp >= 1000)
       x += fw;
     if (tmp >= 100)
