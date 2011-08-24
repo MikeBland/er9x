@@ -1,10 +1,10 @@
 ===== Starting build =====
 Timestamp
-Wed Aug 24 01:43:04 UTC 2011
+Wed Aug 24 01:55:20 UTC 2011
 ==========================
 
 ===== Updating from SVN =====
-At revision 465.
+At revision 466.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -37,40 +37,69 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "23.08.2011"
-#define TIME_STR "21:09:05"
-#define SUB_VERS 4728-erez
-#define SVN_VERS "trunk-r466"
+#define TIME_STR "21:09:22"
+#define SUB_VERS 4755-erez
+#define SVN_VERS "trunk-r467"
 #define MOD_VERS "JETI"
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DNMEA -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DNMEA -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DNMEA -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DNMEA -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DNMEA -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DNMEA -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DNMEA -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: jeti.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DNMEA -Os -Wall  -MD -MP -MF .dep/jeti.o.d jeti.cpp -o obj/jeti.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/jeti.o.d jeti.cpp -o obj/jeti.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/jeti.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+
+Creating load file for Flash: er9x.hex
+avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
+
+Creating load file for EEPROM: er9x.eep
+avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+--change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+
+Creating Extended Listing: er9x.lss
+avr-objdump -h -S er9x.elf > er9x.lss
+
+Creating Symbol Table: er9x.sym
+avr-nm -n er9x.elf > er9x.sym
+
+Size after:
+AVR Memory Usage
+----------------
+Device: atmega64
+
+Program:   54454 bytes (83.1% Full)
+(.text + .data + .bootloader)
+
+Data:       3476 bytes (84.9% Full)
+(.data + .bss + .noinit)
+
+
+
+-------- end --------
+
 >>>  moving
 
 ===== Making FRSKY Version =====
@@ -104,40 +133,69 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "23.08.2011"
-#define TIME_STR "21:09:08"
-#define SUB_VERS 4729-erez
-#define SVN_VERS "trunk-r466"
+#define TIME_STR "21:09:24"
+#define SUB_VERS 4756-erez
+#define SVN_VERS "trunk-r467"
 #define MOD_VERS "FRSKY"
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: frsky.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+
+Creating load file for Flash: er9x.hex
+avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
+
+Creating load file for EEPROM: er9x.eep
+avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+--change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+
+Creating Extended Listing: er9x.lss
+avr-objdump -h -S er9x.elf > er9x.lss
+
+Creating Symbol Table: er9x.sym
+avr-nm -n er9x.elf > er9x.sym
+
+Size after:
+AVR Memory Usage
+----------------
+Device: atmega64
+
+Program:   58176 bytes (88.8% Full)
+(.text + .data + .bootloader)
+
+Data:       3568 bytes (87.1% Full)
+(.data + .bss + .noinit)
+
+
+
+-------- end --------
+
 >>>  moving
 
 ===== Making FRSKY - SPKR Version =====
@@ -171,40 +229,69 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "23.08.2011"
-#define TIME_STR "21:09:10"
-#define SUB_VERS 4730-erez
-#define SVN_VERS "trunk-r466"
+#define TIME_STR "21:09:27"
+#define SUB_VERS 4757-erez
+#define SVN_VERS "trunk-r467"
 #define MOD_VERS "FRSKY"
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: frsky.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+
+Creating load file for Flash: er9x.hex
+avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
+
+Creating load file for EEPROM: er9x.eep
+avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+--change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+
+Creating Extended Listing: er9x.lss
+avr-objdump -h -S er9x.elf > er9x.lss
+
+Creating Symbol Table: er9x.sym
+avr-nm -n er9x.elf > er9x.sym
+
+Size after:
+AVR Memory Usage
+----------------
+Device: atmega64
+
+Program:   58712 bytes (89.6% Full)
+(.text + .data + .bootloader)
+
+Data:       3572 bytes (87.2% Full)
+(.data + .bss + .noinit)
+
+
+
+-------- end --------
+
 >>>  moving
 
 ===== Making FRSKY - NOHELI/NOTEMPLATE Version =====
@@ -238,40 +325,69 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "23.08.2011"
-#define TIME_STR "21:09:13"
-#define SUB_VERS 4731-erez
-#define SVN_VERS "trunk-r466"
+#define TIME_STR "21:09:30"
+#define SUB_VERS 4758-erez
+#define SVN_VERS "trunk-r467"
 #define MOD_VERS "FRSKY"
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: frsky.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DNMEA -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+
+Creating load file for Flash: er9x.hex
+avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
+
+Creating load file for EEPROM: er9x.eep
+avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+--change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+
+Creating Extended Listing: er9x.lss
+avr-objdump -h -S er9x.elf > er9x.lss
+
+Creating Symbol Table: er9x.sym
+avr-nm -n er9x.elf > er9x.sym
+
+Size after:
+AVR Memory Usage
+----------------
+Device: atmega64
+
+Program:   56870 bytes (86.8% Full)
+(.text + .data + .bootloader)
+
+Data:       3564 bytes (87.0% Full)
+(.data + .bss + .noinit)
+
+
+
+-------- end --------
+
 >>>  moving
 
 ===== Making FRSKY - NOHELI/NOTEMPLATE, SPKR Version =====
@@ -305,40 +421,69 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "23.08.2011"
-#define TIME_STR "21:09:15"
-#define SUB_VERS 4732-erez
-#define SVN_VERS "trunk-r466"
+#define TIME_STR "21:09:33"
+#define SUB_VERS 4759-erez
+#define SVN_VERS "trunk-r467"
 #define MOD_VERS "FRSKY"
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: frsky.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+
+Creating load file for Flash: er9x.hex
+avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
+
+Creating load file for EEPROM: er9x.eep
+avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+--change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+
+Creating Extended Listing: er9x.lss
+avr-objdump -h -S er9x.elf > er9x.lss
+
+Creating Symbol Table: er9x.sym
+avr-nm -n er9x.elf > er9x.sym
+
+Size after:
+AVR Memory Usage
+----------------
+Device: atmega64
+
+Program:   57396 bytes (87.6% Full)
+(.text + .data + .bootloader)
+
+Data:       3568 bytes (87.1% Full)
+(.data + .bss + .noinit)
+
+
+
+-------- end --------
+
 >>>  moving
 
 ===== Making ARDUPILOT Version =====
@@ -372,40 +517,69 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "23.08.2011"
-#define TIME_STR "21:09:18"
-#define SUB_VERS 4733-erez
-#define SVN_VERS "trunk-r466"
+#define TIME_STR "21:09:36"
+#define SUB_VERS 4760-erez
+#define SVN_VERS "trunk-r467"
 #define MOD_VERS "ARDUPILOT"
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DNMEA -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DNMEA -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DNMEA -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DNMEA -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DNMEA -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DNMEA -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DNMEA -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: ardupilot.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DNMEA -Os -Wall  -MD -MP -MF .dep/ardupilot.o.d ardupilot.cpp -o obj/ardupilot.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/ardupilot.o.d ardupilot.cpp -o obj/ardupilot.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/ardupilot.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+
+Creating load file for Flash: er9x.hex
+avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
+
+Creating load file for EEPROM: er9x.eep
+avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+--change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+
+Creating Extended Listing: er9x.lss
+avr-objdump -h -S er9x.elf > er9x.lss
+
+Creating Symbol Table: er9x.sym
+avr-nm -n er9x.elf > er9x.sym
+
+Size after:
+AVR Memory Usage
+----------------
+Device: atmega64
+
+Program:   56316 bytes (85.9% Full)
+(.text + .data + .bootloader)
+
+Data:       3474 bytes (84.8% Full)
+(.data + .bss + .noinit)
+
+
+
+-------- end --------
+
 >>>  moving
 
 ===== Making nmea Version =====
@@ -439,37 +613,37 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "23.08.2011"
-#define TIME_STR "21:09:20"
-#define SUB_VERS 4734-erez
-#define SVN_VERS "trunk-r466"
+#define TIME_STR "21:09:38"
+#define SUB_VERS 4761-erez
+#define SVN_VERS "trunk-r467"
 #define MOD_VERS "NMEA"
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DNMEA -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DNMEA -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DNMEA -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DNMEA -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DNMEA -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DNMEA -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DNMEA -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: nmea.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DNMEA -Os -Wall  -MD -MP -MF .dep/nmea.o.d nmea.cpp -o obj/nmea.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/nmea.o.d nmea.cpp -o obj/nmea.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/nmea.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
@@ -535,37 +709,66 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "23.08.2011"
-#define TIME_STR "21:09:23"
-#define SUB_VERS 4735-erez
-#define SVN_VERS "trunk-r466"
+#define TIME_STR "21:09:41"
+#define SUB_VERS 4762-erez
+#define SVN_VERS "trunk-r467"
 #define MOD_VERS "STD"
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+
+Creating load file for Flash: er9x.hex
+avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
+
+Creating load file for EEPROM: er9x.eep
+avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+--change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+
+Creating Extended Listing: er9x.lss
+avr-objdump -h -S er9x.elf > er9x.lss
+
+Creating Symbol Table: er9x.sym
+avr-nm -n er9x.elf > er9x.sym
+
+Size after:
+AVR Memory Usage
+----------------
+Device: atmega64
+
+Program:   53132 bytes (81.1% Full)
+(.text + .data + .bootloader)
+
+Data:       3440 bytes (84.0% Full)
+(.data + .bss + .noinit)
+
+
+
+-------- end --------
+
 >>>  moving
 
 ===== Making MAIN - SPKR Version =====
@@ -599,37 +802,66 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "23.08.2011"
-#define TIME_STR "21:09:25"
-#define SUB_VERS 4736-erez
-#define SVN_VERS "trunk-r466"
+#define TIME_STR "21:09:44"
+#define SUB_VERS 4763-erez
+#define SVN_VERS "trunk-r467"
 #define MOD_VERS "STD"
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+
+Creating load file for Flash: er9x.hex
+avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
+
+Creating load file for EEPROM: er9x.eep
+avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+--change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+
+Creating Extended Listing: er9x.lss
+avr-objdump -h -S er9x.elf > er9x.lss
+
+Creating Symbol Table: er9x.sym
+avr-nm -n er9x.elf > er9x.sym
+
+Size after:
+AVR Memory Usage
+----------------
+Device: atmega64
+
+Program:   54450 bytes (83.1% Full)
+(.text + .data + .bootloader)
+
+Data:       3444 bytes (84.1% Full)
+(.data + .bss + .noinit)
+
+
+
+-------- end --------
+
 >>>  moving
 
 ===== Making MAIN - NOHELI/NOTEMPLATE Version =====
@@ -663,37 +895,66 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "23.08.2011"
-#define TIME_STR "21:09:28"
-#define SUB_VERS 4737-erez
-#define SVN_VERS "trunk-r466"
+#define TIME_STR "21:09:46"
+#define SUB_VERS 4764-erez
+#define SVN_VERS "trunk-r467"
 #define MOD_VERS "STD"
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DNMEA -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DNMEA -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DNMEA -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DNMEA -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DNMEA -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DNMEA -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DNMEA -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+
+Creating load file for Flash: er9x.hex
+avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
+
+Creating load file for EEPROM: er9x.eep
+avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+--change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+
+Creating Extended Listing: er9x.lss
+avr-objdump -h -S er9x.elf > er9x.lss
+
+Creating Symbol Table: er9x.sym
+avr-nm -n er9x.elf > er9x.sym
+
+Size after:
+AVR Memory Usage
+----------------
+Device: atmega64
+
+Program:   52608 bytes (80.3% Full)
+(.text + .data + .bootloader)
+
+Data:       3436 bytes (83.9% Full)
+(.data + .bss + .noinit)
+
+
+
+-------- end --------
+
 >>>  moving
 
 ===== Making MAIN Version =====
@@ -727,37 +988,66 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "23.08.2011"
-#define TIME_STR "21:09:30"
-#define SUB_VERS 4738-erez
-#define SVN_VERS "trunk-r466"
+#define TIME_STR "21:09:49"
+#define SUB_VERS 4765-erez
+#define SVN_VERS "trunk-r467"
 #define MOD_VERS "STD"
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+
+Creating load file for Flash: er9x.hex
+avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
+
+Creating load file for EEPROM: er9x.eep
+avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+--change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+
+Creating Extended Listing: er9x.lss
+avr-objdump -h -S er9x.elf > er9x.lss
+
+Creating Symbol Table: er9x.sym
+avr-nm -n er9x.elf > er9x.sym
+
+Size after:
+AVR Memory Usage
+----------------
+Device: atmega64
+
+Program:   53916 bytes (82.3% Full)
+(.text + .data + .bootloader)
+
+Data:       3440 bytes (84.0% Full)
+(.data + .bss + .noinit)
+
+
+
+-------- end --------
+
 >>>  moving
 >>> cleaning
 

@@ -162,7 +162,6 @@ ifeq ($(EXT), NMEA)
  CPPDEFS += -DNMEA
 endif
 
-CPPDEFS += -DNMEA
 
 # If buzzer modified (no interference with PPM jack)
 ifeq ($(BEEPER), BUZZER_MOD)
