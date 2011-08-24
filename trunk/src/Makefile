@@ -65,6 +65,11 @@ ifeq ($(EXT), ARDUPILOT)
  CPPSRC += ardupilot.cpp
 endif
 
+ifeq ($(EXT), NMEA)
+ CPPSRC += nmea.cpp
+endif
+
+
 HELI = YES
 
 TEMPLATES = YES
@@ -151,6 +156,13 @@ endif
 ifeq ($(EXT), ARDUPILOT)
  CPPDEFS += -DARDUPILOT
 endif
+
+# If NMEA-Support is enabled
+ifeq ($(EXT), NMEA)
+ CPPDEFS += -DNMEA
+endif
+
+CPPDEFS += -DNMEA
 
 # If buzzer modified (no interference with PPM jack)
 ifeq ($(BEEPER), BUZZER_MOD)
@@ -446,6 +458,7 @@ stamp:
 	@echo "#define TIME_STR \"`date +%H:%I:%S`\"" >> stamp-er9x.h
 	@echo "#define SUB_VERS $(VER)-$(USER)" >> stamp-er9x.h
 	@echo "#define SVN_VERS \"trunk-r$(REV)\"" >> stamp-er9x.h
+	@echo "#define MOD_VERS \"$(EXT)\"" >> stamp-er9x.h
 	@cat stamp-er9x.h
 
 font.lbm: font_6x1.xbm

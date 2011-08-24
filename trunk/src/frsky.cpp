@@ -367,35 +367,35 @@ void FRSKY10mspoll(void)
   }
 }
 
-// Send packet requesting all alarm settings be sent back to us
-void FRSKY_setRSSIAlarms(void)
-{
-  if (frskyTxBufferCount) return; // we only have one buffer. If it's in use, then we can't send. Sorry.
+//// Send packet requesting all alarm settings be sent back to us
+//void FRSKY_setRSSIAlarms(void)
+//{
+//  if (frskyTxBufferCount) return; // we only have one buffer. If it's in use, then we can't send. Sorry.
 
-  uint8_t i = 0;
+//  uint8_t i = 0;
 
-  for (int alarm=0; alarm<2; alarm++) {
-    frskyTxBuffer[i++] = START_STOP;        // Start of packet
-    frskyTxBuffer[i++] = (RSSI1PKT-alarm);  // f7 - f6
-    frskyPushValue(i, g_eeGeneral.frskyRssiAlarms[alarm].value+50-(10*i));
-    {
-      uint8_t *ptr ;
-      ptr = &frskyTxBuffer[i] ;
-      *ptr++ = 0x00 ;
-      *ptr++ = g_eeGeneral.frskyRssiAlarms[alarm].level;
-      *ptr++ = 0x00 ;
-      *ptr++ = 0x00 ;
-      *ptr++ = 0x00 ;
-      *ptr++ = 0x00 ;
-      *ptr++ = 0x00 ;
-      *ptr++ = START_STOP;        // End of packet
-      i += 8 ;
-    }
-  }
+//  for (int alarm=0; alarm<2; alarm++) {
+//    frskyTxBuffer[i++] = START_STOP;        // Start of packet
+//    frskyTxBuffer[i++] = (RSSI1PKT-alarm);  // f7 - f6
+//    frskyPushValue(i, g_eeGeneral.frskyRssiAlarms[alarm].value+50-(10*i));
+//    {
+//      uint8_t *ptr ;
+//      ptr = &frskyTxBuffer[i] ;
+//      *ptr++ = 0x00 ;
+//      *ptr++ = g_eeGeneral.frskyRssiAlarms[alarm].level;
+//      *ptr++ = 0x00 ;
+//      *ptr++ = 0x00 ;
+//      *ptr++ = 0x00 ;
+//      *ptr++ = 0x00 ;
+//      *ptr++ = 0x00 ;
+//      *ptr++ = START_STOP;        // End of packet
+//      i += 8 ;
+//    }
+//  }
 
-  frskyTxBufferCount = i;
-  frskyTransmitBuffer(); 
-}
+//  frskyTxBufferCount = i;
+//  frskyTransmitBuffer();
+//}
 
 bool FRSKY_alarmRaised(uint8_t idx)
 {

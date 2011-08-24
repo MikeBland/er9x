@@ -180,7 +180,7 @@ bool keyState(EnumKeys enuk)
     case SW_ElevDR : return PINE & (1<<INP_E_ElevDR);
     
     //case SW_AileDR : return PINE & (1<<INP_E_AileDR);
-#if (!(defined(JETI) || defined(FRSKY) || defined(ARDUPILOT)))
+#if (!(defined(JETI) || defined(FRSKY) || defined(ARDUPILOT) || defined(NMEA)))
     case SW_AileDR : return PINE & (1<<INP_E_AileDR);
 #else
     case SW_AileDR : return PINC & (1<<INP_C_AileDR); //shad974: rerouted inputs to free up UART0
@@ -198,7 +198,7 @@ bool keyState(EnumKeys enuk)
     case SW_Gear   : return PINE & (1<<INP_E_Gear);
     //case SW_ThrCt  : return PINE & (1<<INP_E_ThrCt);
 
-#if (!(defined(JETI) || defined(FRSKY) || defined(ARDUPILOT)))
+#if (!(defined(JETI) || defined(FRSKY) || defined(ARDUPILOT) || defined(NMEA)))
      case SW_ThrCt  : return PINE & (1<<INP_E_ThrCt);
 #else
     case SW_ThrCt  : return PINC & (1<<INP_C_ThrCt); //shad974: rerouted inputs to free up UART0

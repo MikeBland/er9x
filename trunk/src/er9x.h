@@ -131,7 +131,7 @@
 #define INP_E_AileDR  1
 #define INP_E_ThrCt   0
 
-#if (defined(JETI) || defined(FRSKY) || defined(ARDUPILOT))
+#if (defined(JETI) || defined(FRSKY) || defined(ARDUPILOT) || defined(NMEA))
   #undef INP_E_ThrCt
   #undef INP_E_AileDR
   #define INP_C_ThrCt   6
@@ -653,6 +653,11 @@ extern uint16_t jeti_keys;
 #include "ardupilot.h"
 #endif
 
+#ifdef NMEA
+// NMEA Telemetry
+#include "nmea.h"
+#endif
+
 //extern TrainerData g_trainer;
 //extern uint16_t           g_anaIns[8];
 extern uint8_t            g_vbat100mV;
@@ -678,6 +683,7 @@ extern const char stamp1[];
 extern const char stamp2[];
 extern const char stamp3[];
 extern const char stamp4[];
+extern const char stamp5[];
 #include "myeeprom.h"
 
 #define FLASH_DURATION 50
