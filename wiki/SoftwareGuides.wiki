@@ -8,12 +8,14 @@ This can be download as a PDF file from:
 
 The guide is being updated all the time, so do go back to it once and a while for a review.
 
-Richardmrasek has created a range of youtube guides that are superb.  These guides can be found on:
+richardmrazek (youtube user) has created a range of youtube guides that are superb.  These guides can be found on:
 
  * <a href="http://www.youtube.com/watch?v=q2UT1pFcYhM">Youtube Lesson One</a>
  * <a href="http://www.youtube.com/watch?v=vpgGnb1ROP8">Youtube Lesson Two</a>
  * <a href="http://www.youtube.com/watch?v=EjJMgR41GKc">Youtube Lesson Three</a>
  * <a href="http://www.youtube.com/watch?v=_vwQOaYqvSo">Youtube Lesson Four</a>
+
+Please note that the software is continually evolving and it is quite possible that if you are on a different firmware version, some details will have changed.
 
 
 Once you have got to grips with some of the basics, there are loads of people who are more than willing to help on the rggroups.com thread.  You can access this forum on:
