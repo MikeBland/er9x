@@ -11,3 +11,4 @@ The Guides shown on in this section are a selection of the best - and widely use
 
  * [SoftwareGuides Software Tutorials]
  * [HardwareGuides Hardware Mods]
+ * [HardwareRepair Hardware Repair Guides]
