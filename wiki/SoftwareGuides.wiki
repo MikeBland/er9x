@@ -1,5 +1,4 @@
-
-= How to configure your model in er9x =
+= Using er9x =
 
 Currently the best first step you can take in using er9x is to read the manual!
 
