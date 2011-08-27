@@ -10,7 +10,7 @@ Note!  Once you perform this mod you will have to use the -speaker version of th
 
 You will need two parts on your shopping list:
 
-1.  A speaker from a cheap set of headphones.  (this speaker needs to be really small.  Ideally no more than 2.5cm to 3cm diameter.) (a piezo tweeter will also work) 
+1.  A piezo speaker.  (this speaker needs to no more than 2.5cm to 3cm diameter.) (a normal speaker will work, however tests have shown a piezo has a much lower power draw)
 
 2.  a capacitor. (4.7u) seems to do the trick.
 
