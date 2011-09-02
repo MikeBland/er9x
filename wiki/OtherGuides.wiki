@@ -1,0 +1,6 @@
+= Other Guides and Sources of informations =
+
+A number of guides have been written by various members of the team. These are listed below:
+
+
+ * <a href="http://er9x.googlecode.com/svn/trunk/doc/Er9x450helisetup.pdf">450 Heli Setup</a>
