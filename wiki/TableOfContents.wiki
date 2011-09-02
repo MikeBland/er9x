@@ -4,6 +4,7 @@
  * [Howto Howto Guides]
     * [SoftwareGuides Software Tutorials]
     * [Flashing9x Flashing the 9x]
+         [FlashingFAQ FAQ]
     * [HardwareGuides Hardware Mods]
     * [HardwareRepair Hardware Repair Guides]
 
