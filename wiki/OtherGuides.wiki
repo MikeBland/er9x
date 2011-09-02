@@ -11,3 +11,4 @@ A number of guides have been written by various members of the team. These are l
  * <a href="http://er9x.googlecode.com/files/4Channel%20Tutorial.pdf">Simple 4 Chanel Tutorial</a> by ghost
  * <a href="http://er9x.googlecode.com/files/Elevon%20and%20V-Tail.pdf">Elevon and V-Tail mixing tutorial</a> by Boxhead
  * <a href="http://er9x.googlecode.com/svn/trunk/doc/Er9x_examples.zip">ER9X Examples</a> by ghost
+ * <a href="http://www.rcgroups.com/forums/showpost.php?p=18759154&postcount=7961">Tutorial on flight mode trims</a>
