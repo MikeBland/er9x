@@ -11,7 +11,7 @@ The current list of suffixes is as follows:
  * FRSKY - used if you have moddified your radio to receive frsky telemetry
  * JETI - used if you have modified your radio to receive jeti telemetry
  * NMEA - used if you have modified your radio to receive NMEA gps data
- * ARDUPILOT - - used if you have modified your radio to receive ardupilot data
+ * ARDUPILOT - used if you have modified your radio to receive ardupilot data
 
 In the following example:
 
