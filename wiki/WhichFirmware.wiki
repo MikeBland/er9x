@@ -6,12 +6,12 @@ Each firmware is named with a variety of suffexes to help you identify what the 
 
 The current list of suffixes is as follows:
 
-NOHT  - do not show the heli & template menu's
-SPKR  - used for hardware that has the speaker mod for variable tones
-FRSKY - used if you have moddified your radio to receive frsky telemetry
-JETI - used if you have modified your radio to receive jeti telemetry
-NMEA - used if you have modified your radio to receive NMEA gps data
-ARDUPILOT - - used if you have modified your radio to receive ardupilot data
+ * NOHT  - do not show the heli & template menu's
+ * SPKR  - used for hardware that has the speaker mod for variable tones
+ * FRSKY - used if you have moddified your radio to receive frsky telemetry
+ * JETI - used if you have modified your radio to receive jeti telemetry
+ * NMEA - used if you have modified your radio to receive NMEA gps data
+ * ARDUPILOT - - used if you have modified your radio to receive ardupilot data
 
 In the following example:
 
