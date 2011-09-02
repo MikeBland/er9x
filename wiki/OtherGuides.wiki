@@ -13,3 +13,5 @@ A number of guides have been written by various members of the team. These are l
  * <a href="http://er9x.googlecode.com/svn/trunk/doc/Er9x_examples.zip">ER9X Examples</a> by ghost
  * <a href="http://www.rcgroups.com/forums/showpost.php?p=18759154&postcount=7961">Tutorial on flight mode trims</a>
  * <a href="http://er9x.googlecode.com/svn/trunk/doc/EEpeFirstTime.pdf">EEPC First Time Users Guide</a>
+
+Should you not find what you are looking for in these guides, the next best port of call is the <a href="http://www.rcgroups.com/forums/showthread.php?t=1266162">RCGROUPS forum</a>.  The developers are very active on this thread and will be quick to assist!
