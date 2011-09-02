@@ -5,3 +5,4 @@ A number of guides have been written by various members of the team. These are l
 
  * <a href="http://er9x.googlecode.com/svn/trunk/doc/Er9x450helisetup.pdf">450 Heli Setup</a> by ghost
    * <a href="http://er9x.googlecode.com/svn/trunk/doc/hk450_heli.hex">The accompanying HEX file</a> by ghost
+   * <a href="http://er9x.googlecode.com/svn/trunk/doc/HeliSetup_Template.pdf">Newer heli template tutorial</a> by ghost
