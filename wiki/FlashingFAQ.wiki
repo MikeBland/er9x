@@ -1,3 +1,0 @@
-= Flashing FAQ =
-
-<strong>Firmware Versions</strong>
