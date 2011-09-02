@@ -6,3 +6,4 @@ We have all had it happen.  From time to time things go wrong and we have to rep
 
  * <a href="http://www.rcgroups.com/forums/member.php?u=207245">Repair guide for those who reverse the polarity of the battery pack and brick their radio</a>
  * [BrokenLCD Your LCD has died?]
+ * <a href="http://er9x.googlecode.com/svn/trunk/doc/Fuse%20Brick.pdf">Dealing with a Fuse Brick</a>
