@@ -3,6 +3,7 @@
  * [Licence Licence]
  * [Howto Howto Guides]
     * [SoftwareGuides Software Tutorials]
+      * [OtherGuides Other Guides]
     * [Flashing9x Flashing the 9x]
       * [WhichFirmware Which Firmware?]
     * [HardwareGuides Hardware Mods]
