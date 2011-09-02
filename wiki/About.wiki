@@ -10,4 +10,4 @@ This project replaces the software that comes with the standard transmitter with
 
 Some of the many improvements are: Up to 16 Models in memory Up to 16 output channels Multi-level mixes Any function can be assigned to any output 5pt and 9pt curves, variable sound, frsky telemetry support and much much more!
 
-This project is based on he th9x project. http://code.google.com/p/th9x/
+This project is based on the th9x project. http://code.google.com/p/th9x/
