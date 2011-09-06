@@ -1,11 +1,11 @@
 = Your LCD has died =
 
-This is a common problem - and until recently has not been easy to resolve. (not without buying a new radio)
+Until recently the replacement LCD has been the achillies heal of the 9x.  The most common part to fail, and near no chance of a replacement without buying a new radio!
 
-Typically, the issue appears to be the result of general where and tear with the thin ribbon lead being snagged and breaking.
+Good news is that by working with the supply chain, we have arranged for a Chinese supplier to stock the LCD as a spare.
 
-Good news is that help is on hand. We have sourced a Chinese supplier who will be stocking these as Mid September 2011!
+They can be purchased from:
 
-Simply visit: <a href="http://www.r2hobbies.com/eng/?PARTNER=robthomson">www.r2hobbies.com/eng</a>
+<a href="http://www.r2hobbies.com/eng/proddetail.php?prod=rcps2845001&PARTNER=robthomson">www.r2hobbies.com</a>
 
-Please check back for more details on their avaliability.
+Note! The R2 site lists these as being for the Eurgle Radio.  The Eurgle Radio is simply a rebranded 9X, so it will work in any of the 9X based radios!
