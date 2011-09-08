@@ -80,8 +80,62 @@ TEMPLATES = YES
 # (SPEAKER is used if you have modified your radio gruvin style for the variable sound)
 BEEPER = BUZZER
 
+
+
+#----Display compile modifications on the version screen---------------------------------------
+#   The default for the compile options will not be displayed and is
+#	EXT = STD
+#	HELI = YES
+#	TEMPLATES = YES
+#	BUZZER = BUZZER
+
+#   If the variables differ from the above default settings, it will be displayed in the 
+#   fifth line of the version screen
+
+#	possible results for EXT are
+#	JETI | FRSKY | ARDU | NMEA
+
+#	HELI and TEMPLATES are combined to 
+#	NOH	HELI = NO
+#	NOT	TEMPLATES = NO
+#	NHT	HELI = NO and TEMPLATES = NO
+
+#	possible values for BUZZER are
+#	BZM	BUZZER = BUZZER_MOD
+#	SPK	BUZZER = SPEAKER
+
+ifeq ($(EXT), ARDUPILOT)
+	MY_EXT = ARDU
+else
+	ifeq ($(EXT), STD)
+#		leave it empty		
+	else
+		MY_EXT = $(EXT)
+	endif
+endif
+
+ifeq ($(HELI), NO)
+	ifeq ($(TEMPLATES),NO)
+		MY_HELI = NHT
+	else
+		MY_HELI = NOH
+	endif
+endif
+
+ifeq ($(BEEPER), BUZZER_MOD)
+	MY_BEEPER = BZM
+else
+	ifeq ($(BEEPER), SPEAKER)
+		MY_BEEPER = SPK
+	endif
+endif
+
+
+
+#--------------------------------------------------------------------------------
+
 # List Assembler source files here.
-#     Make them always end in a capital .S.  Files ending in a lowercase .s
+#     Make them always end in a capital .S.  Files ending in a lowercase ..s
 #     will not be considered source files but generated files (assembler
 #     output from the compiler), and will be deleted upon "make clean"!
 #     Even though the DOS/Win* filesystem matches both .s and .S the same,
@@ -457,7 +511,7 @@ stamp:
 	@echo "#define TIME_STR \"`date +%H:%I:%S`\"" >> stamp-er9x.h
 	@echo "#define SUB_VERS $(VER)-$(USER)" >> stamp-er9x.h
 	@echo "#define SVN_VERS \"trunk-r$(REV)\"" >> stamp-er9x.h
-	@echo "#define MOD_VERS \"$(EXT)\"" >> stamp-er9x.h
+	@echo "#define MOD_VERS \"$(MY_EXT) $(MY_HELI) $(MY_BEEPER) \"" >> stamp-er9x.h
 	@cat stamp-er9x.h
 
 font.lbm: font_6x1.xbm
@@ -611,7 +665,7 @@ extcoff: $(TARGET).elf
 
 # Create library from object files.
 .SECONDARY : $(TARGET).a
-.PRECIOUS : $(OBJ)
+..PRECIOUS : $(OBJ)
 %.a: $(OBJ)
 	@echo
 	@echo $(MSG_CREATING_LIBRARY) $@
@@ -619,8 +673,8 @@ extcoff: $(TARGET).elf
 
 
 # Link: create ELF output file from object files.
-.SECONDARY : $(TARGET).elf
-.PRECIOUS : $(OBJ)
+..SECONDARY : $(TARGET).elf
+..PRECIOUS : $(OBJ)
 %.elf: $(OBJ)
 	@echo
 	@echo $(MSG_LINKING) $@
@@ -691,6 +745,6 @@ $(shell mkdir $(OBJDIR) 2>/dev/null)
 
 
 # Listing of phony targets.
-.PHONY : all begin finish end sizebefore sizeafter gccversion \
+..PHONY : all begin finish end sizebefore sizeafter gccversion \
 build elf hex eep lss sym coff extcoff \
 clean clean_list program debug gdb-config stamp
