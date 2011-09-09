@@ -1,4 +1,4 @@
-= Speaker Mods with Haptic Feedback =
+= Speaker Mods with Haptic Feedback (basic) =
 
 The purpose of the speaker mod is to start paving the way for more usefull tones and beeps for use in telemetry versions of er9x. 
 
