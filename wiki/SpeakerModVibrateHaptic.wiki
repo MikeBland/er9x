@@ -12,7 +12,9 @@ You will need two parts on your shopping list:
 
 2.  a capacitor. (4.7u) seems to do the trick.
 
-3.  a 4mm vibration motor to provide the haptic feedback.
+3. a capacitor (10uf)
+
+4.  a 4mm vibration motor to provide the haptic feedback.
 
 The following image:
 
