@@ -1,0 +1,23 @@
+= Speaker Mods with Haptic Feedback =
+
+This circuit shows the way that the vibration motor can be wired up to the radio for use with the -HAPTIC range of firmware options.  This firmare version provides greater control of when the vibration motor is actually used!
+
+Modifying the radio is dead simple. 
+
+Note!  Once you perform this mod you will have to use the -speaker version of the er9x firmware!
+
+You will need two parts on your shopping list:
+
+1.  A piezo speaker.  (this speaker needs to no more than 2.5cm to 3cm diameter.) (a normal speaker will work, however tests have shown a piezo has a much lower power draw) 
+
+2.  a capacitor. (4.7u) seems to do the trick.
+
+3.  a 4mm vibration motor to provide the haptic feedback.
+
+The following image:
+
+<img src="http://static.rcgroups.net/forums/attachments/3/7/1/9/9/5/a4266994-121-speaker%20%26%20vibration%20mood.jpg">
+
+shows how you need to modify your radio.  It should be largely self explanatory!
+
+The lead to the 'free pin' has not yet been allocated.  This should be running in the next couple of weeks! (09/09/2011)
