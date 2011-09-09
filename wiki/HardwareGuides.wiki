@@ -11,5 +11,6 @@ The following are a list of tutorials that have been sourced from the community 
  * [CustomSpray Custom Spray]
  * [SpeakerMod Speaker Mod]
  * [SpeakerModVibrate Speaker Mod with Haptic Feedback (basic mod)]
+ * [SpeakerModVibrateHaptic Speaker Mod with Haptic Feedback (-haptic firmware)]
  * <a href="http://er9x.googlecode.com/svn/trunk/doc/PPMinFix.pdf">PPM Fix for the 9x</a>
  * <a href="http://er9x.googlecode.com/svn/trunk/doc/NMEA.pdf">NMEA (GPS) how to guide</a>
