@@ -138,23 +138,7 @@
   #define INP_C_AileDR  7
 #endif
 
-//gruvin speaker mod - ported by rob.thomson
-#ifdef BEEPSPKR
 
-#define BEEP_KEY_TIME 5
-
-//increase or decrease this value to alter the pitch of the beeps sent to the speaker
-// typically this would sit at a range of 10 to 50
-//
-//#define BEEP_TONE 20   //removed as now take value from eprom
-
-//automatically calculate the up & down frequency from the default
-#define BEEP_DEFAULT_FREQ (60)
-#define BEEP_KEY_UP_FREQ  (BEEP_DEFAULT_FREQ+5)
-#define BEEP_KEY_DOWN_FREQ (BEEP_DEFAULT_FREQ-5)
-
-
-#endif
 
 
 #define OUT_G_SIM_CTL  4 //1 : phone-jack=ppm_in
@@ -695,26 +679,48 @@ extern uint16_t g_LightOffCounter;
 #define sysFLAG_OLD_EEPROM (0x01)
 extern uint8_t sysFlags;
 
-/// Erzeugt einen beep der laenge b
+
+//audio
+#define AUDIO_QUEUE_LENGTH (20)
+#define AUDIO_QUEUE_HEARTBEAT (78)
+#define BEEP_DEFAULT_FREQ (60)
+#define BEEP_OFFSET (10)
+#define BEEP_INTERUPT_OFFSET (1)
+#define BEEP_KEY_UP_FREQ  (BEEP_DEFAULT_FREQ+10)
+#define BEEP_KEY_DOWN_FREQ (BEEP_DEFAULT_FREQ-10)
+
+extern uint8_t g_audioStart;
+extern uint8_t g_audioEnd;
+extern uint8_t g_audioLength;
+extern uint8_t g_audioPause;
+extern int g_audioFirstRun;
+class audioQueue;
+
+inline void _beepSpkr(uint8_t d, uint8_t f){
+  //this is a wrapper function for the audio class
+  //and uses the legacy tone import functions in the main er9x file
+  if(g_audioFirstRun < 3){
+  	//do nothing as cant find strange issue that causes this function to run twice on boot!
+  	g_audioFirstRun++;
+  } else {	
+		g_audioStart = f;
+		g_audioEnd = f;
+		g_audioLength = d + BEEP_INTERUPT_OFFSET;
+		g_audioPause = 0;
+	}	
+}
+
 inline void _beep(uint8_t b) {
-  g_beepCnt=b;
+  //this is a wrapper function for the audio class
+  //and uses the legacy tone import functions in the main er9x file	
+	g_audioStart = BEEP_DEFAULT_FREQ;
+	g_audioEnd = BEEP_DEFAULT_FREQ;
+	g_audioLength = b;
+	g_audioPause = 0;	
 }
 
-// gruvin speaker mod - ported by rob.thomson
-#ifdef BEEPSPKR
-extern uint8_t toneFreq;
-inline void _beepSpkr(uint8_t d, uint8_t f)
-{
-  g_beepCnt=d;
-  toneFreq=f + g_eeGeneral.speakerPitch;
-}
-#endif
-
-// gruvin speaker - ported by rob.thomson
-#ifdef BEEPSPKR
-
-#define beepKeySpkr(freq) _beepSpkr(g_beepVal[0],freq)
-#define beepTrimSpkr(freq) _beepSpkr(g_beepVal[0],freq)
+#define beepKeySpkr(freq) _beepSpkr(g_beepVal[1],freq)
+#define beepTrimSpkr(freq) _beepSpkr(g_beepVal[1],freq)
 #define beepWarn1Spkr(freq) _beepSpkr(g_beepVal[1],freq)
 #define beepWarn2Spkr(freq) _beepSpkr(g_beepVal[2],freq)
 #define beepKey() _beepSpkr(g_beepVal[0],BEEP_DEFAULT_FREQ)
@@ -722,17 +728,6 @@ inline void _beepSpkr(uint8_t d, uint8_t f)
 #define beepWarn1() _beepSpkr(g_beepVal[1],BEEP_DEFAULT_FREQ)
 #define beepWarn2() _beepSpkr(g_beepVal[2],BEEP_DEFAULT_FREQ)
 #define beepErr()  _beepSpkr(g_beepVal[4],BEEP_DEFAULT_FREQ)
-
-#else
-
-// default beeper
-#define beepKey()   _beep(g_beepVal[0])
-#define beepWarn() _beep(g_beepVal[3])
-#define beepWarn1() _beep(g_beepVal[1])
-#define beepWarn2() _beep(g_beepVal[2])
-#define beepErr()  _beep(g_beepVal[4])
-
-#endif
 
 #endif // er9x_h
 /*eof*/

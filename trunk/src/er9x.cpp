@@ -29,14 +29,17 @@ mode4 ail thr ele rud
 EEGeneral  g_eeGeneral;
 ModelData  g_model;
 
-#ifdef BEEPSPKR
-// gruvin: Tone Generator Globals  - ported by rob.thomson
-uint8_t toneFreq = BEEP_DEFAULT_FREQ;
-uint8_t toneOn = false;
-#endif
+
+//legacy audio wrapper vars
+uint8_t g_audioStart = 0;
+uint8_t g_audioEnd = 0;
+uint8_t g_audioLength = 0;
+uint8_t g_audioPause = 0;
+int g_audioFirstRun = 1;
 
 
-bool warble = false;
+
+
 uint8_t sysFlags = 0;
 
 const prog_char APM modi12x3[]=
@@ -606,23 +609,18 @@ uint8_t checkTrim(uint8_t event)
     if(((x==0)  ||  ((x>=0) != (tm>=0))) && (!thro) && (tm!=0)){
       *TrimPtr[idx]=0;
       killEvents(event);
-      warble = false;
-//gruvin speaker mod ported by rob.thomson
-#ifdef BEEPSPKR
-      beepWarn2Spkr(60 + g_eeGeneral.speakerPitch);
-#else
+
       beepWarn();
-#endif
+
     }
     else if(x>-125 && x<125){
       *TrimPtr[idx] = (int8_t)x;
       STORE_MODELVARS_TRIM;
-      if(event & _MSK_KEY_REPT) warble = true;
+      //if(event & _MSK_KEY_REPT) warble = true;
 //gruvin speaker mod - ported by rob.thomson
 #ifdef BEEPSPKR
       // toneFreq higher/lower according to trim position
-      // beepTrimSpkr((x/3)+60);  // Range -125 to 125 = toneFreq: 19 to 101
-     beepTrimSpkr((x/4)+30+(g_eeGeneral.speakerPitch)/2);   // Divide by 4 more efficient. Range -125 to 125 = toneFreq: 28 to 91
+       beepTrimSpkr((x/4)+60); 
 #else
       beepWarn1();
 #endif
@@ -631,14 +629,12 @@ uint8_t checkTrim(uint8_t event)
     {
       *TrimPtr[idx] = (x>0) ? 125 : -125;
       STORE_MODELVARS_TRIM;
-      warble = false;
-//grucin speaker mod ported by rob.thomson
+     // warble = false;
+
 #ifdef BEEPSPKR
-     // beepTrimSpkr((x/4)+60+g_eeGeneral.speakerPitch);
-      //beepWarn2Spkr((x/4)+30+(g_eeGeneral.speakerPitch)/2);
-       beepTrimSpkr((x/4)+30+(g_eeGeneral.speakerPitch)/2);
+        beepTrimSpkr((x/4)+60);
 #else
-      beepWarn();
+      beepWarn1();
 #endif
     }
 
@@ -665,7 +661,7 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
   }
   if(event==EVT_KEY_FIRST(kpl) || event== EVT_KEY_REPT(kpl) || (s_editMode && (event==EVT_KEY_FIRST(KEY_UP) || event== EVT_KEY_REPT(KEY_UP))) ) {
     newval++;
-//gruvin speaker mod - ported by rob.thomson
+
 #ifdef BEEPSPKR
     beepKeySpkr(BEEP_KEY_UP_FREQ);
 #else
@@ -674,7 +670,7 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
     kother=kmi;
   }else if(event==EVT_KEY_FIRST(kmi) || event== EVT_KEY_REPT(kmi) || (s_editMode && (event==EVT_KEY_FIRST(KEY_DOWN) || event== EVT_KEY_REPT(KEY_DOWN))) ) {
     newval--;
-//gruvin speaker mod - ported by rob.thomson
+
 #ifdef BEEPSPKR
     beepKeySpkr(BEEP_KEY_DOWN_FREQ);
 #else
@@ -701,7 +697,7 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
   {
     newval = i_max;
     killEvents(event);
-//gruvin speaker mod - ported by rob.thomson
+
 #ifdef BEEPSPKR
     beepWarn2Spkr(BEEP_KEY_UP_FREQ);
 #else
@@ -712,7 +708,7 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
   {
     newval = i_min;
     killEvents(event);
-//gruvin speaker mod - ported by rob.thomson
+
 #ifdef BEEPSPKR
     beepWarn2Spkr(BEEP_KEY_DOWN_FREQ);
 #else
@@ -722,7 +718,7 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
   if(newval != val) {
     if(newval==0) {
       pauseEvents(event);
-//gruvin speaker mod - ported by rob.thomson      
+  
 #ifdef BEEPSPKR
       if (newval>val)
         beepWarn2Spkr(BEEP_KEY_UP_FREQ);
@@ -1094,7 +1090,6 @@ void getADC_osmp()
 }
 
 
-
 void getADC_single()
 {
     for (uint8_t adc_input=0;adc_input<8;adc_input++){
@@ -1151,118 +1146,285 @@ static uint16_t getTmr16KHz()
   }
 }
 
+
+
+
+class audioQueue{
+  
+
+  //queue arrays
+	uint8_t queueToneStart[AUDIO_QUEUE_LENGTH];
+	uint8_t queueToneEnd[AUDIO_QUEUE_LENGTH];	
+	uint8_t queueToneLength[AUDIO_QUEUE_LENGTH];
+	uint8_t queueTonePause[AUDIO_QUEUE_LENGTH];
+
+	
+	//queue temporaries
+	uint8_t t_queueToneStart;
+	uint8_t t_queueToneEnd;			
+	uint8_t t_queueToneLength;
+	uint8_t t_queueTonePause;
+
+	//queue general vars
+	uint8_t toneFreq;
+	uint8_t toneFreqEnd;
+	uint8_t toneTimeLeft;
+	uint8_t RateOfChange;	
+	uint8_t DirectionOfChange;		
+	uint8_t z;
+	uint8_t y;	
+  int toneInterupt;
+  int tonePause;
+	int queueState;
+	
+	public:
+		//constructor
+		audioQueue(){
+				//initialize all arrays
+			    for(int i=0; i<=AUDIO_QUEUE_LENGTH; i++){
+                this->queueToneStart[i] = 0;
+                this->queueToneEnd[i] = 0;
+                this->queueToneLength[i] = 0;
+                this->queueTonePause[i] = 0;
+			    }	
+			  //initilize temporaries
+        this->t_queueToneStart = 0;
+        this->t_queueToneEnd = 0;
+        this->t_queueToneLength = 0;
+        this->t_queueTonePause = 0;			
+			
+        
+				this->toneFreq = 0;
+				this->toneFreqEnd = 0;
+				this->toneTimeLeft = 0;   
+				this->RateOfChange = 0;   	
+				this->toneInterupt = 0;
+				this->queueState = 0;
+				    		
+		}	
+
+		
+		// these methods simply set the temporary buffer to the params.
+		// to commit to the queue you run the member commit.
+		void start(uint8_t x){
+			this->t_queueToneStart=x;
+		}
+		
+		void end(uint8_t x){
+			this->t_queueToneEnd=x;
+		}		
+		
+		void interrupt(){
+			this->toneInterupt = 1;
+		}	
+					
+
+		void length(uint8_t x){
+			this->t_queueToneLength=x;
+		}
+							
+		void pause(uint8_t x){
+			this->t_queueTonePause=x;
+		}		
+
+		void commit(){
+						//step through the queue and insert at first free slot
+						if(this->toneInterupt == 0){
+									for(int i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
+			             if(this->queueToneStart[i] == 0){ //we only check the start var as this is the master       	
+						                this->queueToneStart[i] = this->t_queueToneStart;
+						                this->queueToneEnd[i] = this->t_queueToneEnd;
+						                this->queueToneLength[i] = this->t_queueToneLength;
+						                this->queueTonePause[i] = this->t_queueTonePause;
+						                flushTemp();              
+			                  break;
+			             }
+			           }
+			      }  else {			      		
+		                this->queueToneStart[0] = this->t_queueToneStart;
+		                this->queueToneEnd[0] = this->t_queueToneEnd;
+		                this->queueToneLength[0] = this->t_queueToneLength;
+		                this->queueTonePause[0] = this->t_queueTonePause;
+		                flushTemp(); 		                                 	
+			      }	   
+		}		
+		
+		//set all temporary buffers to default
+		void flushTemp(){
+        this->t_queueToneStart = 0;
+        this->t_queueToneEnd = 0;
+        this->t_queueToneLength = 0;
+        this->t_queueTonePause = 0;					
+        this->RateOfChange = 0;	
+        this->toneInterupt = 0;
+		}	
+		
+		
+		void restack(){
+         for(int i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
+            if(i == (AUDIO_QUEUE_LENGTH -1)){          //set the last entry to 0 as nothing in stack to add too!
+			                this->queueToneStart[i] = 0;
+			                this->queueToneEnd[i] = 0;
+			                this->queueToneLength[i] = 0;
+			                this->queueTonePause[i] = 0;
+            } else {      //shift all values one up in the stack.
+			                this->queueToneStart[i] = this->queueToneStart[i+1];
+			                this->queueToneEnd[i] = this->queueToneEnd[i+1];
+			                this->queueToneLength[i] = this->queueToneLength[i+1];
+			                this->queueTonePause[i] = this->queueTonePause[i+1];
+            }
+         }			
+		}
+		
+
+		//heartbeat is responsibile for issueing the audio tones and general square waves
+		// it is essentially the life of the class.
+		void heartbeat(){
+
+		if(this->queueState == 1){
+
+#ifdef BEEPSPKR
+					//square wave generator use for speaker mod
+					//simply generates a square wave for toneFreq for 
+					//as long as the this->toneTimeLeft is more than 0
+	  				static uint8_t toneCounter;
+	  				if (this->toneTimeLeft > 0){
+				    	toneCounter += this->toneFreq;
+				    	if ((toneCounter & 0x80) == 0x80){
+				      		PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
+				    	} else {
+				    			PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
+				    	}		
+				  	} else {
+				      PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'			
+				    }		
+#else
+					if (this->toneTimeLeft > 0){
+						PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
+					} else {
+						PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
+					}	
+#endif  
+			  
+			  } else {
+			  	PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
+			  }	
+			    
+			    //step through array checking if we have any tones to play
+			    //next heartbeat will play whatever we put in queue
+							if(this->queueToneStart[0] > 0 && this->toneTimeLeft <= 0 && this->queueState == 0){
+		
+											//scaling handler
+											if(this->queueToneEnd[0] > 0 && this->queueToneEnd[0] != this->queueToneStart[0]){
+												
+													//if toneEnd is set then we scale the sound to from start to finish
+													//at an effective speed determined by the queueToneLength value
+												  this->toneFreq = this->queueToneStart[0] + g_eeGeneral.speakerPitch;
+												  //calculate the rate of climb
+												  if(this->queueToneStart[0] > this->queueToneEnd[0]){
+												  		this->z = this->queueToneStart[0] - this->queueToneEnd[0];
+												  		this->y = 0;
+												  } else {
+												  	  this->z = this->queueToneEnd[0] - this->queueToneStart[0];
+												  	  this->y = 1;
+												  } 	
+				                  this->toneFreq=this->queueToneStart[0] + g_eeGeneral.speakerPitch; // add pitch compensator
+				                  this->toneFreqEnd=this->queueToneEnd[0] + g_eeGeneral.speakerPitch;  
+				                  this->toneTimeLeft = this->queueToneLength[0]; 
+				                  this->tonePause = this->queueTonePause[0]; 										  
+												  this->RateOfChange = this->queueToneLength[0]/ this->z ;
+												  this->DirectionOfChange = this->y;
+												  
+											}	else {
+												
+											//simple tone handler
+				                  this->toneFreq=(this->queueToneStart[0] + g_eeGeneral.speakerPitch) + BEEP_OFFSET; // add pitch compensator
+				                  this->toneTimeLeft = this->queueToneLength[0];
+				                  this->tonePause = this->queueTonePause[0]; 
+				                  this->DirectionOfChange = 0;
+				                  this->RateOfChange = 0;
+				                  this->toneFreqEnd = 0;
+		                  }
+		                  restack();
+		                  this->queueState = 1;
+		                     
+		                   
+		                               
+					    }
+
+				    
+
+					//count down the timer
+					static uint8_t cntms = AUDIO_QUEUE_HEARTBEAT;
+  				if (cntms-- == 0){
+  						cntms = AUDIO_QUEUE_HEARTBEAT;
+  								
+											if(this->toneTimeLeft > 0 && this->queueState == 1){
+												 			//play the tone
+												 		  this->toneTimeLeft--; //time gets counted down
+															//alter tone for scaling sound effect
+															if(this->RateOfChange	> 0){
+																	if(this->DirectionOfChange == 1){
+																			this->toneFreq = this->toneFreq + this->RateOfChange;
+																	} else {
+																		  this->toneFreq = this->toneFreq - this->RateOfChange;
+																	}			
+															}							
+											}
+											if(this->toneTimeLeft <= 0 && this->queueState == 1){
+														  if(this->tonePause--	<= 0){
+														  			this->queueState = 0;
+														  }	
+											}
+					}	
+		}	
+
+};
+
+//new audio object 
+audioQueue audio;
+
 ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 {
   cli();
   TIMSK &= ~(1<<OCIE0); //stop reentrance
   sei();
   
-// gruvin speaker mod ported by rob.thomson
-#ifdef BEEPSPKR
+
   OCR0 += 2;
-#else  
-  OCR0 = OCR0 + 156;
-#endif
+  
 
-// gruvin speaker mod - ported by rob.thomson
-#ifdef BEEPSPKR
-  // gruvin: Begin Tone Generator
-  static uint8_t toneCounter;
-
-  if (toneOn)
-  {
-    toneCounter += toneFreq;
-    if ((toneCounter & 0x80) == 0x80)
-      PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
-    else
-      PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
-  } 
-  else
-      PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
-  // gruvin: END Tone Generator
+ //call to sound heatbeat.
+ audio.heartbeat();
+ //legacy audio wrapper!
+ if(g_audioStart > 0){
+	 	  audio.start(g_audioStart);
+		  audio.end(g_audioEnd);
+		  audio.length(g_audioLength);
+		  audio.pause(g_audioPause);
+		  audio.interrupt();
+		  audio.commit();
+		  
+		  //flush vars
+		  g_audioStart = 0;
+		  g_audioEnd = 0;
+		  g_audioLength = 0;
+		  g_audioPause = 0;
+ }	
 
   static uint8_t cnt10ms = 77; // execute 10ms code once every 78 ISRs
   if (cnt10ms-- == 0) // BEGIN { ... every 10ms ... }
   {
     // Begin 10ms event
     cnt10ms = 77; 
-    
-/*
-    // DEBUG: gruvin: crude test to time if I have in fact still got 10ms
-    // Test confirms 1 second bips. Too accurate to count error offset over 6 full minutes. (Good.)
-    static uint8_t test10ms = 100;
-    if (test10ms-- == 0)
-    {
-      test10ms = 100;
-      g_beepCnt = 5;
-      beepOn = true; // beep each second (beepOn function turns beep off)
-    }
-*/
 
-#endif
-    // Record start time from TCNT1 to record excution time
-//    uint16_t dt=TCNT1;// TCNT1 (used for PPM out pulse generation) is running at 2MHz
-
-
-  //cnt >/=0
-  //beepon/off
-  //beepagain y/n
-  if(g_beepCnt) {
-      if(!beepAgainOrig) {
-          beepAgainOrig = g_beepCnt;
-          beepOn = true;
-      }
-      g_beepCnt--;
-  }
-  else {
-      if(beepAgain && beepAgainOrig) {
-          beepOn = !beepOn;
-          g_beepCnt = beepOn ? beepAgainOrig : 8;
-          if(beepOn) beepAgain--;
-      }
-      else {
-          beepAgainOrig = 0;
-          beepOn = false;
-          warble = false;
-      }
-  }
-
-  //gruvin speaker mod - ported by rob.thomson
-#ifdef BEEPSPKR
-    // G: use new tone generator for beeps
-    if(beepOn)
-    {
-      static bool warbleC;
-      warbleC = warble && !warbleC;
-      if(warbleC)
-        toneOn = false;
-      else
-        toneOn = true;
-    }else{
-      toneOn = false;
-    }
-
-#else
-    // G: use original external buzzer for beeps
-    if(beepOn){
-    static bool warbleC;
-    warbleC = warble && !warbleC;
-    if(warbleC)
-      PORTE &= ~(1<<OUT_E_BUZZER);//buzzer off
-    else
-      PORTE |=  (1<<OUT_E_BUZZER);//buzzer on
-    }else{
-      PORTE &= ~(1<<OUT_E_BUZZER);
-    }
-#endif
 
   per10ms();
   heartbeat |= HEART_TIMER10ms;
+  
 
-//gruvin speaker mod - ported by rob.thomson
-#ifdef BEEPSPKR
-  } // end 10ms event
-#endif
+} // end 10ms event
+
 
   cli();
   TIMSK |= (1<<OCIE0);
@@ -1338,6 +1500,41 @@ int main(void)
   DDRG = 0x10;  PORTG = 0xff; //pullups + SIM_CTL=1 = phonejack = ppm_in
   lcd_init();
 
+//generate a test tone on statup to show speaker mod working!
+#ifdef BEEPSPKR
+
+/*
+	//a sliding scale  
+  audio.start(60);
+  audio.end(80);
+  audio.length(60);
+  audio.pause(50);
+  audio.commit();
+  */
+ 
+  audio.start(120);
+  audio.length(4);
+  audio.pause(50);
+  audio.commit(); 
+  
+  audio.start(90);
+  audio.length(4);
+  audio.pause(50);
+  audio.commit(); 
+
+  audio.start(140);
+  audio.length(4);
+  audio.pause(10);
+  audio.commit();    
+  
+  audio.start(90);
+  audio.length(4);
+  audio.pause(50);
+  audio.commit(); 
+  
+ 
+#endif
+
 #ifdef JETI
   JETI_Init();
 #endif
@@ -1353,6 +1550,8 @@ int main(void)
 #ifdef NMEA
   NMEA_Init();
 #endif
+
+
 
   ADMUX=ADC_VREF_TYPE;
   ADCSRA=0x85;
