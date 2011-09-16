@@ -31,12 +31,10 @@ The following image:
 
 shows how you need to modify your radio.  It should be largely self explanatory!
 
-The lead to the 'free pin' is a single line that is doldered to pin 43 on the cpu.
+The lead to the 'free pin' is a single line that is soldered to pin 43 on the cpu.
 
 This is marked in 'red' on the following image.
 
 <img src="http://static.rcgroups.net/forums/attachments/3/2/9/0/3/2/a4280719-150-pcb-ref-top.jpg">
 
 This pin is right next to the pins used for the frsky mod, so if doing that mod, then probably best to do this at the same time!
-
-
