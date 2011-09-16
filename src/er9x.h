@@ -93,7 +93,7 @@
 //                                      rud    thro   elev   aile
 //PORTG  7      6       5       4       3       2       1       0
 //       -      -       -       O       i               i       i
-//                            SIM_CTL  ID1      NC      RF_POW RuddDR
+//                            SIM_CTL  ID1      HAPTIC      RF_POW RuddDR
 
 #define PORTA_LCD_DAT  PORTA
 #define OUT_B_LIGHT   7
@@ -460,6 +460,9 @@ int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 #define BACKLIGHT_ON    PORTB |=  (1<<OUT_B_LIGHT)
 #define BACKLIGHT_OFF   PORTB &= ~(1<<OUT_B_LIGHT)
 
+#define HAPTIC_ON    PORTG |=  (1<<2)
+#define HAPTIC_OFF   PORTG &= ~(1<<2)
+
 #define PULSEGEN_ON     TIMSK |=  (1<<OCIE1A)
 #define PULSEGEN_OFF    TIMSK &= ~(1<<OCIE1A)
 
@@ -681,53 +684,80 @@ extern uint8_t sysFlags;
 
 
 //audio
-#define AUDIO_QUEUE_LENGTH (20)
-#define AUDIO_QUEUE_HEARTBEAT (78)
+#define AUDIO_QUEUE_LENGTH (5)
+#define AUDIO_QUEUE_HEARTBEAT (140) //this value is very important. It controlls how long the tone sounds for - which is key with peizo tweeters to avoid sound clipping.  140 seems to work ok
 #define BEEP_DEFAULT_FREQ (60)
 #define BEEP_OFFSET (10)
-#define BEEP_INTERUPT_OFFSET (1)
 #define BEEP_KEY_UP_FREQ  (BEEP_DEFAULT_FREQ+10)
 #define BEEP_KEY_DOWN_FREQ (BEEP_DEFAULT_FREQ-10)
+#define BEEP_HAPTIC_LENGTH (500)  //haptic motors take a bit of time to spin up! 
 
-extern uint8_t g_audioStart;
-extern uint8_t g_audioEnd;
-extern uint8_t g_audioLength;
-extern uint8_t g_audioPause;
+
+extern int g_audioStart;
+extern int g_audioEnd;
+extern int g_audioLength;
+extern int g_audioPause;
 extern int g_audioFirstRun;
+extern int g_Haptic;
 class audioQueue;
 
-inline void _beepSpkr(uint8_t d, uint8_t f){
+
+
+
+inline void _beepSpkr(int d, int f,int h=0){
   //this is a wrapper function for the audio class
   //and uses the legacy tone import functions in the main er9x file
   if(g_audioFirstRun < 3){
   	//do nothing as cant find strange issue that causes this function to run twice on boot!
   	g_audioFirstRun++;
-  } else {	
-		g_audioStart = f;
-		g_audioEnd = f;
-		g_audioLength = d + BEEP_INTERUPT_OFFSET;
-		g_audioPause = 0;
+  } else {	  	
+				g_audioStart = f;
+				g_audioEnd = f;
+				g_audioLength = d ;
+				g_audioPause = 0;		 	
+				
+				if(h == 1){
+					g_Haptic = 1;
+				}					
+						
 	}	
 }
 
-inline void _beep(uint8_t b) {
-  //this is a wrapper function for the audio class
-  //and uses the legacy tone import functions in the main er9x file	
-	g_audioStart = BEEP_DEFAULT_FREQ;
-	g_audioEnd = BEEP_DEFAULT_FREQ;
-	g_audioLength = b;
-	g_audioPause = 0;	
+inline void _beep(int d,int h=0) {	
+				g_audioStart = BEEP_DEFAULT_FREQ;
+				g_audioLength = d;
+				g_audioPause = 0;		
+				if(h == 1){
+					g_Haptic = 1;
+				}	
+				 			
 }
 
-#define beepKeySpkr(freq) _beepSpkr(g_beepVal[1],freq)
-#define beepTrimSpkr(freq) _beepSpkr(g_beepVal[1],freq)
-#define beepWarn1Spkr(freq) _beepSpkr(g_beepVal[1],freq)
-#define beepWarn2Spkr(freq) _beepSpkr(g_beepVal[2],freq)
+
+
+#ifdef BEEPSPKR
+
+#define beepKeySpkr(freq) _beepSpkr(g_beepVal[0],freq)
+#define beepTrimSpkr(freq) _beepSpkr(g_beepVal[0],freq)
+#define beepWarn1Spkr(freq) _beepSpkr(g_beepVal[1],freq,1)
+#define beepWarn2Spkr(freq) _beepSpkr(g_beepVal[2],freq,1)
+
 #define beepKey() _beepSpkr(g_beepVal[0],BEEP_DEFAULT_FREQ)
-#define beepWarn() _beepSpkr(g_beepVal[3],BEEP_DEFAULT_FREQ)
-#define beepWarn1() _beepSpkr(g_beepVal[1],BEEP_DEFAULT_FREQ)
-#define beepWarn2() _beepSpkr(g_beepVal[2],BEEP_DEFAULT_FREQ)
-#define beepErr()  _beepSpkr(g_beepVal[4],BEEP_DEFAULT_FREQ)
+#define beepWarn() _beepSpkr(g_beepVal[3],BEEP_DEFAULT_FREQ,1)
+#define beepWarn1() _beepSpkr(g_beepVal[1],BEEP_DEFAULT_FREQ,1)
+#define beepWarn2() _beepSpkr(g_beepVal[2],BEEP_DEFAULT_FREQ,1)
+#define beepErr()  _beepSpkr(g_beepVal[4],BEEP_DEFAULT_FREQ,1)
+
+#else 
+// default beeper
+#define beepKey()   _beep(g_beepVal[0])
+#define beepWarn() _beep(g_beepVal[3],1)
+#define beepWarn1() _beep(g_beepVal[1],1)
+#define beepWarn2() _beep(g_beepVal[2],1)
+#define beepErr()  _beep(g_beepVal[4],1)
+
+#endif
+
 
 #endif // er9x_h
 /*eof*/

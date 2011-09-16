@@ -2406,13 +2406,14 @@ void menuProcSetup(uint8_t event)
         b = g_eeGeneral.beeperVal ;
         lcd_puts_P(0, y,PSTR("Beeper"));
 //under speaker mod, length of beep servers no purpose
-#ifdef BEEPSPKR
-        lcd_putsnAtt(PARAM_OFS - FW, y, PSTR("Quiet""NoKey""Norm ")+5*b,5,(sub==subN ? INVERS:0));
-        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 2); g_eeGeneral.beeperVal = b ; }
-#else
+//#ifdef BEEPSPKR
+//       lcd_putsnAtt(PARAM_OFS - FW, y, PSTR("Quiet""NoKey""Norm ")+5*b,5,(sub==subN ? INVERS:0));
+//        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 2); g_eeGeneral.beeperVal = b ; }
+//#else
+				//new queue functionality enables this to work
         lcd_putsnAtt(PARAM_OFS - FW, y, PSTR("Quiet""NoKey""Norm ""Long ""xLong")+5*b,5,(sub==subN ? INVERS:0));
         if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 4); g_eeGeneral.beeperVal = b ; }
-#endif
+//#endif
 
         if((y+=FH)>7*FH) return;
     }subN++;
