@@ -22,6 +22,8 @@ You will need a few part on your shopping list:
 
 5. a 220 ohm to 1K resistor (this will improve safety with, virtually, any type of battery (any voltage)!
 
+6. a diode!  1N4001 will do the job!
+
 
 These parts can all be purchased easily eBay, Conrad or Radioshack!
 
