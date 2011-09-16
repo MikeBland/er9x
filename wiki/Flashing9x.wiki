@@ -17,7 +17,6 @@ If however you do decide to pull out the soldering iron, the following guides ha
  * <a href="http://er9x.googlecode.com/svn/trunk/doc/Flashing%20the%209x.pdf">Flashing the 9x</a> by Jon Lowe. 
  * <a href="http://er9x.googlecode.com/svn/trunk/doc/Appendix%201.pdf">Flashing the 9x</a> - Appendix 1 by Jon Lowe.
  * <a href="http://er9x.googlecode.com/svn/trunk/doc/Alternate%209x%20hookup.pdf">Alternate 9x hookup</a> by Jon Lowe.
-
-
+ * <a href="http://diyjunky.blogspot.com/2011/09/using-your-arduino-to-program-turnigy.html">Flashing the 9x using your arduino</a> by fregon45
 
 
