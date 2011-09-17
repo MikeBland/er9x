@@ -1,10 +1,10 @@
 ===== Starting build =====
 Timestamp
-Fri Sep 16 14:12:58 UTC 2011
+Sat Sep 17 23:38:07 UTC 2011
 ==========================
 
 ===== Updating from SVN =====
-At revision 534.
+At revision 536.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -36,10 +36,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "16.09.2011"
-#define TIME_STR "10:10:59"
-#define SUB_VERS 4790-erez
-#define SVN_VERS "trunk-r535"
+#define DATE_STR "17.09.2011"
+#define TIME_STR "19:07:08"
+#define SUB_VERS 4801-erez
+#define SVN_VERS "trunk-r537"
 #define MOD_VERS "JETI   "
 
 Compiling C++: er9x.cpp
@@ -132,10 +132,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "16.09.2011"
-#define TIME_STR "10:10:02"
-#define SUB_VERS 4791-erez
-#define SVN_VERS "trunk-r535"
+#define DATE_STR "17.09.2011"
+#define TIME_STR "19:07:12"
+#define SUB_VERS 4802-erez
+#define SVN_VERS "trunk-r537"
 #define MOD_VERS "FRSKY   "
 
 Compiling C++: er9x.cpp
@@ -228,10 +228,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "16.09.2011"
-#define TIME_STR "10:10:05"
-#define SUB_VERS 4792-erez
-#define SVN_VERS "trunk-r535"
+#define DATE_STR "17.09.2011"
+#define TIME_STR "19:07:15"
+#define SUB_VERS 4803-erez
+#define SVN_VERS "trunk-r537"
 #define MOD_VERS "FRSKY  SPK "
 
 Compiling C++: er9x.cpp
@@ -324,10 +324,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "16.09.2011"
-#define TIME_STR "10:10:08"
-#define SUB_VERS 4793-erez
-#define SVN_VERS "trunk-r535"
+#define DATE_STR "17.09.2011"
+#define TIME_STR "19:07:18"
+#define SUB_VERS 4804-erez
+#define SVN_VERS "trunk-r537"
 #define MOD_VERS "FRSKY NHT  "
 
 Compiling C++: er9x.cpp
@@ -420,10 +420,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "16.09.2011"
-#define TIME_STR "10:10:10"
-#define SUB_VERS 4794-erez
-#define SVN_VERS "trunk-r535"
+#define DATE_STR "17.09.2011"
+#define TIME_STR "19:07:22"
+#define SUB_VERS 4805-erez
+#define SVN_VERS "trunk-r537"
 #define MOD_VERS "FRSKY NHT SPK "
 
 Compiling C++: er9x.cpp
@@ -516,10 +516,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "16.09.2011"
-#define TIME_STR "10:10:13"
-#define SUB_VERS 4795-erez
-#define SVN_VERS "trunk-r535"
+#define DATE_STR "17.09.2011"
+#define TIME_STR "19:07:25"
+#define SUB_VERS 4806-erez
+#define SVN_VERS "trunk-r537"
 #define MOD_VERS "ARDU   "
 
 Compiling C++: er9x.cpp
@@ -612,10 +612,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "16.09.2011"
-#define TIME_STR "10:10:16"
-#define SUB_VERS 4796-erez
-#define SVN_VERS "trunk-r535"
+#define DATE_STR "17.09.2011"
+#define TIME_STR "19:07:28"
+#define SUB_VERS 4807-erez
+#define SVN_VERS "trunk-r537"
 #define MOD_VERS "NMEA   "
 
 Compiling C++: er9x.cpp
@@ -708,10 +708,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "16.09.2011"
-#define TIME_STR "10:10:19"
-#define SUB_VERS 4797-erez
-#define SVN_VERS "trunk-r535"
+#define DATE_STR "17.09.2011"
+#define TIME_STR "19:07:31"
+#define SUB_VERS 4808-erez
+#define SVN_VERS "trunk-r537"
 #define MOD_VERS " NHT SPK "
 
 Compiling C++: er9x.cpp
@@ -801,10 +801,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "16.09.2011"
-#define TIME_STR "10:10:21"
-#define SUB_VERS 4798-erez
-#define SVN_VERS "trunk-r535"
+#define DATE_STR "17.09.2011"
+#define TIME_STR "19:07:34"
+#define SUB_VERS 4809-erez
+#define SVN_VERS "trunk-r537"
 #define MOD_VERS "  SPK "
 
 Compiling C++: er9x.cpp
@@ -894,10 +894,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "16.09.2011"
-#define TIME_STR "10:10:24"
-#define SUB_VERS 4799-erez
-#define SVN_VERS "trunk-r535"
+#define DATE_STR "17.09.2011"
+#define TIME_STR "19:07:37"
+#define SUB_VERS 4810-erez
+#define SVN_VERS "trunk-r537"
 #define MOD_VERS " NHT  "
 
 Compiling C++: er9x.cpp
@@ -987,10 +987,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "16.09.2011"
-#define TIME_STR "10:10:27"
-#define SUB_VERS 4800-erez
-#define SVN_VERS "trunk-r535"
+#define DATE_STR "17.09.2011"
+#define TIME_STR "19:07:40"
+#define SUB_VERS 4811-erez
+#define SVN_VERS "trunk-r537"
 #define MOD_VERS "   "
 
 Compiling C++: er9x.cpp
