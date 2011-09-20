@@ -131,6 +131,7 @@ void lcd_putsnAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t len,uint8_t mo
     char c = (mode & BSS) ? *s++ : pgm_read_byte(s++);
     lcd_putcAtt(x,y,c,mode);
     x+=FW;
+    if(mode&DBLSIZE) x+=FW;
     len--;
   }
 }
@@ -178,11 +179,11 @@ void lcd_outdezAtt(uint8_t x,uint8_t y,int16_t val,uint8_t mode)
 
 uint8_t lcd_lastPos;
 #define PREC(n) ((n&0x20) ? ((n&0x10) ? 2 : 1) : 0)
-void lcd_outdezNAtt(uint8_t x,uint8_t y,int16_t val,uint8_t mode,uint8_t len)
+void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,uint8_t len)
 {
   uint8_t fw = FWNUM;
   uint8_t prec = PREC(mode);
-  int16_t tmp = abs(val);
+  int32_t tmp = abs(val);
   uint8_t xn = 0;
   uint8_t ln = 2;
   char c;

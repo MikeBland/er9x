@@ -31,13 +31,13 @@ ModelData  g_model;
 
 
 //legacy audio wrapper vars
-int g_audioStart = 0;
-int g_audioEnd = 0;
-int g_audioLength = 0;
-int g_audioPause = 0;
-int g_audioFirstRun = 1;
-int g_audioRepeat = 0;
-int g_Haptic;
+uint8_t g_audioStart = 0;
+uint8_t g_audioEnd = 0;
+uint8_t g_audioLength = 0;
+uint8_t g_audioPause = 0;
+uint8_t g_audioFirstRun = 1;
+uint8_t g_audioRepeat = 0;
+uint8_t g_Haptic;
 
 
 
@@ -1155,39 +1155,40 @@ static uint16_t getTmr16KHz()
 
 
 class audioQueue{
-  
+
 
   //queue arrays
-	int queueToneStart[AUDIO_QUEUE_LENGTH];
-	int queueToneEnd[AUDIO_QUEUE_LENGTH];	
-	int queueToneLength[AUDIO_QUEUE_LENGTH];
-	int queueTonePause[AUDIO_QUEUE_LENGTH];
-	int queueToneRepeat[AUDIO_QUEUE_LENGTH];
-	int queueToneHaptic[AUDIO_QUEUE_LENGTH];
+	uint8_t queueToneStart[AUDIO_QUEUE_LENGTH];
+	uint8_t queueToneEnd[AUDIO_QUEUE_LENGTH];
+	uint8_t queueToneLength[AUDIO_QUEUE_LENGTH];
+	uint8_t queueTonePause[AUDIO_QUEUE_LENGTH];
+	uint8_t queueToneRepeat[AUDIO_QUEUE_LENGTH];
+	uint8_t queueToneHaptic[AUDIO_QUEUE_LENGTH];
 
-	
+
 	//queue temporaries
-	int t_queueToneStart;
-	int t_queueToneEnd;			
-	int t_queueToneLength;
-	int t_queueTonePause;
-	int t_queueToneRepeat;
-	int t_queueToneHaptic;
+	uint8_t t_queueToneStart;
+	uint8_t t_queueToneEnd;
+	uint8_t t_queueToneLength;
+	uint8_t t_queueTonePause;
+	uint8_t t_queueToneRepeat;
+	uint8_t t_queueToneHaptic;
 
 	//queue general vars
-	int toneFreq;
-	int toneFreqEnd;
-	int toneTimeLeft;
-	int RateOfChange;	
-	int DirectionOfChange;		
-  int toneInterupt;
-  int tonePause;
-	int queueState;
-	int toneRepeat;
-	int toneRepeatCnt;
-	int inToneRepeat;
-	int toneHaptic;
-  int HapticTimer;
+	uint8_t toneFreq;
+	uint8_t toneFreqMaster;
+	uint8_t toneFreqEnd;
+	uint8_t toneTimeLeft;
+	uint8_t RateOfChange;
+	uint8_t DirectionOfChange;
+	uint8_t toneInterupt;
+	uint8_t tonePause;
+	uint8_t queueState;
+	uint8_t toneRepeat;
+	uint8_t toneRepeatCnt;
+	uint8_t inToneRepeat;
+	uint8_t toneHaptic;
+	int HapticTimer;
 
 
 	public:
@@ -1195,68 +1196,69 @@ class audioQueue{
 		audioQueue(){
 				//make sure haptic off by default
 				HAPTIC_OFF;
-			
+
 				//initialize all arrays
-			    for(int i=0; i<=AUDIO_QUEUE_LENGTH; i++){
-                this->queueToneStart[i] = 0;
-                this->queueToneEnd[i] = 0;
-                this->queueToneLength[i] = 0;
-                this->queueTonePause[i] = 0;
-                this->queueToneRepeat[i] = 0;
-                this->queueToneHaptic[i] = 0;
-			    }	
+			    for(uint8_t i=0; i<=AUDIO_QUEUE_LENGTH; i++){
+                                        this->queueToneStart[i] = 0;
+                                        this->queueToneEnd[i] = 0;
+                                        this->queueToneLength[i] = 0;
+                                        this->queueTonePause[i] = 0;
+                                        this->queueToneRepeat[i] = 0;
+                                        this->queueToneHaptic[i] = 0;
+			    }
 
 				//set key vars to 0 to ensure no garbage
 				this->toneFreq = 0;
+				this->toneFreqMaster = 0;
 				this->toneFreqEnd = 0;
 				this->toneRepeat = 0;
-				this->toneTimeLeft = 0;   
-				this->queueState = 0;  	
+				this->toneTimeLeft = 0;
+				this->queueState = 0;
 				this->toneRepeatCnt = 0;
-				this->inToneRepeat = 0;	
-  
-			    
-			  // set 'temp vars' to default  
-			  flushTemp();  		
-					
-		}	
+				this->inToneRepeat = 0;
 
-		
+
+			  // set 'temp vars' to default
+			  flushTemp();
+
+		}
+
+
 		// these methods simply set the temporary buffer to the params.
 		// to commit to the queue you run the member commit.
-		void start(int x){
+		void start(uint8_t x){
 			this->t_queueToneStart=x;
 		}
-		
-		void end(int x){
+
+		void end(uint8_t x){
 			this->t_queueToneEnd=x;
-		}		
-		
+		}
+
 		void interrupt(){
 			this->toneInterupt = 1;
-		}					
+		}
 
-		void length(int x){
+		void length(uint8_t x){
 			this->t_queueToneLength=x;
 		}
-							
-		void pause(int x){
-			this->t_queueTonePause=x;
-		}		
 
-		void repeat(int x){
+		void pause(uint8_t x){
+			this->t_queueTonePause=x;
+		}
+
+		void repeat(uint8_t x){
 			this->t_queueToneRepeat=x;
-		}	
+		}
 
 		void haptic(){
 			this->t_queueToneHaptic=1;
-		}	
+		}
 
 		void commit(){
 						//step through the queue and insert at first free slot
 						if(this->toneInterupt == 0){
-									for(int i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
-			             if(this->queueToneStart[i] == 0){ //we only check the start var as this is the master       	
+									for(uint8_t i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
+			                                                        if(this->queueToneStart[i] == 0){ //we only check the start var as this is the master
 						                this->queueToneStart[i] = this->t_queueToneStart;
 						                this->queueToneEnd[i] = this->t_queueToneEnd;
 						                this->queueToneLength[i] = this->t_queueToneLength;
@@ -1264,38 +1266,38 @@ class audioQueue{
 						                this->queueToneRepeat[i] = this->t_queueToneRepeat;
 						                this->queueToneHaptic[i] = this->t_queueToneHaptic;
 						                this->inToneRepeat = 0;
-						                flushTemp();              
+						                flushTemp();
 			                  break;
 			             }
 			           }
-			      }  else {			      		
+			      }  else {
 		                this->queueToneStart[0] = this->t_queueToneStart;
 		                this->queueToneEnd[0] = this->t_queueToneEnd;
 		                this->queueToneLength[0] = this->t_queueToneLength;
 		                this->queueTonePause[0] = this->t_queueTonePause;
 		                this->queueToneRepeat[0] = this->t_queueToneRepeat;
 		                this->queueToneHaptic[0] = this->t_queueToneHaptic;
-		                flushTemp(); 		                                 	
-			      }	   
-		}		
-		
+		                flushTemp();
+			      }
+		}
+
 		//set all temporary buffers to default
 		void flushTemp(){
         this->t_queueToneStart = 0;
         this->t_queueToneEnd = 0;
         this->t_queueToneLength = 0;
-        this->t_queueTonePause = 0;			
-        this->t_queueToneRepeat = 0;		
+        this->t_queueTonePause = 0;
+        this->t_queueToneRepeat = 0;
         this->t_queueToneHaptic = 0;
-        this->RateOfChange = 0;	
+        this->RateOfChange = 0;
         this->toneInterupt = 0;
-				this->toneHaptic = 0;		
-				this->HapticTimer = 0;  
-		}	
-		
-		
+				this->toneHaptic = 0;
+				this->HapticTimer = 0;
+		}
+
+
 		void restack(){
-			         for(int i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
+			         for(uint8_t i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
 			            if(i == (AUDIO_QUEUE_LENGTH -1)){          //set the last entry to 0 as nothing in stack to add too!
 						                this->queueToneStart[i] = 0;
 						                this->queueToneEnd[i] = 0;
@@ -1311,7 +1313,7 @@ class audioQueue{
 						                this->queueToneRepeat[i] = this->queueToneRepeat[i+1];
 						                this->queueToneHaptic[i] = this->queueToneHaptic[i+1];
 			            }
-			         }		
+			         }
 		}
 
 
@@ -1324,22 +1326,23 @@ class audioQueue{
 			    		this->HapticTimer = 0;
 					} else {
 						this->HapticTimer--;
-					}				
-		}			
+					}
+		}
 
 		//heartbeat is responsibile for issueing the audio tones and general square waves
 		// it is essentially the life of the class.
 		void heartbeat(){
 
-		int y;
-		int z;
+		uint8_t y; //direction calulations
+		uint8_t z; //direction calulations
+		uint8_t p = 0; //used as a simple on off state to check if we are curving the sound
 
 
 		if(this->queueState == 1){
 
 #ifdef BEEPSPKR
 					//square wave generator use for speaker mod
-					//simply generates a square wave for toneFreq for 
+					//simply generates a square wave for toneFreq for
 					//as long as the this->toneTimeLeft is more than 0
 	  				static uint8_t toneCounter;
 	  				if (this->toneTimeLeft > 0){
@@ -1348,44 +1351,44 @@ class audioQueue{
 				      		PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
 				    	} else {
 				    			PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
-				    	}		
+				    	}
 				  	} else {
-				      PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'		
-				    }		
+				      PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
+				    }
 #else
 					//stock beeper. simply turn port on for x time!
 					if (this->toneTimeLeft > 0){
 						PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
 					} else {
 						PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
-					}	
-#endif  
+					}
+#endif
 
 					//haptic tones  // may beed to wrap in sys pref to enable/disable?
-					// haptic drives need time to spin up! 
+					// haptic drives need time to spin up!
 					if (this->toneHaptic == 1 && this->HapticTimer > 0){
-						HAPTIC_ON;			
+						HAPTIC_ON;
 					}	else {
 							delayHapticOff();
-					}	
+					}
 
-			  	  
+
 			  } else {
 			  	PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
 
 						delayHapticOff();
 
-			  }	
+			  }
 
 
-			    
+
 			    //step through array checking if we have any tones to play
 			    //next heartbeat will play whatever we put in queue
 							if((this->queueToneStart[0] > 0 || this->queueToneHaptic[0] == 1) && this->toneTimeLeft <= 0 && this->queueState == 0){
-		
+
 											//scaling handler
 											if(this->queueToneEnd[0] > 0 && this->queueToneEnd[0] != this->queueToneStart[0]){
-												
+
 													//if toneEnd is set then we scale the sound to from start to finish
 													//at an effective speed determined by the queueToneLength value
 												  this->toneFreq = this->queueToneStart[0] + g_eeGeneral.speakerPitch;
@@ -1396,55 +1399,59 @@ class audioQueue{
 												  } else {
 												  	  z = this->queueToneEnd[0] - this->queueToneStart[0];
 												  	  y = 1;
-												  } 	
+												  }
 				                  this->toneFreq=this->queueToneStart[0] + g_eeGeneral.speakerPitch; // add pitch compensator
-				                  this->toneFreqEnd=this->queueToneEnd[0] + g_eeGeneral.speakerPitch;  
-				                  this->toneTimeLeft = this->queueToneLength[0]; 
-				                  this->tonePause = this->queueTonePause[0]; 										  
+				                  this->toneFreqEnd=this->queueToneEnd[0] + g_eeGeneral.speakerPitch;
+				                  this->toneTimeLeft = this->queueToneLength[0];
+				                  this->tonePause = this->queueTonePause[0];
 												  this->RateOfChange = this->queueToneLength[0]/ z ;
 												  this->DirectionOfChange = y;
 												  this->toneRepeat = this->queueToneRepeat[0];
 												  this->toneHaptic = this->queueToneHaptic[0];
-												  
+
 											}	else {
-												
+
 											//simple tone handler
 				                  this->toneFreq=(this->queueToneStart[0] + g_eeGeneral.speakerPitch) + BEEP_OFFSET; // add pitch compensator
 				                  this->toneTimeLeft = this->queueToneLength[0];
-				                  this->tonePause = this->queueTonePause[0]; 
+				                  this->toneFreqMaster = this->toneFreq;
+				                  this->tonePause = this->queueTonePause[0];
 				                  this->toneRepeat = this->queueToneRepeat[0];
 				                  this->toneHaptic = this->queueToneHaptic[0];
 				                  this->DirectionOfChange = 0;
 				                  this->RateOfChange = 0;
 				                  this->toneFreqEnd = 0;
+				                  p = 0;
 		                  }
 		                  this->queueState = 1;
 		                  this->HapticTimer = BEEP_HAPTIC_LENGTH;
-		                  
+
 		                  if(this->toneRepeat != 0 && inToneRepeat == 0){
 		                  		inToneRepeat = 1;
 		                  		this->toneRepeatCnt = this->toneRepeat;
-		                  }	
-		                  
+		                  }
+
 		                  if(inToneRepeat == 1){
 		                  	this->toneRepeatCnt--;
 		                  	if(this->toneRepeatCnt <= 0){
 		                  			inToneRepeat = 0;
+		                  			p = 0;
 		                  			restack();
 		                  	}
 		                  } else {
+		                  	p = 0;
 		                  	restack();
-		                  }		
-		                                                 
+		                  }
+
 					    }
 
-				    
+
 
 					//count down the timer
 					static uint8_t cntms = AUDIO_QUEUE_HEARTBEAT;
   				if (cntms-- == 0){
   						cntms = AUDIO_QUEUE_HEARTBEAT;
-  								
+
 											if(this->toneTimeLeft > 0 && this->queueState == 1){
 												 			//play the tone
 												 		  this->toneTimeLeft--; //time gets counted down
@@ -1454,31 +1461,36 @@ class audioQueue{
 																			this->toneFreq = this->toneFreq + this->RateOfChange;
 																	} else {
 																		  this->toneFreq = this->toneFreq - this->RateOfChange;
-																	}			
-															}							
+																	}
+															} else {
+																	if(p <= 10){ //first 5 tones scale to smooth sound
+																		 this->toneFreq = this->toneFreqMaster + p;
+																		 p = p + 2;
+																	}	
+															}	
 											}
 											if(this->toneTimeLeft <= 0 && this->queueState == 1){
 														  if(this->tonePause--	<= 0){
 														  			this->queueState = 0;
-														  }	
+														  }
 											}
-					}	
-		}	
+					}
+		}
 
 };
 
-//new audio object 
+//new audio object
 audioQueue audio;
 
 ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
-{
+{ 
   cli();
   TIMSK &= ~(1<<OCIE0); //stop reentrance
   sei();
-  
+
 
   OCR0 += 2;
-  
+
 
  //call to sound heatbeat.
  audio.heartbeat();
@@ -1496,14 +1508,16 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 		  	audio.haptic();
 			}
 		  audio.commit();
-		  
+
 		  //flush vars
 		  g_audioStart = 0;
 		  g_audioEnd = 0;
 		  g_audioLength = 0;
 		  g_audioPause = 0;
 		  g_Haptic = 0;
- }	
+		  
+		  
+ } 	
 
   static uint8_t cnt10ms = 77; // execute 10ms code once every 78 ISRs
   if (cnt10ms-- == 0) // BEGIN { ... every 10ms ... }
@@ -1606,14 +1620,28 @@ int main(void)
   audio.commit();
  */
  
- 	HAPTIC_OFF; //make sure port 43 starts in off state!
-  
-  audio.start(90);
-  audio.length(10);
+  audio.start(50);
+  audio.length(5);
   audio.haptic();
-  audio.repeat(2);  
+ // audio.repeat(2);  
   audio.pause(2);
   audio.commit();
+  
+  audio.start(90);
+  audio.length(5);
+  audio.haptic();
+ // audio.repeat(2);  
+  audio.pause(2);
+  audio.commit(); 
+  
+  audio.start(110);
+  audio.length(3);
+  audio.haptic();
+  audio.repeat(2);  
+  audio.pause(1);
+  audio.commit();   
+ 
+ 	HAPTIC_OFF; //make sure port 43 starts in off state!
   
  
 #endif
