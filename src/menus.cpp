@@ -2881,6 +2881,9 @@ void resetTimer()
 }
 
 extern int8_t *TrimPtr[4] ;
+#ifdef FRSKY
+int16_t AltOffset = 0 ;
+#endif
 
 void menuProc0(uint8_t event)
 {
@@ -2898,8 +2901,19 @@ void menuProc0(uint8_t event)
         }
         break;
     case  EVT_KEY_LONG(KEY_MENU):// go to last menu
-        pushMenu(lastPopMenu());
-        killEvents(event);
+#ifdef FRSKY
+        if( (view == e_telemetry) && ((g_eeGeneral.view & 0x30) == 0x20 ) )
+        {
+          AltOffset = -FrskyHubData[16] ;
+        }
+        else
+        {
+#endif
+          pushMenu(lastPopMenu());
+          killEvents(event);
+#ifdef FRSKY
+        }
+#endif
         break;
     case EVT_KEY_LONG(KEY_RIGHT):
         pushMenu(menuProcModelSelect);
@@ -3166,7 +3180,11 @@ void menuProc0(uint8_t event)
                   lcd_outdezAtt(13*FW, 1*FH, FrskyHubData[3]*30, DBLSIZE|LEFT);
                   lcd_puts_P(0, 4*FH, PSTR("Alt="));
                   unit = 'm' ;
-                  value = FrskyHubData[16] ;
+                  value = FrskyHubData[16] + AltOffset ;
+                  if ( value < 0 )
+                  {
+                    value = 0 ;                    
+                  }
                   if ( g_model.FrSkyImperial )
                   {
                     // m to ft *105/32
