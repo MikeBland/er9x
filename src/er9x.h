@@ -684,7 +684,7 @@ extern uint8_t sysFlags;
 
 
 //audio
-#define AUDIO_QUEUE_LENGTH (5)
+#define AUDIO_QUEUE_LENGTH (10)
 #define AUDIO_QUEUE_HEARTBEAT (200) //this value is very important. It controlls how long the tone sounds for - which is key with peizo tweeters to avoid sound clipping.  200 seems to work ok
 #define BEEP_DEFAULT_FREQ (60)
 #define BEEP_OFFSET (10)
@@ -713,16 +713,13 @@ inline void _beepSpkr(uint8_t d, uint8_t f,uint8_t h=0){
   } else {
 				g_audioStart = f;
 				g_audioLength = d ;
-				if(g_audioLength < 2){
-					g_audioEnd = f + 1; // we do this to apply a small curve to the tone. makes it sound better!					
-				} else {
-					g_audioEnd = f;
-				}		
 				g_audioPause = 2;
 
 				if(h == 1){
 					g_Haptic = 1;
-				}
+				} else {
+					g_Haptic = 0;
+				}	
 
 	}
 }
@@ -751,6 +748,7 @@ inline void _beep(uint8_t d,uint8_t h=0) {
 #define beepWarn1() _beepSpkr(g_beepVal[1],BEEP_DEFAULT_FREQ,1)
 #define beepWarn2() _beepSpkr(g_beepVal[2],BEEP_DEFAULT_FREQ,1)
 #define beepErr()  _beepSpkr(g_beepVal[4],BEEP_DEFAULT_FREQ,1)
+
 
 #else
 // default beeper

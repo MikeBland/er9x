@@ -1375,8 +1375,8 @@ class audioQueue{
 
 			  } else {
 			  	PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
-
-						delayHapticOff();
+						HAPTIC_OFF;
+						//delayHapticOff();
 
 			  }
 
@@ -1393,18 +1393,22 @@ class audioQueue{
 													//at an effective speed determined by the queueToneLength value
 												  this->toneFreq = this->queueToneStart[0] + g_eeGeneral.speakerPitch;
 												  //calculate the rate of climb
-												  if(this->queueToneStart[0] > this->queueToneEnd[0]){
+												  if(this->queueToneStart[0] > this->queueToneEnd[0]){  //tone going down
 												  		z = this->queueToneStart[0] - this->queueToneEnd[0];
 												  		y = 0;
-												  } else {
+												  } else { //tone going up
 												  	  z = this->queueToneEnd[0] - this->queueToneStart[0];
 												  	  y = 1;
 												  }
 				                  this->toneFreq=this->queueToneStart[0] + g_eeGeneral.speakerPitch; // add pitch compensator
 				                  this->toneFreqEnd=this->queueToneEnd[0] + g_eeGeneral.speakerPitch;
 				                  this->toneTimeLeft = this->queueToneLength[0];
+				                  //time left over-ridden by the rate of change.!
+				                  //this has made the 'scaling' tones smoother!
+				                  this->toneTimeLeft = z;
 				                  this->tonePause = this->queueTonePause[0];
-												  this->RateOfChange = this->queueToneLength[0]/ z ;
+												  //this->RateOfChange = z/this->queueToneLength[0] ;	
+												  this->RateOfChange = 1;
 												  this->DirectionOfChange = y;
 												  this->toneRepeat = this->queueToneRepeat[0];
 												  this->toneHaptic = this->queueToneHaptic[0];
@@ -1462,10 +1466,10 @@ class audioQueue{
 																	} else {
 																		  this->toneFreq = this->toneFreq - this->RateOfChange;
 																	}
-															} else {
-																	if(p <= 10){ //first 5 tones scale to smooth sound
+															}  else {
+																	if(p <= 2){ //first 2 tones scale to smooth sound
 																		 this->toneFreq = this->toneFreqMaster + p;
-																		 p = p + 2;
+																		 p = p + 1;
 																	}	
 															}	
 											}
@@ -1495,9 +1499,20 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
  //call to sound heatbeat.
  audio.heartbeat();
 
+  //legacy wrappter to catch ond beepOn style vars!
+	if(beepOn || beepAgain){
+		 	  audio.start(BEEP_DEFAULT_FREQ);
+			  audio.length(g_beepVal[3]);
+			  if(beepAgain > 0){
+			  	audio.repeat(beepAgain + 1);
+				}
+			  audio.pause(1);
+			  audio.interrupt();
+			  beepOn = false;
+			  beepAgain = 0;
+	}
 
- //legacy audio wrapper! this is for the _beep & _beepSpkr functions
- //legacy functions always interrupt the queue!
+ //legacy wrapper for beepSpkr and _beep functions
  if(g_audioStart > 0){
 	 	  audio.start(g_audioStart);
 		  audio.end(g_audioEnd);
@@ -1508,16 +1523,15 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 		  	audio.haptic();
 			}
 		  audio.commit();
-
 		  //flush vars
 		  g_audioStart = 0;
 		  g_audioEnd = 0;
 		  g_audioLength = 0;
 		  g_audioPause = 0;
-		  g_Haptic = 0;
-		  
-		  
- } 	
+		  g_Haptic = 0;		  
+ } 
+
+ 	
 
   static uint8_t cnt10ms = 77; // execute 10ms code once every 78 ISRs
   if (cnt10ms-- == 0) // BEGIN { ... every 10ms ... }
@@ -1610,16 +1624,17 @@ int main(void)
 //generate a test tone on statup to show speaker mod working!
 #ifdef BEEPSPKR
 
-/*
-	//a sliding scale  
+
+	/*
+	//a sliding scale - sounds like a siren!
   audio.start(60);
   audio.end(80);
   audio.length(60);
   audio.pause(50);
   audio.repeat(3);  
   audio.commit();
- */
- 
+*/
+  
   audio.start(50);
   audio.length(5);
   audio.haptic();
