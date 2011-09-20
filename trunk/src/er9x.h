@@ -685,13 +685,17 @@ extern uint8_t sysFlags;
 
 //audio
 #define AUDIO_QUEUE_LENGTH (10)
-#define AUDIO_QUEUE_HEARTBEAT (200) //this value is very important. It controlls how long the tone sounds for - which is key with peizo tweeters to avoid sound clipping.  200 seems to work ok
 #define BEEP_DEFAULT_FREQ (60)
 #define BEEP_OFFSET (10)
 #define BEEP_KEY_UP_FREQ  (BEEP_DEFAULT_FREQ+10)
 #define BEEP_KEY_DOWN_FREQ (BEEP_DEFAULT_FREQ-10)
 #define BEEP_HAPTIC_LENGTH (500)  //haptic motors take a bit of time to spin up!
 
+#ifdef BEEPSPKR
+#define AUDIO_QUEUE_HEARTBEAT (200) //this value is very important. It controlls how long the tone sounds for - which is key with peizo tweeters to avoid sound clipping.  200 seems to work ok
+#else
+#define AUDIO_QUEUE_HEARTBEAT (77) //this is the original speaker timing
+#endif
 
 extern uint8_t g_audioStart;
 extern uint8_t g_audioEnd;
