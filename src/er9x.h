@@ -685,52 +685,56 @@ extern uint8_t sysFlags;
 
 //audio
 #define AUDIO_QUEUE_LENGTH (5)
-#define AUDIO_QUEUE_HEARTBEAT (140) //this value is very important. It controlls how long the tone sounds for - which is key with peizo tweeters to avoid sound clipping.  140 seems to work ok
+#define AUDIO_QUEUE_HEARTBEAT (200) //this value is very important. It controlls how long the tone sounds for - which is key with peizo tweeters to avoid sound clipping.  200 seems to work ok
 #define BEEP_DEFAULT_FREQ (60)
 #define BEEP_OFFSET (10)
 #define BEEP_KEY_UP_FREQ  (BEEP_DEFAULT_FREQ+10)
 #define BEEP_KEY_DOWN_FREQ (BEEP_DEFAULT_FREQ-10)
-#define BEEP_HAPTIC_LENGTH (500)  //haptic motors take a bit of time to spin up! 
+#define BEEP_HAPTIC_LENGTH (500)  //haptic motors take a bit of time to spin up!
 
 
-extern int g_audioStart;
-extern int g_audioEnd;
-extern int g_audioLength;
-extern int g_audioPause;
-extern int g_audioFirstRun;
-extern int g_Haptic;
+extern uint8_t g_audioStart;
+extern uint8_t g_audioEnd;
+extern uint8_t g_audioLength;
+extern uint8_t g_audioPause;
+extern uint8_t g_audioFirstRun;
+extern uint8_t g_Haptic;
 class audioQueue;
 
 
 
-
-inline void _beepSpkr(int d, int f,int h=0){
+ 
+inline void _beepSpkr(uint8_t d, uint8_t f,uint8_t h=0){
   //this is a wrapper function for the audio class
   //and uses the legacy tone import functions in the main er9x file
   if(g_audioFirstRun < 3){
   	//do nothing as cant find strange issue that causes this function to run twice on boot!
   	g_audioFirstRun++;
-  } else {	  	
+  } else {
 				g_audioStart = f;
-				g_audioEnd = f;
 				g_audioLength = d ;
-				g_audioPause = 0;		 	
-				
+				if(g_audioLength < 2){
+					g_audioEnd = f + 1; // we do this to apply a small curve to the tone. makes it sound better!					
+				} else {
+					g_audioEnd = f;
+				}		
+				g_audioPause = 2;
+
 				if(h == 1){
 					g_Haptic = 1;
-				}					
-						
-	}	
+				}
+
+	}
 }
 
-inline void _beep(int d,int h=0) {	
+inline void _beep(uint8_t d,uint8_t h=0) {
 				g_audioStart = BEEP_DEFAULT_FREQ;
 				g_audioLength = d;
-				g_audioPause = 0;		
+				g_audioPause = 2;
 				if(h == 1){
 					g_Haptic = 1;
-				}	
-				 			
+				}
+
 }
 
 
@@ -748,7 +752,7 @@ inline void _beep(int d,int h=0) {
 #define beepWarn2() _beepSpkr(g_beepVal[2],BEEP_DEFAULT_FREQ,1)
 #define beepErr()  _beepSpkr(g_beepVal[4],BEEP_DEFAULT_FREQ,1)
 
-#else 
+#else
 // default beeper
 #define beepKey()   _beep(g_beepVal[0])
 #define beepWarn() _beep(g_beepVal[3],1)

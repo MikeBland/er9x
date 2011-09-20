@@ -105,28 +105,32 @@ BEEPER = BUZZER
 #	SPK	BUZZER = SPEAKER
 
 ifeq ($(EXT), ARDUPILOT)
-	MY_EXT = ARDU
+	EXT_MOD = ARDU
 else
 	ifeq ($(EXT), STD)
 #		leave it empty		
 	else
-		MY_EXT = $(EXT)
+		EXT_MOD = $(EXT)
 	endif
 endif
 
 ifeq ($(HELI), NO)
 	ifeq ($(TEMPLATES),NO)
-		MY_HELI = NHT
+		HT_MOD = NHT
 	else
-		MY_HELI = NOH
+		HT_MOD = NOH
 	endif
+else
+	ifeq ($(TEMPLATES),NO)
+		HT_MOD = NOT
+	endif	
 endif
 
 ifeq ($(BEEPER), BUZZER_MOD)
-	MY_BEEPER = BZM
+	BEEPER_MOD = BZM
 else
 	ifeq ($(BEEPER), SPEAKER)
-		MY_BEEPER = SPK
+		BEEPER_MOD = SPK
 	endif
 endif
 
@@ -135,7 +139,7 @@ endif
 #--------------------------------------------------------------------------------
 
 # List Assembler source files here.
-#     Make them always end in a capital .S.  Files ending in a lowercase ..s
+#     Make them always end in a capital .S.  Files ending in a lowercase .s
 #     will not be considered source files but generated files (assembler
 #     output from the compiler), and will be deleted upon "make clean"!
 #     Even though the DOS/Win* filesystem matches both .s and .S the same,
@@ -511,7 +515,7 @@ stamp:
 	@echo "#define TIME_STR \"`date +%H:%I:%S`\"" >> stamp-er9x.h
 	@echo "#define SUB_VERS $(VER)-$(USER)" >> stamp-er9x.h
 	@echo "#define SVN_VERS \"trunk-r$(REV)\"" >> stamp-er9x.h
-	@echo "#define MOD_VERS \"$(MY_EXT) $(MY_HELI) $(MY_BEEPER) \"" >> stamp-er9x.h
+	@echo "#define MOD_VERS \"$(EXT_MOD) $(HT_MOD) $(BEEPER_MOD) \"" >> stamp-er9x.h
 	@cat stamp-er9x.h
 
 font.lbm: font_6x1.xbm
@@ -665,7 +669,7 @@ extcoff: $(TARGET).elf
 
 # Create library from object files.
 .SECONDARY : $(TARGET).a
-..PRECIOUS : $(OBJ)
+.PRECIOUS : $(OBJ)
 %.a: $(OBJ)
 	@echo
 	@echo $(MSG_CREATING_LIBRARY) $@
@@ -673,8 +677,8 @@ extcoff: $(TARGET).elf
 
 
 # Link: create ELF output file from object files.
-..SECONDARY : $(TARGET).elf
-..PRECIOUS : $(OBJ)
+.SECONDARY : $(TARGET).elf
+.PRECIOUS : $(OBJ)
 %.elf: $(OBJ)
 	@echo
 	@echo $(MSG_LINKING) $@
@@ -745,6 +749,6 @@ $(shell mkdir $(OBJDIR) 2>/dev/null)
 
 
 # Listing of phony targets.
-..PHONY : all begin finish end sizebefore sizeafter gccversion \
+.PHONY : all begin finish end sizebefore sizeafter gccversion \
 build elf hex eep lss sym coff extcoff \
 clean clean_list program debug gdb-config stamp
