@@ -1,5 +1,5 @@
 #! /bin/bash
-./domake | tee make.log
+./domake 2>&1 | tee make.log
 
 echo
 echo "=======  errors ======="

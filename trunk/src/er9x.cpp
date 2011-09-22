@@ -1176,7 +1176,6 @@ class audioQueue{
 
 	//queue general vars
 	uint8_t toneFreq;
-	uint8_t toneFreqMaster;
 	uint8_t toneFreqEnd;
 	uint8_t toneTimeLeft;
 	uint8_t RateOfChange;
@@ -1209,7 +1208,6 @@ class audioQueue{
 
 				//set key vars to 0 to ensure no garbage
 				this->toneFreq = 0;
-				this->toneFreqMaster = 0;
 				this->toneFreqEnd = 0;
 				this->toneRepeat = 0;
 				this->toneTimeLeft = 0;
@@ -1258,14 +1256,14 @@ class audioQueue{
 						//step through the queue and insert at first free slot
 						if(this->toneInterupt == 0){
 									for(uint8_t i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
-			                                                        if(this->queueToneStart[i] == 0){ //we only check the start var as this is the master
+			                 if(this->queueToneStart[i] == 0){ //we only check the start var as this is the master
 						                this->queueToneStart[i] = this->t_queueToneStart;
 						                this->queueToneEnd[i] = this->t_queueToneEnd;
 						                this->queueToneLength[i] = this->t_queueToneLength;
 						                this->queueTonePause[i] = this->t_queueTonePause;
 						                this->queueToneRepeat[i] = this->t_queueToneRepeat;
 						                this->queueToneHaptic[i] = this->t_queueToneHaptic;
-						                this->inToneRepeat = 0;
+						                this->inToneRepeat = 0;						                
 						                flushTemp();
 			                  break;
 			             }
@@ -1412,13 +1410,11 @@ class audioQueue{
 												  this->DirectionOfChange = y;
 												  this->toneRepeat = this->queueToneRepeat[0];
 												  this->toneHaptic = this->queueToneHaptic[0];
-
 											}	else {
 
 											//simple tone handler
 				                  this->toneFreq=(this->queueToneStart[0] + g_eeGeneral.speakerPitch) + BEEP_OFFSET; // add pitch compensator
 				                  this->toneTimeLeft = this->queueToneLength[0];
-				                  this->toneFreqMaster = this->toneFreq;
 				                  this->tonePause = this->queueTonePause[0];
 				                  this->toneRepeat = this->queueToneRepeat[0];
 				                  this->toneHaptic = this->queueToneHaptic[0];
@@ -1458,20 +1454,18 @@ class audioQueue{
 
 											if(this->toneTimeLeft > 0 && this->queueState == 1){
 												 			//play the tone
-												 		  this->toneTimeLeft--; //time gets counted down
+												 		  
+												 		  
 															//alter tone for scaling sound effect
-															if(this->RateOfChange	> 0){
+															if(this->RateOfChange == 1){
 																	if(this->DirectionOfChange == 1){
 																			this->toneFreq = this->toneFreq + this->RateOfChange;
 																	} else {
 																		  this->toneFreq = this->toneFreq - this->RateOfChange;
 																	}
-															}  else {
-																	if(p <= 2){ //first 2 tones scale to smooth sound
-																		 this->toneFreq = this->toneFreqMaster + p;
-																		 p = p + 1;
-																	}	
-															}	
+															}  	
+															
+															this->toneTimeLeft--; //time gets counted down
 											}
 											if(this->toneTimeLeft <= 0 && this->queueState == 1){
 														  if(this->tonePause--	<= 0){
@@ -1621,45 +1615,6 @@ int main(void)
   DDRG = 0x10;  PORTG = 0xff; //pullups + SIM_CTL=1 = phonejack = ppm_in
   lcd_init();
 
-//generate a test tone on statup to show speaker mod working!
-#ifdef BEEPSPKR
-
-
-	/*
-	//a sliding scale - sounds like a siren!
-  audio.start(60);
-  audio.end(80);
-  audio.length(60);
-  audio.pause(50);
-  audio.repeat(3);  
-  audio.commit();
-*/
-  
-  audio.start(50);
-  audio.length(5);
-  audio.haptic();
- // audio.repeat(2);  
-  audio.pause(2);
-  audio.commit();
-  
-  audio.start(90);
-  audio.length(5);
-  audio.haptic();
- // audio.repeat(2);  
-  audio.pause(2);
-  audio.commit(); 
-  
-  audio.start(110);
-  audio.length(3);
-  audio.haptic();
-  audio.repeat(2);  
-  audio.pause(1);
-  audio.commit();   
- 
- 	HAPTIC_OFF; //make sure port 43 starts in off state!
-  
- 
-#endif
 
 #ifdef JETI
   JETI_Init();
@@ -1721,6 +1676,42 @@ int main(void)
   eeReadAll();
   uint8_t cModel = g_eeGeneral.currModel;
   checkQuickSelect();
+
+
+// moved here and logic added to only play statup tone if splash screen enabled.
+// that way we save a bit, but keep the option for end users!
+#ifdef BEEPSPKR
+
+
+ 		HAPTIC_OFF; //make sure port 43 starts in off state!
+
+
+
+    if(!g_eeGeneral.disableSplashScreen)
+    {
+			  audio.start(50);
+			  audio.length(5);
+			  audio.haptic();
+			 // audio.repeat(2);  
+			  audio.pause(2);
+			  audio.commit();
+			  
+			  audio.start(90);
+			  audio.length(5);
+			  audio.haptic();
+			 // audio.repeat(2);  
+			  audio.pause(2);
+			  audio.commit(); 
+			  
+			  audio.start(110);
+			  audio.length(3);
+			  audio.haptic();
+			  audio.repeat(2);  
+			  audio.pause(1);
+			  audio.commit();   
+		}
+
+#endif
   doSplash();
   checkMem();
   //setupAdc(); //before checkTHR
