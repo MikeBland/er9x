@@ -1,10 +1,10 @@
 ===== Starting build =====
 Timestamp
-Tue Sep 20 14:07:05 UTC 2011
+Thu Sep 22 15:05:42 UTC 2011
 ==========================
 
 ===== Updating from SVN =====
-At revision 540.
+At revision 542.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -36,10 +36,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "20.09.2011"
-#define TIME_STR "10:10:06"
-#define SUB_VERS 4834-erez
-#define SVN_VERS "trunk-r541"
+#define DATE_STR "22.09.2011"
+#define TIME_STR "11:11:43"
+#define SUB_VERS 4856-erez
+#define SVN_VERS "trunk-r543"
 #define MOD_VERS "JETI   "
 
 Compiling C++: er9x.cpp
@@ -65,6 +65,7 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wa
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
 Compiling C++: jeti.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/jeti.o.d jeti.cpp -o obj/jeti.o
@@ -78,6 +79,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -90,10 +92,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   56244 bytes (85.8% Full)
+Program:   56230 bytes (85.8% Full)
 (.text + .data + .bootloader)
 
-Data:       3563 bytes (87.0% Full)
+Data:       3562 bytes (87.0% Full)
 (.data + .bss + .noinit)
 
 
@@ -132,10 +134,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "20.09.2011"
-#define TIME_STR "10:10:09"
-#define SUB_VERS 4835-erez
-#define SVN_VERS "trunk-r541"
+#define DATE_STR "22.09.2011"
+#define TIME_STR "11:11:45"
+#define SUB_VERS 4857-erez
+#define SVN_VERS "trunk-r543"
 #define MOD_VERS "FRSKY   "
 
 Compiling C++: er9x.cpp
@@ -161,6 +163,7 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -W
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
 Compiling C++: frsky.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
@@ -174,6 +177,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -186,10 +190,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   59970 bytes (91.5% Full)
+Program:   60014 bytes (91.6% Full)
 (.text + .data + .bootloader)
 
-Data:       3655 bytes (89.2% Full)
+Data:       3656 bytes (89.3% Full)
 (.data + .bss + .noinit)
 
 
@@ -228,10 +232,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "20.09.2011"
-#define TIME_STR "10:10:12"
-#define SUB_VERS 4836-erez
-#define SVN_VERS "trunk-r541"
+#define DATE_STR "22.09.2011"
+#define TIME_STR "11:11:48"
+#define SUB_VERS 4858-erez
+#define SVN_VERS "trunk-r543"
 #define MOD_VERS "FRSKY  SPK "
 
 Compiling C++: er9x.cpp
@@ -257,6 +261,7 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEP
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
 Compiling C++: frsky.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
@@ -270,6 +275,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -282,10 +288,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   60082 bytes (91.7% Full)
+Program:   60138 bytes (91.8% Full)
 (.text + .data + .bootloader)
 
-Data:       3656 bytes (89.3% Full)
+Data:       3657 bytes (89.3% Full)
 (.data + .bss + .noinit)
 
 
@@ -324,10 +330,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "20.09.2011"
-#define TIME_STR "10:10:15"
-#define SUB_VERS 4837-erez
-#define SVN_VERS "trunk-r541"
+#define DATE_STR "22.09.2011"
+#define TIME_STR "11:11:51"
+#define SUB_VERS 4859-erez
+#define SVN_VERS "trunk-r543"
 #define MOD_VERS "FRSKY NHT  "
 
 Compiling C++: er9x.cpp
@@ -353,6 +359,7 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
 Compiling C++: frsky.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
@@ -366,6 +373,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -378,10 +386,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   58638 bytes (89.5% Full)
+Program:   58682 bytes (89.5% Full)
 (.text + .data + .bootloader)
 
-Data:       3651 bytes (89.1% Full)
+Data:       3652 bytes (89.2% Full)
 (.data + .bss + .noinit)
 
 
@@ -420,10 +428,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "20.09.2011"
-#define TIME_STR "10:10:18"
-#define SUB_VERS 4838-erez
-#define SVN_VERS "trunk-r541"
+#define DATE_STR "22.09.2011"
+#define TIME_STR "11:11:54"
+#define SUB_VERS 4860-erez
+#define SVN_VERS "trunk-r543"
 #define MOD_VERS "FRSKY NHT SPK "
 
 Compiling C++: er9x.cpp
@@ -449,6 +457,7 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
 Compiling C++: frsky.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
@@ -462,6 +471,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -474,10 +484,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   58764 bytes (89.7% Full)
+Program:   58820 bytes (89.8% Full)
 (.text + .data + .bootloader)
 
-Data:       3652 bytes (89.2% Full)
+Data:       3653 bytes (89.2% Full)
 (.data + .bss + .noinit)
 
 
@@ -516,10 +526,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "20.09.2011"
-#define TIME_STR "10:10:20"
-#define SUB_VERS 4839-erez
-#define SVN_VERS "trunk-r541"
+#define DATE_STR "22.09.2011"
+#define TIME_STR "11:11:57"
+#define SUB_VERS 4861-erez
+#define SVN_VERS "trunk-r543"
 #define MOD_VERS "ARDU   "
 
 Compiling C++: er9x.cpp
@@ -545,6 +555,7 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -O
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
 Compiling C++: ardupilot.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/ardupilot.o.d ardupilot.cpp -o obj/ardupilot.o
@@ -558,6 +569,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -570,10 +582,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   58102 bytes (88.7% Full)
+Program:   58088 bytes (88.6% Full)
 (.text + .data + .bootloader)
 
-Data:       3561 bytes (86.9% Full)
+Data:       3560 bytes (86.9% Full)
 (.data + .bss + .noinit)
 
 
@@ -612,10 +624,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "20.09.2011"
-#define TIME_STR "10:10:23"
-#define SUB_VERS 4840-erez
-#define SVN_VERS "trunk-r541"
+#define DATE_STR "22.09.2011"
+#define TIME_STR "11:11:00"
+#define SUB_VERS 4862-erez
+#define SVN_VERS "trunk-r543"
 #define MOD_VERS "NMEA   "
 
 Compiling C++: er9x.cpp
@@ -641,6 +653,7 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wa
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
 Compiling C++: nmea.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/nmea.o.d nmea.cpp -o obj/nmea.o
@@ -654,6 +667,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -666,10 +680,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   58820 bytes (89.8% Full)
+Program:   58806 bytes (89.7% Full)
 (.text + .data + .bootloader)
 
-Data:       3621 bytes (88.4% Full)
+Data:       3620 bytes (88.4% Full)
 (.data + .bss + .noinit)
 
 
@@ -708,10 +722,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "20.09.2011"
-#define TIME_STR "10:10:26"
-#define SUB_VERS 4841-erez
-#define SVN_VERS "trunk-r541"
+#define DATE_STR "22.09.2011"
+#define TIME_STR "11:11:02"
+#define SUB_VERS 4863-erez
+#define SVN_VERS "trunk-r543"
 #define MOD_VERS " NHT SPK "
 
 Compiling C++: er9x.cpp
@@ -737,6 +751,7 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
@@ -747,6 +762,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -759,10 +775,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   54500 bytes (83.2% Full)
+Program:   54496 bytes (83.2% Full)
 (.text + .data + .bootloader)
 
-Data:       3524 bytes (86.0% Full)
+Data:       3523 bytes (86.0% Full)
 (.data + .bss + .noinit)
 
 
@@ -801,10 +817,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "20.09.2011"
-#define TIME_STR "10:10:29"
-#define SUB_VERS 4842-erez
-#define SVN_VERS "trunk-r541"
+#define DATE_STR "22.09.2011"
+#define TIME_STR "11:11:05"
+#define SUB_VERS 4864-erez
+#define SVN_VERS "trunk-r543"
 #define MOD_VERS "  SPK "
 
 Compiling C++: er9x.cpp
@@ -830,6 +846,7 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -Os
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
@@ -840,6 +857,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -852,10 +870,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   55818 bytes (85.2% Full)
+Program:   55814 bytes (85.2% Full)
 (.text + .data + .bootloader)
 
-Data:       3528 bytes (86.1% Full)
+Data:       3527 bytes (86.1% Full)
 (.data + .bss + .noinit)
 
 
@@ -894,10 +912,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "20.09.2011"
-#define TIME_STR "10:10:31"
-#define SUB_VERS 4843-erez
-#define SVN_VERS "trunk-r541"
+#define DATE_STR "22.09.2011"
+#define TIME_STR "11:11:08"
+#define SUB_VERS 4865-erez
+#define SVN_VERS "trunk-r543"
 #define MOD_VERS " NHT  "
 
 Compiling C++: er9x.cpp
@@ -923,6 +941,7 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
@@ -933,6 +952,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -945,10 +965,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   54372 bytes (83.0% Full)
+Program:   54358 bytes (82.9% Full)
 (.text + .data + .bootloader)
 
-Data:       3523 bytes (86.0% Full)
+Data:       3522 bytes (86.0% Full)
 (.data + .bss + .noinit)
 
 
@@ -987,10 +1007,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "20.09.2011"
-#define TIME_STR "10:10:34"
-#define SUB_VERS 4844-erez
-#define SVN_VERS "trunk-r541"
+#define DATE_STR "22.09.2011"
+#define TIME_STR "11:11:10"
+#define SUB_VERS 4866-erez
+#define SVN_VERS "trunk-r543"
 #define MOD_VERS "   "
 
 Compiling C++: er9x.cpp
@@ -1016,6 +1036,7 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
@@ -1026,6 +1047,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -1038,10 +1060,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   55704 bytes (85.0% Full)
+Program:   55690 bytes (85.0% Full)
 (.text + .data + .bootloader)
 
-Data:       3527 bytes (86.1% Full)
+Data:       3526 bytes (86.1% Full)
 (.data + .bss + .noinit)
 
 
