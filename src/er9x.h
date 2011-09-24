@@ -460,8 +460,6 @@ int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 #define BACKLIGHT_ON    PORTB |=  (1<<OUT_B_LIGHT)
 #define BACKLIGHT_OFF   PORTB &= ~(1<<OUT_B_LIGHT)
 
-#define HAPTIC_ON    PORTG |=  (1<<2)
-#define HAPTIC_OFF   PORTG &= ~(1<<2)
 
 #define PULSEGEN_ON     TIMSK |=  (1<<OCIE1A)
 #define PULSEGEN_OFF    TIMSK &= ~(1<<OCIE1A)
@@ -682,88 +680,8 @@ extern uint16_t g_LightOffCounter;
 #define sysFLAG_OLD_EEPROM (0x01)
 extern uint8_t sysFlags;
 
-
-//audio
-#define AUDIO_QUEUE_LENGTH (10)
-#define BEEP_DEFAULT_FREQ (60)
-#define BEEP_OFFSET (10)
-#define BEEP_KEY_UP_FREQ  (BEEP_DEFAULT_FREQ+10)
-#define BEEP_KEY_DOWN_FREQ (BEEP_DEFAULT_FREQ-10)
-#define BEEP_HAPTIC_LENGTH (500)  //haptic motors take a bit of time to spin up!
-
-#ifdef BEEPSPKR
-#define AUDIO_QUEUE_HEARTBEAT (200) //this value is very important. It controlls how long the tone sounds for - which is key with peizo tweeters to avoid sound clipping.  200 seems to work ok
-#else
-#define AUDIO_QUEUE_HEARTBEAT (77) //this is the original speaker timing
-#endif
-
-extern uint8_t g_audioStart;
-extern uint8_t g_audioEnd;
-extern uint8_t g_audioLength;
-extern uint8_t g_audioPause;
-extern uint8_t g_audioFirstRun;
-extern uint8_t g_Haptic;
-class audioQueue;
-
-
-
- 
-inline void _beepSpkr(uint8_t d, uint8_t f,uint8_t h=0){
-  //this is a wrapper function for the audio class
-  //and uses the legacy tone import functions in the main er9x file
-  if(g_audioFirstRun < 3){
-  	//do nothing as cant find strange issue that causes this function to run twice on boot!
-  	g_audioFirstRun++;
-  } else {
-				g_audioStart = f;
-				g_audioLength = d ;
-				g_audioPause = 2;
-
-				if(h == 1){
-					g_Haptic = 1;
-				} else {
-					g_Haptic = 0;
-				}	
-
-	}
-}
-
-inline void _beep(uint8_t d,uint8_t h=0) {
-				g_audioStart = BEEP_DEFAULT_FREQ;
-				g_audioLength = d;
-				g_audioPause = 2;
-				if(h == 1){
-					g_Haptic = 1;
-				}
-
-}
-
-
-
-#ifdef BEEPSPKR
-
-#define beepKeySpkr(freq) _beepSpkr(g_beepVal[0],freq)
-#define beepTrimSpkr(freq) _beepSpkr(g_beepVal[0],freq)
-#define beepWarn1Spkr(freq) _beepSpkr(g_beepVal[1],freq,1)
-#define beepWarn2Spkr(freq) _beepSpkr(g_beepVal[2],freq,1)
-
-#define beepKey() _beepSpkr(g_beepVal[0],BEEP_DEFAULT_FREQ)
-#define beepWarn() _beepSpkr(g_beepVal[3],BEEP_DEFAULT_FREQ,1)
-#define beepWarn1() _beepSpkr(g_beepVal[1],BEEP_DEFAULT_FREQ,1)
-#define beepWarn2() _beepSpkr(g_beepVal[2],BEEP_DEFAULT_FREQ,1)
-#define beepErr()  _beepSpkr(g_beepVal[4],BEEP_DEFAULT_FREQ,1)
-
-
-#else
-// default beeper
-#define beepKey()   _beep(g_beepVal[0])
-#define beepWarn() _beep(g_beepVal[3],1)
-#define beepWarn1() _beep(g_beepVal[1],1)
-#define beepWarn2() _beep(g_beepVal[2],1)
-#define beepErr()  _beep(g_beepVal[4],1)
-
-#endif
-
+//audio settungs are external to keep out clutter!
+#include "audio.h"
 
 #endif // er9x_h
 /*eof*/

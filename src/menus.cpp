@@ -2669,10 +2669,34 @@ void timer(uint8_t val)
         {
             if(g_eeGeneral.preBeep && g_model.tmrVal) // beep when 30, 15, 10, 5,4,3,2,1 seconds remaining
             {
+            	
+#ifdef BEEPSPKR
+								//increase pitch with urgancy!
+								
+                if(s_timerVal==30) { //beep three times
+                			beepAgain=2;
+                			_beepSpkr(g_beepVal[2], BEEP_DEFAULT_FREQ,1);
+                } 
+                if(s_timerVal==20) { //beep two times
+                			beepAgain=1;
+                			_beepSpkr(g_beepVal[2], BEEP_DEFAULT_FREQ + 2,1);
+                } 
+                if(s_timerVal==10) { //beep 1 time
+                			_beepSpkr(g_beepVal[2], BEEP_DEFAULT_FREQ + 4,1);
+                }                 
+
+                if(s_timerVal<=3) {
+                			_beepSpkr(g_beepVal[2], BEEP_DEFAULT_FREQ + 6,1);
+                } 
+
+#else
+								//regular beeps
                 if(s_timerVal==30) {beepAgain=2; beepWarn2();} //beep three times
                 if(s_timerVal==20) {beepAgain=1; beepWarn2();} //beep two times
                 if(s_timerVal==10)  beepWarn2();
                 if(s_timerVal<= 3)  beepWarn2();
+
+#endif                	
 
                 if(g_eeGeneral.flashBeep && (s_timerVal==30 || s_timerVal==20 || s_timerVal==10 || s_timerVal<=3))
                     g_LightOffCounter = FLASH_DURATION;
