@@ -36,6 +36,7 @@ class audioQueue{
 	uint8_t toneRepeatCnt;
 	uint8_t inToneRepeat;
 	uint8_t toneHaptic;
+	uint8_t hapticTick;
 	//uint8_t HapticTimer;
 
   //queue arrays
@@ -51,6 +52,7 @@ class audioQueue{
 		//constructor
 		audioQueue(){
 				//make sure haptic off by default
+
 				HAPTIC_OFF;
 
 				//initialize all arrays
@@ -71,6 +73,7 @@ class audioQueue{
 				this->queueState = 0;
 				this->toneRepeatCnt = 0;
 				this->inToneRepeat = 0;
+				this->hapticTick = 0;
 
 
 			  // set 'temp vars' to default
@@ -147,7 +150,6 @@ class audioQueue{
         this->RateOfChange = 0;
         this->toneInterupt = 0;
 				this->toneHaptic = 0;
-				//this->HapticTimer = 0;
 		}
 
 
@@ -171,18 +173,6 @@ class audioQueue{
 			         }
 		}
 
-
-		/*void delayHapticOff(){
-					//turn off haptic if on and timer greater that BEEP_HAPTIC_LENGTH
-					//this happens out of normale queue state as the motor needs to 'wind up'
-					if(this->toneHaptic == 1 && this->HapticTimer <= 0){
-			    		HAPTIC_OFF; // turn off haptic
-			    		this->toneHaptic = 0;
-			    		this->HapticTimer = 0;
-					} else {
-						this->HapticTimer--;
-					}
-		}*/
 
 		//heartbeat is responsibile for issueing the audio tones and general square waves
 		// it is essentially the life of the class.
@@ -218,19 +208,27 @@ class audioQueue{
 					}
 #endif
 
-					//haptic tones  // may beed to wrap in sys pref to enable/disable?
-					// haptic drives need time to spin up!
-					//if (this->toneHaptic == 1 && this->HapticTimer > 0){
+					
+					uint8_t hapticStrength = -abs( g_eeGeneral.hapticStrength) + 6;
+					if(hapticStrength == 5){
+							hapticStrength = 0;
+					}	
 					if (this->toneHaptic == 1){
-						HAPTIC_ON;
-					}	else {
-							//delayHapticOff();
-							HAPTIC_OFF;
-					}
+							//we only power it ever X number of ticks to provide a crude speed control
+				    	if(this->hapticTick == hapticStrength && hapticStrength > 0){
+				    				HAPTIC_ON; // haptic output 'high'
+				    				this->hapticTick = 0;
+				    	} else {
+				    				HAPTIC_OFF; //haptic output low
+				    				this->hapticTick++;
+				    	}				    	
+				  	} else {
+				      HAPTIC_OFF; // haptic output 'low'
+				    }							
 
 
 			  } else {
-			  	PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
+			  	PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'	  	
 					HAPTIC_OFF;
 			  }
 
@@ -328,6 +326,8 @@ class audioQueue{
 					
 		}
 		
+
+		
 		//pre made tune to play the 'startup' tune
 		void tada(){
 			  start(50);
@@ -358,7 +358,6 @@ class audioQueue{
 			  commit();			
 		}	
 		
-	
 
 };
 

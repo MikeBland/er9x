@@ -20,11 +20,11 @@
 #define BEEP_OFFSET (10)
 #define BEEP_KEY_UP_FREQ  (BEEP_DEFAULT_FREQ+5)
 #define BEEP_KEY_DOWN_FREQ (BEEP_DEFAULT_FREQ-5)
-//#define BEEP_HAPTIC_LENGTH (50)  //haptic motors take a bit of time to spin up!
 #define AUDIO_QUEUE_HEARTBEAT (77) //speaker timing
 #define HAPTIC_ON    PORTG |=  (1<<2)
 #define HAPTIC_OFF   PORTG &= ~(1<<2)
-#define HAPTIC_READ (PORTG & (1<<2))
+
+
 
 
 extern uint8_t g_audioStart;
@@ -47,29 +47,31 @@ inline void _beepSpkr(uint8_t d, uint8_t f,uint8_t h=0){
   	//do nothing as cant find strange issue that causes this function to run twice on boot!
   	g_audioFirstRun++;
   } else {
-				g_audioStart = f;
+				
 				g_audioLength = d ;
 				g_audioPause = 2;
 
-				if(h == 1){
+				if(h == 1 && g_eeGeneral.hapticStrength > 0){
 					g_Haptic = 1;
 				} else {
 					g_Haptic = 0;
 				}	
+			
+				g_audioStart = f; //keep this as the end to avoid interrupt issues.
 
 	}
 }
 
 inline void _beep(uint8_t d,uint8_t h=0) {
-				g_audioStart = BEEP_DEFAULT_FREQ;
+				
 				g_audioLength = d;
 				g_audioPause = 2;
-				if(h == 1){
+				if(h == 1 && g_eeGeneral.hapticStrength > 0){
 					g_Haptic = 1;
 				}
+				g_audioStart = BEEP_DEFAULT_FREQ; //keep this as the end to avoid interrupt issues.
 
 }
-
 
 
 #ifdef BEEPSPKR
