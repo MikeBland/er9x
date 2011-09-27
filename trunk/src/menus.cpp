@@ -70,6 +70,7 @@ enum MainViews {
     e_timer2,
 #ifdef FRSKY
     e_telemetry,
+    e_telemetry2,
 #endif
     MAX_VIEWS
 };
@@ -108,6 +109,7 @@ enum EnumTabModel {
     e_SafetySwitches,
 #ifdef FRSKY
     e_Telemetry,
+    e_Telemetry2,
 #endif
 #ifndef NO_TEMPLATES
     e_Templates
@@ -128,6 +130,7 @@ MenuFuncP_PROGMEM APM menuTabModel[] = {
     menuProcSafetySwitches,
     #ifdef FRSKY
     menuProcTelemetry,
+    menuProcTelemetry2,
     #endif
     #ifndef NO_TEMPLATES
     menuProcTemplates
@@ -749,6 +752,58 @@ for (int i=0; i<2; i++) {
     }
 }
 }
+
+extern uint8_t frskyRSSIlevel[2] ;
+extern uint8_t frskyRSSItype[2] ;
+
+
+void menuProcTelemetry2(uint8_t event)
+{
+  MENU("TELEMETRY2", menuTabModel, e_Telemetry2, 3, {0, 2, 2});
+
+	int8_t  sub    = mstate2.m_posVert;
+	uint8_t subSub = mstate2.m_posHorz;
+	uint8_t blink;
+	uint8_t y = 2*FH;
+
+	switch(event)
+	{
+    case EVT_KEY_BREAK(KEY_DOWN):
+    case EVT_KEY_BREAK(KEY_UP):
+    case EVT_KEY_BREAK(KEY_LEFT):
+    case EVT_KEY_BREAK(KEY_RIGHT):
+        if(s_editMode)
+					  FrskyAlarmSendState |= 0x30 ;	 // update Fr-Sky module when edit mode exited
+		break ;
+	}
+	blink = s_editMode ? BLINK : INVERS ;
+	uint8_t subN = 1;
+
+  for (uint8_t j=0; j<2; j++)
+	{
+    lcd_putsAtt(0, y, PSTR("TxRSSIalrm"), 0);
+		if ( j == 1 )
+		{
+			lcd_putcAtt( 0, y, 'R', 0 ) ;
+		}
+    lcd_putsnAtt(11*FW, y, PSTR("---YelOrgRed")+3*frskyRSSItype[j],3,(sub==subN && subSub==0 ? blink:0));
+    lcd_outdezNAtt(17*FW, y, frskyRSSIlevel[j], (sub==subN && subSub==1 ? blink:0), 3);
+
+    if(sub==subN && (s_editMode || p1valdiff)) {
+      	switch (subSub) {
+      	case 0:
+      	    frskyRSSItype[j] = checkIncDec(event, frskyRSSItype[j], 0, 3, EE_MODEL) ;
+      	    break;
+      	case 1:
+      	    frskyRSSIlevel[j] = checkIncDec16(event, frskyRSSIlevel[j], 0, 120, EE_MODEL);
+      	    break;
+      	}
+    }
+    subN++; y+=FH;
+  }
+
+}
+
 #endif
 
 #ifndef NO_TEMPLATES
@@ -3205,10 +3260,10 @@ void menuProc0(uint8_t event)
                   lcd_puts_P(0, 4*FH, PSTR("Alt="));
                   unit = 'm' ;
                   value = FrskyHubData[16] + AltOffset ;
-                  if ( value < 0 )
-                  {
-                    value = 0 ;                    
-                  }
+//                  if ( value < 0 )
+//                  {
+//                    value = 0 ;                    
+//                  }
                   if ( g_model.FrSkyImperial )
                   {
                     // m to ft *105/32
@@ -3231,7 +3286,16 @@ void menuProc0(uint8_t event)
             }
             else if ((g_eeGeneral.view & 0x30) == 0x30 )
             {
-              lcd_putsAtt(6, 2*FH, PSTR("To Be Done"), DBLSIZE);
+              lcd_puts_P(0, 2*FH, PSTR("Lat=")) ;
+              lcd_outdezNAtt(8*FW, 2*FH, FrskyHubData[19], LEADING0, -5);
+							lcd_putc(8*FW, 2*FH, '.') ;
+              lcd_outdezNAtt(12*FW, 2*FH, FrskyHubData[27], LEADING0, -4);
+              lcd_puts_P(0, 3*FH, PSTR("Lon=")) ;
+              lcd_outdezNAtt(8*FW, 3*FH, FrskyHubData[18], LEADING0, -5);
+							lcd_putc(8*FW, 3*FH, '.') ;
+              lcd_outdezNAtt(12*FW, 3*FH, FrskyHubData[26], LEADING0, -4);
+							
+//              lcd_putsAtt(6, 2*FH, PSTR("To Be Done"), DBLSIZE);
             }
             else
             {

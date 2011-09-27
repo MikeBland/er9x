@@ -179,7 +179,7 @@ void lcd_outdezAtt(uint8_t x,uint8_t y,int16_t val,uint8_t mode)
 
 uint8_t lcd_lastPos;
 #define PREC(n) ((n&0x20) ? ((n&0x10) ? 2 : 1) : 0)
-void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,uint8_t len)
+void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
 {
   uint8_t fw = FWNUM;
   uint8_t prec = PREC(mode);
@@ -188,6 +188,12 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,uint8_t len)
   uint8_t ln = 2;
   char c;
   uint8_t xinc ;
+	uint8_t fullwidth = 0 ;
+	if ( len < 0 )
+	{
+		fullwidth = 1 ;
+		len = -len ;		
+	}
 
   if (mode & DBLSIZE)
   {
@@ -285,7 +291,12 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,uint8_t len)
         }
       }
       else if (mode & LEADING0)
-        mode -= LEADING0;
+			{
+				if ( fullwidth == 0 )
+				{
+        	mode -= LEADING0;
+				}
+			}
       else
         break;
     }

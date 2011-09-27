@@ -594,6 +594,7 @@ void menuProcSwitches(uint8_t event);
 void menuProcSafetySwitches(uint8_t event);
 #ifdef FRSKY
 void menuProcTelemetry(uint8_t event);
+void menuProcTelemetry2(uint8_t event);
 #endif
 
 void menuProcStatistic2(uint8_t event);

@@ -119,10 +119,11 @@ extern int16_t FrskyHubData[] ;
 
 void FRSKY_Init(void);
 void FRSKY10mspoll(void);
+void FRSKY_setTxPacket( uint8_t type, uint8_t value, uint8_t p1, uint8_t p2 ) ;
 
 inline void FRSKY_setModelAlarms(void)
 {
-  FrskyAlarmSendState = 4 ;
+  FrskyAlarmSendState |= 0x0F ;
 }
 
 bool FRSKY_alarmRaised(uint8_t idx);
