@@ -41,9 +41,6 @@ uint8_t g_audioRepeat = 0;
 uint8_t g_Haptic;
 
 
-
-
-
 uint8_t sysFlags = 0;
 
 const prog_char APM modi12x3[]=
@@ -1353,17 +1350,10 @@ int main(void)
 // moved here and logic added to only play statup tone if splash screen enabled.
 // that way we save a bit, but keep the option for end users!
 #ifdef BEEPSPKR
-
-
- 		HAPTIC_OFF; //make sure port 43 starts in off state!
-
-
-
     if(!g_eeGeneral.disableSplashScreen)
     {
 			  audio.tada();
 		}
-
 #endif
   doSplash();
   checkMem();

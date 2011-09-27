@@ -104,7 +104,8 @@ typedef struct t_EEGeneral {
   int8_t    PPM_Multiplier;
   uint8_t   respre[2];
   uint8_t   speakerPitch;
-  uint8_t   res[3];
+  uint8_t	hapticStrength;
+  uint8_t   res[2];
   char      ownerName[GENERAL_OWNER_NAME_LEN];
 } __attribute__((packed)) EEGeneral;
 

@@ -2387,7 +2387,7 @@ void menuProcSetup(uint8_t event)
 {
   
 #ifdef BEEPSPKR
-#define COUNT_ITEMS 19
+#define COUNT_ITEMS 20  
 #else
 #define COUNT_ITEMS 18
 #endif
@@ -2403,7 +2403,6 @@ void menuProcSetup(uint8_t event)
     evalOffset(sub, 7);
 
     if(s_pgOfs==COUNT_ITEMS-7) s_pgOfs= sub<(COUNT_ITEMS-4) ? COUNT_ITEMS-8 : COUNT_ITEMS-6;
-
     uint8_t y = 1*FH;
 
     switch(event){
@@ -2460,15 +2459,8 @@ void menuProcSetup(uint8_t event)
         uint8_t b ;
         b = g_eeGeneral.beeperVal ;
         lcd_puts_P(0, y,PSTR("Beeper"));
-//under speaker mod, length of beep servers no purpose
-//#ifdef BEEPSPKR
-//       lcd_putsnAtt(PARAM_OFS - FW, y, PSTR("Quiet""NoKey""Norm ")+5*b,5,(sub==subN ? INVERS:0));
-//        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 2); g_eeGeneral.beeperVal = b ; }
-//#else
-				//new queue functionality enables this to work
         lcd_putsnAtt(PARAM_OFS - FW, y, PSTR("Quiet""NoKey""Norm ""Long ""xLong")+5*b,5,(sub==subN ? INVERS:0));
         if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 4); g_eeGeneral.beeperVal = b ; }
-//#endif
 
         if((y+=FH)>7*FH) return;
     }subN++;
@@ -2479,6 +2471,17 @@ void menuProcSetup(uint8_t event)
         lcd_outdezAtt(PARAM_OFS,y,g_eeGeneral.speakerPitch,(sub==subN ? INVERS : 0)|LEFT);
         if(sub==subN) {
             CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.speakerPitch, 1, 100);
+        }
+        if((y+=FH)>7*FH) return;
+    }subN++;
+
+
+
+    if(s_pgOfs<subN) {
+        lcd_puts_P(0, y,PSTR("Haptic Strength"));
+        lcd_outdezAtt(PARAM_OFS,y,g_eeGeneral.hapticStrength,(sub==subN ? INVERS : 0)|LEFT);
+        if(sub==subN) {
+            CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.hapticStrength, 0, 5);
         }
         if((y+=FH)>7*FH) return;
     }subN++;
