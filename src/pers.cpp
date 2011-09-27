@@ -137,6 +137,7 @@ void eeLoadModel(uint8_t id)
         resetTimer2();
 
 #ifdef FRSKY
+  FrskyAlarmSendState |= 0x40 ;		// Get RSSI Alarms
         FRSKY_setModelAlarms();
 #endif
     }

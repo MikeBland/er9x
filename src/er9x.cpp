@@ -1393,6 +1393,9 @@ int main(void)
 //    eeDirty(EE_GENERAL); // if model was quick-selected, make sure it sticks
     eeWaitComplete() ;
   }
+#ifdef FRSKY
+  FrskyAlarmSendState |= 0x40 ;
+#endif
   
   OCR1A = 2000 ;        // set to 1mS
   TIFR = 1 << OCF1A ;   // Clear pending interrupt
