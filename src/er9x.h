@@ -132,10 +132,10 @@
 #define INP_E_ThrCt   0
 
 #if (defined(JETI) || defined(FRSKY) || defined(ARDUPILOT) || defined(NMEA))
-  #undef INP_E_ThrCt
-  #undef INP_E_AileDR
-  #define INP_C_ThrCt   6
-  #define INP_C_AileDR  7
+#undef INP_E_ThrCt
+#undef INP_E_AileDR
+#define INP_C_ThrCt   6
+#define INP_C_AileDR  7
 #endif
 
 
@@ -149,10 +149,10 @@
 #define SLAVE_MODE (PING & (1<<INP_G_RF_POW))
 
 const prog_uint8_t APM modn12x3[]= {
-  1, 2, 3, 4,
-  1, 3, 2, 4,
-  4, 2, 3, 1,
-  4, 3, 2, 1 };
+    1, 2, 3, 4,
+    1, 3, 2, 4,
+    4, 2, 3, 1,
+    4, 3, 2, 1 };
 
 //R=1
 //E=2
@@ -160,10 +160,10 @@ const prog_uint8_t APM modn12x3[]= {
 //A=4
 
 const prog_uint8_t APM chout_ar[] = { //First number is 0..23 -> template setup,  Second is relevant channel out
-1,2,3,4 , 1,2,4,3 , 1,3,2,4 , 1,3,4,2 , 1,4,2,3 , 1,4,3,2,
-2,1,3,4 , 2,1,4,3 , 2,3,1,4 , 2,3,4,1 , 2,4,1,3 , 2,4,3,1,
-3,1,2,4 , 3,1,4,2 , 3,2,1,4 , 3,2,4,1 , 3,4,1,2 , 3,4,2,1,
-4,1,2,3 , 4,1,3,2 , 4,2,1,3 , 4,2,3,1 , 4,3,1,2 , 4,3,2,1    };
+                                      1,2,3,4 , 1,2,4,3 , 1,3,2,4 , 1,3,4,2 , 1,4,2,3 , 1,4,3,2,
+                                      2,1,3,4 , 2,1,4,3 , 2,3,1,4 , 2,3,4,1 , 2,4,1,3 , 2,4,3,1,
+                                      3,1,2,4 , 3,1,4,2 , 3,2,1,4 , 3,2,4,1 , 3,4,1,2 , 3,4,2,1,
+                                      4,1,2,3 , 4,1,3,2 , 4,2,1,3 , 4,2,3,1 , 4,3,1,2 , 4,3,2,1    };
 
 //convert from mode 1 to mode g_eeGeneral.stickMode
 //NOTICE!  =>  1..4 -> 1..4
@@ -177,31 +177,31 @@ extern uint8_t convert_mode_helper(uint8_t x) ;
 #define RUD_STICK       ((g_eeGeneral.stickMode&2) ? 3 : 0)
 
 enum EnumKeys {
-  KEY_MENU ,
-  KEY_EXIT ,
-  KEY_DOWN ,
-  KEY_UP  ,
-  KEY_RIGHT ,
-  KEY_LEFT ,
-  TRM_LH_DWN  ,
-  TRM_LH_UP   ,
-  TRM_LV_DWN  ,
-  TRM_LV_UP   ,
-  TRM_RV_DWN  ,
-  TRM_RV_UP   ,
-  TRM_RH_DWN  ,
-  TRM_RH_UP   ,
-  //SW_NC     ,
-  //SW_ON     ,
-  SW_ThrCt  ,
-  SW_RuddDR ,
-  SW_ElevDR ,
-  SW_ID0    ,
-  SW_ID1    ,
-  SW_ID2    ,
-  SW_AileDR ,
-  SW_Gear   ,
-  SW_Trainer
+    KEY_MENU ,
+    KEY_EXIT ,
+    KEY_DOWN ,
+    KEY_UP  ,
+    KEY_RIGHT ,
+    KEY_LEFT ,
+    TRM_LH_DWN  ,
+    TRM_LH_UP   ,
+    TRM_LV_DWN  ,
+    TRM_LV_UP   ,
+    TRM_RV_DWN  ,
+    TRM_RV_UP   ,
+    TRM_RH_DWN  ,
+    TRM_RH_UP   ,
+    //SW_NC     ,
+    //SW_ON     ,
+    SW_ThrCt  ,
+    SW_RuddDR ,
+    SW_ElevDR ,
+    SW_ID0    ,
+    SW_ID1    ,
+    SW_ID2    ,
+    SW_AileDR ,
+    SW_Gear   ,
+    SW_Trainer
 };
 
 #define SWITCHES_STR "THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN""SW1""SW2""SW3""SW4""SW5""SW6""SW7""SW8""SW9""SWA""SWB""SWC"
@@ -441,7 +441,7 @@ extern uint8_t s_editMode;     //global editmode
 /// i_pval hat die Groesse 1Byte oder 2Bytes falls _FL_SIZE2  in i_flags gesetzt ist
 /// falls EE_GENERAL oder EE_MODEL in i_flags gesetzt ist wird bei Aenderung
 /// der Variablen zusaetzlich eeDirty() aufgerufen.
-/// Als Bestaetigung wird beep() aufgerufen bzw. beepWarn() wenn die Stellgrenze erreicht wird.
+/// Als Bestaetigung wird beep() aufgerufen bzw. audio.warn() wenn die Stellgrenze erreicht wird.
 int16_t checkIncDec16(uint8_t event, int16_t i_pval, int16_t i_min, int16_t i_max, uint8_t i_flags);
 int8_t checkIncDec(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max, uint8_t i_flags);
 int8_t checkIncDec_hm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
@@ -449,10 +449,10 @@ int8_t checkIncDec_vm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 
 #define CHECK_INCDEC_H_GENVAR( event, var, min, max)     \
-  var = checkIncDec_hg(event,var,min,max)
+    var = checkIncDec_hg(event,var,min,max)
 
 #define CHECK_INCDEC_H_MODELVAR( event, var, min, max)     \
-  var = checkIncDec_hm(event,var,min,max)
+    var = checkIncDec_hm(event,var,min,max)
 
 #define STORE_MODELVARS_TRIM   eeDirty(EE_MODEL|EE_TRIM)
 #define STORE_MODELVARS   eeDirty(EE_MODEL)
@@ -535,7 +535,7 @@ void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t 
 
 extern inline int16_t calc100toRESX(int8_t x)
 {
-  return ((x*41)>>2) - x/64;
+    return ((x*41)>>2) - x/64;
 }
 
 uint8_t getMixerCount();
@@ -549,18 +549,18 @@ extern inline int16_t calc1000toRESX(int16_t x)  // improve calc time by Pat Mac
     y=y>>2;
     x-=y;
     return x+(y>>2);
-//  return x + x/32 - x/128 + x/512;
+    //  return x + x/32 - x/128 + x/512;
 }
 
 extern volatile uint16_t g_tmr10ms;
 
 extern inline uint16_t get_tmr10ms()
 {
-	uint16_t time  ;
-  cli();
-	time = g_tmr10ms ;  
-  sei();
-	return time ;
+    uint16_t time  ;
+    cli();
+    time = g_tmr10ms ;
+    sei();
+    return time ;
 }
 
 

@@ -50,14 +50,14 @@ static prog_char APM string_7[] = "Gyro Setup";
 static prog_char APM string_8[] = "Servo Test";
 
 PGM_P n_Templates[8] PROGMEM = {
-string_1,
-string_2,
-string_3,
-string_4,
-string_5,
-string_6,
-string_7,
-string_8
+    string_1,
+    string_2,
+    string_3,
+    string_4,
+    string_5,
+    string_6,
+    string_7,
+    string_8
 };
 
 MixData* setDest(uint8_t dch)
@@ -101,7 +101,7 @@ void setSwitch(uint8_t idx, uint8_t func, int8_t v1, int8_t v2)
 
 __attribute__((noinline)) uint8_t convert_mode_helper(uint8_t x)
 {
-	return pgm_read_byte(modn12x3 + g_eeGeneral.stickMode*4 + (x) - 1) ;
+    return pgm_read_byte(modn12x3 + g_eeGeneral.stickMode*4 + (x) - 1) ;
 }
 
 void applyTemplate(uint8_t idx)
@@ -123,10 +123,10 @@ void applyTemplate(uint8_t idx)
 
 
     uint8_t j = 0;
-	
-        //Simple 4-Ch
+
+    //Simple 4-Ch
     if(idx==j++) 
-	{
+    {
         md=setDest(ICC(STK_RUD));  md->srcRaw=CM(STK_RUD);  md->weight=100;
         md=setDest(ICC(STK_ELE));  md->srcRaw=CM(STK_ELE);  md->weight=100;
         md=setDest(ICC(STK_THR));  md->srcRaw=CM(STK_THR);  md->weight=100;
@@ -151,20 +151,20 @@ void applyTemplate(uint8_t idx)
         setSwitch(0xC,CS_VPOS, CH(14), 0);
     }
 
-        //V-Tail
+    //V-Tail
     if(idx==j++) 
-	{
-	    clearMixes();
+    {
+        clearMixes();
         md=setDest(ICC(STK_RUD));  md->srcRaw=CM(STK_RUD);  md->weight= 100;
         md=setDest(ICC(STK_RUD));  md->srcRaw=CM(STK_ELE);  md->weight=-100;
         md=setDest(ICC(STK_ELE));  md->srcRaw=CM(STK_RUD);  md->weight= 100;
         md=setDest(ICC(STK_ELE));  md->srcRaw=CM(STK_ELE);  md->weight= 100;
     }
 
-        //Elevon\\Delta
+    //Elevon\\Delta
     if(idx==j++)
-	{
-	    clearMixes();
+    {
+        clearMixes();
         md=setDest(ICC(STK_ELE));  md->srcRaw=CM(STK_ELE);  md->weight= 100;
         md=setDest(ICC(STK_ELE));  md->srcRaw=CM(STK_AIL);  md->weight= 100;
         md=setDest(ICC(STK_AIL));  md->srcRaw=CM(STK_ELE);  md->weight= 100;
@@ -172,9 +172,9 @@ void applyTemplate(uint8_t idx)
     }
 
 
-        //Heli Setup
+    //Heli Setup
     if(idx==j++)
-	{
+    {
         clearMixes();  //This time we want a clean slate
         clearCurves();
 
@@ -215,14 +215,14 @@ void applyTemplate(uint8_t idx)
 
     //Gyro Gain
     if(idx==j++)
-	{
+    {
         md=setDest(6);  md->srcRaw=STK_P2; md->weight= 50; md->swtch=-DSW_GEA; md->sOffset=100;
         md=setDest(6);  md->srcRaw=STK_P2; md->weight=-50; md->swtch= DSW_GEA; md->sOffset=100;
     }
 
     //Servo Test
     if(idx==j++)
-	{
+    {
         md=setDest(15); md->srcRaw=CH(16);   md->weight= 100; md->speedUp = 8; md->speedDown = 8;
         md=setDest(16); md->srcRaw=MIX_FULL; md->weight= 110; md->swtch=DSW_SW1;
         md=setDest(16); md->srcRaw=MIX_MAX;  md->weight=-110; md->swtch=DSW_SW2; md->mltpx=MLTPX_REP;
@@ -234,7 +234,7 @@ void applyTemplate(uint8_t idx)
     }
 
 
- 
+
     STORE_MODELVARS;
     eeWaitComplete() ;
 

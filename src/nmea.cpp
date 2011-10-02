@@ -174,7 +174,7 @@ ISR (USART0_RX_vect)
 
     rl = UDR0;
     iostat = UCSR0A;                    //USART control and Status Register 0 A
- /*
+    /*
    bit 	7		6		5		4	3		2		1		0
         RxC0	TxC0	UDRE0	FE0	DOR0	UPE0	U2X0	MPCM0
 
@@ -194,7 +194,7 @@ ISR (USART0_RX_vect)
         state = WAIT_PACKET;			         // restart on error
     }
     rh = UCSR0B;                       //USART control and Status Register 0 B
-/* bit 	7		6		5		4		3		2		1		0
+    /* bit 	7		6		5		4		3		2		1		0
         RxCIE0	TxCIE0	UDRIE0	RXEN0	TXEN0	UCSZ02	RXB80	TXB80
 
         RxCIE0: Receive complete int enable
@@ -206,7 +206,7 @@ ISR (USART0_RX_vect)
         RXB80:	Rx data bit 8
         TXB80:	Tx data bit 8
 */
-  switch (state)
+    switch (state)
     {
     case WAIT_PACKET:
         switch (rl)
@@ -259,8 +259,8 @@ ISR (USART0_RX_vect)
         break;
 
     case WAIT_VAL_END:
-       if (rl == VAL_END)			// "," nach "GGA" oder "RMC"
-       {
+        if (rl == VAL_END)			// "," nach "GGA" oder "RMC"
+        {
             state = READ_VALUE;
             rval = 1;
             for (i = 0; i < NB_LONG_BUF; i++)	// clear buffer
@@ -294,7 +294,7 @@ ISR (USART0_RX_vect)
             }
             for (i = NB_LONG_BUF; i < NB_LONG_BUF+NB_SHORT_BUF; i++) {
                 if (rpack == xpack[i]   // is this the expected short value in the expected packet ?
-                &&  rval == xval[i])
+                        &&  rval == xval[i])
                     sbuf[i-NB_LONG_BUF] = rl;      // yes, store the char
             }
         }
@@ -307,16 +307,16 @@ void NMEA_Init (void)
     DDRE  &= ~(1 << DDE0);              // set RXD0 pin as input
     PORTE &= ~(1 << PORTE0);            // disable pullup on RXD0 pin
 
-                            // switch (Telem_baud)
-                            // {
-                            // case 1:
+    // switch (Telem_baud)
+    // {
+    // case 1:
 #undef BAUD
 #define BAUD 4800
 #include <util/setbaud.h>
-        UBRR0H = UBRRH_VALUE;
-        UBRR0L = UBRRL_VALUE;
-                            //    break;
-                            // }
+    UBRR0H = UBRRH_VALUE;
+    UBRR0L = UBRRL_VALUE;
+    //    break;
+    // }
 
     UCSR0A &= ~(1 << U2X0);			// disable double speed operation
     // set 8N1
@@ -387,7 +387,7 @@ void menuProcNMEA1(uint8_t event)
         chainMenu(menuProc0);
         break;
     }
-/*
+    /*
     How to use:
 
     You choose the values to be displayed using the function:
@@ -411,16 +411,16 @@ void menuProcNMEA1(uint8_t event)
 
     When a value is missing, it is replaced by the contents of val_unknown ("?").
 */
-// expecting LAT value in POS packet to be stored in the first buffer
+    // expecting LAT value in POS packet to be stored in the first buffer
     initval (LONG_BUF(0), PACK_GGA, LAT);
     initval (SHORT_BUF(0), PACK_GGA, NOS);
-// and LON value in POS packet stored in the second buffer
+    // and LON value in POS packet stored in the second buffer
     initval (LONG_BUF(1), PACK_GGA, LON);
     initval (SHORT_BUF(1), PACK_GGA, EOW);
-// title of the screen
+    // title of the screen
     title ('1');
     lcd_puts_P        (   6*FW,   1*FH, PSTR("Latitude"));    // line 1 column 6
-// first buffer into line 2 column 2
+    // first buffer into line 2 column 2
     if (rbuf[0][0])
     {
         lcd_putcAtt   (  16*FW,   1*FH, sbuf[0], 0);          // N or S
@@ -431,7 +431,7 @@ void menuProcNMEA1(uint8_t event)
     else
         lcd_putsAtt   (   2*FW,   2*FH, val_unknown, APSIZE);
     lcd_puts_P        (   5*FW,   4*FH, PSTR("Longitude"));   // line 4 column 5
-// second buffer into line 5 column 2
+    // second buffer into line 5 column 2
     if (rbuf[0][0])
     {
         lcd_putcAtt   (  16*FW,   4*FH, sbuf[1], 0);          // E or W
@@ -480,7 +480,7 @@ void menuProcNMEA2(uint8_t event)
         lcd_putsAtt   (   2*FW,   2*FH, val_unknown, APSIZE);
 
     lcd_puts_P        (   16*FW,   1*FH, PSTR("[knt]"));		//!!!!!!!!!!!!!!!!!!!!!
-	
+
     lcd_puts_P        (   2*FW,   4*FH, PSTR("Course over ground") );
     lcd_putsAtt       (   2*FW,   5*FH, VALSTR(1), APSIZE);
 }
@@ -496,15 +496,15 @@ void menuProcNMEA3(uint8_t event)
         chainMenu(menuProcNMEA4);
         break;
     case EVT_KEY_FIRST(KEY_MENU):
-/*      Set a home position for altitude. Normally used before starting
+        /*      Set a home position for altitude. Normally used before starting
         the model when GPS has got a fix.
         MENU[short]         		-->	alternating relative and absolute altitude
         EXIT[short], MENU[long]  	-->	save home altitude
-	  EXIT[long]			-->	Exit menu	
+   EXIT[long]			-->	Exit menu
 
-	  Switch ON / OFF short beep with positive lift			
-	  LEFT[short]			-->	Positive lift Beep off
-	  RIGHT[short]			-->	Positive lift Beep on		*/
+   Switch ON / OFF short beep with positive lift
+   LEFT[short]			-->	Positive lift Beep off
+   RIGHT[short]			-->	Positive lift Beep on		*/
 
         if (!homealt)
             homealt = homesave;
@@ -512,26 +512,26 @@ void menuProcNMEA3(uint8_t event)
             homealt=0;
         break;
     case EVT_KEY_LONG(KEY_MENU):
-	  if (homesave==0)
-		{
-		homealt = curralt;
-		homesave=homealt;
-		}
-	  break;
+        if (homesave==0)
+        {
+            homealt = curralt;
+            homesave=homealt;
+        }
+        break;
 
     case EVT_KEY_FIRST(KEY_EXIT):
-	  homealt = homesave = 0;
-	  break;
+        homealt = homesave = 0;
+        break;
     case EVT_KEY_LONG(KEY_EXIT):
         NMEA_DisableRXD();
         chainMenu(menuProc0);
         break;
     case EVT_KEY_FIRST(KEY_LEFT):
-	  beep_on=0;
-    break;
+        beep_on=0;
+        break;
     case EVT_KEY_FIRST(KEY_RIGHT):
-	  beep_on=1;
-    break;
+        beep_on=1;
+        break;
     }
     title ('3');
     
@@ -550,9 +550,9 @@ void menuProcNMEA3(uint8_t event)
     {
         ggareceived = 0;
 
-//!!        lcd_outdezNAtt(  19*FW,   2*FH, homealt, PREC1, 6);		// display homealt, small characters
+        //!!        lcd_outdezNAtt(  19*FW,   2*FH, homealt, PREC1, 6);		// display homealt, small characters
 
-/*      ALT and GEO have one single digit following the decimal point
+        /*      ALT and GEO have one single digit following the decimal point
         e.g. ALT=359.7   GEO=47.7
         The altitude over mean sea level is to be calculated as:
             altitude minus geoidal separation                 */
@@ -561,17 +561,18 @@ void menuProcNMEA3(uint8_t event)
         liftalt = curralt - prevalt;
         prevalt = curralt;
 	
-    if ((liftalt >= 0) && beep_on)
-		beepWarn1();					// short blip for non negative lift
+        if ((liftalt >= 0) && beep_on)
+            //beepWarn1();					// short blip for non negative lift
+            audio.warn();
     }
 
     if (rbuf[0][0]) {
-         lcd_outdezNAtt(  10*FW,   2*FH, curralt, DBLSIZE|PREC1, 7);
-         lcd_putcAtt   (  11*FW,   3*FH, sbuf[0], 0);
+        lcd_outdezNAtt(  10*FW,   2*FH, curralt, DBLSIZE|PREC1, 7);
+        lcd_putcAtt   (  11*FW,   3*FH, sbuf[0], 0);
 
-         lcd_outdezNAtt(  14*FW,   5*FH, liftalt, DBLSIZE|PREC1, 6);
-         lcd_putcAtt   (  15*FW,   6*FH, sbuf[0], 0);
-         lcd_puts_P    (  16*FW,   6*FH, PSTR("/S") );
+        lcd_outdezNAtt(  14*FW,   5*FH, liftalt, DBLSIZE|PREC1, 6);
+        lcd_putcAtt   (  15*FW,   6*FH, sbuf[0], 0);
+        lcd_puts_P    (  16*FW,   6*FH, PSTR("/S") );
     }
     else {
         lcd_putsAtt    (   2*FW,   2*FH, val_unknown, APSIZE);
@@ -590,18 +591,18 @@ void menuProcNMEA4(uint8_t event)
         chainMenu(menuProcNMEA1);
         break;
     case EVT_KEY_FIRST(KEY_MENU):
-	  if (show_timer == 0) {
-		show_timer = 1;
-		if (gpstimer == 0)
-			gpstimer = bintime(rbuf[2]);
-		}
-	  else
-		show_timer = 0;
-	  break;
+        if (show_timer == 0) {
+            show_timer = 1;
+            if (gpstimer == 0)
+                gpstimer = bintime(rbuf[2]);
+        }
+        else
+            show_timer = 0;
+        break;
     case EVT_KEY_FIRST(KEY_EXIT):
         if ((show_timer == 1) &&(rbuf[2][0]))
             gpstimer = bintime(rbuf[2]);		// reset Diff timer to 00:00
-	  break;
+        break;
     case EVT_KEY_LONG(KEY_EXIT):
         gpstimer = gpstime;		//bintime(rbuf[2]);
         NMEA_DisableRXD();
@@ -610,10 +611,10 @@ void menuProcNMEA4(uint8_t event)
     }
 
     if (ggareceived)
-     {
+    {
         gpstime=bintime(rbuf[0]);
-	  ggareceived=0;
-     }
+        ggareceived=0;
+    }
 
     initval (LONG_BUF(0), PACK_GGA, TIM);
     initval (LONG_BUF(1), PACK_RMC, DAT);
@@ -670,8 +671,8 @@ void initval(uint8_t num, uint8_t pack, uint8_t val)
 
 int32_t binary (char *str)
 {
-int32_t numval = 0;
-uint8_t sign = 0;
+    int32_t numval = 0;
+    uint8_t sign = 0;
 
     while (*str) {
         if (*str == '-')
@@ -687,7 +688,7 @@ uint8_t sign = 0;
 
 int32_t bintime (char *str)
 {
-int32_t numval=0;
+    int32_t numval=0;
 
     if (*str) {
         numval = ((str[0] - '0') * 10l) + (str[1] - '0');					// hours
@@ -695,7 +696,7 @@ int32_t numval=0;
         numval = numval + (((  (str[2] - '0') * 10l) + (str[3] - '0')) * 60l);	// minutes
         numval = numval + ((str[4] - '0') * 10l) + (str[5] - '0');			// seconds
     }
-   return numval;
+    return numval;
 }
 /*
 Without NMEA:

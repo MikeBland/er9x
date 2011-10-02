@@ -17,6 +17,8 @@
 #ifndef menus_h
 #define menus_h
 
+extern audioQueue  audio;
+
 /*#define IS_THROTTLE(x)  (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4))
 #define GET_DR_STATE(x) (!getSwitch(g_model.expoData[x].drSw1,0) ?   \
                           DR_HIGH :                                  \

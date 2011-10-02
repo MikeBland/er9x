@@ -16,7 +16,6 @@
 
 #include "er9x.h"
 #include "s9xsplash.lbm"
-#include "audio.cpp" // moved out to separate file as simpler to update!
 
 /*
 mode1 rud ele thr ail
@@ -31,15 +30,8 @@ EEGeneral  g_eeGeneral;
 ModelData  g_model;
 
 
-//legacy audio wrapper vars
-uint8_t g_audioStart = 0;
-uint8_t g_audioEnd = 0;
-uint8_t g_audioLength = 0;
-uint8_t g_audioPause = 0;
-uint8_t g_audioFirstRun = 1;
-uint8_t g_audioRepeat = 0;
-uint8_t g_Haptic;
-
+//new audio object
+audioQueue  audio;
 
 uint8_t sysFlags = 0;
 
@@ -560,7 +552,8 @@ void alert(const prog_char * s, bool defaults)
     lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
     refreshDiplay();
     lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
-    beepErr();
+
+    audio.error();
     clearKeyEvents();
     while(1)
     {
@@ -612,19 +605,17 @@ uint8_t checkTrim(uint8_t event)
       killEvents(event);
 
 
-      beepWarn();
+      audio.warn();
 
     } else if(x>-125 && x<125){
       *TrimPtr[idx] = (int8_t)x;
       STORE_MODELVARS_TRIM;
       //if(event & _MSK_KEY_REPT) warble = true;
 			if(x <= 125 && x >= -125){
-#ifdef BEEPSPKR
-      // toneFreq higher/lower according to trim position
-       	beepTrimSpkr((abs(x)/4)+60); 
-#else
-      		beepWarn1();
-#endif
+				
+
+				audio.beep((abs(x)/4)+60);
+
 			}	
     }
     else
@@ -633,11 +624,7 @@ uint8_t checkTrim(uint8_t event)
       STORE_MODELVARS_TRIM;
      // warble = false;
 			if(x <= 125 && x >= -125){
-#ifdef BEEPSPKR
-        	beepTrimSpkr((-abs(x)/4)+60); 
-#else
-      		beepWarn1();
-#endif
+				audio.beep((-abs(x)/4)+60);
 			}	
     }
 
@@ -665,20 +652,14 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
   if(event==EVT_KEY_FIRST(kpl) || event== EVT_KEY_REPT(kpl) || (s_editMode && (event==EVT_KEY_FIRST(KEY_UP) || event== EVT_KEY_REPT(KEY_UP))) ) {
     newval++;
 
-#ifdef BEEPSPKR
-    beepKeySpkr(BEEP_KEY_UP_FREQ);
-#else
-    beepKey();
-#endif
+		audio.beep(BEEP_KEY_UP_FREQ);
+
     kother=kmi;
   }else if(event==EVT_KEY_FIRST(kmi) || event== EVT_KEY_REPT(kmi) || (s_editMode && (event==EVT_KEY_FIRST(KEY_DOWN) || event== EVT_KEY_REPT(KEY_DOWN))) ) {
     newval--;
 
-#ifdef BEEPSPKR
-    beepKeySpkr(BEEP_KEY_DOWN_FREQ);
-#else
-    beepKey();
-#endif
+		audio.beep(BEEP_KEY_DOWN_FREQ);
+
     kother=kpl;
   }
   if((kother != (uint8_t)-1) && keyState((EnumKeys)kother)){
@@ -700,36 +681,25 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
   {
     newval = i_max;
     killEvents(event);
-
-#ifdef BEEPSPKR
-    beepWarn2Spkr(BEEP_KEY_UP_FREQ);
-#else
-    beepWarn();
-#endif
+    audio.warn(1,BEEP_KEY_UP_FREQ);
   }
   else if(newval < i_min)
   {
     newval = i_min;
     killEvents(event);
+    audio.warn(1,BEEP_KEY_DOWN_FREQ);
 
-#ifdef BEEPSPKR
-    beepWarn2Spkr(BEEP_KEY_DOWN_FREQ);
-#else
-    beepWarn();
-#endif
   }
   if(newval != val) {
     if(newval==0) {
       pauseEvents(event);
   
-#ifdef BEEPSPKR
-      if (newval>val)
-        beepWarn2Spkr(BEEP_KEY_UP_FREQ);
-      else
-        beepWarn2Spkr(BEEP_KEY_DOWN_FREQ);
-#else
-      beepKey();
-#endif
+		if (newval>val){
+			audio.beep(BEEP_KEY_UP_FREQ);
+		} else {
+			audio.beep(BEEP_KEY_DOWN_FREQ);
+		}		
+
     }
     eeDirty(i_flags & (EE_GENERAL|EE_MODEL));
     checkIncDec_Ret = true;
@@ -764,7 +734,7 @@ void popMenu(bool uppermost)
 {
   if(g_menuStackPtr>0 || uppermost){
     g_menuStackPtr = uppermost ? 0 : g_menuStackPtr-1;
-    beepKey();
+    audio.beep();
     (*g_menuStack[g_menuStackPtr])(EVT_ENTRY_UP);
   }else{
     alert(PSTR("menuStack underflow"));
@@ -775,7 +745,7 @@ void chainMenu(MenuFuncP newMenu)
 {
   g_menuStack[g_menuStackPtr] = newMenu;
   (*newMenu)(EVT_ENTRY);
-  beepKey();
+  audio.beep();
 }
 void pushMenu(MenuFuncP newMenu)
 {
@@ -787,7 +757,7 @@ void pushMenu(MenuFuncP newMenu)
     alert(PSTR("menuStack overflow"));
     return;
   }
-  beepKey();
+  audio.beep();
   g_menuStack[g_menuStackPtr] = newMenu;
   (*newMenu)(EVT_ENTRY);
 }
@@ -795,9 +765,6 @@ void pushMenu(MenuFuncP newMenu)
 uint8_t  g_vbat100mV;
 volatile uint8_t tick10ms = 0;
 uint16_t g_LightOffCounter;
-uint8_t beepAgain = 0;
-uint8_t beepAgainOrig = 0;
-uint8_t beepOn = false;
 
 inline bool checkSlaveMode()
 {
@@ -807,16 +774,17 @@ inline bool checkSlaveMode()
   return SLAVE_MODE;
 #else
   static bool lastSlaveMode = false;
-  static uint8_t checkDelay = 0;
-  if (g_beepCnt || beepAgain || beepOn) {
-    checkDelay = 20;
-  }
-  else if (checkDelay) {
-    --checkDelay;
-  }
-  else {
-    lastSlaveMode = SLAVE_MODE;
-  }
+// // commented out as seems to serve no purpose with new sound engine 
+//  static uint8_t checkDelay = 0;
+//  if (g_beepCnt || beepAgain || beepOn) {
+//    checkDelay = 20;
+//  }
+//  else if (checkDelay) {
+//    --checkDelay;
+//  }
+//  else {
+    lastSlaveMode = SLAVE_MODE;//
+//  }
   return lastSlaveMode;
 #endif
 }
@@ -906,7 +874,8 @@ void perMain()
         static uint8_t s_batCheck;
         s_batCheck+=32;
         if((s_batCheck==0) && (g_vbat100mV<g_eeGeneral.vBatWarn) && (g_vbat100mV>49)){
-            beepErr();
+
+            audio.error();
             if (g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
         }
     }
@@ -1150,10 +1119,6 @@ static uint16_t getTmr16KHz()
 }
 
 
-
-//new audio object
-audioQueue audio;
-
 ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 { 
   cli();
@@ -1166,28 +1131,7 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 
  //call to sound heatbeat.
  	audio.heartbeat();
-	if(beepOn || beepAgain || g_audioStart > 0){
-	
-				//set parameters
-				if(!g_audioStart){ audio.start(BEEP_DEFAULT_FREQ); } else { audio.start(g_audioStart); }	 	  
-			  if(beepAgain > 0){ audio.repeat(beepAgain + 1);} 	  
-		 	  if(g_audioEnd > 0){ audio.end(g_audioEnd); }	  
-			  if(g_audioLength > 0){ audio.length(g_audioLength); } 			  
-			  if(g_audioPause > 0){ audio.pause(g_audioPause); } else { audio.pause(5);}	 
-			  if(g_Haptic == 1){ audio.haptic();}			
-		  	audio.interrupt();
-				audio.commit();
-			  
-			  //reset vars
-			  g_audioStart = 0;
-			  g_audioEnd = 0;
-			  g_audioLength = 0;
-			  g_audioPause = 0;
-			  g_Haptic = 0;		 
-			  beepOn = false;
-				beepAgain = 0;	
-	}
-
+ 
 
   static uint8_t cnt10ms = 77; // execute 10ms code once every 78 ISRs
   if (cnt10ms-- == 0) // BEGIN { ... every 10ms ... }

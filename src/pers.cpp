@@ -279,7 +279,7 @@ void eeCheck(bool immediately)
   }
   Ee_lock = 0 ;				// UnLock eeprom writing
 
-  //beepWarn1();
+
 }
 
 

@@ -26,76 +26,112 @@
 
 
 
+extern uint8_t g_beepVal[5];
 
-extern uint8_t g_audioStart;
-extern uint8_t g_audioEnd;
-extern uint8_t g_audioLength;
-extern uint8_t g_audioPause;
-extern uint8_t g_audioFirstRun;
-extern uint8_t g_Haptic;
-extern uint8_t beepOn;
-extern uint8_t beepAgain;
-class audioQueue;
+
+struct audioQueue{
 
 
 
- 
-inline void _beepSpkr(uint8_t d, uint8_t f,uint8_t h=0){
-  //this is a wrapper function for the audio class
-  //and uses the legacy tone import functions in the main er9x file
-  if(g_audioFirstRun < 3){
-  	//do nothing as cant find strange issue that causes this function to run twice on boot!
-  	g_audioFirstRun++;
-  } else {
-				
-				g_audioLength = d ;
-				g_audioPause = 2;
+    //queue temporaries
+    uint8_t t_queueToneStart;
+    uint8_t t_queueToneEnd;
+    uint8_t t_queueToneLength;
+    uint8_t t_queueTonePause;
+    uint8_t t_queueToneRepeat;
+    uint8_t t_queueToneHaptic;
 
-				if(h == 1 && g_eeGeneral.hapticStrength > 0){
-					g_Haptic = 1;
-				} else {
-					g_Haptic = 0;
-				}	
-			
-				g_audioStart = f; //keep this as the end to avoid interrupt issues.
+    //queue general vars
+    uint8_t toneFreq;
+    uint8_t toneFreqEnd;
+    uint8_t toneTimeLeft;
+    uint8_t rateOfChange;
+    uint8_t DirectionOfChange;
+    uint8_t toneInterupt;
+    uint8_t tonePause;
+    uint8_t queueState;
+    uint8_t toneRepeat;
+    uint8_t toneRepeatCnt;
+    uint8_t inToneRepeat;
+    uint8_t toneHaptic;
+    uint8_t hapticTick;
+    //uint8_t HapticTimer;
 
-	}
-}
-
-inline void _beep(uint8_t d,uint8_t h=0) {
-				
-				g_audioLength = d;
-				g_audioPause = 2;
-				if(h == 1 && g_eeGeneral.hapticStrength > 0){
-					g_Haptic = 1;
-				}
-				g_audioStart = BEEP_DEFAULT_FREQ; //keep this as the end to avoid interrupt issues.
-
-}
+    //queue arrays
+    uint8_t queueToneStart[AUDIO_QUEUE_LENGTH];
+    uint8_t queueToneEnd[AUDIO_QUEUE_LENGTH];
+    uint8_t queueToneLength[AUDIO_QUEUE_LENGTH];
+    uint8_t queueTonePause[AUDIO_QUEUE_LENGTH];
+    uint8_t queueToneRepeat[AUDIO_QUEUE_LENGTH];
+    uint8_t queueToneHaptic[AUDIO_QUEUE_LENGTH];
 
 
-#ifdef BEEPSPKR
-
-#define beepKeySpkr(freq) _beepSpkr(g_beepVal[0],freq)
-#define beepTrimSpkr(freq) _beepSpkr(g_beepVal[0],freq)
-#define beepWarn1Spkr(freq) _beepSpkr(g_beepVal[1],freq,1)
-#define beepWarn2Spkr(freq) _beepSpkr(g_beepVal[2],freq,1)
-
-#define beepKey() _beepSpkr(g_beepVal[0],BEEP_DEFAULT_FREQ)
-#define beepWarn() _beepSpkr(g_beepVal[3],BEEP_DEFAULT_FREQ,1)
-#define beepWarn1() _beepSpkr(g_beepVal[1],BEEP_DEFAULT_FREQ,1)
-#define beepWarn2() _beepSpkr(g_beepVal[2],BEEP_DEFAULT_FREQ,1)
-#define beepErr()  _beepSpkr(g_beepVal[4],BEEP_DEFAULT_FREQ,1)
+public:
+    //constructor
+    audioQueue();
 
 
-#else
-// default beeper
-#define beepKey()   _beep(g_beepVal[0])
-#define beepWarn() _beep(g_beepVal[3],1)
-#define beepWarn1() _beep(g_beepVal[1],1)
-#define beepWarn2() _beep(g_beepVal[2],1)
-#define beepErr()  _beep(g_beepVal[4],1)
+    // these methods simply set the temporary buffer to the params.
+    // to commit to the queue you run the member commit.
+    void start(uint8_t x){
+        t_queueToneStart=x;
+    }
 
-#endif
+    void end(uint8_t x){
+        t_queueToneEnd=x;
+    }
+
+    void interrupt(){
+        toneInterupt = 1;
+    }
+
+    void length(uint8_t x){
+        t_queueToneLength=x;
+    }
+
+    void pause(uint8_t x){
+        t_queueTonePause=x;
+    }
+
+    void repeat(uint8_t x){
+        t_queueToneRepeat=x;
+    }
+
+    void haptic(){
+        t_queueToneHaptic=1;
+    }
+
+    void commit();
+
+    //set all temporary buffers to default
+    void flushTemp();
+
+    void restack();
+
+
+    //heartbeat is responsibile for issueing the audio tones and general square waves
+    // it is essentially the life of the class.
+    void heartbeat();
+
+
+    //pre made tune to play the 'startup' tune
+    void tada();
+
+    //standard beep function
+    void beep(uint8_t freq=BEEP_DEFAULT_FREQ,uint8_t len=g_beepVal[0],uint8_t hap=0,uint8_t rep=0);
+
+    //standard warn function
+    void warn(uint8_t level=1,uint8_t freq = BEEP_DEFAULT_FREQ);
+
+    //standard error function
+    void error(){
+        beep(BEEP_DEFAULT_FREQ,g_beepVal[4],1);
+    }
+
+
+};
+
+
+
 
 #endif // audio_h
