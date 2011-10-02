@@ -24,7 +24,8 @@ HEADERS += \
     frsky.h \
     file.h \
     er9x.h \
-    ardupilot.h
+    ardupilot.h \
+    nmea.h
 
 SOURCES += \
     templates.cpp \
@@ -37,4 +38,5 @@ SOURCES += \
     file.cpp \
     er9x.cpp \
     drivers.cpp \
-    ardupilot.cpp
+    ardupilot.cpp \
+    audio.cpp

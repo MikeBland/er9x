@@ -1,10 +1,10 @@
 ===== Starting build =====
 Timestamp
-Tue Sep 27 21:49:38 UTC 2011
+Sun Oct  2 05:10:32 UTC 2011
 ==========================
 
 ===== Updating from SVN =====
-At revision 545.
+At revision 550.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -36,10 +36,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "27.09.2011"
-#define TIME_STR "17:05:39"
-#define SUB_VERS 4889-erez
-#define SVN_VERS "trunk-r546"
+#define DATE_STR "02.10.2011"
+#define TIME_STR "01:01:34"
+#define SUB_VERS 4928-erez
+#define SVN_VERS "trunk-r551"
 #define MOD_VERS "JETI   "
 
 Compiling C++: er9x.cpp
@@ -67,11 +67,14 @@ Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
+Compiling C++: audio.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
 Compiling C++: jeti.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/jeti.o.d jeti.cpp -o obj/jeti.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/jeti.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/audio.o obj/jeti.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -92,10 +95,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   55748 bytes (85.1% Full)
+Program:   56154 bytes (85.7% Full)
 (.text + .data + .bootloader)
 
-Data:       3561 bytes (86.9% Full)
+Data:       3551 bytes (86.7% Full)
 (.data + .bss + .noinit)
 
 
@@ -134,10 +137,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "27.09.2011"
-#define TIME_STR "17:05:42"
-#define SUB_VERS 4890-erez
-#define SVN_VERS "trunk-r546"
+#define DATE_STR "02.10.2011"
+#define TIME_STR "01:01:37"
+#define SUB_VERS 4929-erez
+#define SVN_VERS "trunk-r551"
 #define MOD_VERS "FRSKY   "
 
 Compiling C++: er9x.cpp
@@ -165,11 +168,14 @@ Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
+Compiling C++: audio.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
 Compiling C++: frsky.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -190,10 +196,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   60274 bytes (92.0% Full)
+Program:   60680 bytes (92.6% Full)
 (.text + .data + .bootloader)
 
-Data:       3698 bytes (90.3% Full)
+Data:       3688 bytes (90.0% Full)
 (.data + .bss + .noinit)
 
 
@@ -232,10 +238,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "27.09.2011"
-#define TIME_STR "17:05:45"
-#define SUB_VERS 4891-erez
-#define SVN_VERS "trunk-r546"
+#define DATE_STR "02.10.2011"
+#define TIME_STR "01:01:40"
+#define SUB_VERS 4930-erez
+#define SVN_VERS "trunk-r551"
 #define MOD_VERS "FRSKY  SPK "
 
 Compiling C++: er9x.cpp
@@ -263,11 +269,14 @@ Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
+Compiling C++: audio.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
 Compiling C++: frsky.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -288,10 +297,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   60916 bytes (93.0% Full)
+Program:   60902 bytes (92.9% Full)
 (.text + .data + .bootloader)
 
-Data:       3699 bytes (90.3% Full)
+Data:       3689 bytes (90.1% Full)
 (.data + .bss + .noinit)
 
 
@@ -330,10 +339,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "27.09.2011"
-#define TIME_STR "17:05:48"
-#define SUB_VERS 4892-erez
-#define SVN_VERS "trunk-r546"
+#define DATE_STR "02.10.2011"
+#define TIME_STR "01:01:43"
+#define SUB_VERS 4931-erez
+#define SVN_VERS "trunk-r551"
 #define MOD_VERS "FRSKY NHT  "
 
 Compiling C++: er9x.cpp
@@ -361,11 +370,14 @@ Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
+Compiling C++: audio.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
 Compiling C++: frsky.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -386,10 +398,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   58958 bytes (90.0% Full)
+Program:   59362 bytes (90.6% Full)
 (.text + .data + .bootloader)
 
-Data:       3694 bytes (90.2% Full)
+Data:       3684 bytes (89.9% Full)
 (.data + .bss + .noinit)
 
 
@@ -428,10 +440,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "27.09.2011"
-#define TIME_STR "17:05:51"
-#define SUB_VERS 4893-erez
-#define SVN_VERS "trunk-r546"
+#define DATE_STR "02.10.2011"
+#define TIME_STR "01:01:46"
+#define SUB_VERS 4932-erez
+#define SVN_VERS "trunk-r551"
 #define MOD_VERS "FRSKY NHT SPK "
 
 Compiling C++: er9x.cpp
@@ -459,11 +471,14 @@ Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
+Compiling C++: audio.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
 Compiling C++: frsky.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -484,10 +499,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   59598 bytes (90.9% Full)
+Program:   59584 bytes (90.9% Full)
 (.text + .data + .bootloader)
 
-Data:       3695 bytes (90.2% Full)
+Data:       3685 bytes (90.0% Full)
 (.data + .bss + .noinit)
 
 
@@ -526,10 +541,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "27.09.2011"
-#define TIME_STR "17:05:53"
-#define SUB_VERS 4894-erez
-#define SVN_VERS "trunk-r546"
+#define DATE_STR "02.10.2011"
+#define TIME_STR "01:01:49"
+#define SUB_VERS 4933-erez
+#define SVN_VERS "trunk-r551"
 #define MOD_VERS "ARDU   "
 
 Compiling C++: er9x.cpp
@@ -557,11 +572,14 @@ Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
+Compiling C++: audio.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
 Compiling C++: ardupilot.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/ardupilot.o.d ardupilot.cpp -o obj/ardupilot.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/ardupilot.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/audio.o obj/ardupilot.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -582,10 +600,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   57606 bytes (87.9% Full)
+Program:   58012 bytes (88.5% Full)
 (.text + .data + .bootloader)
 
-Data:       3559 bytes (86.9% Full)
+Data:       3549 bytes (86.6% Full)
 (.data + .bss + .noinit)
 
 
@@ -624,10 +642,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "27.09.2011"
-#define TIME_STR "17:05:56"
-#define SUB_VERS 4895-erez
-#define SVN_VERS "trunk-r546"
+#define DATE_STR "02.10.2011"
+#define TIME_STR "01:01:51"
+#define SUB_VERS 4934-erez
+#define SVN_VERS "trunk-r551"
 #define MOD_VERS "NMEA   "
 
 Compiling C++: er9x.cpp
@@ -655,11 +673,14 @@ Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
+Compiling C++: audio.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
 Compiling C++: nmea.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/nmea.o.d nmea.cpp -o obj/nmea.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/nmea.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/audio.o obj/nmea.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -680,10 +701,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   58332 bytes (89.0% Full)
+Program:   58716 bytes (89.6% Full)
 (.text + .data + .bootloader)
 
-Data:       3619 bytes (88.4% Full)
+Data:       3609 bytes (88.1% Full)
 (.data + .bss + .noinit)
 
 
@@ -722,10 +743,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "27.09.2011"
-#define TIME_STR "17:05:59"
-#define SUB_VERS 4896-erez
-#define SVN_VERS "trunk-r546"
+#define DATE_STR "02.10.2011"
+#define TIME_STR "01:01:54"
+#define SUB_VERS 4935-erez
+#define SVN_VERS "trunk-r551"
 #define MOD_VERS " NHT SPK "
 
 Compiling C++: er9x.cpp
@@ -753,8 +774,11 @@ Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
+Compiling C++: audio.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/audio.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -775,10 +799,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   54530 bytes (83.2% Full)
+Program:   54516 bytes (83.2% Full)
 (.text + .data + .bootloader)
 
-Data:       3522 bytes (86.0% Full)
+Data:       3512 bytes (85.7% Full)
 (.data + .bss + .noinit)
 
 
@@ -817,10 +841,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "27.09.2011"
-#define TIME_STR "17:05:02"
-#define SUB_VERS 4897-erez
-#define SVN_VERS "trunk-r546"
+#define DATE_STR "02.10.2011"
+#define TIME_STR "01:01:57"
+#define SUB_VERS 4936-erez
+#define SVN_VERS "trunk-r551"
 #define MOD_VERS "  SPK "
 
 Compiling C++: er9x.cpp
@@ -848,8 +872,11 @@ Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
+Compiling C++: audio.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DBEEPSPKR -Os -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/audio.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -870,10 +897,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   55848 bytes (85.2% Full)
+Program:   55834 bytes (85.2% Full)
 (.text + .data + .bootloader)
 
-Data:       3526 bytes (86.1% Full)
+Data:       3516 bytes (85.8% Full)
 (.data + .bss + .noinit)
 
 
@@ -912,10 +939,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "27.09.2011"
-#define TIME_STR "17:05:04"
-#define SUB_VERS 4898-erez
-#define SVN_VERS "trunk-r546"
+#define DATE_STR "02.10.2011"
+#define TIME_STR "01:01:00"
+#define SUB_VERS 4937-erez
+#define SVN_VERS "trunk-r551"
 #define MOD_VERS " NHT  "
 
 Compiling C++: er9x.cpp
@@ -943,8 +970,11 @@ Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
+Compiling C++: audio.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/audio.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -965,10 +995,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   53892 bytes (82.2% Full)
+Program:   54296 bytes (82.8% Full)
 (.text + .data + .bootloader)
 
-Data:       3521 bytes (86.0% Full)
+Data:       3511 bytes (85.7% Full)
 (.data + .bss + .noinit)
 
 
@@ -1007,10 +1037,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "27.09.2011"
-#define TIME_STR "17:05:07"
-#define SUB_VERS 4899-erez
-#define SVN_VERS "trunk-r546"
+#define DATE_STR "02.10.2011"
+#define TIME_STR "01:01:02"
+#define SUB_VERS 4938-erez
+#define SVN_VERS "trunk-r551"
 #define MOD_VERS "   "
 
 Compiling C++: er9x.cpp
@@ -1038,8 +1068,11 @@ Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 templates.cpp:52: warning: only initialized variables can be placed into program memory area
 
+Compiling C++: audio.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/audio.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -1060,10 +1093,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   55208 bytes (84.2% Full)
+Program:   55614 bytes (84.9% Full)
 (.text + .data + .bootloader)
 
-Data:       3525 bytes (86.1% Full)
+Data:       3515 bytes (85.8% Full)
 (.data + .bss + .noinit)
 
 
