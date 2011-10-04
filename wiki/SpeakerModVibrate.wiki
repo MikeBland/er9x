@@ -1,6 +1,11 @@
 = Speaker Mods with Haptic Feedback (basic) =
 
-<b><i>Please note that this circuit diagram is effective - but soon to be replaced by an altertive circuit that will use a spare bin on the radios cpu to turn the motor on and off. This feature will use a new version of the firmware with a -HAPTIC suffix</i></b>
+<b><i>Please note that this circuit diagram is now deprecated.</i>  You are highly recommended to use the updated circuit located on:
+
+<a href="/p/er9x/wiki/SpeakerModVibrateHaptic">http://code.google.com/p/er9x/wiki/SpeakerModVibrateHaptic</a>
+
+The updated circuit allows far more accurate motor control.
+</b>
 
 The purpose of the speaker mod is to start paving the way for more usefull tones and beeps for use in telemetry versions of er9x. 
 
