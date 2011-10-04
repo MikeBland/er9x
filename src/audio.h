@@ -70,65 +70,22 @@ public:
     //constructor
     audioQueue();
 
+		//only difference between these two functions is that one does the 
+		//interupt queue (Now) and the other queues for playing ASAP.
+		void playNow(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRepeat=0,uint8_t tHaptic=0,uint8_t tEnd=0);	
+		void playASAP(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tHaptic=0,uint8_t tRepeat=0,uint8_t tEnd=0);
 
-    // these methods simply set the temporary buffer to the params.
-    // to commit to the queue you run the member commit.
-    void start(uint8_t x){
-        t_queueToneStart=x;
-    }
-
-    void end(uint8_t x){
-        t_queueToneEnd=x;
-    }
-
-    void interrupt(){
-        toneInterupt = 1;
-    }
-
-    void length(uint8_t x){
-        t_queueToneLength=x;
-    }
-
-    void pause(uint8_t x){
-        t_queueTonePause=x;
-    }
-
-    void repeat(uint8_t x){
-        t_queueToneRepeat=x;
-    }
-
-    void haptic(){
-        t_queueToneHaptic=1;
-    }
+		void event(uint8_t e,uint8_t f=BEEP_DEFAULT_FREQ);
 
     void commit();
-
+    
     //set all temporary buffers to default
     void flushTemp();
 
     void restack();
-
-
     //heartbeat is responsibile for issueing the audio tones and general square waves
     // it is essentially the life of the class.
     void heartbeat();
-
-
-    //pre made tune to play the 'startup' tune
-    void tada();
-
-    //standard beep function
-    void beep(uint8_t freq=BEEP_DEFAULT_FREQ,uint8_t len=g_beepVal[0],uint8_t hap=0,uint8_t rep=0);
-
-    //standard warn function
-    void warn(uint8_t level=1,uint8_t freq = BEEP_DEFAULT_FREQ);
-
-    //standard error function
-    void error(){
-        beep(BEEP_DEFAULT_FREQ,g_beepVal[4],1);
-    }
-
-
 };
 
 
