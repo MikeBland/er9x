@@ -40,11 +40,3 @@ This is marked in 'red' on the following image.
 <img src="http://static.rcgroups.net/forums/attachments/3/2/9/0/3/2/a4280719-150-pcb-ref-top.jpg">
 
 This pin is right next to the pins used for the frsky mod, so if doing that mod, then probably best to do this at the same time!
-
-A number of people have been using a 3 volt motor for the haptic feedback.  A concern raised is that the motor supply in the above circuit is a 5v output.
-
-The following circuit has been suggested to safely drop the supply down to 3volts.
-
-<img src="http://static.rcgroups.net/forums/attachments/2/0/3/7/1/7/a4306174-38-Haptic.png">
-
-This update is optional, however will probably extend the life of your 3v motor!
