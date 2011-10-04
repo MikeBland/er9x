@@ -159,11 +159,7 @@ const prog_uint8_t APM modn12x3[]= {
 //T=3
 //A=4
 
-const prog_uint8_t APM chout_ar[] = { //First number is 0..23 -> template setup,  Second is relevant channel out
-                                      1,2,3,4 , 1,2,4,3 , 1,3,2,4 , 1,3,4,2 , 1,4,2,3 , 1,4,3,2,
-                                      2,1,3,4 , 2,1,4,3 , 2,3,1,4 , 2,3,4,1 , 2,4,1,3 , 2,4,3,1,
-                                      3,1,2,4 , 3,1,4,2 , 3,2,1,4 , 3,2,4,1 , 3,4,1,2 , 3,4,2,1,
-                                      4,1,2,3 , 4,1,3,2 , 4,2,1,3 , 4,2,3,1 , 4,3,1,2 , 4,3,2,1    };
+extern const prog_uint8_t APM chout_ar[] ;
 
 //convert from mode 1 to mode g_eeGeneral.stickMode
 //NOTICE!  =>  1..4 -> 1..4
@@ -412,6 +408,7 @@ extern uint16_t Timer2 ;
 void resetTimer2() ;
 
 const prog_char *get_switches_string() ;
+const prog_char *get_curve_string() ;
 
 
 uint8_t char2idx(char c);

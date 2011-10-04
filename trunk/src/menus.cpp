@@ -155,6 +155,11 @@ MenuFuncP_PROGMEM APM menuTabDiag[] = {
     menuProcDiagCalib
 };
 
+const prog_char *get_curve_string()
+{
+  return PSTR(CURV_STR)	;
+}	
+
 void menu_lcd_onoff( uint8_t x,uint8_t y, uint8_t value, uint8_t mode )
 {
     lcd_putsnAtt( x, y, PSTR("OFFON ")+3*value,3,mode ? INVERS:0) ;
@@ -200,7 +205,7 @@ void MState2::check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t men
     if(scrollLR) p2valprev = calibratedStick[4];
     if(scrollUD) p3valprev = calibratedStick[5];
 
-    if(scroll_disabled)
+    if(scroll_disabled || g_eeGeneral.disablePotScroll)
     {
         scrollLR = 0;
         scrollUD = 0;
@@ -1073,7 +1078,7 @@ void menuProcMixOne(uint8_t event)
             break;
         case 5:
             lcd_putsAtt(  2*FW,y,PSTR("Curves"),0);
-            lcd_putsnAtt( FW*14,y,PSTR(CURV_STR)+md2->curve*3,3,attr);
+            lcd_putsnAtt( FW*14,y,get_curve_string()+md2->curve*3,3,attr);
             if(attr) CHECK_INCDEC_H_MODELVAR( event, md2->curve, 0,MAX_CURVE5+MAX_CURVE9+7-1);
             if(attr && md2->curve>=CURVE_BASE && event==EVT_KEY_FIRST(KEY_MENU)){
                 s_curveChan = md2->curve-CURVE_BASE;
@@ -1369,7 +1374,7 @@ void menuProcMix(uint8_t event)
             lcd_putcAtt(    7*FW+FW/2, y, '%',s_moveMode ? attr : 0);
             putsChnRaw(     9*FW, y, md2->srcRaw,s_moveMode ? attr : 0);
             if(md2->swtch)putsDrSwitches( 13*FW, y, md2->swtch,s_moveMode ? attr : 0);
-            if(md2->curve)lcd_putsnAtt(   17*FW, y, PSTR(CURV_STR)+md2->curve*3,3,s_moveMode ? attr : 0);
+            if(md2->curve)lcd_putsnAtt(   17*FW, y, get_curve_string()+md2->curve*3,3,s_moveMode ? attr : 0);
 
             bool bs = (md2->speedDown || md2->speedUp);
             bool bd = (md2->delayUp || md2->delayDown);
@@ -2384,17 +2389,27 @@ if (edit) {
 }
 }
 
+#define PARAM_OFS   17*FW
+
+ uint8_t onoffMenuItem( uint8_t value, uint8_t y, const prog_char *s, uint8_t sub, int8_t subN, uint8_t event )
+ {
+   lcd_puts_P(0, y, s);
+   menu_lcd_onoff( PARAM_OFS, y, value, sub==subN ) ;
+   if(sub==subN) CHECK_INCDEC_H_GENVAR(event, value, 0, 1);
+	 return value ;
+ }
+
+
 void menuProcSetup(uint8_t event)
 {
   
 #ifdef BEEPSPKR
-#define COUNT_ITEMS 20  
+#define COUNT_ITEMS 22
 #else
-#define COUNT_ITEMS 18
+#define COUNT_ITEMS 20
 #endif
 
 
-#define PARAM_OFS   17*FW
 
     SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, COUNT_ITEMS+1);
 
@@ -2523,38 +2538,42 @@ void menuProcSetup(uint8_t event)
     }subN++;
 
     if(s_pgOfs<subN) {
-        uint8_t b ;
-        b = g_eeGeneral.throttleReversed ;
-        lcd_puts_P(0, y,PSTR("Throttle reverse"));
-        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
-        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 1); g_eeGeneral.throttleReversed = b ; }
+//        uint8_t b ;
+//        b = g_eeGeneral.throttleReversed ;
+//        lcd_puts_P(0, y,PSTR("Throttle reverse"));
+//        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
+//        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 1); g_eeGeneral.throttleReversed = b ; }
+				g_eeGeneral.throttleReversed = onoffMenuItem( g_eeGeneral.throttleReversed, y, PSTR("Throttle reverse"), sub, subN, event ) ;
+				if((y+=FH)>7*FH) return;
+    }subN++;
+
+    if(s_pgOfs<subN) {
+//        uint8_t b ;
+//        b = g_eeGeneral.minuteBeep ;
+//        lcd_puts_P(0, y,PSTR("Minute beep"));
+//        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
+//        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 1); g_eeGeneral.minuteBeep = b ; }
+				g_eeGeneral.minuteBeep = onoffMenuItem( g_eeGeneral.minuteBeep, y, PSTR("Minute beep"), sub, subN, event ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 
     if(s_pgOfs<subN) {
-        uint8_t b ;
-        b = g_eeGeneral.minuteBeep ;
-        lcd_puts_P(0, y,PSTR("Minute beep"));
-        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
-        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 1); g_eeGeneral.minuteBeep = b ; }
+//        uint8_t b ;
+//        b = g_eeGeneral.preBeep ;
+//        lcd_puts_P(0, y,PSTR("Beep countdown"));
+//        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
+//        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 1); g_eeGeneral.preBeep = b ; }
+        g_eeGeneral.preBeep = onoffMenuItem( g_eeGeneral.preBeep, y, PSTR("Beep countdown"), sub, subN, event ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 
     if(s_pgOfs<subN) {
-        uint8_t b ;
-        b = g_eeGeneral.preBeep ;
-        lcd_puts_P(0, y,PSTR("Beep countdown"));
-        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
-        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 1); g_eeGeneral.preBeep = b ; }
-        if((y+=FH)>7*FH) return;
-    }subN++;
-
-    if(s_pgOfs<subN) {
-        uint8_t b ;
-        b = g_eeGeneral.flashBeep ;
-        lcd_puts_P(0, y,PSTR("Flash on beep"));
-        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
-        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 1); g_eeGeneral.flashBeep = b ; }
+//        uint8_t b ;
+//        b = g_eeGeneral.flashBeep ;
+//        lcd_puts_P(0, y,PSTR("Flash on beep"));
+//        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
+//        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 1); g_eeGeneral.flashBeep = b ; }
+        g_eeGeneral.flashBeep = onoffMenuItem( g_eeGeneral.flashBeep, y, PSTR("Flash on beep"), sub, subN, event ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 
@@ -2579,61 +2598,66 @@ void menuProcSetup(uint8_t event)
 
     if(s_pgOfs<subN) {
         uint8_t b = 1-g_eeGeneral.disableSplashScreen;
-        lcd_puts_P(0, y,PSTR("Splash screen"));
-        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
-        if(sub==subN)
-        {
-            CHECK_INCDEC_H_GENVAR(event, b, 0, 1);
-            g_eeGeneral.disableSplashScreen = 1-b;
-        }
+//        lcd_puts_P(0, y,PSTR("Splash screen"));
+//        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
+//        if(sub==subN)
+//        {
+//            CHECK_INCDEC_H_GENVAR(event, b, 0, 1);
+//            g_eeGeneral.disableSplashScreen = 1-b;
+//        }
+        g_eeGeneral.disableSplashScreen = 1-onoffMenuItem( b, y, PSTR("Splash screen"), sub, subN, event ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 
     if(s_pgOfs<subN) {
         uint8_t b = 1-g_eeGeneral.disableThrottleWarning;
-        lcd_puts_P(0, y,PSTR("Throttle Warning"));
-        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
-        if(sub==subN)
-        {
-            CHECK_INCDEC_H_GENVAR(event, b, 0, 1);
-            g_eeGeneral.disableThrottleWarning = 1-b;
-        }
+//        lcd_puts_P(0, y,PSTR("Throttle Warning"));
+//        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
+//        if(sub==subN)
+//        {
+//            CHECK_INCDEC_H_GENVAR(event, b, 0, 1);
+//            g_eeGeneral.disableThrottleWarning = 1-b;
+//        }
+        g_eeGeneral.disableThrottleWarning = 1-onoffMenuItem( b, y, PSTR("Throttle Warning"), sub, subN, event ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 
     if(s_pgOfs<subN) {
         uint8_t b = 1-g_eeGeneral.disableSwitchWarning;
-        lcd_puts_P(0, y,PSTR("Switch Warning"));
-        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
-        if(sub==subN)
-        {
-            CHECK_INCDEC_H_GENVAR(event, b, 0, 1);
-            g_eeGeneral.disableSwitchWarning = 1-b;
-        }
+//        lcd_puts_P(0, y,PSTR("Switch Warning"));
+//        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
+//        if(sub==subN)
+//        {
+//            CHECK_INCDEC_H_GENVAR(event, b, 0, 1);
+//            g_eeGeneral.disableSwitchWarning = 1-b;
+//        }
+        g_eeGeneral.disableSwitchWarning = 1-onoffMenuItem( b, y, PSTR("Switch Warning"), sub, subN, event ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 
     if(s_pgOfs<subN) {
         uint8_t b = 1-g_eeGeneral.disableMemoryWarning;
-        lcd_puts_P(0, y,PSTR("Memory Warning"));
-        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
-        if(sub==subN)
-        {
-            CHECK_INCDEC_H_GENVAR(event, b, 0, 1);
-            g_eeGeneral.disableMemoryWarning = 1-b;
-        }
+//        lcd_puts_P(0, y,PSTR("Memory Warning"));
+//        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
+//        if(sub==subN)
+//        {
+//            CHECK_INCDEC_H_GENVAR(event, b, 0, 1);
+        g_eeGeneral.disableMemoryWarning = 1-onoffMenuItem( b, y, PSTR("Memory Warning"), sub, subN, event ) ;
+//						;
+//        }
         if((y+=FH)>7*FH) return;
     }subN++;
 
     if(s_pgOfs<subN) {
         uint8_t b = 1-g_eeGeneral.disableAlarmWarning;
-        lcd_puts_P(0, y,PSTR("Alarm Warning"));
-        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
-        if(sub==subN)
-        {
-            CHECK_INCDEC_H_GENVAR(event, b, 0, 1);
-            g_eeGeneral.disableAlarmWarning = 1-b;
-        }
+//        lcd_puts_P(0, y,PSTR("Alarm Warning"));
+//        menu_lcd_onoff( PARAM_OFS, y, b, sub==subN ) ;
+//        if(sub==subN)
+//        {
+//            CHECK_INCDEC_H_GENVAR(event, b, 0, 1);
+//            g_eeGeneral.disableAlarmWarning = 1-b;
+//        }
+        g_eeGeneral.disableAlarmWarning = 1-onoffMenuItem( b, y, PSTR("Alarm Warning"), sub, subN, event ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 
@@ -2649,6 +2673,27 @@ void menuProcSetup(uint8_t event)
         if(sub==subN) CHECK_INCDEC_H_GENVAR(event,g_eeGeneral.stickMode,0,3);
         if((y+=FH)>7*FH) return;
     }subN++;
+
+		if(s_pgOfs<subN) {
+		    uint8_t b ;
+		    b = 1-g_eeGeneral.disablePotScroll ;
+//		    lcd_puts_P(    0,    y, PSTR("PotScroll"));
+//		    menu_lcd_onoff( 10*FW, y, b, sub==subN ) ;
+//		    if(sub==subN) { CHECK_INCDEC_H_MODELVAR(event,b,0,1); g_eeGeneral.disablePotScroll = 1-b ; }
+				g_eeGeneral.disablePotScroll = 1-onoffMenuItem( b, y, PSTR("PotScroll"), sub, subN, event ) ;
+		    if((y+=FH)>7*FH) return;
+		}subN++;
+
+		if(s_pgOfs<subN) {
+		    uint8_t b ;
+		    b = 1-g_eeGeneral.disableBG ;
+//		    lcd_puts_P(    0,    y, PSTR("BandGap"));
+//		    menu_lcd_onoff( 10*FW, y, b, sub==subN ) ;
+//		    if(sub==subN) { CHECK_INCDEC_H_MODELVAR(event,b,0,1); g_eeGeneral.disableBG = 1-b ; }
+				g_eeGeneral.disableBG = 1-onoffMenuItem( b, y, PSTR("BandGap"), sub, subN, event ) ;
+		    if((y+=FH)>7*FH) return;
+		}subN++;
+
 
 }
 
@@ -3436,12 +3481,15 @@ void perOut(int16_t *chanOut, uint8_t att)
             		}		
         }
     }
-
+  {
+    uint8_t ele_stick, ail_stick ;
+    ele_stick = ELE_STICK ;
+    ail_stick = AIL_STICK ;
     //===========Swash Ring================
     if(g_model.swashRingValue)
     {
-        uint32_t v = (int32_t(calibratedStick[ELE_STICK])*calibratedStick[ELE_STICK] +
-                      int32_t(calibratedStick[AIL_STICK])*calibratedStick[AIL_STICK]);
+       uint32_t v = (int32_t(calibratedStick[ele_stick])*calibratedStick[ele_stick] +
+                     int32_t(calibratedStick[ail_stick])*calibratedStick[ail_stick]);
         uint32_t q = int32_t(RESX)*g_model.swashRingValue/100;
         q *= q;
         if(v>q)
@@ -3475,7 +3523,7 @@ void perOut(int16_t *chanOut, uint8_t att)
                     vStud *= td->studWeight ;
                     vStud /= 31 ;
                     vStud *= 4 ;
-                    switch (td->mode) {
+                    switch ((uint8_t)td->mode) {
                     case 1: v += vStud;   break; // add-mode
                     case 2: v  = vStud;   break; // subst-mode
                     }
@@ -3483,7 +3531,7 @@ void perOut(int16_t *chanOut, uint8_t att)
             }
 
             //===========Swash Ring================
-            if(d && (i==ELE_STICK || i==AIL_STICK))
+            if(d && (i==ele_stick || i==ail_stick))
                 v = int32_t(v)*g_model.swashRingValue*RESX/(int32_t(d)*100);
             //===========Swash Ring================
 
@@ -3525,14 +3573,14 @@ void perOut(int16_t *chanOut, uint8_t att)
     //===========Swash Ring================
     if(g_model.swashRingValue)
     {
-        uint32_t v = ((int32_t)anas[ELE_STICK]*anas[ELE_STICK] + (int32_t)anas[AIL_STICK]*anas[AIL_STICK]);
+        uint32_t v = ((int32_t)anas[ele_stick]*anas[ele_stick] + (int32_t)anas[ail_stick]*anas[ail_stick]);
         uint32_t q = (int32_t)RESX*g_model.swashRingValue/100;
         q *= q;
         if(v>q)
         {
             uint16_t d = isqrt32(v);
-            anas[ELE_STICK] = (int32_t)anas[ELE_STICK]*g_model.swashRingValue*RESX/((int32_t)d*100);
-            anas[AIL_STICK] = (int32_t)anas[AIL_STICK]*g_model.swashRingValue*RESX/((int32_t)d*100);
+            anas[ele_stick] = (int32_t)anas[ele_stick]*g_model.swashRingValue*RESX/((int32_t)d*100);
+            anas[ail_stick] = (int32_t)anas[ail_stick]*g_model.swashRingValue*RESX/((int32_t)d*100);
         }
     }
 
@@ -3541,8 +3589,8 @@ void perOut(int16_t *chanOut, uint8_t att)
 
     if(g_model.swashType)
     {
-        int16_t vp = anas[ELE_STICK]+trimA[ELE_STICK];
-        int16_t vr = anas[AIL_STICK]+trimA[AIL_STICK];
+        int16_t vp = anas[ele_stick]+trimA[ele_stick];
+        int16_t vr = anas[ail_stick]+trimA[ail_stick];
         int16_t vc = 0;
         if(g_model.swashCollectiveSource)
             vc = anas[g_model.swashCollectiveSource-1];
@@ -3551,7 +3599,7 @@ void perOut(int16_t *chanOut, uint8_t att)
         if(g_model.swashInvertAIL) vr = -vr;
         if(g_model.swashInvertCOL) vc = -vc;
 
-        switch (g_model.swashType)
+        switch (( uint8_t)g_model.swashType)
         {
         case (SWASH_TYPE_120):
             vp = REZ_SWASH_Y(vp);
@@ -3585,6 +3633,7 @@ void perOut(int16_t *chanOut, uint8_t att)
             break;
         }
     }
+  }
 
     if(tick10ms) trace(); //trace thr 0..32  (/32)
 
@@ -3743,7 +3792,7 @@ void perOut(int16_t *chanOut, uint8_t att)
 
         //========== MULTIPLEX ===============
         int32_t dv = (int32_t)v*md->weight;
-        switch(md->mltpx){
+        switch((uint8_t)md->mltpx){
         case MLTPX_REP:
             chans[md->destCh-1] = dv;
             break;
@@ -3856,7 +3905,8 @@ void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
     //Total frame length = 22.5msec
     //each pulse is 0.7..1.7ms long with a 0.3ms stop tail
     //The pulse ISR is 2mhz that's why everything is multiplied by 2
-    uint8_t j=0;
+		uint16_t *ptr ;
+		ptr = pulses2MHz ;
     uint8_t p=8+g_model.ppmNCH*2; //Channels *2
     uint16_t q=(g_model.ppmDelay*50+300)*2; //Stoplen *2
     uint16_t rest=22500u*2-q; //Minimum Framelen=22.5 ms
@@ -3865,12 +3915,17 @@ void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
     for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
         int16_t v = max(min(g_chans512[i],PPM_range),-PPM_range) + PPM_CENTER;
         rest-=(v+q);
-        pulses2MHz[j++] = q;
-        pulses2MHz[j++] = v - q + 600; /* as Pat MacKenzie suggests */
+        *ptr++ = q;
+//        pulses2MHz[j++] = q;
+        *ptr++ = v - q + 600; /* as Pat MacKenzie suggests */
+//        pulses2MHz[j++] = v - q + 600; /* as Pat MacKenzie suggests */
     }
-    pulses2MHz[j++]=q;
-    pulses2MHz[j++]=rest;
-    pulses2MHz[j++]=0;
+    *ptr=q;
+    *(ptr+1)=rest;
+    *(ptr+2)=0;
+//    pulses2MHz[j++]=q;
+//    pulses2MHz[j++]=rest;
+//    pulses2MHz[j++]=0;
 }
 
 

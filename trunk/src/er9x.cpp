@@ -29,6 +29,12 @@ mode4 ail thr ele rud
 EEGeneral  g_eeGeneral;
 ModelData  g_model;
 
+const prog_uint8_t APM chout_ar[] = { //First number is 0..23 -> template setup,  Second is relevant channel out
+                                      1,2,3,4 , 1,2,4,3 , 1,3,2,4 , 1,3,4,2 , 1,4,2,3 , 1,4,3,2,
+                                      2,1,3,4 , 2,1,4,3 , 2,3,1,4 , 2,3,4,1 , 2,4,1,3 , 2,4,3,1,
+                                      3,1,2,4 , 3,1,4,2 , 3,2,1,4 , 3,2,4,1 , 3,4,1,2 , 3,4,2,1,
+                                      4,1,2,3 , 4,1,3,2 , 4,2,1,3 , 4,2,3,1 , 4,3,1,2 , 4,3,2,1    };
+
 
 //new audio object
 audioQueue  audio;
@@ -839,6 +845,10 @@ void perMain()
         p1val = calibratedStick[6];
     }
     p1valprev = calibratedStick[6];
+   if ( g_eeGeneral.disablePotScroll )
+   {
+      p1valdiff = 0 ;			
+   	}
 
     g_menuStack[g_menuStackPtr](evt);
     refreshDiplay();
@@ -862,7 +872,7 @@ void perMain()
 
         int16_t ab = anaIn(7);
         ab = ab*16 + ab/8*(6+g_eeGeneral.vBatCalib) ;
-        ab /= BandGap ;
+        ab /= g_eeGeneral.disableBG ? 240 : BandGap ;
         g_vbat100mV = (ab + g_vbat100mV + 1) >> 1 ;  // Filter it a bit => more stable display
 
         static uint8_t s_batCheck;
