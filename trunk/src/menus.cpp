@@ -316,7 +316,7 @@ void MState2::check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t men
         if(m_posVert==0 || !menuTab) {
             popMenu();  //beeps itself
         } else {
-            audio.beep();
+            audio.event(9);
             init();BLINK_SYNC;
         }
         break;
@@ -567,7 +567,7 @@ void setStickCenter() // copy state of 3 primary to subtrim
     for(uint8_t i=0; i<4; i++)
         if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
     STORE_MODELVARS_TRIM;
-    audio.warn(2);
+    audio.event(2);
 }
 
 void menuProcLimits(uint8_t event)
@@ -827,7 +827,7 @@ void menuProcTemplates(uint8_t event)  //Issue 73
             clearMixes();
         else if((sub>=0) && (sub<(int8_t)NUM_TEMPLATES))
             applyTemplate(sub);
-        audio.warn(2);
+        audio.event(2);
         break;
     }
 
@@ -1123,7 +1123,7 @@ void menuProcMixOne(uint8_t event)
             if(attr && event==EVT_KEY_LONG(KEY_MENU)){
                 killEvents(event);
                 deleteMix(s_currMixIdx);
-                audio.warn(2);
+                audio.event(2);
                 popMenu();
             }
             break;
@@ -1690,7 +1690,7 @@ void menuDeleteDupModel(uint8_t event)
     uint8_t i;
     switch(event){
     case EVT_ENTRY:
-        audio.warn();
+        audio.event(1);
         break;
     case EVT_KEY_FIRST(KEY_MENU):
         if ( DupIfNonzero )
@@ -1698,10 +1698,10 @@ void menuDeleteDupModel(uint8_t event)
             message(PSTR("Duplicating model"));
             if(eeDuplicateModel(DupSub))
             {
-                audio.beep();
+                audio.event(9);
                 DupIfNonzero = 2 ;		// sel_editMode = false;
             }
-            else audio.warn();
+            else audio.event(1);
         }
         else
         {
@@ -2068,7 +2068,7 @@ void menuProcModelSelect(uint8_t event)
     case  EVT_KEY_FIRST(KEY_EXIT):
         if(sel_editMode){
             sel_editMode = false;
-            audio.beep();
+            audio.event(9);
             killEvents(event);
             eeWaitComplete();    // Wait to load model if writing something
             eeLoadModel(g_eeGeneral.currModel = mstate2.m_posVert);
@@ -2091,7 +2091,7 @@ void menuProcModelSelect(uint8_t event)
             resetTimer();
             STORE_GENERALVARS;
             eeWaitComplete();
-            audio.warn(2);
+            audio.event(2);
         }
 #ifndef NO_TEMPLATES
         if(event==EVT_KEY_FIRST(KEY_LEFT))  chainMenu(menuProcTemplates);//{killEvents(event);popMenu(true);}
@@ -2105,7 +2105,7 @@ void menuProcModelSelect(uint8_t event)
         break;
     case  EVT_KEY_FIRST(KEY_MENU):
         sel_editMode = true;
-        audio.beep();
+        audio.event(9);
         break;
     case  EVT_KEY_LONG(KEY_EXIT):  // make sure exit long exits to main
         popMenu(true);
@@ -2119,10 +2119,10 @@ void menuProcModelSelect(uint8_t event)
 
             //        message(PSTR("Duplicating model"));
             //        if(eeDuplicateModel(sub)) {
-            //          audio.beep();
+            //          audio.event(9);
             //          sel_editMode = false;
             //        }
-            //        else audio.warn();
+            //        else audio.event(1);
         }
         break;
 
@@ -2186,7 +2186,7 @@ void menuProcDiagCalib(uint8_t event)
         idxState++;
         if(idxState==3)
         {
-            audio.beep();
+            audio.event(9);
             STORE_GENERALVARS;     //eeWriteGeneral();
 //            eeDirty(EE_GENERAL); //eeWriteGeneral();
             idxState = 0;
@@ -2378,7 +2378,7 @@ if (edit) {
         memcpy(g_eeGeneral.trainer.calib, g_ppmIns, sizeof(g_eeGeneral.trainer.calib));
         STORE_GENERALVARS;     //eeWriteGeneral();
 //        eeDirty(EE_GENERAL);
-        audio.beep();
+        audio.event(9);
     }
 }
 }
@@ -2728,10 +2728,13 @@ void timer(uint8_t val)
             if(g_eeGeneral.preBeep && g_model.tmrVal) // beep when 30, 15, 10, 5,4,3,2,1 seconds remaining
             {
             	
-              	if(s_timerVal==30) {audio.beep(BEEP_DEFAULT_FREQ,g_beepVal[2],1,3);}	
-              	if(s_timerVal==20) {audio.beep(BEEP_DEFAULT_FREQ+1,g_beepVal[2],1,2);}	
-                if(s_timerVal==10) {audio.beep(BEEP_DEFAULT_FREQ+2,g_beepVal[2],1,1);}
-                if(s_timerVal<= 3) {audio.beep(BEEP_DEFAULT_FREQ+3,g_beepVal[2],1,1);}
+
+              	if(s_timerVal==30) {audio.event(14);}	
+              	if(s_timerVal==20) {audio.event(15);}		
+                if(s_timerVal==10) {audio.event(16);}	
+                if(s_timerVal<= 3) {audio.event(17);}	               
+                
+                
 
                 if(g_eeGeneral.flashBeep && (s_timerVal==30 || s_timerVal==20 || s_timerVal==10 || s_timerVal<=3))
                     g_LightOffCounter = FLASH_DURATION;
@@ -2739,13 +2742,13 @@ void timer(uint8_t val)
 
             if(g_eeGeneral.minuteBeep && (((g_model.tmrDir ? g_model.tmrVal-s_timerVal : s_timerVal)%60)==0)) //short beep every minute
             {
-                audio.warn();
+                audio.event(1);
                 if(g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
             }
         }
         else if(s_timerState==TMR_BEEPING)
         {
-            audio.warn();
+            audio.event(17);
             if(g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
         }
     }
@@ -2817,7 +2820,7 @@ void menuProcStatistic2(uint8_t event)
         g_tmr1Latency_min = 0x7ff;
         g_tmr1Latency_max = 0;
         g_timeMain    = 0;
-        audio.beep();
+        audio.event(9);
         break;
     case EVT_KEY_FIRST(KEY_DOWN):
         chainMenu(menuProcStatistic);
@@ -2956,7 +2959,7 @@ void menuProc0(uint8_t event)
         {
 //            Timer2_running = !Timer2_running;
             Timer2_running ^= 1 ;
-            audio.beep();
+            audio.event(9);
         }
         break;
     case  EVT_KEY_LONG(KEY_MENU):// go to last menu
@@ -2984,7 +2987,7 @@ void menuProc0(uint8_t event)
             g_eeGeneral.view = (g_eeGeneral.view + 0x10) & 0x3F;
 //            STORE_GENERALVARS;     //eeWriteGeneral();
 //            eeDirty(EE_GENERAL);
-            audio.beep();
+            audio.event(9);
         }
         break;
     case EVT_KEY_BREAK(KEY_LEFT):
@@ -2992,7 +2995,7 @@ void menuProc0(uint8_t event)
             g_eeGeneral.view = (g_eeGeneral.view - 0x10) & 0x3F;
 //            STORE_GENERALVARS;     //eeWriteGeneral();
 //            eeDirty(EE_GENERAL);
-            audio.beep();
+            audio.event(9);
         }
         break;
 #endif
@@ -3005,7 +3008,7 @@ void menuProc0(uint8_t event)
         if(g_eeGeneral.view>=MAX_VIEWS) g_eeGeneral.view=0;
         STORE_GENERALVARS;     //eeWriteGeneral();
 //        eeDirty(EE_GENERAL);
-        audio.beep();
+        audio.event(5);
         break;
     case EVT_KEY_BREAK(KEY_DOWN):
         if(view>0)
@@ -3014,7 +3017,7 @@ void menuProc0(uint8_t event)
             g_eeGeneral.view = MAX_VIEWS-1;
         STORE_GENERALVARS;     //eeWriteGeneral();
 //        eeDirty(EE_GENERAL);
-        audio.beep();
+        audio.event(6);
         break;
     case EVT_KEY_LONG(KEY_UP):
         chainMenu(menuProcStatistic);
@@ -3038,17 +3041,17 @@ void menuProc0(uint8_t event)
     case EVT_KEY_FIRST(KEY_EXIT):
         if(s_timerState==TMR_BEEPING) {
             s_timerState = TMR_STOPPED;
-            audio.beep();
+            audio.event(9);
         }
         else if(view == e_timer2) {
             resetTimer2();
             // Timer2_running = !Timer2_running;
-            audio.beep();
+            audio.event(9);
         }
 #ifdef FRSKY
         else if (view == e_telemetry) {
             resetTelemetry();
-            audio.beep();
+            audio.event(9);
         }
 #endif
         break;
@@ -3058,7 +3061,7 @@ void menuProc0(uint8_t event)
 #ifdef FRSKY
         resetTelemetry();
 #endif
-        audio.beep();
+        audio.event(9);
         break;
     case EVT_ENTRY:
         killEvents(KEY_EXIT);
@@ -3428,7 +3431,7 @@ void perOut(int16_t *chanOut, uint8_t att)
             }
             if(inacCounter>((uint16_t)(g_eeGeneral.inactivityTimer+10)*100*60/16))
                 if((inacCounter&0x3)==1) {
-										audio.warn();
+										audio.event(1);
             		}		
         }
     }
@@ -3509,7 +3512,7 @@ void perOut(int16_t *chanOut, uint8_t att)
 
     //===========BEEP CENTER================
     anaCenter &= g_model.beepANACenter;
-    if(((bpanaCenter ^ anaCenter) & anaCenter)) audio.beep();
+    if(((bpanaCenter ^ anaCenter) & anaCenter)) audio.event(10);
     bpanaCenter = anaCenter;
 
     anas[MIX_MAX-1]  = RESX;     // MAX
@@ -3761,9 +3764,11 @@ void perOut(int16_t *chanOut, uint8_t att)
         uint16_t tmr10ms ;
         tmr10ms = get_tmr10ms() ;
 
-				if(mixWarning & 1) if(((tmr10ms&0xFF)==  0)) audio.beep(BEEP_DEFAULT_FREQ + 50,3,1,2);
-        if(mixWarning & 2) if(((tmr10ms&0xFF)== 64) || ((tmr10ms&0xFF)== 72)) audio.beep(BEEP_DEFAULT_FREQ + 52,3,1,4);;
-        if(mixWarning & 4) if(((tmr10ms&0xFF)==128) || ((tmr10ms&0xFF)==136) || ((tmr10ms&0xFF)==144)) audio.beep(BEEP_DEFAULT_FREQ + 54,3,1,3);        
+				if(mixWarning & 1) if(((tmr10ms&0xFF)==  0)) audio.event(11);
+        if(mixWarning & 2) if(((tmr10ms&0xFF)== 64) || ((tmr10ms&0xFF)== 72)) audio.event(12);
+        if(mixWarning & 4) if(((tmr10ms&0xFF)==128) || ((tmr10ms&0xFF)==136) || ((tmr10ms&0xFF)==144)) audio.event(13);        
+
+
     }
 
     //========== LIMITS ===============

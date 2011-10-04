@@ -129,23 +129,23 @@ void audioQueue::heartbeat()
         //simply generates a square wave for toneFreq for
         //as long as the toneTimeLeft is more than 0
         static uint8_t toneCounter;
-        if (toneTimeLeft > 0){
-            toneCounter += toneFreq;
-            if ((toneCounter & 0x80) == 0x80){
-                PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
-            } else {
-                PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
-            }
-        } else {
-            PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
-        }
+		        if (toneTimeLeft > 0){
+		            toneCounter += toneFreq;
+		            if ((toneCounter & 0x80) == 0x80){
+		                PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
+		            } else {
+		                PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
+		            }
+		        } else {
+		            PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
+		        }  
 #else
         //stock beeper. simply turn port on for x time!
-        if (toneTimeLeft > 0){
-            PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
-        } else {
-            PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
-        }
+		        if (toneTimeLeft > 0){
+		            PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
+		        } else {
+		            PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
+		        }
 #endif
 
 
@@ -155,7 +155,7 @@ void audioQueue::heartbeat()
         }
         if (toneHaptic == 1){
             //we only power it ever X number of ticks to provide a crude speed control
-            if((hapticTick == hapticStrength || hapticTick+1 == hapticStrength) && hapticStrength > 0){
+            if((hapticTick == hapticStrength || hapticTick-1 == hapticStrength) && hapticStrength > 0){
                 HAPTIC_ON; // haptic output 'high'
                 hapticTick = 0;
             } else {
@@ -267,64 +267,150 @@ void audioQueue::heartbeat()
 }
 
 
+void audioQueue::playNow(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRepeat,uint8_t tHaptic,uint8_t tEnd){
+        t_queueToneStart=tStart;
+        t_queueToneLength=tLen;
+        t_queueTonePause=tPause;
+   			t_queueToneHaptic=tHaptic;
+   			t_queueToneRepeat=tRepeat;
+   			t_queueToneEnd=tEnd;
+        toneInterupt = 1; //always interrupt in this function
+        commit();
+}	
 
-//pre made tune to play the 'startup' tune
-void audioQueue::tada()
-{
-    start(50);
-    length(10);
-    pause(5);
-    commit();
+void audioQueue::playASAP(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRepeat,uint8_t tHaptic,uint8_t tEnd){
+        t_queueToneStart=tStart;
+        t_queueToneLength=tLen;
+        t_queueTonePause=tPause;
+   			t_queueToneHaptic=tHaptic;
+   			t_queueToneRepeat=tRepeat;
+   			t_queueToneEnd=tEnd;
+        toneInterupt = 0; //queue the request
+        commit();
+}	
 
-    start(90);
-    length(10);
-    pause(5);
-    commit();
+void audioQueue::event(uint8_t e,uint8_t f){
+	
+	/*
+	 0 =>  startup tune	
+	 1 =>  warning one
+	 2 =>  warning two
+	 3 =>  warning three
+	 4 =>  error
+	 5 =>  keypad up
+	 6 =>  keypad down
+	 7 =>	 trim sticks move
+	 8 =>  trim sticks center
+	 9 =>	 menu display
+	 10 => pot/stick center
+	 11 => mix warning 1 
+	 12 => mix warning 2
+	 13 => mix warning 3
+	 14 = > timer 30 seconds
+	 15 = > timer 20 seconds
+	 16 = > timer 10 seconds	 
+	 17 = > timer < 3 seconds	 
+	
+	*/
+	
+	
+	switch(e){
+			//startup tune
+			case 0:
+						playASAP(50,10,5);
+						playASAP(90,10,5);
+						playASAP(110,6,4,2);				
+						break;
+						
+			//warning one
+			case 1:
+						playNow(BEEP_DEFAULT_FREQ,g_beepVal[3],2,0,1);		
+						break;
+						
+			//warning two
+			case 2:
+						playNow(BEEP_DEFAULT_FREQ,g_beepVal[1],2,0,1);		
+						break;						
 
-    start(110);
-    length(6);
-    repeat(2);
-    pause(4);
-    commit();
-}
+			//warning three
+			case 3:
+						playNow(BEEP_DEFAULT_FREQ,g_beepVal[2],2,0,1);		
+						break;
+						
+			//error
+			case 4:
+						playNow(BEEP_DEFAULT_FREQ,g_beepVal[4],2,0,1);		
+						break;
+																
+			//keypad up
+			case 5:
+						playNow(BEEP_KEY_UP_FREQ,g_beepVal[3],1);		
+						break;						
+						
+			//keypad down
+			case 6:
+						playNow(BEEP_KEY_DOWN_FREQ,g_beepVal[3],1);		
+						break;						
 
+			//trim sticks move
+			case 7:
+						playNow(f,1,1);		
+						break;
+							
+			//trim sticks center
+			case 8:
+						playNow(BEEP_DEFAULT_FREQ,g_beepVal[3],2,0,1);		
+						break;
+					
+			//menu display (also used by a few generic beeps)		
+			case 9:
+						playNow(BEEP_DEFAULT_FREQ,g_beepVal[0],2,0,1);		
+						break;							
+			//pot/stick center	
+			case 10:
+						playNow(BEEP_DEFAULT_FREQ+50,g_beepVal[0],1,0,1);		
+						break;								
+												
+			//mix warning 1
+			case 11:
+						playNow(BEEP_DEFAULT_FREQ+50,3,1,1,1);		
+						break;	
 
+			//mix warning 2
+			case 12:
+						playNow(BEEP_DEFAULT_FREQ+52,3,1,2,1);		
+						break;				
 
-//standard beep function
-void audioQueue::beep(uint8_t freq,uint8_t len,uint8_t hap,uint8_t rep)
-{
-    start(freq);
-    length(len);
-    pause(1);
-    if(hap == 1){
-        haptic();
-    }
-    if(rep != 0){
-        repeat(rep);
-    }
-    interrupt();
-    commit();
-}
+			//mix warning 3
+			case 13:
+						playNow(BEEP_DEFAULT_FREQ+54,3,1,3,1);		
+						break;		
 
-//standard warn function
-void audioQueue::warn(uint8_t level,uint8_t freq)
-{
+			//time 30 seconds left
+			case 14:
+						playNow(BEEP_DEFAULT_FREQ,g_beepVal[2],1,3,1);		
+						break;		
 
-    uint8_t len;
-    switch (level){
-    case 1:
-        len = g_beepVal[3];
-    case 2:
-        len = g_beepVal[1];
-    case 3:
-        len = g_beepVal[2];
-    default:
-        len = g_beepVal[3];
-    }
-    //call beep function
-    //with haptic feedback enabled
-    beep(freq,len,1);
-}
+			//time 20 seconds left
+			case 15:
+						playNow(BEEP_DEFAULT_FREQ,g_beepVal[2]+2,1,2,1);		
+						break;	
 
+			//time 10 seconds left
+			case 16:
+						playNow(BEEP_DEFAULT_FREQ,g_beepVal[2]+4,1,1,1);		
+						break;	
 
-
+			//time <3 seconds left
+			case 17:
+						playNow(BEEP_DEFAULT_FREQ,g_beepVal[2]+6,1,1,1);		
+						break;
+												
+			default:
+				break;	
+		
+		
+	}	
+	
+	
+}	
