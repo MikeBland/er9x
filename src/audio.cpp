@@ -306,11 +306,12 @@ void audioQueue::event(uint8_t e,uint8_t f){
 	 11 => mix warning 1 
 	 12 => mix warning 2
 	 13 => mix warning 3
-	 14 = > timer 30 seconds
-	 15 = > timer 20 seconds
-	 16 = > timer 10 seconds	 
-	 17 = > timer < 3 seconds	 
-	
+	 14 => timer 30 seconds
+	 15 => timer 20 seconds
+	 16 => timer 10 seconds	 
+	 17 => timer < 3 seconds	 
+	 18 => inactivity timer alert
+	 19 => low battery in tx
 	*/
 	
 	
@@ -342,14 +343,14 @@ void audioQueue::event(uint8_t e,uint8_t f){
 						playNow(BEEP_DEFAULT_FREQ,g_beepVal[4],2,0,1);		
 						break;
 																
-			//keypad up
+			//keypad up (seems to be used when going left/right through system menu options. 0-100 scales etc)
 			case 5:
-						playNow(BEEP_KEY_UP_FREQ,g_beepVal[3],1);		
+						playNow(BEEP_KEY_UP_FREQ,g_beepVal[0],1);		
 						break;						
 						
-			//keypad down
+			//keypad down (seems to be used when going left/right through system menu options. 0-100 scales etc)
 			case 6:
-						playNow(BEEP_KEY_DOWN_FREQ,g_beepVal[3],1);		
+						playNow(BEEP_KEY_DOWN_FREQ,g_beepVal[0],1);		
 						break;						
 
 			//trim sticks move
@@ -388,23 +389,35 @@ void audioQueue::event(uint8_t e,uint8_t f){
 
 			//time 30 seconds left
 			case 14:
-						playNow(BEEP_DEFAULT_FREQ,g_beepVal[2],1,3,1);		
+						playNow(BEEP_DEFAULT_FREQ + 50,g_beepVal[2],3,3,1);		
 						break;		
 
 			//time 20 seconds left
 			case 15:
-						playNow(BEEP_DEFAULT_FREQ,g_beepVal[2]+2,1,2,1);		
+						playNow(BEEP_DEFAULT_FREQ + 50,g_beepVal[2]+2,3,2,1);		
 						break;	
 
 			//time 10 seconds left
 			case 16:
-						playNow(BEEP_DEFAULT_FREQ,g_beepVal[2]+4,1,1,1);		
+						playNow(BEEP_DEFAULT_FREQ + 50,g_beepVal[2]+4,3,1,1);		
 						break;	
 
 			//time <3 seconds left
 			case 17:
-						playNow(BEEP_DEFAULT_FREQ,g_beepVal[2]+6,1,1,1);		
+						playNow(BEEP_DEFAULT_FREQ,g_beepVal[2]+6,2,1,1);		
 						break;
+
+			//inactivity timer alert
+			case 18:
+						playASAP(50,5,5,2);
+						playASAP(90,5,5,2);								
+						break;
+						
+			//low battery in tx
+			case 19:
+						playASAP(60,5,5,2,1,70);						
+						playASAP(80,5,5,2,1,70);
+						break;						
 												
 			default:
 				break;	
