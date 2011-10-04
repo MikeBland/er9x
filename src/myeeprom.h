@@ -97,7 +97,9 @@ typedef struct t_EEGeneral {
   uint8_t   preBeep:1;
   uint8_t   flashBeep:1;
   uint8_t   disableSplashScreen:1;
-  uint8_t   res1:3;
+  uint8_t   disablePotScroll:1;
+  uint8_t   disableBG:1;
+  uint8_t   res1:1;
   uint8_t   filterInput;
   uint8_t   lightAutoOff;
   uint8_t   templateSetup;  //RETA order according to chout_ar array 
