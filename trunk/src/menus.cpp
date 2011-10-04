@@ -2158,7 +2158,9 @@ void menuProcDiagCalib(uint8_t event)
 //    scroll_disabled = 1; // make sure we don't flick out of the screen
     SIMPLE_MENU("CALIBRATION", menuTabDiag, e_Calib, 2);
 
-    int8_t  sub    = mstate2.m_posVert ;
+//    int8_t  sub    = mstate2.m_posVert ;
+    int8_t  sub    = 0;
+    mstate2.m_posVert = 0; // make sure we don't scroll or move cursor here
     static int16_t midVals[7];
     static int16_t loVals[7];
     static int16_t hiVals[7];
@@ -2171,8 +2173,8 @@ void menuProcDiagCalib(uint8_t event)
         //if(i>=4) midVals[i] = (loVals[i] + hiVals[i])/2;
     }
 
-    if(sub==0)
-        idxState = 0;
+//    if(sub==0)
+//        idxState = 0;
 
     scroll_disabled = idxState; // make sure we don't scroll while calibrating
 
@@ -2182,13 +2184,12 @@ void menuProcDiagCalib(uint8_t event)
         idxState = 0;
         break;
 
-    case EVT_KEY_BREAK(KEY_MENU): // !! achtung sub schon umgesetzt
+    case EVT_KEY_BREAK(KEY_MENU):
         idxState++;
         if(idxState==3)
         {
             audio.event(9);
             STORE_GENERALVARS;     //eeWriteGeneral();
-//            eeDirty(EE_GENERAL); //eeWriteGeneral();
             idxState = 0;
         }
         break;
