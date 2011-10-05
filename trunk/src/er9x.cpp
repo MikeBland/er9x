@@ -536,8 +536,8 @@ void checkQuickSelect()
 MenuFuncP g_menuStack[5];
 
 uint8_t  g_menuStackPtr = 0;
-uint8_t  g_beepCnt;
-uint8_t  g_beepVal[5];
+//uint8_t  g_beepCnt;
+//uint8_t  g_beepVal[5];
 
 void message(const prog_char * s)
 {
@@ -559,7 +559,7 @@ void alert(const prog_char * s, bool defaults)
     refreshDiplay();
     lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
 
-    audio.event(AUDIO_ERROR);
+    audioevent(AUDIO_ERROR);
     clearKeyEvents();
     while(1)
     {
@@ -609,14 +609,14 @@ uint8_t checkTrim(uint8_t event)
     if(((x==0)  ||  ((x>=0) != (tm>=0))) && (!thro) && (tm!=0)){
       *TrimPtr[idx]=0;
       killEvents(event);
-      audio.event(AUDIO_TRIM_MIDDLE);
+      audioevent(AUDIO_TRIM_MIDDLE);
 
     } else if(x>-125 && x<125){
       *TrimPtr[idx] = (int8_t)x;
       STORE_MODELVARS_TRIM;
       //if(event & _MSK_KEY_REPT) warble = true;
 			if(x <= 125 && x >= -125){
-				audio.event(AUDIO_TRIM_MOVE,(abs(x)/4)+60);
+				audioevent(AUDIO_TRIM_MOVE,(abs(x)/4)+60);
 			}	
     }
     else
@@ -624,7 +624,7 @@ uint8_t checkTrim(uint8_t event)
       *TrimPtr[idx] = (x>0) ? 125 : -125;
       STORE_MODELVARS_TRIM;
 			if(x <= 125 && x >= -125){
-				audio.event(AUDIO_TRIM_MOVE,(-abs(x)/4)+60);
+				audioevent(AUDIO_TRIM_MOVE,(-abs(x)/4)+60);
 			}	
     }
 
@@ -652,13 +652,13 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
   if(event==EVT_KEY_FIRST(kpl) || event== EVT_KEY_REPT(kpl) || (s_editMode && (event==EVT_KEY_FIRST(KEY_UP) || event== EVT_KEY_REPT(KEY_UP))) ) {
     newval++;
 
-		audio.event(AUDIO_KEYPAD_UP);
+		audioevent(AUDIO_KEYPAD_UP);
 
     kother=kmi;
   }else if(event==EVT_KEY_FIRST(kmi) || event== EVT_KEY_REPT(kmi) || (s_editMode && (event==EVT_KEY_FIRST(KEY_DOWN) || event== EVT_KEY_REPT(KEY_DOWN))) ) {
     newval--;
 
-		audio.event(AUDIO_KEYPAD_DOWN);
+		audioevent(AUDIO_KEYPAD_DOWN);
 
     kother=kpl;
   }
@@ -681,13 +681,13 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
   {
     newval = i_max;
     killEvents(event);
-    audio.event(AUDIO_KEYPAD_UP);
+    audioevent(AUDIO_KEYPAD_UP);
   }
   else if(newval < i_min)
   {
     newval = i_min;
     killEvents(event);
-    audio.event(AUDIO_KEYPAD_DOWN);
+    audioevent(AUDIO_KEYPAD_DOWN);
 
   }
   if(newval != val) {
@@ -695,9 +695,9 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
       pauseEvents(event);
   
 		if (newval>val){
-			audio.event(AUDIO_KEYPAD_UP);
+			audioevent(AUDIO_KEYPAD_UP);
 		} else {
-			audio.event(AUDIO_KEYPAD_DOWN);
+			audioevent(AUDIO_KEYPAD_DOWN);
 		}		
 
     }
@@ -734,7 +734,7 @@ void popMenu(bool uppermost)
 {
   if(g_menuStackPtr>0 || uppermost){
     g_menuStackPtr = uppermost ? 0 : g_menuStackPtr-1;
-    audio.event(AUDIO_MENUS);
+    audioevent(AUDIO_MENUS);
     (*g_menuStack[g_menuStackPtr])(EVT_ENTRY_UP);
   }else{
     alert(PSTR("menuStack underflow"));
@@ -745,7 +745,7 @@ void chainMenu(MenuFuncP newMenu)
 {
   g_menuStack[g_menuStackPtr] = newMenu;
   (*newMenu)(EVT_ENTRY);
-  audio.event(AUDIO_MENUS);
+  audioevent(AUDIO_MENUS);
 }
 void pushMenu(MenuFuncP newMenu)
 {
@@ -757,7 +757,7 @@ void pushMenu(MenuFuncP newMenu)
     alert(PSTR("menuStack overflow"));
     return;
   }
-  audio.event(AUDIO_MENUS);
+  audioevent(AUDIO_MENUS);
   g_menuStack[g_menuStackPtr] = newMenu;
   (*newMenu)(EVT_ENTRY);
 }
@@ -879,13 +879,14 @@ void perMain()
         s_batCheck+=32;
         if((s_batCheck==0) && (g_vbat100mV<g_eeGeneral.vBatWarn) && (g_vbat100mV>49)){
 
-            audio.event(AUDIO_TX_BATTERY_LOW);
+            audioevent(AUDIO_TX_BATTERY_LOW);
             if (g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
         }
     }
         break;
     case 3:
     {
+    	/*
         static prog_uint8_t APM beepTab[]= {
             // 0   1   2   3    4
             0,  0,  0,  0,   0, //quiet
@@ -896,6 +897,8 @@ void perMain()
         };
         memcpy_P(g_beepVal,beepTab+5*g_eeGeneral.beeperVal,5);
         //g_beepVal = BEEP_VAL;
+        */
+        /* all this gone and replaced in new sound system */
     }
         break;
     }
@@ -1300,7 +1303,7 @@ int main(void)
 #ifdef BEEPSPKR
     if(!g_eeGeneral.disableSplashScreen)
     {
-			  audio.event(AUDIO_TADA);
+			  audioevent(AUDIO_TADA);
 		}
 #endif
   doSplash();

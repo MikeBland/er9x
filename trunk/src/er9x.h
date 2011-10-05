@@ -647,7 +647,7 @@ extern uint8_t            g_vbat100mV;
 extern volatile uint16_t  g_tmr10ms;
 extern volatile uint8_t   g_blinkTmr10ms;
 extern uint8_t            g_beepCnt;
-extern uint8_t            g_beepVal[5];
+//extern uint8_t            g_beepVal[5];
 extern const PROGMEM char modi12x3[];
 extern uint16_t           pulses2MHz[70];
 extern int16_t            g_ppmIns[8];
@@ -671,7 +671,7 @@ extern const char stamp5[];
 
 #define FLASH_DURATION 50
 
-extern uint8_t  beepAgain;
+//extern uint8_t  beepAgain;
 extern uint16_t g_LightOffCounter;
 
 
