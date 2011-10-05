@@ -20,7 +20,15 @@
 #define BEEP_OFFSET (10)
 #define BEEP_KEY_UP_FREQ  (BEEP_DEFAULT_FREQ+5)
 #define BEEP_KEY_DOWN_FREQ (BEEP_DEFAULT_FREQ-5)
-#define AUDIO_QUEUE_HEARTBEAT (77) //speaker timing
+
+#define AUDIO_QUEUE_HEARTBEAT_XSHORT (30) //speaker timing [Norm]
+#define AUDIO_QUEUE_HEARTBEAT_SHORT (50) //speaker timing [Norm]
+#define AUDIO_QUEUE_HEARTBEAT_NORM (77) //speaker timing [Norm]
+#define AUDIO_QUEUE_HEARTBEAT_LONG (130) //speaker timing [Long]
+#define AUDIO_QUEUE_HEARTBEAT_XLONG (200) //speaker timing [xLong]
+
+
+
 #define HAPTIC_ON    PORTG |=  (1<<2)
 #define HAPTIC_OFF   PORTG &= ~(1<<2)
 
@@ -46,10 +54,17 @@
 #define AUDIO_INACTIVITY (18)
 #define AUDIO_TX_BATTERY_LOW (19)
 
+#define BEEP_QUIET (0)
+#define BEEP_NOKEYS (1)
+#define BEEP_XSHORT (2)
+#define BEEP_SHORT (3)
+#define BEEP_NORMAL (4)
+#define BEEP_LONG (5)
+#define BEEP_XLONG (6)
 
 
 
-extern uint8_t g_beepVal[5];
+//extern uint8_t g_beepVal[5];
 
 
 struct audioQueue{
@@ -78,8 +93,9 @@ struct audioQueue{
     uint8_t inToneRepeat;
     uint8_t toneHaptic;
     uint8_t hapticTick;
-    //uint8_t HapticTimer;
-
+   	uint8_t heartbeatTimer;
+   	
+   	
     //queue arrays
     uint8_t queueToneStart[AUDIO_QUEUE_LENGTH];
     uint8_t queueToneEnd[AUDIO_QUEUE_LENGTH];
@@ -87,6 +103,9 @@ struct audioQueue{
     uint8_t queueTonePause[AUDIO_QUEUE_LENGTH];
     uint8_t queueToneRepeat[AUDIO_QUEUE_LENGTH];
     uint8_t queueToneHaptic[AUDIO_QUEUE_LENGTH];
+    
+    //beep length table
+    uint8_t beepLenTable[10];
 
 
 public:
@@ -110,6 +129,10 @@ public:
     // it is essentially the life of the class.
     void heartbeat();
 };
+
+//wrapper function - dirty but results in a space saving!!!
+extern audioQueue  audio;
+void audioevent(uint8_t e,uint8_t f=BEEP_DEFAULT_FREQ);
 
 
 
