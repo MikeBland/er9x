@@ -317,104 +317,124 @@ void audioQueue::event(uint8_t e,uint8_t f){
 	
 	switch(e){
 			//startup tune
-			case 0:
+			// case 0:
+			case AUDIO_TADA:
 						playASAP(50,10,5);
 						playASAP(90,10,5);
 						playASAP(110,6,4,2);				
 						break;
 						
 			//warning one
-			case 1:
+			// case 1:
+			case AUDIO_WARNING1:
 						playNow(BEEP_DEFAULT_FREQ,g_beepVal[3],2,0,1);		
 						break;
 						
 			//warning two
-			case 2:
+			//case 2:
+			case AUDIO_WARNING2:
 						playNow(BEEP_DEFAULT_FREQ,g_beepVal[1],2,0,1);		
 						break;						
 
 			//warning three
-			case 3:
+			//case 3:
+			case AUDIO_WARNING3:
 						playNow(BEEP_DEFAULT_FREQ,g_beepVal[2],2,0,1);		
 						break;
 						
 			//error
-			case 4:
+			//case 4:
+			case AUDIO_ERROR:
 						playNow(BEEP_DEFAULT_FREQ,g_beepVal[4],2,0,1);		
 						break;
 																
 			//keypad up (seems to be used when going left/right through system menu options. 0-100 scales etc)
-			case 5:
+			//case 5:
+			case AUDIO_KEYPAD_UP:
 						playNow(BEEP_KEY_UP_FREQ,g_beepVal[0],1);		
 						break;						
 						
 			//keypad down (seems to be used when going left/right through system menu options. 0-100 scales etc)
-			case 6:
+			//case 6:
+			case AUDIO_KEYPAD_DOWN:
 						playNow(BEEP_KEY_DOWN_FREQ,g_beepVal[0],1);		
 						break;						
 
 			//trim sticks move
-			case 7:
+			//case 7:
+			case AUDIO_TRIM_MOVE:
 						playNow(f,1,1);		
 						break;
 							
 			//trim sticks center
-			case 8:
+			//case 8:
+			case AUDIO_TRIM_MIDDLE:
 						playNow(BEEP_DEFAULT_FREQ,g_beepVal[3],2,0,1);		
 						break;
 					
 			//menu display (also used by a few generic beeps)		
-			case 9:
+			//case 9:
+			case AUDIO_MENUS:
 						playNow(BEEP_DEFAULT_FREQ,g_beepVal[0],2,0,1);		
 						break;							
 			//pot/stick center	
-			case 10:
+			//case 10:
+			case AUDIO_POT_STICK_MIDDLE:
 						playNow(BEEP_DEFAULT_FREQ+50,g_beepVal[0],1,0,1);		
 						break;								
 												
 			//mix warning 1
-			case 11:
+			//case 11:
+			case AUDIO_MIX_WARNING_1:
 						playNow(BEEP_DEFAULT_FREQ+50,3,1,1,1);		
 						break;	
 
 			//mix warning 2
-			case 12:
+			//case 12:
+			case AUDIO_MIX_WARNING_2:			
 						playNow(BEEP_DEFAULT_FREQ+52,3,1,2,1);		
 						break;				
 
 			//mix warning 3
-			case 13:
+			//case 13:
+			case AUDIO_MIX_WARNING_3:			
 						playNow(BEEP_DEFAULT_FREQ+54,3,1,3,1);		
 						break;		
 
 			//time 30 seconds left
-			case 14:
+			//case 14:
+			case AUDIO_TIMER_30:
 						playNow(BEEP_DEFAULT_FREQ + 50,g_beepVal[2],3,3,1);		
 						break;		
 
 			//time 20 seconds left
-			case 15:
+			//case 15:
+			case AUDIO_TIMER_20:			
 						playNow(BEEP_DEFAULT_FREQ + 50,g_beepVal[2]+2,3,2,1);		
 						break;	
 
 			//time 10 seconds left
-			case 16:
+			//case 16:
+			case AUDIO_TIMER_10:			
 						playNow(BEEP_DEFAULT_FREQ + 50,g_beepVal[2]+4,3,1,1);		
 						break;	
 
 			//time <3 seconds left
-			case 17:
+			//case 17:
+			case AUDIO_TIMER_LT3:
 						playNow(BEEP_DEFAULT_FREQ,g_beepVal[2]+6,2,1,1);		
 						break;
 
 			//inactivity timer alert
-			case 18:
-						playASAP(50,5,5,2);
-						playASAP(90,5,5,2);								
+			//case 18:
+			case AUDIO_INACTIVITY:
+						playASAP(70,5,2);
+						playASAP(50,5,5);																					
 						break;
 						
 			//low battery in tx
-			case 19:
+			//case 19:
+			case AUDIO_TX_BATTERY_LOW:
 						playASAP(60,5,5,2,1,70);						
 						playASAP(80,5,5,2,1,70);
 						break;						

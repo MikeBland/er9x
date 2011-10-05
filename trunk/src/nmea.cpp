@@ -562,7 +562,7 @@ void menuProcNMEA3(uint8_t event)
         prevalt = curralt;
 	
         if ((liftalt >= 0) && beep_on)			
-            audio.event(1); // short blip for non negative lift
+            audio.event(AUDIO_WARNING1); // short blip for non negative lift
     }
 
     if (rbuf[0][0]) {

@@ -15,7 +15,7 @@
 #define audio_h
 
 //audio
-#define AUDIO_QUEUE_LENGTH (10)
+#define AUDIO_QUEUE_LENGTH (5)  //5 seems to suit most alerts
 #define BEEP_DEFAULT_FREQ (70)
 #define BEEP_OFFSET (10)
 #define BEEP_KEY_UP_FREQ  (BEEP_DEFAULT_FREQ+5)
@@ -23,6 +23,29 @@
 #define AUDIO_QUEUE_HEARTBEAT (77) //speaker timing
 #define HAPTIC_ON    PORTG |=  (1<<2)
 #define HAPTIC_OFF   PORTG &= ~(1<<2)
+
+/* make sure the defines below always go in numeric order */
+#define AUDIO_TADA (0)
+#define AUDIO_WARNING1 (1)
+#define AUDIO_WARNING2 (2)
+#define AUDIO_WARNING3 (3)
+#define AUDIO_ERROR (4)
+#define AUDIO_KEYPAD_UP (5)
+#define AUDIO_KEYPAD_DOWN (6)
+#define AUDIO_TRIM_MOVE (7)
+#define AUDIO_TRIM_MIDDLE (8)
+#define AUDIO_MENUS (9)
+#define AUDIO_POT_STICK_MIDDLE (10)
+#define AUDIO_MIX_WARNING_1 (11)
+#define AUDIO_MIX_WARNING_2 (12)
+#define AUDIO_MIX_WARNING_3 (13)
+#define AUDIO_TIMER_30 (14)
+#define AUDIO_TIMER_20 (15)
+#define AUDIO_TIMER_10 (16)
+#define AUDIO_TIMER_LT3 (17)
+#define AUDIO_INACTIVITY (18)
+#define AUDIO_TX_BATTERY_LOW (19)
+
 
 
 
