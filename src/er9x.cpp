@@ -1023,21 +1023,23 @@ uint16_t anaIn(uint8_t chan)
 #define ADC_VREF_TYPE 0x40
 void getADC_filt()
 {
-  static uint16_t t_ana[3][8];
+  static uint16_t t_ana[2][8];
+	uint8_t thro_rev_chan = g_eeGeneral.throttleReversed ? THR_STICK : 10 ;  // 10 means don't reverse
   for (uint8_t adc_input=0;adc_input<8;adc_input++){
       ADMUX=adc_input|ADC_VREF_TYPE;
       // Start the AD conversion
       ADCSRA|=0x40;
-      // Wait for the AD conversion to complete
-      while ((ADCSRA & 0x10)==0);
-      ADCSRA|=0x10;
-
+			// Do this while waiting
       s_anaFilt[adc_input] = (s_anaFilt[adc_input]/2 + t_ana[1][adc_input]) & 0xFFFE; //gain of 2 on last conversion - clear last bit
       //t_ana[2][adc_input]  =  (t_ana[2][adc_input]  + t_ana[1][adc_input]) >> 1;
       t_ana[1][adc_input]  = (t_ana[1][adc_input]  + t_ana[0][adc_input]) >> 1;
 
+      // Now wait for the AD conversion to complete
+      while ((ADCSRA & 0x10)==0);
+      ADCSRA|=0x10;
+
       uint16_t v = ADCW;
-      if(IS_THROTTLE(adc_input) && g_eeGeneral.throttleReversed) v = 2048 - v;
+      if(adc_input == thro_rev_chan) v = 1024 - v;
       t_ana[0][adc_input]  = (t_ana[0][adc_input]  + v) >> 1;
   }
 }
@@ -1050,8 +1052,11 @@ void getADC_filt()
 
 void getADC_osmp()
 {
-  uint16_t temp_ana[8] = {0};
+//  uint16_t temp_ana[8] = {0};
+  uint16_t temp_ana ;
+	uint8_t thro_rev_chan = g_eeGeneral.throttleReversed ? THR_STICK : 10 ;  // 10 means don't reverse
   for (uint8_t adc_input=0;adc_input<8;adc_input++){
+		temp_ana = 0 ;
     for (uint8_t i=0; i<4;i++) {  // Going from 10bits to 11 bits.  Addition = n.  Loop 4^n times
       ADMUX=adc_input|ADC_VREF_TYPE;
       // Start the AD conversion
@@ -1059,18 +1064,27 @@ void getADC_osmp()
       // Wait for the AD conversion to complete
       while ((ADCSRA & 0x10)==0);
       ADCSRA|=0x10;
-      temp_ana[adc_input] += ADCW;
+//      temp_ana[adc_input] += ADCW;
+      temp_ana += ADCW;
     }
-    s_anaFilt[adc_input] = temp_ana[adc_input] / 2; // divide by 2^n to normalize result.
+    
+		temp_ana /= 2; // divide by 2^n to normalize result.
+    if(adc_input == thro_rev_chan)
+        temp_ana = 2048 -temp_ana;
 
-    if(IS_THROTTLE(adc_input) && g_eeGeneral.throttleReversed)
-        s_anaFilt[adc_input] = 2048 - s_anaFilt[adc_input];
+//		s_anaFilt[adc_input] = temp_ana[adc_input] / 2; // divide by 2^n to normalize result.
+		s_anaFilt[adc_input] = temp_ana ;
+
+//    if(IS_THROTTLE(adc_input) && g_eeGeneral.throttleReversed)
+//        s_anaFilt[adc_input] = 2048 - s_anaFilt[adc_input];
   }
 }
 
 
 void getADC_single()
 {
+  	uint16_t result ;
+	  uint8_t thro_rev_chan = g_eeGeneral.throttleReversed ? THR_STICK : 10 ;  // 10 means don't reverse
     for (uint8_t adc_input=0;adc_input<8;adc_input++){
       ADMUX=adc_input|ADC_VREF_TYPE;
       // Start the AD conversion
@@ -1078,10 +1092,11 @@ void getADC_single()
       // Wait for the AD conversion to complete
       while ((ADCSRA & 0x10)==0);
       ADCSRA|=0x10;
-      s_anaFilt[adc_input]= ADCW * 2; // use 11 bit numbers
+      result = ADCW * 2; // use 11 bit numbers
 
-      if(IS_THROTTLE(adc_input) && g_eeGeneral.throttleReversed)
-          s_anaFilt[adc_input] = 2048 - s_anaFilt[adc_input];
+      if(adc_input == thro_rev_chan)
+          result = 2048 - result ;
+      s_anaFilt[adc_input] = result ; // use 11 bit numbers
     }
 }
 
