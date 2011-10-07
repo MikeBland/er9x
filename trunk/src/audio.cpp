@@ -12,10 +12,15 @@
  *
  */
 #include "er9x.h"
-#include "audio.h"
+//#include "audio.h"
 
 
 audioQueue::audioQueue()
+{
+	aqinit() ;
+}
+
+void audioQueue::aqinit()
 {
     //make sure haptic off by default
 
@@ -185,7 +190,7 @@ void audioQueue::heartbeat()
 
             //if toneEnd is set then we scale the sound to from start to finish
             //at an effective speed determined by the queueToneLength value
-            toneFreq = queueToneStart[0] + g_eeGeneral.speakerPitch;
+//            toneFreq = queueToneStart[0] + g_eeGeneral.speakerPitch;
             //calculate the rate of climb
             if(queueToneStart[0] > queueToneEnd[0]){  //tone going down
                 z = queueToneStart[0] - queueToneEnd[0];
@@ -196,24 +201,24 @@ void audioQueue::heartbeat()
             }
             toneFreq=queueToneStart[0] + g_eeGeneral.speakerPitch; // add pitch compensator
             toneFreqEnd=queueToneEnd[0] + g_eeGeneral.speakerPitch;
-            toneTimeLeft = queueToneLength[0];
-            toneTimeLeft = z;
-            tonePause = queueTonePause[0];
+//            toneTimeLeft = queueToneLength[0];
             rateOfChange = 1;
             DirectionOfChange = y;
+            toneTimeLeft = z;
+            tonePause = queueTonePause[0];
             toneRepeat = queueToneRepeat[0];
             toneHaptic = queueToneHaptic[0];
         }	else {
 
             //simple tone handler
             toneFreq=(queueToneStart[0] + g_eeGeneral.speakerPitch) + BEEP_OFFSET; // add pitch compensator
+            DirectionOfChange = 0;
+            rateOfChange = 0;
+            toneFreqEnd = 0;
             toneTimeLeft = queueToneLength[0];
             tonePause = queueTonePause[0];
             toneRepeat = queueToneRepeat[0];
             toneHaptic = queueToneHaptic[0];
-            DirectionOfChange = 0;
-            rateOfChange = 0;
-            toneFreqEnd = 0;
         }
         queueState = 1;
         //HapticTimer = BEEP_HAPTIC_LENGTH;
@@ -499,6 +504,11 @@ void audioQueue::event(uint8_t e,uint8_t f){
 }
 
 //wrapper function =- dirty but saves space!!!
-void audioevent(uint8_t e,uint8_t f){
-	audio.event(e,f);
-}	
+//void audioevent(uint8_t e,uint8_t f){
+//	audio.event(e,f);
+//}	
+void audioDefevent(uint8_t e)
+{
+	audio.event(e,BEEP_DEFAULT_FREQ);
+}
+

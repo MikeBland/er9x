@@ -70,7 +70,6 @@
 struct audioQueue{
 
 
-
     //queue temporaries
     uint8_t t_queueToneStart;
     uint8_t t_queueToneEnd;
@@ -112,6 +111,8 @@ public:
     //constructor
     audioQueue();
 
+		void aqinit() ;		// To stop constructor being compiled twice
+
 		//only difference between these two functions is that one does the 
 		//interupt queue (Now) and the other queues for playing ASAP.
 		void playNow(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRepeat=0,uint8_t tHaptic=0,uint8_t tEnd=0);	
@@ -132,7 +133,8 @@ public:
 
 //wrapper function - dirty but results in a space saving!!!
 extern audioQueue  audio;
-void audioevent(uint8_t e,uint8_t f=BEEP_DEFAULT_FREQ);
+//void audioevent(uint8_t e,uint8_t f=BEEP_DEFAULT_FREQ);
+void audioDefevent(uint8_t e);
 
 
 
