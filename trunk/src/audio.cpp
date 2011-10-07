@@ -421,9 +421,9 @@ void audioQueue::event(uint8_t e,uint8_t f){
 			//trim sticks center
 			//case 8:
 			case AUDIO_TRIM_MIDDLE:
-						if(beepVal != BEEP_NOKEYS){
+						//if(beepVal != BEEP_NOKEYS){
 							playNow(BEEP_DEFAULT_FREQ,10,2,0,1);		
-						}
+						//}
 						break;
 					
 			//menu display (also used by a few generic beeps)		
