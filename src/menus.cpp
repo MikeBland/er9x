@@ -321,7 +321,7 @@ void MState2::check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t men
         if(m_posVert==0 || !menuTab) {
             popMenu();  //beeps itself
         } else {
-            audioevent(AUDIO_MENUS);
+            audioDefevent(AUDIO_MENUS);
             init();BLINK_SYNC;
         }
         break;
@@ -572,7 +572,7 @@ void setStickCenter() // copy state of 3 primary to subtrim
     for(uint8_t i=0; i<4; i++)
         if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
     STORE_MODELVARS_TRIM;
-    audioevent(AUDIO_WARNING2);
+    audioDefevent(AUDIO_WARNING2);
 }
 
 void menuProcLimits(uint8_t event)
@@ -615,19 +615,21 @@ for(uint8_t i=0; i<7; i++){
     if((g_chans512[k] - v) < -50) swVal[k] = (false==ld->revert);
     putsChn(0,y,k+1,0);
     lcd_putcAtt(12*FW+FW/2, y, (swVal[k] ? 127 : 126),0); //'<' : '>'
-    for(uint8_t j=0; j<4;j++){
+    for(uint8_t j=0; j<4;j++)
+		{
         uint8_t attr = ((sub==k && subSub==j) ? (s_editMode ? BLINK : INVERS) : 0);
+				uint8_t active = (attr && (s_editMode || p1valdiff)) ;
         switch(j)
         {
         case 0:
             lcd_outdezAtt(  8*FW, y,  ld->offset, attr|PREC1);
-            if(attr && (s_editMode || p1valdiff)) {
+            if(active) {
                 ld->offset = checkIncDec16(event, ld->offset, -1000, 1000, EE_MODEL);
             }
             break;
         case 1:
             lcd_outdezAtt(  12*FW, y, (int8_t)(ld->min-100),   attr);
-            if(attr && (s_editMode || p1valdiff)) {
+            if(active) {
                 ld->min -=  100;
                 if(g_model.extendedLimits)
                     CHECK_INCDEC_H_MODELVAR( event, ld->min, -125,125);
@@ -638,7 +640,7 @@ for(uint8_t i=0; i<7; i++){
             break;
         case 2:
             lcd_outdezAtt( 17*FW, y, (int8_t)(ld->max+100),    attr);
-            if(attr && (s_editMode || p1valdiff)) {
+            if(active) {
                 ld->max +=  100;
                 if(g_model.extendedLimits)
                     CHECK_INCDEC_H_MODELVAR( event, ld->max, -125,125);
@@ -649,7 +651,7 @@ for(uint8_t i=0; i<7; i++){
             break;
         case 3:
             lcd_putsnAtt(   18*FW, y, PSTR("---INV")+ld->revert*3,3,attr);
-            if(attr && (s_editMode || p1valdiff)) {
+            if(active) {
                 CHECK_INCDEC_H_MODELVAR(event, ld->revert, 0, 1);
             }
             break;
@@ -832,7 +834,7 @@ void menuProcTemplates(uint8_t event)  //Issue 73
             clearMixes();
         else if((sub>=0) && (sub<(int8_t)NUM_TEMPLATES))
             applyTemplate(sub);
-        audioevent(AUDIO_WARNING2);
+        audioDefevent(AUDIO_WARNING2);
         break;
     }
 
@@ -896,17 +898,18 @@ for(uint8_t i=0; i<7; i++){
     putsChn(0,y,k+1,0);
     for(uint8_t j=0; j<=2;j++){
         uint8_t attr = ((sub==k && subSub==j) ? (s_editMode ? BLINK : INVERS) : 0);
+				uint8_t active = (attr && (s_editMode || p1valdiff)) ;
         switch(j)
         {
         case 0:
             putsDrSwitches(5*FW, y, sd->swtch  , attr);
-            if(attr && (s_editMode || p1valdiff)) {
+            if(active) {
                 CHECK_INCDEC_H_MODELVAR( event, sd->swtch, -MAX_DRSWITCH,MAX_DRSWITCH);
             }
             break;
         case 1:
             lcd_outdezAtt(  16*FW, y, sd->val,   attr);
-            if(attr && (s_editMode || p1valdiff)) {
+            if(active) {
                 CHECK_INCDEC_H_MODELVAR( event, sd->val, -125,125);
             }
             break;
@@ -1128,7 +1131,7 @@ void menuProcMixOne(uint8_t event)
             if(attr && event==EVT_KEY_LONG(KEY_MENU)){
                 killEvents(event);
                 deleteMix(s_currMixIdx);
-                audioevent(AUDIO_WARNING2);
+                audioDefevent(AUDIO_WARNING2);
                 popMenu();
             }
             break;
@@ -1695,7 +1698,7 @@ void menuDeleteDupModel(uint8_t event)
     uint8_t i;
     switch(event){
     case EVT_ENTRY:
-        audioevent(AUDIO_WARNING1);
+        audioDefevent(AUDIO_WARNING1);
         break;
     case EVT_KEY_FIRST(KEY_MENU):
         if ( DupIfNonzero )
@@ -1703,10 +1706,10 @@ void menuDeleteDupModel(uint8_t event)
             message(PSTR("Duplicating model"));
             if(eeDuplicateModel(DupSub))
             {
-                audioevent(AUDIO_MENUS);
+                audioDefevent(AUDIO_MENUS);
                 DupIfNonzero = 2 ;		// sel_editMode = false;
             }
-            else audioevent(AUDIO_WARNING1);
+            else audioDefevent(AUDIO_WARNING1);
         }
         else
         {
@@ -2073,7 +2076,7 @@ void menuProcModelSelect(uint8_t event)
     case  EVT_KEY_FIRST(KEY_EXIT):
         if(sel_editMode){
             sel_editMode = false;
-            audioevent(AUDIO_MENUS);
+            audioDefevent(AUDIO_MENUS);
             killEvents(event);
             eeWaitComplete();    // Wait to load model if writing something
             eeLoadModel(g_eeGeneral.currModel = mstate2.m_posVert);
@@ -2096,7 +2099,7 @@ void menuProcModelSelect(uint8_t event)
             resetTimer();
             STORE_GENERALVARS;
             eeWaitComplete();
-            audioevent(AUDIO_WARNING2);
+            audioDefevent(AUDIO_WARNING2);
         }
 #ifndef NO_TEMPLATES
         if(event==EVT_KEY_FIRST(KEY_LEFT))  chainMenu(menuProcTemplates);//{killEvents(event);popMenu(true);}
@@ -2110,7 +2113,7 @@ void menuProcModelSelect(uint8_t event)
         break;
     case  EVT_KEY_FIRST(KEY_MENU):
         sel_editMode = true;
-        audioevent(AUDIO_MENUS);
+        audioDefevent(AUDIO_MENUS);
         break;
     case  EVT_KEY_LONG(KEY_EXIT):  // make sure exit long exits to main
         popMenu(true);
@@ -2124,10 +2127,10 @@ void menuProcModelSelect(uint8_t event)
 
             //        message(PSTR("Duplicating model"));
             //        if(eeDuplicateModel(sub)) {
-            //          audioevent(AUDIO_MENUS);
+            //          audioDefevent(AUDIO_MENUS);
             //          sel_editMode = false;
             //        }
-            //        else audioevent(AUDIO_WARNING1);
+            //        else audioDefevent(AUDIO_WARNING1);
         }
         break;
 
@@ -2156,6 +2159,8 @@ void menuProcModelSelect(uint8_t event)
 
 }
 
+
+const prog_char APM menuWhenDone[] = " [MENU] WHEN DONE " ;
 
 
 void menuProcDiagCalib(uint8_t event)
@@ -2193,7 +2198,7 @@ void menuProcDiagCalib(uint8_t event)
         idxState++;
         if(idxState==3)
         {
-            audioevent(AUDIO_MENUS);
+            audioDefevent(AUDIO_MENUS);
             STORE_GENERALVARS;     //eeWriteGeneral();
             idxState = 0;
         }
@@ -2213,7 +2218,7 @@ void menuProcDiagCalib(uint8_t event)
         //SET MIDPOINT
         //[MENU]
         lcd_putsnAtt(2*FW, 2*FH, PSTR("   SET MIDPOINT   "), 18, sub>0 ? INVERS : 0);
-        lcd_putsnAtt(2*FW, 3*FH, PSTR(" [MENU] WHEN DONE "), 18, sub>0 ? BLINK : 0);
+        lcd_putsnAtt(2*FW, 3*FH, menuWhenDone, 18, sub>0 ? BLINK : 0);
 
         for(uint8_t i=0; i<7; i++)
         {
@@ -2227,7 +2232,7 @@ void menuProcDiagCalib(uint8_t event)
         //MOVE STICKS/POTS
         //[MENU]
         lcd_putsnAtt(2*FW, 2*FH, PSTR(" MOVE STICKS/POTS "), 18, sub>0 ? INVERS : 0);
-        lcd_putsnAtt(2*FW, 3*FH, PSTR(" [MENU] WHEN DONE "), 18, sub>0 ? BLINK : 0);
+        lcd_putsnAtt(2*FW, 3*FH, menuWhenDone, 18, sub>0 ? BLINK : 0);
 
         for(uint8_t i=0; i<7; i++)
             if(abs(loVals[i]-hiVals[i])>50) {
@@ -2384,7 +2389,7 @@ if (edit) {
         memcpy(g_eeGeneral.trainer.calib, g_ppmIns, sizeof(g_eeGeneral.trainer.calib));
         STORE_GENERALVARS;     //eeWriteGeneral();
         //        eeDirty(EE_GENERAL);
-        audioevent(AUDIO_MENUS);
+        audioDefevent(AUDIO_MENUS);
     }
 }
 }
@@ -2778,10 +2783,10 @@ void timer(uint8_t val)
             {
             	
 
-              	if(s_timerVal==30) {audioevent(AUDIO_TIMER_30);}	
-              	if(s_timerVal==20) {audioevent(AUDIO_TIMER_20);}		
-                if(s_timerVal==10) {audioevent(AUDIO_TIMER_10);}	
-                if(s_timerVal<= 3) {audioevent(AUDIO_TIMER_LT3);}	               
+              	if(s_timerVal==30) {audioDefevent(AUDIO_TIMER_30);}	
+              	if(s_timerVal==20) {audioDefevent(AUDIO_TIMER_20);}		
+                if(s_timerVal==10) {audioDefevent(AUDIO_TIMER_10);}	
+                if(s_timerVal<= 3) {audioDefevent(AUDIO_TIMER_LT3);}	               
                 
                 
 
@@ -2791,13 +2796,13 @@ void timer(uint8_t val)
 
             if(g_eeGeneral.minuteBeep && (((g_model.tmrDir ? g_model.tmrVal-s_timerVal : s_timerVal)%60)==0)) //short beep every minute
             {
-                audioevent(AUDIO_WARNING1);
+                audioDefevent(AUDIO_WARNING1);
                 if(g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
             }
         }
         else if(s_timerState==TMR_BEEPING)
         {
-            audioevent(AUDIO_TIMER_LT3);
+            audioDefevent(AUDIO_TIMER_LT3);
             if(g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
         }
     }
@@ -2869,7 +2874,7 @@ void menuProcStatistic2(uint8_t event)
         g_tmr1Latency_min = 0x7ff;
         g_tmr1Latency_max = 0;
         g_timeMain    = 0;
-        audioevent(AUDIO_MENUS);
+        audioDefevent(AUDIO_MENUS);
         break;
     case EVT_KEY_FIRST(KEY_DOWN):
         chainMenu(menuProcStatistic);
@@ -3008,7 +3013,7 @@ void menuProc0(uint8_t event)
         {
             //            Timer2_running = !Timer2_running;
             Timer2_running ^= 1 ;
-            audioevent(AUDIO_MENUS);
+            audioDefevent(AUDIO_MENUS);
         }
         break;
     case  EVT_KEY_LONG(KEY_MENU):// go to last menu
@@ -3036,7 +3041,7 @@ void menuProc0(uint8_t event)
             g_eeGeneral.view = (g_eeGeneral.view + 0x10) & 0x3F;
             //            STORE_GENERALVARS;     //eeWriteGeneral();
             //            eeDirty(EE_GENERAL);
-            audioevent(AUDIO_MENUS);
+            audioDefevent(AUDIO_MENUS);
         }
         break;
     case EVT_KEY_BREAK(KEY_LEFT):
@@ -3044,7 +3049,7 @@ void menuProc0(uint8_t event)
             g_eeGeneral.view = (g_eeGeneral.view - 0x10) & 0x3F;
             //            STORE_GENERALVARS;     //eeWriteGeneral();
             //            eeDirty(EE_GENERAL);
-            audioevent(AUDIO_MENUS);
+            audioDefevent(AUDIO_MENUS);
         }
         break;
 #endif
@@ -3057,7 +3062,7 @@ void menuProc0(uint8_t event)
         if(g_eeGeneral.view>=MAX_VIEWS) g_eeGeneral.view=0;
         STORE_GENERALVARS;     //eeWriteGeneral();
         //        eeDirty(EE_GENERAL);
-        audioevent(AUDIO_KEYPAD_UP);
+        audioDefevent(AUDIO_KEYPAD_UP);
         break;
     case EVT_KEY_BREAK(KEY_DOWN):
         if(view>0)
@@ -3066,7 +3071,7 @@ void menuProc0(uint8_t event)
             g_eeGeneral.view = MAX_VIEWS-1;
         STORE_GENERALVARS;     //eeWriteGeneral();
         //        eeDirty(EE_GENERAL);
-        audioevent(AUDIO_KEYPAD_DOWN);
+        audioDefevent(AUDIO_KEYPAD_DOWN);
         break;
     case EVT_KEY_LONG(KEY_UP):
         chainMenu(menuProcStatistic);
@@ -3090,17 +3095,17 @@ void menuProc0(uint8_t event)
     case EVT_KEY_FIRST(KEY_EXIT):
         if(s_timerState==TMR_BEEPING) {
             s_timerState = TMR_STOPPED;
-            audioevent(AUDIO_MENUS);
+            audioDefevent(AUDIO_MENUS);
         }
         else if(view == e_timer2) {
             resetTimer2();
             // Timer2_running = !Timer2_running;
-            audioevent(AUDIO_MENUS);
+            audioDefevent(AUDIO_MENUS);
         }
 #ifdef FRSKY
         else if (view == e_telemetry) {
             resetTelemetry();
-            audioevent(AUDIO_MENUS);
+            audioDefevent(AUDIO_MENUS);
         }
 #endif
         break;
@@ -3110,7 +3115,7 @@ void menuProc0(uint8_t event)
 #ifdef FRSKY
         resetTelemetry();
 #endif
-        audioevent(AUDIO_MENUS);
+        audioDefevent(AUDIO_MENUS);
         break;
     case EVT_ENTRY:
         killEvents(KEY_EXIT);
@@ -3480,7 +3485,7 @@ void perOut(int16_t *chanOut, uint8_t att)
             }
             if(inacCounter>((uint16_t)(g_eeGeneral.inactivityTimer+10)*100*60/16))
                 if((inacCounter&0x3)==1) {
-                    audioevent(AUDIO_INACTIVITY);
+                    audioDefevent(AUDIO_INACTIVITY);
                 }
         }
     }
@@ -3564,7 +3569,7 @@ void perOut(int16_t *chanOut, uint8_t att)
 
         //===========BEEP CENTER================
         anaCenter &= g_model.beepANACenter;
-        if(((bpanaCenter ^ anaCenter) & anaCenter)) audioevent(AUDIO_POT_STICK_MIDDLE);
+        if(((bpanaCenter ^ anaCenter) & anaCenter)) audioDefevent(AUDIO_POT_STICK_MIDDLE);
         bpanaCenter = anaCenter;
 
         anas[MIX_MAX-1]  = RESX;     // MAX
@@ -3823,9 +3828,9 @@ void perOut(int16_t *chanOut, uint8_t att)
         uint16_t tmr10ms ;
         tmr10ms = get_tmr10ms() ;
 
-        if(mixWarning & 1) if(((tmr10ms&0xFF)==  0)) audioevent(AUDIO_MIX_WARNING_1);
-        if(mixWarning & 2) if(((tmr10ms&0xFF)== 64) || ((tmr10ms&0xFF)== 72)) audioevent(AUDIO_MIX_WARNING_2);
-        if(mixWarning & 4) if(((tmr10ms&0xFF)==128) || ((tmr10ms&0xFF)==136) || ((tmr10ms&0xFF)==144)) audioevent(AUDIO_MIX_WARNING_3);        
+        if(mixWarning & 1) if(((tmr10ms&0xFF)==  0)) audioDefevent(AUDIO_MIX_WARNING_1);
+        if(mixWarning & 2) if(((tmr10ms&0xFF)== 64) || ((tmr10ms&0xFF)== 72)) audioDefevent(AUDIO_MIX_WARNING_2);
+        if(mixWarning & 4) if(((tmr10ms&0xFF)==128) || ((tmr10ms&0xFF)==136) || ((tmr10ms&0xFF)==144)) audioDefevent(AUDIO_MIX_WARNING_3);        
 
 
     }
