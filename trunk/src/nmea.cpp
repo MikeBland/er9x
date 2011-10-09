@@ -379,10 +379,20 @@ void menuProcNMEA1(uint8_t event)
         chainMenu(menuProcNMEA2);
         break;
     case EVT_KEY_FIRST(KEY_MENU):
-        NMEA_DisableRXD();
-        chainMenu(menuProcStatistic);
+        if (show_timer == 0) {
+            show_timer = 1;
+            if (gpstimer <= 0)
+                gpstimer = bintime(rbuf[2]);
+        }
+        else
+            show_timer = 0;
         break;
     case EVT_KEY_FIRST(KEY_EXIT):
+        if ((show_timer == 1) &&(rbuf[2][0]))
+            gpstimer = bintime(rbuf[2]);		// reset Diff timer to 00:00
+        break;
+    case EVT_KEY_LONG(KEY_EXIT):
+        gpstimer = gpstime;		
         NMEA_DisableRXD();
         chainMenu(menuProc0);
         break;
@@ -411,37 +421,46 @@ void menuProcNMEA1(uint8_t event)
 
     When a value is missing, it is replaced by the contents of val_unknown ("?").
 */
-    // expecting LAT value in POS packet to be stored in the first buffer
-    initval (LONG_BUF(0), PACK_GGA, LAT);
-    initval (SHORT_BUF(0), PACK_GGA, NOS);
-    // and LON value in POS packet stored in the second buffer
-    initval (LONG_BUF(1), PACK_GGA, LON);
-    initval (SHORT_BUF(1), PACK_GGA, EOW);
-    // title of the screen
-    title ('1');
-    lcd_puts_P        (   6*FW,   1*FH, PSTR("Latitude"));    // line 1 column 6
-    // first buffer into line 2 column 2
-    if (rbuf[0][0])
+
+    if (ggareceived)
     {
-        lcd_putcAtt   (  16*FW,   1*FH, sbuf[0], 0);          // N or S
-        lcd_putsnAtt  (   1*FW,   2*FH, rbuf[0], 2, APSIZE);
-        lcd_putcAtt   (   5*FW,   2*FH, '@',0);
-        lcd_putsAtt   (   6*FW,   2*FH, &rbuf[0][2], APSIZE);
+        gpstime=bintime(rbuf[0]);
+        ggareceived=0;
+    }
+
+    initval (LONG_BUF(0), PACK_GGA, TIM);
+    initval (LONG_BUF(1), PACK_RMC, DAT);
+    title ('1');
+    lcd_puts_P        (   2*FW,   1*FH, PSTR("UTC-Time"));
+    if (rbuf[0][0]) {
+        lcd_putsnAtt  (   2*FW,   2*FH, &rbuf[0][0], 2, APSIZE);
+        lcd_putcAtt   (   6*FW,   2*FH, ':', DBLSIZE);
+        lcd_putsnAtt  (   8*FW,   2*FH, &rbuf[0][2], 2, APSIZE);
+        lcd_putcAtt   (  12*FW,   2*FH, ':', DBLSIZE);
+        lcd_putsnAtt  (  14*FW,   2*FH, &rbuf[0][4], 2, APSIZE);
     }
     else
         lcd_putsAtt   (   2*FW,   2*FH, val_unknown, APSIZE);
-    lcd_puts_P        (   5*FW,   4*FH, PSTR("Longitude"));   // line 4 column 5
-    // second buffer into line 5 column 2
-    if (rbuf[0][0])
-    {
-        lcd_putcAtt   (  16*FW,   4*FH, sbuf[1], 0);          // E or W
-        lcd_putsnAtt  (   0*FW,   5*FH, rbuf[1], 3, APSIZE);
-        lcd_putcAtt   (   6*FW,   5*FH, '@',0);
-        lcd_putsAtt   (   7*FW,   5*FH, &rbuf[1][3], APSIZE);
+    if ((show_timer == 1) && rbuf[0][0]) {
+        lcd_puts_P    (   2*FW,   4*FH, PSTR("Timer"));
+        putsTime      (   5*FW,   5*FH, gpstime-gpstimer, DBLSIZE, DBLSIZE);
     }
     else
-        lcd_putsAtt   (   2*FW,   5*FH, val_unknown, APSIZE);
+    {
+        lcd_puts_P      ( 2*FW,   4*FH, PSTR("Date"));
+        if (rbuf[1][0]) {
+            lcd_putsnAtt( 2*FW,   5*FH, &rbuf[1][0], 2, APSIZE);
+            lcd_putcAtt ( 6*FW,   5*FH, '/', DBLSIZE);
+            lcd_putsnAtt( 8*FW,   5*FH, &rbuf[1][2], 2, APSIZE);
+            lcd_putcAtt (12*FW,   5*FH, '/', DBLSIZE);
+            lcd_putsnAtt(14*FW,   5*FH, &rbuf[1][4], 2, APSIZE);
+        }
+        else
+            lcd_putsAtt   (   2*FW,   5*FH, val_unknown, APSIZE);
+    }
 }
+
+
 
 void menuProcNMEA2(uint8_t event)
 {
@@ -452,48 +471,6 @@ void menuProcNMEA2(uint8_t event)
         break;
     case EVT_KEY_FIRST(KEY_DOWN):
         chainMenu(menuProcNMEA3);
-        break;
-    case EVT_KEY_FIRST(KEY_EXIT):
-        NMEA_DisableRXD();
-        chainMenu(menuProc0);
-        break;
-    }
-    initval (LONG_BUF(0), PACK_RMC, SOG);
-    initval (LONG_BUF(1), PACK_RMC, COG);
-    title ('2');
-    lcd_puts_P        (   1*FW,   1*FH, PSTR("Speed ovr grnd"));
-    if (rbuf[0][0])				// if first position is 00, buffer is empty, taken as false 
-    {							// any other value is true
-        uint8_t i = 0;
-        while (rbuf[0][i])
-        {
-            if (rbuf[0][i] == '.')		// find decimal point and insert End of String 3 positions higher
-            {
-                rbuf[0][i+3] = 0;
-                break;
-            }
-            i++;
-        }
-        lcd_putsAtt   (   2*FW,   2*FH, VALSTR(0), APSIZE);
-    }
-    else
-        lcd_putsAtt   (   2*FW,   2*FH, val_unknown, APSIZE);
-
-    lcd_puts_P        (   16*FW,   1*FH, PSTR("[knt]"));		//!!!!!!!!!!!!!!!!!!!!!
-
-    lcd_puts_P        (   2*FW,   4*FH, PSTR("Course over ground") );
-    lcd_putsAtt       (   2*FW,   5*FH, VALSTR(1), APSIZE);
-}
-
-void menuProcNMEA3(uint8_t event)
-{
-    switch(event)
-    {
-    case EVT_KEY_FIRST(KEY_UP):
-        chainMenu(menuProcNMEA2);
-        break;
-    case EVT_KEY_FIRST(KEY_DOWN):
-        chainMenu(menuProcNMEA4);
         break;
     case EVT_KEY_FIRST(KEY_MENU):
         /*      Set a home position for altitude. Normally used before starting
@@ -533,10 +510,18 @@ void menuProcNMEA3(uint8_t event)
         beep_on=1;
         break;
     }
-    title ('3');
+    title ('2');
     
-    lcd_puts_P         (   2*FW,   1*FH, PSTR("Altitude     home"));
+    lcd_puts_P         (   2*FW,   1*FH, PSTR("Altitude     Home"));
     lcd_puts_P         (   2*FW,   4*FH, PSTR("Lift") );
+
+    lcd_puts_P         (   15*FW,   4*FH, PSTR("Beep") );
+    if (beep_on==1)
+        lcd_puts_P         (   15*FW,   5*FH, PSTR("ON") );
+    
+    else	
+        lcd_puts_P         (   15*FW,   5*FH, PSTR("OFF") );
+
 
     lcd_outdezNAtt(  19*FW,   2*FH, homealt, PREC1, 6);		// display homealt, small characters 
 
@@ -550,8 +535,6 @@ void menuProcNMEA3(uint8_t event)
     {
         ggareceived = 0;
 
-        //!!        lcd_outdezNAtt(  19*FW,   2*FH, homealt, PREC1, 6);		// display homealt, small characters
-
         /*      ALT and GEO have one single digit following the decimal point
         e.g. ALT=359.7   GEO=47.7
         The altitude over mean sea level is to be calculated as:
@@ -561,17 +544,19 @@ void menuProcNMEA3(uint8_t event)
         liftalt = curralt - prevalt;
         prevalt = curralt;
 	
-        if ((liftalt >= 0) && beep_on)			
-            audioDefevent(AUDIO_WARNING1); // short blip for non negative lift
+        if ((liftalt >= 0) && beep_on)
+            //            audio.event(9); 						// short blip for non negative lift
+            audioDefevent(AUDIO_MENUS); // short blip for non negative lift
+
     }
 
     if (rbuf[0][0]) {
         lcd_outdezNAtt(  10*FW,   2*FH, curralt, DBLSIZE|PREC1, 7);
         lcd_putcAtt   (  11*FW,   3*FH, sbuf[0], 0);
 
-        lcd_outdezNAtt(  14*FW,   5*FH, liftalt, DBLSIZE|PREC1, 6);
-        lcd_putcAtt   (  15*FW,   6*FH, sbuf[0], 0);
-        lcd_puts_P    (  16*FW,   6*FH, PSTR("/S") );
+        lcd_outdezNAtt(  10*FW,   5*FH, liftalt, DBLSIZE|PREC1, 6);
+        lcd_putcAtt   (  11*FW,   6*FH, sbuf[0], 0);
+        lcd_puts_P    (  12*FW,   6*FH, PSTR("/S") );
     }
     else {
         lcd_putsAtt    (   2*FW,   2*FH, val_unknown, APSIZE);
@@ -579,9 +564,54 @@ void menuProcNMEA3(uint8_t event)
     }
 }
 
-void menuProcNMEA4(uint8_t event)
+
+
+void menuProcNMEA3(uint8_t event)
 {
     switch(event)
+    {
+    case EVT_KEY_FIRST(KEY_UP):
+        chainMenu(menuProcNMEA2);
+        break;
+    case EVT_KEY_FIRST(KEY_DOWN):
+        chainMenu(menuProcNMEA4);
+        break;
+    case EVT_KEY_LONG(KEY_EXIT):
+        NMEA_DisableRXD();
+        chainMenu(menuProc0);
+        break;
+    }
+    initval (LONG_BUF(0), PACK_RMC, SOG);
+    initval (LONG_BUF(1), PACK_RMC, COG);
+    title ('3');
+    lcd_puts_P        (   1*FW,   1*FH, PSTR("Speed ovr grnd"));
+    if (rbuf[0][0])				// if first position is 00, buffer is empty, taken as false 
+    {							// any other value is true
+        uint8_t i = 0;
+        while (rbuf[0][i])
+        {
+            if (rbuf[0][i] == '.')		// find decimal point and insert End of String 3 positions higher
+            {
+                rbuf[0][i+3] = 0;
+                break;
+            }
+            i++;
+        }
+        lcd_putsAtt   (   2*FW,   2*FH, VALSTR(0), APSIZE);
+    }
+    else
+        lcd_putsAtt   (   2*FW,   2*FH, val_unknown, APSIZE);
+    lcd_puts_P        (   16*FW,   1*FH, PSTR("[knt]"));
+
+    lcd_puts_P        (   2*FW,   4*FH, PSTR("Course over ground") );
+    lcd_putsAtt       (   2*FW,   5*FH, VALSTR(1), APSIZE);
+}
+
+
+
+void menuProcNMEA4(uint8_t event)
+{
+    switch(event)						// new event received, branch accordingly
     {
     case EVT_KEY_FIRST(KEY_UP):
         chainMenu(menuProcNMEA3);
@@ -589,62 +619,45 @@ void menuProcNMEA4(uint8_t event)
     case EVT_KEY_FIRST(KEY_DOWN):
         chainMenu(menuProcNMEA1);
         break;
-    case EVT_KEY_FIRST(KEY_MENU):
-        if (show_timer == 0) {
-            show_timer = 1;
-            if (gpstimer == 0)
-                gpstimer = bintime(rbuf[2]);
-        }
-        else
-            show_timer = 0;
-        break;
-    case EVT_KEY_FIRST(KEY_EXIT):
-        if ((show_timer == 1) &&(rbuf[2][0]))
-            gpstimer = bintime(rbuf[2]);		// reset Diff timer to 00:00
+    case EVT_KEY_LONG(KEY_MENU):
+        NMEA_DisableRXD();
+        chainMenu(menuProcStatistic);
         break;
     case EVT_KEY_LONG(KEY_EXIT):
-        gpstimer = gpstime;		//bintime(rbuf[2]);
         NMEA_DisableRXD();
         chainMenu(menuProc0);
         break;
     }
-
-    if (ggareceived)
-    {
-        gpstime=bintime(rbuf[0]);
-        ggareceived=0;
-    }
-
-    initval (LONG_BUF(0), PACK_GGA, TIM);
-    initval (LONG_BUF(1), PACK_RMC, DAT);
+    // expecting LAT value in POS packet to be stored in the first buffer
+    initval (LONG_BUF(0), PACK_GGA, LAT);
+    initval (SHORT_BUF(0), PACK_GGA, NOS);
+    // and LON value in POS packet stored in the second buffer
+    initval (LONG_BUF(1), PACK_GGA, LON);
+    initval (SHORT_BUF(1), PACK_GGA, EOW);
+    // title of the screen
     title ('4');
-    lcd_puts_P        (   2*FW,   1*FH, PSTR("UTC-Time"));
-    if (rbuf[0][0]) {
-        lcd_putsnAtt  (   2*FW,   2*FH, &rbuf[0][0], 2, APSIZE);
-        lcd_putcAtt   (   6*FW,   2*FH, ':', DBLSIZE);
-        lcd_putsnAtt  (   8*FW,   2*FH, &rbuf[0][2], 2, APSIZE);
-        lcd_putcAtt   (  12*FW,   2*FH, ':', DBLSIZE);
-        lcd_putsnAtt  (  14*FW,   2*FH, &rbuf[0][4], 2, APSIZE);
+    lcd_puts_P        (   6*FW,   1*FH, PSTR("Latitude"));    // line 1 column 6
+    // first buffer into line 2 column 2
+    if (rbuf[0][0])
+    {
+        lcd_putcAtt   (  16*FW,   1*FH, sbuf[0], 0);          // N or S
+        lcd_putsnAtt  (   1*FW,   2*FH, rbuf[0], 2, APSIZE);
+        lcd_putcAtt   (   5*FW,   2*FH, '@',0);
+        lcd_putsAtt   (   6*FW,   2*FH, &rbuf[0][2], APSIZE);
     }
     else
         lcd_putsAtt   (   2*FW,   2*FH, val_unknown, APSIZE);
-    if ((show_timer == 1) && rbuf[0][0]) {
-        lcd_puts_P    (   2*FW,   4*FH, PSTR("Timer"));
-        putsTime      (   5*FW,   5*FH, gpstime-gpstimer, DBLSIZE, DBLSIZE);
+    lcd_puts_P        (   5*FW,   4*FH, PSTR("Longitude"));   // line 4 column 5
+    // second buffer into line 5 column 2
+    if (rbuf[0][0])
+    {
+        lcd_putcAtt   (  16*FW,   4*FH, sbuf[1], 0);          // E or W
+        lcd_putsnAtt  (   0*FW,   5*FH, rbuf[1], 3, APSIZE);
+        lcd_putcAtt   (   6*FW,   5*FH, '@',0);
+        lcd_putsAtt   (   7*FW,   5*FH, &rbuf[1][3], APSIZE);
     }
     else
-    {
-        lcd_puts_P      ( 2*FW,   4*FH, PSTR("Date"));
-        if (rbuf[1][0]) {
-            lcd_putsnAtt( 2*FW,   5*FH, &rbuf[1][0], 2, APSIZE);
-            lcd_putcAtt ( 6*FW,   5*FH, '/', DBLSIZE);
-            lcd_putsnAtt( 8*FW,   5*FH, &rbuf[1][2], 2, APSIZE);
-            lcd_putcAtt (12*FW,   5*FH, '/', DBLSIZE);
-            lcd_putsnAtt(14*FW,   5*FH, &rbuf[1][4], 2, APSIZE);
-        }
-        else
-            lcd_putsAtt   (   2*FW,   5*FH, val_unknown, APSIZE);
-    }
+        lcd_putsAtt   (   2*FW,   5*FH, val_unknown, APSIZE);
 }
 
 void title(char x)
