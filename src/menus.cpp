@@ -675,7 +675,7 @@ void menuProcTelemetry(uint8_t event)
 {
     MENU("TELEMETRY", menuTabModel, e_Telemetry, 8, {0, 1, 1, 2, 2, 1, 2/*, 2*/});
 
-int8_t  sub    = mstate2.m_posVert;
+uint8_t sub    = mstate2.m_posVert;
 uint8_t subSub = mstate2.m_posHorz;
 uint8_t blink;
 uint8_t y = 2*FH;
@@ -768,7 +768,7 @@ void menuProcTelemetry2(uint8_t event)
 {
     MENU("TELEMETRY2", menuTabModel, e_Telemetry2, 3, {0, 2, 2});
 
-int8_t  sub    = mstate2.m_posVert;
+uint8_t sub    = mstate2.m_posVert;
 uint8_t subSub = mstate2.m_posHorz;
 uint8_t blink;
 uint8_t y = 2*FH;
@@ -3483,7 +3483,7 @@ void perOut(int16_t *chanOut, uint8_t att)
                 inacSum = tsum;
                 inacCounter=0;
             }
-            if(inacCounter>((uint16_t)(g_eeGeneral.inactivityTimer+10)*100*60/16))
+            if(inacCounter>((uint16_t)(g_eeGeneral.inactivityTimer+10)*(100*60/16)))
                 if((inacCounter&0x3)==1) {
                     audioDefevent(AUDIO_INACTIVITY);
                 }

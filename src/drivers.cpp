@@ -272,7 +272,20 @@ void per10ms()
     1<<INP_D_TRM_RH_UP
   };
   in = ~PIND;
-  for(int i=0; i<8; i++)
+
+	if ( LcdTrimSwapped )
+	{
+		if ( LcdLock == 0 )
+		{
+			LcdTrims = PINA ^ LcdTrimSwapped ;
+		}
+
+	// Any trim switches moved to the LCD data lines are merged here
+		in &= 0xF0 ;
+		in |= LcdTrims & 0x0F ;		// Bottom 2 bits for testing
+	}
+  
+	for(int i=0; i<8; i++)
   {
     // INP_D_TRM_RH_UP   0 .. INP_D_TRM_LH_UP   7
     keys[enuk].input(in & pgm_read_byte(crossTrim+i),(EnumKeys)enuk);

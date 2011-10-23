@@ -356,6 +356,14 @@ void lcd_vline(uint8_t x,uint8_t y, int8_t h)
 
 void lcdSendCtl(uint8_t val)
 {
+	if ( LcdTrimSwapped )
+	{
+		LcdTrims = PINA ^ LcdTrimSwapped ;
+		LcdLock = 1 ;	 // Tell trim input function
+//		PORTA = 0x00;  // Pullups off
+  	DDRA = 0xff;   // to outputs
+		
+	}
   PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_CS1);
   PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_A0);
   PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_RnW);
@@ -364,6 +372,8 @@ void lcdSendCtl(uint8_t val)
   PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_E);
   PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_A0);
   PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_CS1);
+  DDRA = 0x00;   // Change to inputs
+  LcdLock = 0 ;	 // Tell trim input function
 }
 
 
@@ -404,6 +414,11 @@ void lcdSetRefVolt(uint8_t val)
   lcdSendCtl(val);
 }
 
+volatile uint8_t LcdLock ;
+volatile uint8_t LcdTrims ;
+uint8_t LcdTrimSwapped ;
+
+
 void refreshDiplay()
 {
   uint8_t *p=displayBuf;
@@ -411,9 +426,19 @@ void refreshDiplay()
     lcdSendCtl(0x04);
     lcdSendCtl(0x10); //column addr 0
     lcdSendCtl( y | 0xB0); //page addr y
-    PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_CS1);
+    
+    if ( LcdTrimSwapped )
+	  {
+			LcdTrims = PINA ^ LcdTrimSwapped ;
+      LcdLock = 1 ;	 // Tell trim input function
+//      PORTA = 0x00;  // Pullups off
+      DDRA = 0xff;   // to outputs
+    }
+		
+		PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_CS1);
     PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_A0);
     PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_RnW);
+		
     for(uint8_t x=32; x>0; x--){
 //      lcdSendDat(*p);
       PORTA_LCD_DAT = *p++;
@@ -433,4 +458,6 @@ void refreshDiplay()
     PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_A0);
     PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_CS1);
   }
+  DDRA = 0x00;   // Change to inputs
+  LcdLock = 0 ;	 // Tell trim input function
 }
