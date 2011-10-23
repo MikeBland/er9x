@@ -678,11 +678,6 @@ extern uint16_t g_LightOffCounter;
 #define sysFLAG_OLD_EEPROM (0x01)
 extern uint8_t sysFlags;
 
-// Items used to allow trim switches to be moved to LCD data lines
-extern volatile uint8_t LcdLock ;
-extern volatile uint8_t LcdTrims ;
-extern uint8_t LcdTrimSwapped ;
-
 //audio settungs are external to keep out clutter!
 #include "audio.h"
 
