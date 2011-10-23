@@ -1239,7 +1239,7 @@ unsigned int stack_free()
 int main(void)
 {
 
-  DDRA = 0xff;  PORTA = 0x00;
+  DDRA = 0x00;  PORTA = 0 ;	// Set as inputs, no pullups for trim option inputs
   DDRB = 0x81;  PORTB = 0x7e; //pullups keys+nc
   DDRC = 0x3e;  PORTC = 0xc1; //pullups nc
   DDRD = 0x00;  PORTD = 0xff; //all D inputs pullups keys
@@ -1248,7 +1248,41 @@ int main(void)
   //DDRG = 0x10;  PORTG = 0xff; //pullups + SIM_CTL=1 = phonejack = ppm_in
   DDRG = 0x14; PORTG = 0xfB; //pullups + SIM_CTL=1 = phonejack = ppm_in, Haptic output and off (0)
   lcd_init();
-
+	
+	// See if PB0 (PPMout) is connected to PD3 (TXD1)
+	// If so, then some trim switches share the LCD data lines
+	{
+		uint8_t i, j ;
+		j = 1 ;
+		for ( i = 0 ; i < 3 ; i += 1 )
+		{
+			PORTB |= 1 ;		// Set output bit
+			PORTB |= 1 ;		// Again to take time
+			if ( ( PIND & 0x08 ) != 0x08 )
+			{
+				j = 0 ;
+				break ;		// Fails				
+			}
+			PORTB &= ~1 ;		// Clear output bit
+			PORTB &= ~1 ;		// Again to take time
+			if ( ( PIND & 0x08 ) != 0 )
+			{
+				j = 0 ;
+				break ;		// Fails				
+			}
+		}
+		LcdTrimSwapped = j ;
+		PORTB &= ~1 ;		// Clear output bit
+	}	
+	if ( LcdTrimSwapped )
+	{
+	  // 4 trim switches moved, test for inactive high or low
+	  // as there are two ways of doing the hardware mod
+		uint8_t i ;
+		i = PINA & 0x0F ; 		// read low 4 bits
+		i |= 0x80 ;						// Flag bit
+		LcdTrimSwapped = i ;		
+	}
 
 #ifdef JETI
   JETI_Init();
