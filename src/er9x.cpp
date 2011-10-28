@@ -1239,7 +1239,7 @@ unsigned int stack_free()
 int main(void)
 {
 
-  DDRA = 0xFF;  PORTA = 0 ;	// Set as outputs
+  DDRA = 0xff;  PORTA = 0x00;
   DDRB = 0x81;  PORTB = 0x7e; //pullups keys+nc
   DDRC = 0x3e;  PORTC = 0xc1; //pullups nc
   DDRD = 0x00;  PORTD = 0xff; //all D inputs pullups keys
@@ -1314,12 +1314,12 @@ int main(void)
 
 // moved here and logic added to only play statup tone if splash screen enabled.
 // that way we save a bit, but keep the option for end users!
-#ifdef BEEPSPKR
+if(g_eeGeneral.speakerMode == 1){
     if(!g_eeGeneral.disableSplashScreen)
     {
 			  audioDefevent(AUDIO_TADA);
 		}
-#endif
+}		
   doSplash();
   checkMem();
   //setupAdc(); //before checkTHR

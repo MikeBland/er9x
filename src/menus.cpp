@@ -675,7 +675,7 @@ void menuProcTelemetry(uint8_t event)
 {
     MENU("TELEMETRY", menuTabModel, e_Telemetry, 8, {0, 1, 1, 2, 2, 1, 2/*, 2*/});
 
-uint8_t sub    = mstate2.m_posVert;
+int8_t  sub    = mstate2.m_posVert;
 uint8_t subSub = mstate2.m_posHorz;
 uint8_t blink;
 uint8_t y = 2*FH;
@@ -768,7 +768,7 @@ void menuProcTelemetry2(uint8_t event)
 {
     MENU("TELEMETRY2", menuTabModel, e_Telemetry2, 3, {0, 2, 2});
 
-uint8_t sub    = mstate2.m_posVert;
+int8_t  sub    = mstate2.m_posVert;
 uint8_t subSub = mstate2.m_posHorz;
 uint8_t blink;
 uint8_t y = 2*FH;
@@ -2408,22 +2408,41 @@ uint8_t onoffMenuItem( uint8_t value, uint8_t y, const prog_char *s, uint8_t sub
 void menuProcSetup(uint8_t event)
 {
 
+
+/*
 #ifdef BEEPSPKR
 #define COUNT_ITEMS 22
 #else
 #define COUNT_ITEMS 20
 #endif
+*/
+uint8_t vCountItems = 21; //21 is default
+
+switch (g_eeGeneral.speakerMode){
+		//beeper
+		case 0:
+				vCountItems = 21;
+				break;
+		//piezo speaker
+	 	case 1:
+	 			vCountItems = 23;
+	 			break;
+	 	//pcmwav
+	  case 2:
+				vCountItems = 21;
+				break;	  	
+}
 
 
-
-    SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, COUNT_ITEMS+1);
-
+  //  SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, COUNT_ITEMS+1);
+			SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, vCountItems+1);
     int8_t  sub    = mstate2.m_posVert;
     uint8_t subSub = mstate2.m_posHorz;
 
     evalOffset(sub, 7);
 
-    if(s_pgOfs==COUNT_ITEMS-7) s_pgOfs= sub<(COUNT_ITEMS-4) ? COUNT_ITEMS-8 : COUNT_ITEMS-6;
+    //if(s_pgOfs==COUNT_ITEMS-7) s_pgOfs= sub<(COUNT_ITEMS-4) ? COUNT_ITEMS-8 : COUNT_ITEMS-6;
+    if(s_pgOfs==vCountItems-7) s_pgOfs= sub<(vCountItems-4) ? vCountItems-8 : vCountItems-6;
     uint8_t y = 1*FH;
 
     switch(event){
@@ -2486,7 +2505,19 @@ void menuProcSetup(uint8_t event)
         if((y+=FH)>7*FH) return;
     }subN++;
 
-#ifdef BEEPSPKR
+    if(s_pgOfs<subN) {
+        uint8_t b ;
+        b = g_eeGeneral.speakerMode ;
+        lcd_puts_P(0, y,PSTR("Sound Mode"));
+        lcd_putsnAtt(PARAM_OFS - FW - 4, y, PSTR("Beeper""PiSpkr""PcmWav")+6*b,6,(sub==subN ? INVERS:0));
+        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 2); g_eeGeneral.speakerMode = b ; }
+
+        if((y+=FH)>7*FH) return;
+    }subN++;
+
+//#ifdef BEEPSPKR
+if(g_eeGeneral.speakerMode == 1){
+	
     if(s_pgOfs<subN) {
         lcd_puts_P(0, y,PSTR("Speaker Pitch"));
         lcd_outdezAtt(PARAM_OFS,y,g_eeGeneral.speakerPitch,(sub==subN ? INVERS : 0)|LEFT);
@@ -2506,8 +2537,9 @@ void menuProcSetup(uint8_t event)
         }
         if((y+=FH)>7*FH) return;
     }subN++;
-
-#endif
+    
+}
+//#endif
 
 
     if(s_pgOfs<subN) {
@@ -3483,7 +3515,7 @@ void perOut(int16_t *chanOut, uint8_t att)
                 inacSum = tsum;
                 inacCounter=0;
             }
-            if(inacCounter>((uint16_t)(g_eeGeneral.inactivityTimer+10)*(100*60/16)))
+            if(inacCounter>((uint16_t)(g_eeGeneral.inactivityTimer+10)*100*60/16))
                 if((inacCounter&0x3)==1) {
                     audioDefevent(AUDIO_INACTIVITY);
                 }

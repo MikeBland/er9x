@@ -134,29 +134,40 @@ void audioQueue::heartbeat()
 
 			if(g_eeGeneral.beeperVal > 0){ //never do sounds if we are set to go quiet
 
-#ifdef BEEPSPKR
-        //square wave generator use for speaker mod
-        //simply generates a square wave for toneFreq for
-        //as long as the toneTimeLeft is more than 0
-        static uint8_t toneCounter;
-		        if (toneTimeLeft > 0){
-		            toneCounter += toneFreq;
-		            if ((toneCounter & 0x80) == 0x80){
-		                PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
-		            } else {
-		                PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
-		            }
-		        } else {
-		            PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
-		        }  
-#else
-        //stock beeper. simply turn port on for x time!
-		        if (toneTimeLeft > 0){
-		            PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
-		        } else {
-		            PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
-		        }
-#endif
+							switch (g_eeGeneral.speakerMode){
+								
+									case 0:
+							        	//stock beeper. simply turn port on for x time!
+								        if (toneTimeLeft > 0){
+								            PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
+								        } else {
+								            PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
+								        }		
+								        break;							
+			
+									case 1:
+							        //square wave generator use for speaker mod
+							        //simply generates a square wave for toneFreq for
+							        //as long as the toneTimeLeft is more than 0
+					        		static uint8_t toneCounter;
+							        if (toneTimeLeft > 0){
+							            toneCounter += toneFreq;
+							            if ((toneCounter & 0x80) == 0x80){
+							                PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
+							            } else {
+							                PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
+							            }
+							        } else {
+							            PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
+							        } 
+							        break;
+							        
+							     case 2:
+							     	//PCMWav
+							     		
+							     		break;   
+														
+							}	
 
 			}
 
