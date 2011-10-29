@@ -675,7 +675,7 @@ void menuProcTelemetry(uint8_t event)
 {
     MENU("TELEMETRY", menuTabModel, e_Telemetry, 8, {0, 1, 1, 2, 2, 1, 2/*, 2*/});
 
-int8_t  sub    = mstate2.m_posVert;
+uint8_t  sub   = mstate2.m_posVert;
 uint8_t subSub = mstate2.m_posHorz;
 uint8_t blink;
 uint8_t y = 2*FH;
@@ -768,7 +768,7 @@ void menuProcTelemetry2(uint8_t event)
 {
     MENU("TELEMETRY2", menuTabModel, e_Telemetry2, 3, {0, 2, 2});
 
-int8_t  sub    = mstate2.m_posVert;
+uint8_t  sub    = mstate2.m_posVert;
 uint8_t subSub = mstate2.m_posHorz;
 uint8_t blink;
 uint8_t y = 2*FH;
