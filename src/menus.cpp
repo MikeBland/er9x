@@ -3515,7 +3515,7 @@ void perOut(int16_t *chanOut, uint8_t att)
                 inacSum = tsum;
                 inacCounter=0;
             }
-            if(inacCounter>((uint16_t)(g_eeGeneral.inactivityTimer+10)*100*60/16))
+            if(inacCounter>((uint16_t)(g_eeGeneral.inactivityTimer+10)*(100*60/16)))
                 if((inacCounter&0x3)==1) {
                     audioDefevent(AUDIO_INACTIVITY);
                 }
