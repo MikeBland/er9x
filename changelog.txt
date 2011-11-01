@@ -13,3 +13,5 @@ description here
 ******************************************
 CHANGELOG: 1-11-2011
 1) Added changelog file
+2) removed -speaker versions from repo
+3) removed -speaker compile options from the domake script
