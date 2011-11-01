@@ -7,7 +7,7 @@ Each firmware is named with a variety of suffexes to help you identify what the 
 The current list of suffixes is as follows:
 
  * NOHT  - do not show the heli & template menu's
- * FRSKY - used if you have moddified your radio to receive frsky telemetry
+ * FRSKY - used if you have modified your radio to receive frsky telemetry
  * JETI - used if you have modified your radio to receive jeti telemetry
  * NMEA - used if you have modified your radio to receive NMEA gps data
  * ARDUPILOT - used if you have modified your radio to receive ardupilot data
@@ -20,5 +20,5 @@ Would mean.  ER9X, with FRSKY support, No Heli & Template menu.
 
 Your choice of firmware will very much depend on the mod's you have done to your radio.  Typically, most people start on just ER9X, then over time would move on to other options as they make changes to there gear!
 
-Note!
-The -SPKR version of the firmware is no longer required as the speaker output mode is set in the system preferences.
+<b>Note!
+The -SPKR version of the firmware is no longer required as the speaker output mode is set in the system preferences.</b>
