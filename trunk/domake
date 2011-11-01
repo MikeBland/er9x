@@ -1,4 +1,5 @@
 #! /bin/bash
+
 echo "===== Starting build ====="
 echo "Timestamp"
 date -u
@@ -27,14 +28,7 @@ make EXT=FRSKY
 echo ">>>  moving"
 mv er9x.hex ../er9x-frsky.hex
 
-echo
-echo "===== Making FRSKY - SPKR Version ====="
-echo ">>> cleaning"
-make clean
-echo ">>>  making"
-make EXT=FRSKY BEEPER=SPEAKER
-echo ">>>  moving"
-mv er9x.hex ../er9x-frsky-spkr.hex
+
 
 echo
 echo "===== Making FRSKY - NOHELI/NOTEMPLATE Version ====="
@@ -45,14 +39,7 @@ make EXT=FRSKY TEMPLATES=NO HELI=NO
 echo ">>>  moving"
 mv er9x.hex ../er9x-frsky-noht.hex
 
-echo
-echo "===== Making FRSKY - NOHELI/NOTEMPLATE, SPKR Version ====="
-echo ">>> cleaning"
-make clean
-echo ">>>  making"
-make EXT=FRSKY TEMPLATES=NO HELI=NO BEEPER=SPEAKER
-echo ">>>  moving"
-mv er9x.hex ../er9x-frsky-noht-spkr.hex
+
 
 echo
 echo "===== Making ARDUPILOT Version ====="
@@ -72,23 +59,6 @@ make EXT=NMEA
 echo ">>>  moving"
 mv er9x.hex ../er9x-nmea.hex
 
-echo
-echo "===== Making MAIN - NOHELI/NOTEMPLATE, SPKR Version ====="
-echo ">>> cleaning"
-make clean
-echo ">>>  making"
-make TEMPLATES=NO HELI=NO BEEPER=SPEAKER
-echo ">>>  moving"
-mv er9x.hex ../er9x-noht-spkr.hex
-
-echo
-echo "===== Making MAIN - SPKR Version ====="
-echo ">>> cleaning"
-make clean
-echo ">>>  making"
-make BEEPER=SPEAKER
-echo ">>>  moving"
-mv er9x.hex ../er9x-spkr.hex
 
 echo
 echo "===== Making MAIN - NOHELI/NOTEMPLATE Version ====="
@@ -110,3 +80,5 @@ mv er9x.hex ../er9x.hex
 
 echo ">>> cleaning"
 make clean 
+
+cd ..
