@@ -1,0 +1,15 @@
+====================================================================================
+ER9x changelog
+Please insert a short description of a change by inserting it below this header and 
+above the previous change.
+
+Format is as follows:
+******************************************
+CHANGELOG: 1-11-2011
+description here
+====================================================================================
+
+
+******************************************
+CHANGELOG: 1-11-2011
+1) Added changelog file
