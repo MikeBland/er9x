@@ -25,7 +25,8 @@ HEADERS += \
     file.h \
     er9x.h \
     ardupilot.h \
-    nmea.h
+    nmea.h \
+    pulses.h
 
 SOURCES += \
     templates.cpp \
@@ -39,4 +40,5 @@ SOURCES += \
     er9x.cpp \
     drivers.cpp \
     ardupilot.cpp \
-    audio.cpp
+    audio.cpp \
+    pulses.cpp

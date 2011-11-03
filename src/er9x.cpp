@@ -548,8 +548,6 @@ void message(const prog_char * s)
   lcdSetRefVolt(g_eeGeneral.contrast);
 }
 
-uint8_t heartbeat;
-
 void alert(const prog_char * s, bool defaults)
 {
     lcd_clear();
@@ -910,85 +908,6 @@ uint8_t ppmInState = 0; //0=unsync 1..8= wait for value i-1
 
 #include <avr/interrupt.h>
 //#include <avr/wdt.h>
-#define HEART_TIMER2Mhz 1;
-#define HEART_TIMER10ms 2;
-
-
-extern uint16_t g_tmr1Latency_max;
-extern uint16_t g_tmr1Latency_min;
-
-//uint16_t PulseTotal ;
-
-//ISR(TIMER1_OVF_vect)
-ISR(TIMER1_COMPA_vect) //2MHz pulse generation
-{
-  static uint8_t   pulsePol;
-  static uint16_t *pulsePtr = pulses2MHz;
-//  static uint8_t   channel = 0 ;
-
-//  if( *pulsePtr == 0) {
-//    //currpulse=0;
-//    pulsePtr = pulses2MHz;
-//    pulsePol = g_model.pulsePol;//0;
-
-//    TIMSK &= ~(1<<OCIE1A); //stop reentrance
-//    sei();
-//    setupPulses();
-//    cli();
-//    TIMSK |= (1<<OCIE1A);
-//  }
-
-  uint8_t i = 0;
-  while((TCNT1L < 10) && (++i < 50))  // Timer does not read too fast, so i
-    ;
-  uint16_t dt=TCNT1;//-OCR1A;
-
-  if(pulsePol)
-  {
-    PORTB |=  (1<<OUT_B_PPM);
-    pulsePol = 0;
-  }else{
-    PORTB &= ~(1<<OUT_B_PPM);
-    pulsePol = 1;
-  }
-  g_tmr1Latency_max = max(dt,g_tmr1Latency_max);    // max has leap, therefore vary in length
-  g_tmr1Latency_min = min(dt,g_tmr1Latency_min);    // min has leap, therefore vary in length
-
-//  if (g_model.protocol==PROTO_PPM)
-//  {
-//    if ( *(pulsePtr+1) != 0 )  // Not the sync pulse
-//    {
-//      if ( channel & 1 )  // Channel pulse, not gap pulse
-//      {
-//        *pulsePtr = max(min(g_chans512[channel>>1],PPM_range),-PPM_range) + PPM_CENTER - PPM_gap + 600;
-//      }
-//    }
-//    else // sync pulse
-//    {
-//      uint16_t rest ;
-//      rest = PPM_frame - PulseTotal ;      
-//      *pulsePtr = rest ;
-//    }
-//    channel += 1 ;
-//  }
-//  PulseTotal += (OCR1A  = *pulsePtr++);
-  OCR1A  = *pulsePtr++;
-
-  if( *pulsePtr == 0) {
-    //currpulse=0;
-    pulsePtr = pulses2MHz;
-    pulsePol = g_model.pulsePol;//0;
-//    channel = 0 ;
-//    PulseTotal = 0 ;
-
-    TIMSK &= ~(1<<OCIE1A); //stop reentrance
-    sei();
-    setupPulses();
-    cli();
-    TIMSK |= (1<<OCIE1A);
-  }
-  heartbeat |= HEART_TIMER2Mhz;
-}
 
 //class AutoLock
 //{
@@ -1017,7 +936,6 @@ uint16_t anaIn(uint8_t chan)
 //  AutoLock autoLock;
   return  *p;
 }
-
 
 
 #define ADC_VREF_TYPE 0x40
