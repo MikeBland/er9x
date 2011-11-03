@@ -316,6 +316,8 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define EVT_ENTRY_UP            (0xfe - _MSK_KEY_REPT)
 #define EVT_KEY_MASK             0x0f
 
+#define HEART_TIMER2Mhz 1;
+#define HEART_TIMER10ms 2;
 
 #define TMRMODE_NONE     0
 #define TMRMODE_ABS      1
@@ -325,12 +327,9 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 
 #define PROTO_PPM        0
 #define PROTO_PXX        1
-#define PROTO_SILV_A     2
-#define PROTO_SILV_B     3
-#define PROTO_SILV_C     4
-#define PROTO_TRACER_CTP1009 5
-#define PROT_MAX         5
-#define PROT_STR "PPM   PXX   SILV_ASILV_BSILV_CTRAC09"
+#define PROTO_DSM2       2
+#define PROT_MAX         2
+#define PROT_STR "PPM   PXX   DSM2  "
 #define PROT_STR_LEN     6
 
 typedef void (*MenuFuncP)(uint8_t event);
@@ -410,12 +409,10 @@ void resetTimer2() ;
 const prog_char *get_switches_string() ;
 const prog_char *get_curve_string() ;
 
+extern uint8_t heartbeat;
 
 uint8_t char2idx(char c);
 char idx2char(uint8_t idx);
-
-
-
 
 void checkMem();
 void checkTHR();
@@ -478,6 +475,7 @@ template<class t> inline t min(t a, t b){ return a<b?a:b; }
 /// liefert das Maximum der Argumente
 template<class t> inline t max(t a, t b){ return a>b?a:b; }
 template<class t> inline int8_t sgn(t a){ return a>0 ? 1 : (a < 0 ? -1 : 0); }
+template<class t> inline t limit(t mi, t x, t ma){ return min(max(mi,x),ma); }
 
 /// Markiert einen EEPROM-Bereich als dirty. der Bereich wird dann in
 /// eeCheck ins EEPROM zurueckgeschrieben.
@@ -598,11 +596,7 @@ void menuProcStatistic2(uint8_t event);
 void menuProcStatistic(uint8_t event);
 void menuProc0(uint8_t event);
 
-void setupPulses();
-void setupPulsesPPM();
-void setupPulsesPXX();
-void setupPulsesSilver();
-void setupPulsesTracerCtp1009();
+extern void setupPulses();
 
 void initTemplates();
 
