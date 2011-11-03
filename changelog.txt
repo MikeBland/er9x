@@ -9,17 +9,16 @@ CHANGELOG: 1-11-2011
 description here
 ====================================================================================
 
+
+******************************************
+CHANGELOG: 03-11-2011
+1) update to er9x-builder.sh
+
+
 ******************************************
 CHANGELOG: 3-11-2011
 1) Moved pulse generation to pulses.cpp and added header file
 2) Added support for DSM2
-
-
-******************************************
-CHANGELOG: 1-11-2011
-1) Added changelog file
-2) removed -speaker versions from repo
-3) removed -speaker compile options from the domake script
 
 
 ******************************************
@@ -31,6 +30,15 @@ CHANGELOG: 02-11-2011
    and is only shown if the compile failed.
 2) added pulses file and header, added DSM2 support
 
+
+
 ******************************************
-CHANGELOG: 03-11-2011
-1) update to er9x-builder.sh
+CHANGELOG: 1-11-2011
+1) Added changelog file
+2) removed -speaker versions from repo
+3) removed -speaker compile options from the domake script
+
+
+
+
+
