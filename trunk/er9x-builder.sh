@@ -15,9 +15,6 @@ l3=(noht); #heli/templates
 # main build function
 function build {
 
-  echo "";
-	echo "===== making $1 $2 $3 =======";
-
 	if [ -n "$2" ]; then
 		ext="EXT=$2";
 	else
@@ -36,25 +33,31 @@ function build {
 	destination=${dname2/-.hex/.hex}
 	logname=${destination/.hex/.log}
 
-  echo "> compiling";
-	make $ext $noht $beeper > ../buildlog/$logname 2>&1
+ # echo "";
+
+  echo -n $destination | tr "[a-z]" "[A-Z]";
+  echo -n " ";
+
+  echo -n "[CLEANING] ";
+  make clean > ../buildlog/$logname 2>&1
+   echo -n "[COMPILING] ";
+	make $ext $noht $beeper >> ../buildlog/$logname 2>&1 	
 	mv er9x.hex ../$destination >> ../buildlog/$logname 2>&1;
 	if [ $? -eq 1 ]; then
-		echo "> error during compile"
+		echo  "[ERROR] [ABORTING]"
+		echo " ";
+		echo "------------------------------------------------";
 		tail -n 18 ../buildlog/$logname;
+		echo " ";
+		echo "------------------------------------------------";
 		exit;
 	else
-	  echo "> ok";
+	  echo "[OK]";
 	fi
 	
-	#test=$(egrep "cannot stat" ../buildlog/$logname);
 	
-	#check if error ocurred
-	
-	
-  echo "======================";
-
 }
+
 
 #create buildlog folder if you do not have it!
 if [[ ! -d "buildlog" ]];then
@@ -63,6 +66,14 @@ fi
 
 cd src/
 
+
+echo "##########################################";
+echo "# ER9X BUILDER - COMPILING ALL FIRMWARES #";
+echo "##########################################";
+
+echo " ";
+#echo "COMPILING...";
+#echo " ";
 
 # this is the main loop that calls a function to build the firmware
 for i in "${l1[@]}"
@@ -87,3 +98,4 @@ do
 done
 
 cd ../
+

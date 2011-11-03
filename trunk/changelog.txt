@@ -29,3 +29,8 @@ CHANGELOG: 02-11-2011
    and should be easier to extend in the future.
    all 'compile' output ends up in the buildlog folder
    and is only shown if the compile failed.
+2) added pulses file and header, added DSM2 support
+
+******************************************
+CHANGELOG: 03-11-2011
+1) update to er9x-builder.sh
