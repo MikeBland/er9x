@@ -130,26 +130,14 @@ void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
 }
 
 
-typedef struct t_PXXData {
-    uint8_t   header1;
-    uint8_t   rxnum;
-    uint16_t  flags;
-    int16_t   ch1:12;
-    int16_t   ch2:12;
-    int16_t   ch3:12;
-    int16_t   ch4:12;
-    int16_t   ch5:12;
-    int16_t   ch6:12;
-    int16_t   ch7:12;
-    int16_t   ch8:12;
-    uint8_t   crc;
-} __attribute__((packed)) PXXData;
 
 
-void setupPulsesPXX() // PXX - FrSky pcm protocol
+
+void setupPulsesPXX()
 {
-    //
+
 }
+
 
 // DSM2 protocol pulled from th9x - Thanks thus!!!
 
