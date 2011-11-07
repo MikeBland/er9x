@@ -1,3 +1,5 @@
+#sidebar TableOfContents
+
 = Other Guides and Sources of informations =
 
 A number of guides have been written by various members of the team. These are listed below:
