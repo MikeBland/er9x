@@ -4,6 +4,7 @@
  * [Howto Howto Guides]
     * [SoftwareGuides Software Tutorials]
       * [OtherGuides Other Guides]
+      * [ExampleMixes Example Mixes]
     * [Flashing9x Flashing the 9x]
       * [WhichFirmware Which Firmware?]
     * [HardwareGuides Hardware Mods]
