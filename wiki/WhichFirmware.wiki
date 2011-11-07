@@ -1,3 +1,5 @@
+#sidebar TableOfContents
+
 = Which firmware? =
 
 You will by now have probably noticed that there are quite a few different versions of the firmware.  Each of these variations to the core firmware has been created to meet specific requirements by the projects developers.
