@@ -106,7 +106,9 @@ struct FrskyData {
   uint8_t value;
   uint8_t min;
   uint8_t max;
+	uint8_t offset ;
   void set(uint8_t value);
+	void setoffset();
 };
 
 // Global Fr-Sky telemetry data variables

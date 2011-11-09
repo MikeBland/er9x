@@ -127,6 +127,7 @@ void applyTemplate(uint8_t idx)
     //Simple 4-Ch
     if(idx==j++) 
     {
+        clearMixes();
         md=setDest(ICC(STK_RUD));  md->srcRaw=CM(STK_RUD);  md->weight=100;
         md=setDest(ICC(STK_ELE));  md->srcRaw=CM(STK_ELE);  md->weight=100;
         md=setDest(ICC(STK_THR));  md->srcRaw=CM(STK_THR);  md->weight=100;

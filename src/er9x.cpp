@@ -156,7 +156,12 @@ void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t 
       ratio <<= 1 ;
     }
     value *= ratio ;
-    if ( ratio < 100 )
+  	if (g_model.frsky.channels[channel].type == 3/*A*/)
+		{
+			value /= 100 ;
+			att |= PREC1 ;
+		}
+		else if ( ratio < 100 )
     {
       value *= 2 ;
       value /= 51 ;  // Same as *10 /255 but without overflow
@@ -173,6 +178,12 @@ void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t 
     {
       value <<= 1 ;
     }
+  	if (g_model.frsky.channels[channel].type == 3/*A*/)
+		{
+			value *= 255 ;
+			value /= 100 ;
+			att |= PREC1 ;
+		}
   }
 //              val = (uint16_t)staticTelemetry[i]*g_model.frsky.channels[i].ratio / 255;
 //              putsTelemetry(x0-2, 2*FH, val, g_model.frsky.channels[i].type, blink|DBLSIZE|LEFT);
@@ -203,9 +214,14 @@ inline int16_t getValue(uint8_t i)
   else return 0;
 }
 
+bool Last_switch[NUM_CSW] ;
+
 bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 {
-  if(level>5) return false; //prevent recursive loop going too deep
+  bool ret_value ;
+  uint8_t cs_index ;
+  
+	if(level>5) return false; //prevent recursive loop going too deep
 
   switch(swtch){
     case  0:            return  nc;
@@ -224,9 +240,15 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
   //input -> 1..4 -> sticks,  5..8 pots
   //MAX,FULL - disregard
   //ppm
-  CSwData &cs = g_model.customSw[abs(swtch)-(MAX_DRSWITCH-NUM_CSW)];
+  cs_index = abs(swtch)-(MAX_DRSWITCH-NUM_CSW);
+  CSwData &cs = g_model.customSw[cs_index];
   if(!cs.func) return false;
 
+  if ( level>4 )
+  {
+    ret_value = Last_switch[cs_index] ;
+    return swtch>0 ? ret_value : !ret_value ;
+  }
 
   int8_t a = cs.v1;
   int8_t b = cs.v2;
@@ -254,22 +276,20 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 
   switch (cs.func) {
   case (CS_VPOS):
-      return swtch>0 ? (x>y) : !(x>y);
+      ret_value = (x>y);
       break;
   case (CS_VNEG):
-      return swtch>0 ? (x<y) : !(x<y);
+      ret_value = (x<y) ;
       break;
   case (CS_APOS):
   {
-      bool res = (abs(x)>y) ;
-      return swtch>0 ? res : !res ;
+      ret_value = (abs(x)>y) ;
   }
 //      return swtch>0 ? (abs(x)>y) : !(abs(x)>y);
       break;
   case (CS_ANEG):
   {
-      bool res = (abs(x)<y) ;
-      return swtch>0 ? res : !res ;
+      ret_value = (abs(x)<y) ;
   }
 //      return swtch>0 ? (abs(x)<y) : !(abs(x)<y);
       break;
@@ -291,41 +311,43 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
     bool res2 = getSwitch(b,0,level+1) ;
     if ( cs.func == CS_AND )
     {
-      return res1 && res2 ;
+      ret_value = res1 && res2 ;
     }
     else if ( cs.func == CS_OR )
     {
-      return res1 || res2 ;
+      ret_value = res1 || res2 ;
     }
     else  // CS_XOR
     {
-      return res1 ^ res2 ;
+      ret_value = res1 ^ res2 ;
     }
   }
   break;
 
   case (CS_EQUAL):
-      return (x==y);
+      ret_value = (x==y);
       break;
   case (CS_NEQUAL):
-      return (x!=y);
+      ret_value = (x!=y);
       break;
   case (CS_GREATER):
-      return (x>y);
+      ret_value = (x>y);
       break;
   case (CS_LESS):
-      return (x<y);
+      ret_value = (x<y);
       break;
   case (CS_EGREATER):
-      return (x>=y);
+      ret_value = (x>=y);
       break;
   case (CS_ELESS):
-      return (x<=y);
+      ret_value = (x<=y);
       break;
   default:
-      return false;
+      ret_value = false;
       break;
   }
+	Last_switch[cs_index] = ret_value ;
+	return swtch>0 ? ret_value : !ret_value ;
 
 }
 
@@ -942,7 +964,7 @@ uint16_t anaIn(uint8_t chan)
 void getADC_filt()
 {
   static uint16_t t_ana[2][8];
-	uint8_t thro_rev_chan = g_eeGeneral.throttleReversed ? THR_STICK : 10 ;  // 10 means don't reverse
+//	uint8_t thro_rev_chan = g_eeGeneral.throttleReversed ? THR_STICK : 10 ;  // 10 means don't reverse
   for (uint8_t adc_input=0;adc_input<8;adc_input++){
       ADMUX=adc_input|ADC_VREF_TYPE;
       // Start the AD conversion
@@ -957,7 +979,7 @@ void getADC_filt()
       ADCSRA|=0x10;
 
       uint16_t v = ADCW;
-      if(adc_input == thro_rev_chan) v = 1024 - v;
+//      if(adc_input == thro_rev_chan) v = 1024 - v;
       t_ana[0][adc_input]  = (t_ana[0][adc_input]  + v) >> 1;
   }
 }
@@ -972,7 +994,7 @@ void getADC_osmp()
 {
 //  uint16_t temp_ana[8] = {0};
   uint16_t temp_ana ;
-	uint8_t thro_rev_chan = g_eeGeneral.throttleReversed ? THR_STICK : 10 ;  // 10 means don't reverse
+//	uint8_t thro_rev_chan = g_eeGeneral.throttleReversed ? THR_STICK : 10 ;  // 10 means don't reverse
   for (uint8_t adc_input=0;adc_input<8;adc_input++){
 		temp_ana = 0 ;
     for (uint8_t i=0; i<4;i++) {  // Going from 10bits to 11 bits.  Addition = n.  Loop 4^n times
@@ -987,8 +1009,8 @@ void getADC_osmp()
     }
     
 		temp_ana /= 2; // divide by 2^n to normalize result.
-    if(adc_input == thro_rev_chan)
-        temp_ana = 2048 -temp_ana;
+//    if(adc_input == thro_rev_chan)
+//        temp_ana = 2048 -temp_ana;
 
 //		s_anaFilt[adc_input] = temp_ana[adc_input] / 2; // divide by 2^n to normalize result.
 		s_anaFilt[adc_input] = temp_ana ;
@@ -1002,7 +1024,7 @@ void getADC_osmp()
 void getADC_single()
 {
   	uint16_t result ;
-	  uint8_t thro_rev_chan = g_eeGeneral.throttleReversed ? THR_STICK : 10 ;  // 10 means don't reverse
+//	  uint8_t thro_rev_chan = g_eeGeneral.throttleReversed ? THR_STICK : 10 ;  // 10 means don't reverse
     for (uint8_t adc_input=0;adc_input<8;adc_input++){
       ADMUX=adc_input|ADC_VREF_TYPE;
       // Start the AD conversion
@@ -1012,8 +1034,8 @@ void getADC_single()
       ADCSRA|=0x10;
       result = ADCW * 2; // use 11 bit numbers
 
-      if(adc_input == thro_rev_chan)
-          result = 2048 - result ;
+//      if(adc_input == thro_rev_chan)
+//          result = 2048 - result ;
       s_anaFilt[adc_input] = result ; // use 11 bit numbers
     }
 }
