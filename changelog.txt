@@ -11,6 +11,16 @@ description here
 
 
 ******************************************
+CHANGELOG: 09-11-2011 MPB
+Add Amps option to FrSky telemetry A1 and A2.
+Add zero function to Amps display.
+Clear existing mixes when using simple 4 chan template
+Fix delay problem
+Fix Reversed throttle with throttle trim bug
+Fix getswitch() bug when using !SWn
+Change getswitch() to use previous result when recursing deeply
+
+******************************************
 CHANGELOG: 03-11-2011
 1) update to er9x-builder.sh
 
