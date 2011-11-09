@@ -709,7 +709,7 @@ for (int i=0; i<2; i++) {
     lcd_putc(FW, y, '1'+i);
     putsTelemValue(16*FW, y, g_model.frsky.channels[i].ratio, i, (sub==subN && subSub==0 ? blink:0)|NO_UNIT, 0 ) ;
     //    lcd_putsnAtt(16*FW, y, PSTR("v-")+g_model.frsky.channels[i].type, 1, (sub==subN && subSub==1 ? blink:0));
-    lcd_putsnAtt(16*FW, y, PSTR("v-V")+g_model.frsky.channels[i].type, 1, (sub==subN && subSub==1 ? blink:0));
+    lcd_putsnAtt(16*FW, y, PSTR("v-VA")+g_model.frsky.channels[i].type, 1, (sub==subN && subSub==1 ? blink:0));
 
     if (sub==subN && (s_editMode || p1valdiff)) {
         switch (subSub) {
@@ -718,7 +718,7 @@ for (int i=0; i<2; i++) {
             break;
         case 1:
             //            CHECK_INCDEC_H_MODELVAR(event, g_model.frsky.channels[i].type, 0, 1);
-            CHECK_INCDEC_H_MODELVAR(event, g_model.frsky.channels[i].type, 0, 2);
+            CHECK_INCDEC_H_MODELVAR(event, g_model.frsky.channels[i].type, 0, 3);
             break;
         }
     }
@@ -2436,7 +2436,7 @@ switch (g_eeGeneral.speakerMode){
 
   //  SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, COUNT_ITEMS+1);
 			SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, vCountItems+1);
-    int8_t  sub    = mstate2.m_posVert;
+    uint8_t  sub    = mstate2.m_posVert;
     uint8_t subSub = mstate2.m_posHorz;
 
     evalOffset(sub, 7);
@@ -3054,6 +3054,17 @@ void menuProc0(uint8_t event)
         {
             AltOffset = -FrskyHubData[16] ;
         }
+        else if( (view == e_telemetry) && ((g_eeGeneral.view & 0x30) == 0 ) )
+        {
+            if ( g_model.frsky.channels[0].type == 3 )		// Current (A)
+						{
+				      frskyTelemetry[0].setoffset() ;
+						}
+            if ( g_model.frsky.channels[1].type == 3 )		// Current (A)
+						{
+				      frskyTelemetry[1].setoffset() ;
+						}
+        }
         else
         {
 #endif
@@ -3547,6 +3558,13 @@ void perOut(int16_t *chanOut, uint8_t att)
                                                               g_eeGeneral.calibSpanNeg[i])));
             if(v <= -RESX) v = -RESX;
             if(v >=  RESX) v =  RESX;
+	  				if ( g_eeGeneral.throttleReversed )
+						{
+							if ( i == THR_STICK )
+							{
+								v = -v ;
+							}
+						}
             calibratedStick[i] = v; //for show in expo
             if(!(v/16)) anaCenter |= 1<<(CONVERT_MODE((i+1))-1);
 
@@ -3590,7 +3608,17 @@ void perOut(int16_t *chanOut, uint8_t att)
 
                 //do trim -> throttle trim if applicable
                 int32_t vv = 2*RESX;
-                if(IS_THROTTLE(i) && g_model.thrTrim) vv = ((int32_t)*TrimPtr[i]+125)*(RESX-v)/(2*RESX);
+		            if(IS_THROTTLE(i) && g_model.thrTrim)
+								{
+									int8_t ttrim ;
+									ttrim = *TrimPtr[i] ;
+									if(g_eeGeneral.throttleReversed)
+									{
+										ttrim = -ttrim ;
+									}
+									vv = ((int32_t)ttrim+125)*(RESX-v)/(2*RESX);
+								}
+//                if(IS_THROTTLE(i) && g_model.thrTrim) vv = ((int32_t)*TrimPtr[i]+125)*(RESX-v)/(2*RESX);
 
                 //trim
                 trimA[i] = (vv==2*RESX) ? *TrimPtr[i]*2 : (int16_t)vv*2; //    if throttle trim -> trim low end
@@ -3772,9 +3800,15 @@ void perOut(int16_t *chanOut, uint8_t att)
             }
 
             if(sDelay[i]){ // perform delay
-                if(tick10ms) sDelay[i]--;
-                v = act[i]/DEL_MULT;
-                diff = 0;
+                if(tick10ms)
+                {
+                  sDelay[i]-- ;
+                }
+                if (sDelay[i] != 0)
+                { // At end of delay, use new V and diff
+                  v = act[i]/DEL_MULT;   // Stay in old position until delay over
+                  diff = 0;
+                }
             }
 
             if(diff && (md->speedUp || md->speedDown)){
@@ -3790,6 +3824,10 @@ void perOut(int16_t *chanOut, uint8_t att)
 
                 if(((diff>0) && (v<(act[i]/DEL_MULT))) || ((diff<0) && (v>(act[i]/DEL_MULT)))) act[i]=(int32_t)v*DEL_MULT; //deal with overflow
                 v = act[i]/DEL_MULT;
+            }
+            else if (diff)
+            {
+              act[i]=(int32_t)v*DEL_MULT;
             }
         }
 

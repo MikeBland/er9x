@@ -542,8 +542,24 @@ void frskyPushValue(uint8_t & i, uint8_t value)
   frskyTxBuffer[i++] = value;
 }
 
+void FrskyData::setoffset()
+{
+	uint8_t x ;
+	x = value + offset ;
+	offset = value ;
+	value = 0 ;
+}
+
 void FrskyData::set(uint8_t value)
 {
+   if ( value > offset )
+	 {
+	   value -= offset ;
+	 }
+	 else
+	 {
+	 	 value = 0 ;
+	 }
    this->value = value;
    if (!max || max < value)
      max = value;

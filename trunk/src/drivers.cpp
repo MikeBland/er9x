@@ -188,6 +188,11 @@ bool keyState(EnumKeys enuk)
     break ;
 #else
     case SW_AileDR : xxx = PINC & (1<<INP_C_AileDR); //shad974: rerouted inputs to free up UART0
+			// Test bit 0 of PINC as well, temp fix for reacher10 broken pin on PINC bit 7
+//    								if ( ( PINC & 0x01 ) == 0 )
+//										{
+//											xxx = 0 ;											
+//										}
     break ;
 #endif
 
@@ -237,12 +242,12 @@ void killEvents(uint8_t event)
   if(event < (int)DIM(keys))  keys[event].killEvents();
 }
 
-uint8_t getEventDbl(uint8_t event)
-{
-  event=event & EVT_KEY_MASK;
-  if(event < (int)DIM(keys))  return keys[event].getDbl();
-  return 0;
-}
+//uint8_t getEventDbl(uint8_t event)
+//{
+//  event=event & EVT_KEY_MASK;
+//  if(event < (int)DIM(keys))  return keys[event].getDbl();
+//  return 0;
+//}
 
 //uint16_t g_anaIns[8];
 volatile uint16_t g_tmr10ms;
