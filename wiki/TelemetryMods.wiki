@@ -10,3 +10,4 @@ A good suggestion would be to read all of them!  Then decide which method you wo
  * <a href="http://code.google.com/p/gruvin9x/wiki/FrskyInterfacing">FRSKY interfacing tutorial</a> by gruvin.
  * <a href="http://er9x.googlecode.com/svn/trunk/doc/TelemetryMods.pdf">FRSKY Telemetry mods</a> by Mike Blandford.
  * <a href="http://er9x.googlecode.com/svn/trunk/doc/FRSKYTelemetry.pdf">FRSKY telemetry guide</a> by Rob Thomson. 
+ * [FRSky Light TTL]
