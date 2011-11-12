@@ -1,3 +1,5 @@
+#sidebar TableOfContents
+
 = Installing an LCD backlight =
 
 The stock radio does not include a back light, meaning that in low light conditions, the display can be difficult to read.  The mods below provide simple solutions to solve this problem!
