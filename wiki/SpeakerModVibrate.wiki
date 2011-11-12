@@ -1,3 +1,5 @@
+#sidebar TableOfContents
+
 = Speaker Mods with Haptic Feedback (basic) =
 
 <b><i>Please note that this circuit diagram is now deprecated.</i>  You are highly recommended to use the updated circuit located on:
