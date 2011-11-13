@@ -27,7 +27,7 @@ void audioQueue::aqinit()
     HAPTIC_OFF;
 
     //initialize all arrays
-    for(uint8_t i=0; i<=AUDIO_QUEUE_LENGTH; i++){
+    for(uint8_t i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
         queueToneStart[i] = 0;
         queueToneEnd[i] = 0;
         queueToneLength[i] = 0;
