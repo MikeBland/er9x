@@ -11,6 +11,10 @@ description here
 
 ******************************************
 CHANGELOG: 13-11-2011 MPB
+Audio array loop fix
+
+******************************************
+CHANGELOG: 13-11-2011 MPB
 hline and vline memory protection changes
 
 
