@@ -323,6 +323,10 @@ void lcd_hlineStip(unsigned char x,unsigned char y, signed char w,uint8_t pat)
   uint8_t *p  = &displayBuf[ y / 8 * DISPLAY_W + x ];
   uint8_t msk = BITMASK(y%8);
   while(w){
+    if ( p>=DISPLAY_END)
+    {
+      break ;			
+    }
     if(pat&1) {
       //lcd_plot(x,y);
       *p ^= msk;
@@ -348,9 +352,13 @@ void lcd_vline(uint8_t x,uint8_t y, int8_t h)
     *p ^= ~(BITMASK(y%8)-1);
     while(p<q){
         p  += DISPLAY_W;
+        if ( p>=DISPLAY_END)
+        {
+          break ;			
+        }
         *p ^= 0xff;
     }
-    *p ^= ~(BITMASK((y+h)%8)-1);
+    if(p<DISPLAY_END) *p ^= ~(BITMASK((y+h)%8)-1);
 }
 
 
