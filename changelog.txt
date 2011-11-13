@@ -11,6 +11,11 @@ description here
 
 ******************************************
 CHANGELOG: 13-11-2011 MPB
+Fix Curve draw bug caused by fixing EXPO graph
+
+
+******************************************
+CHANGELOG: 13-11-2011 MPB
 Fix memory corruption occuring in EXPO graph menu
 
 

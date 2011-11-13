@@ -48,12 +48,12 @@
 
 #define NO_HI_LEN 25
 
-#define WCHART 31
+#define WCHART 32
 #define X0     (128-WCHART-2)
-#define Y0     31
-#define WCHARTl 31l
+#define Y0     32
+#define WCHARTl 32l
 #define X0l     (128l-WCHARTl-2)
-#define Y0l     31l
+#define Y0l     32l
 #define RESX    (1<<10) // 1024
 #define RESXu   1024u
 #define RESXul  1024ul
@@ -1551,21 +1551,24 @@ int8_t   kViewL  = g_model.expoData[s_expoChan].expo[expoDrOn][DR_EXPO][DR_LEFT]
 int8_t   wViewR  = g_model.expoData[s_expoChan].expo[expoDrOn][DR_WEIGHT][DR_RIGHT]+100;  //NormWeightR+100;
 int8_t   wViewL  = g_model.expoData[s_expoChan].expo[expoDrOn][DR_WEIGHT][DR_LEFT]+100;  //NormWeightL+100;
 
+#define WE_CHART	(WCHART-1)
+#define WE_CHARTl	(WCHARTl-1)
+
 if (IS_THROTTLE(s_expoChan) && g_model.thrExpo)
-for(uint8_t xv=0;xv<WCHARTl*2;xv++)
+for(uint8_t xv=0;xv<WE_CHARTl*2;xv++)
 {
-    uint16_t yv=2*expo(xv*(RESXu/WCHARTl)/2,kViewR) / (RESXu/WCHARTl);
+    uint16_t yv=2*expo(xv*(RESXu/WE_CHARTl)/2,kViewR) / (RESXu/WE_CHARTl);
     yv = (yv * wViewR)/100;
-    lcd_plot(X0l+xv-WCHARTl, 2*Y0l-yv);
+    lcd_plot(X0l+xv-WE_CHARTl, 2*Y0l-yv);
     if((xv&3) == 0){
-        lcd_plot(X0l+xv-WCHARTl, 2*Y0l-1);
-        lcd_plot(X0l-WCHARTl   , Y0l+xv/2);
+        lcd_plot(X0l+xv-WE_CHARTl, 2*Y0l-1);
+        lcd_plot(X0l-WE_CHARTl   , Y0l+xv/2);
     }
 }
 else
-for(uint8_t xv=0;xv<WCHARTl;xv++)
+for(uint8_t xv=0;xv<WE_CHARTl;xv++)
 {
-    uint16_t yv=expo(xv*(RESXu/WCHARTl),kViewR) / (RESXu/WCHARTl);
+    uint16_t yv=expo(xv*(RESXu/WE_CHARTl),kViewR) / (RESXu/WE_CHARTl);
     yv = (yv * wViewR)/100;
     lcd_plot(X0l+xv, Y0l-yv);
     if((xv&3) == 0){
@@ -1573,7 +1576,7 @@ for(uint8_t xv=0;xv<WCHARTl;xv++)
         lcd_plot(X0l  , Y0l+xv);
     }
 
-    yv=expo(xv*(RESXu/WCHARTl),kViewL) / (RESXu/WCHARTl);
+    yv=expo(xv*(RESXu/WE_CHARTl),kViewL) / (RESXu/WE_CHARTl);
     yv = (yv * wViewL)/100;
     lcd_plot(X0l-xv, Y0l+yv);
     if((xv&3) == 0){
@@ -1583,19 +1586,20 @@ for(uint8_t xv=0;xv<WCHARTl;xv++)
 }
 
 int32_t x512  = calibratedStick[s_expoChan];
-lcd_vline(X0l+x512/(RESXu/WCHARTl), Y0l-WCHARTl,WCHARTl*2);
+lcd_vline(X0l+x512/(RESXu/WE_CHARTl), Y0l-WE_CHARTl,WE_CHARTl*2);
 
 int32_t y512 = 0;
 if (IS_THROTTLE(s_expoChan) && g_model.thrExpo) {
     y512  = 2*expo((x512+RESX)/2,kViewR);
     y512 = y512 * (wViewR / 4)/(100 / 4);
-    lcd_hline(X0l-WCHARTl, 2*Y0l-y512/(RESXu/WCHARTl),WCHARTl*2);
+    lcd_hline(X0l-WE_CHARTl, 2*Y0l-y512/(RESXu/WE_CHARTl),WE_CHARTl*2);
     y512 /= 2;
 }
 else {
 y512  = expo(x512,(x512>0 ? kViewR : kViewL));
 y512 = y512 * ((x512>0 ? wViewR : wViewL) / 4)/(100 / 4);
-lcd_hline(X0l-WCHARTl, Y0l-y512/(RESXu/WCHARTl),WCHARTl*2);
+
+lcd_hline(X0l-WE_CHARTl, Y0l-y512/(RESXu/WE_CHARTl),WE_CHARTl*2);
 }
 
 lcd_outdezAtt( 19*FW, 6*FH,x512*25/((signed) RESXu/4), 0 );
