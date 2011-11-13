@@ -48,12 +48,12 @@
 
 #define NO_HI_LEN 25
 
-#define WCHART 32
+#define WCHART 31
 #define X0     (128-WCHART-2)
-#define Y0     32
-#define WCHARTl 32l
+#define Y0     31
+#define WCHARTl 31l
 #define X0l     (128l-WCHARTl-2)
-#define Y0l     32l
+#define Y0l     31l
 #define RESX    (1<<10) // 1024
 #define RESXu   1024u
 #define RESXul  1024ul
