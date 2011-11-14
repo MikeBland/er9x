@@ -9,7 +9,7 @@
 
 # levels of build used to work out permutations
 l1=(er9x);   #base
-l2=(frsky jeti ardupilot); #ext
+l2=(frsky jeti ardupilot nmea); #ext
 l3=(noht); #heli/templates
 
 # main build function
