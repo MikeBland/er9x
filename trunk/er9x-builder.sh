@@ -37,11 +37,15 @@ function build {
 
   echo -n $destination | tr "[a-z]" "[A-Z]";
   echo -n " ";
-
+  
+  uext=$(echo -n $ext | tr "[a-z]" "[A-Z]")
+  unoht=$(echo -n $noht | tr "[a-z]" "[A-Z]")
+  ubeeper=$(echo -n $ubeeper | tr "[a-z]" "[A-Z]")
+  
   echo -n "[CLEANING] ";
   make clean > ../buildlog/$logname 2>&1
-   echo -n "[COMPILING] ";
-	make $ext $noht $beeper >> ../buildlog/$logname 2>&1 	
+  echo -n "[COMPILING] ";
+	make $uext $unoht $ubeeper >> ../buildlog/$logname 2>&1 	
 	mv er9x.hex ../$destination >> ../buildlog/$logname 2>&1;
 	if [ $? -eq 1 ]; then
 		echo  "[ERROR] [ABORTING]"
