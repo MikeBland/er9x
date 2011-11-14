@@ -27,7 +27,8 @@ void audioQueue::aqinit()
     HAPTIC_OFF;
 
     //initialize all arrays
-    for(uint8_t i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
+    //for(uint8_t i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
+    for(uint8_t i=0; i<AUDIO_QUEUE_LENGTH; i++){
         queueToneStart[i] = 0;
         queueToneEnd[i] = 0;
         queueToneLength[i] = 0;
@@ -59,7 +60,8 @@ void audioQueue::commit()
 {
 
     if(toneInterupt == 0){
-        for(uint8_t i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
+        //for(uint8_t i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
+      for(uint8_t i=0; i<AUDIO_QUEUE_LENGTH; i++){
             if(queueToneStart[i] == 0){ //we only check the start var as this is the master
                 queueToneStart[i] = t_queueToneStart;
                 queueToneEnd[i] = t_queueToneEnd;
@@ -101,7 +103,8 @@ void audioQueue::flushTemp()
 
 void audioQueue::restack()
 {
-    for(uint8_t i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
+    //for(uint8_t i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
+    for(uint8_t i=0; i<AUDIO_QUEUE_LENGTH; i++){
         if(i == (AUDIO_QUEUE_LENGTH -1)){          //set the last entry to 0 as nothing in stack to add too!
             queueToneStart[i] = 0;
             queueToneEnd[i] = 0;
