@@ -127,11 +127,15 @@ void lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
 
 void lcd_putsnAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t len,uint8_t mode)
 {
+	uint8_t source ;
+	uint8_t size ;
+	source = mode & BSS ;
+	size = mode & DBLSIZE ;
   while(len!=0) {
-    char c = (mode & BSS) ? *s++ : pgm_read_byte(s++);
+    char c = (source) ? *s++ : pgm_read_byte(s++);
     lcd_putcAtt(x,y,c,mode);
     x+=FW;
-    if(mode&DBLSIZE) x+=FW;
+		if ((size)&& (c!=0x2E)) x+=FW; //check for decimal point
     len--;
   }
 }
@@ -141,13 +145,17 @@ void lcd_putsn_P(uint8_t x,uint8_t y,const prog_char * s,uint8_t len)
 }
 uint8_t lcd_putsAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t mode)
 {
+	uint8_t source ;
+	uint8_t size ;
+	source = mode & BSS ;
+	size = mode & DBLSIZE ;
   //while(char c=pgm_read_byte(s++)) {
   while(1) {
-    char c = (mode & BSS) ? *s++ : pgm_read_byte(s++);
+    char c = (source) ? *s++ : pgm_read_byte(s++);
     if(!c) break;
     lcd_putcAtt(x,y,c,mode);
     x+=FW;
-    if(mode&DBLSIZE) x+=FW;
+		if ((size)&& (c!=0x2E)) x+=FW; //check for decimal point
   }
   return x;
 }

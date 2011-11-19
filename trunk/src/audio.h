@@ -54,6 +54,23 @@
 #define AUDIO_INACTIVITY (18)
 #define AUDIO_TX_BATTERY_LOW (19)
 
+#ifdef FRSKY	
+
+#define AUDIO_FRSKY_TONE1 (0)
+#define AUDIO_FRSKY_TONE2 (1)
+#define AUDIO_FRSKY_TONE3 (2)
+#define AUDIO_FRSKY_TONE4 (3)
+#define AUDIO_FRSKY_TONE5 (4)
+#define AUDIO_FRSKY_HTONE1 (5)
+#define AUDIO_FRSKY_HTONE2 (6)
+#define AUDIO_FRSKY_HTONE3 (7)
+#define AUDIO_FRSKY_HTONE4 (8)
+#define AUDIO_FRSKY_HTONE5 (9)
+
+#endif
+
+
+
 #define BEEP_QUIET (0)
 #define BEEP_NOKEYS (1)
 #define BEEP_XSHORT (2)
@@ -93,7 +110,10 @@ struct audioQueue{
     uint8_t toneHaptic;
     uint8_t hapticTick;
    	uint8_t heartbeatTimer;
-   	
+
+#ifdef FRSKY
+		uint8_t frskySample;
+#endif    	
    	
     //queue arrays
     uint8_t queueToneStart[AUDIO_QUEUE_LENGTH];
@@ -119,6 +139,11 @@ public:
 		void playASAP(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tHaptic=0,uint8_t tRepeat=0,uint8_t tEnd=0);
 
 		void event(uint8_t e,uint8_t f=BEEP_DEFAULT_FREQ);
+
+#ifdef FRSKY		
+		void frskyevent(uint8_t e);
+		void frskyeventSample(uint8_t e);
+#endif
 
     void commit();
     

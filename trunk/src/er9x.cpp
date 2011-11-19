@@ -782,7 +782,7 @@ void pushMenu(MenuFuncP newMenu)
   (*newMenu)(EVT_ENTRY);
 }
 
-uint8_t  g_vbat100mV;
+uint8_t  g_vbat100mV = 74 ;
 volatile uint8_t tick10ms = 0;
 uint16_t g_LightOffCounter;
 
@@ -946,7 +946,7 @@ uint8_t ppmInState = 0; //0=unsync 1..8= wait for value i-1
 //};
 
 //#define STARTADCONV (ADCSRA  = (1<<ADEN) | (1<<ADPS0) | (1<<ADPS1) | (1<<ADPS2) | (1<<ADSC) | (1 << ADIE))
-int16_t BandGap ;
+int16_t BandGap = 240 ;
 
 static uint16_t s_anaFilt[8];
 uint16_t anaIn(uint8_t chan)
@@ -1103,6 +1103,9 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 
 
   per10ms();
+#ifdef FRSKY
+	check_frsky() ;
+#endif
   heartbeat |= HEART_TIMER10ms;
   
 
@@ -1315,7 +1318,7 @@ void mainSequence()
           heartbeat = 0;
       }
       t0 = getTmr16KHz() - t0;
-      g_timeMain = max(g_timeMain,t0);
+      if ( t0 > g_timeMain ) g_timeMain = t0 ;
 }
 
 

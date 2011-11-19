@@ -35,8 +35,8 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
         PORTB &= ~(1<<OUT_B_PPM);
         pulsePol = 1;
     }
-    g_tmr1Latency_max = max(dt,g_tmr1Latency_max);    // max has leap, therefore vary in length
-    g_tmr1Latency_min = min(dt,g_tmr1Latency_min);    // min has leap, therefore vary in length
+    if ( dt > g_tmr1Latency_max) g_tmr1Latency_max = dt ;    // max has leap, therefore vary in length
+    if ( dt < g_tmr1Latency_min) g_tmr1Latency_min = dt ;    // max has leap, therefore vary in length
 
     //  if (g_model.protocol==PROTO_PPM)
     //  {
@@ -200,6 +200,8 @@ void setupPulsesDsm2(uint8_t chns)
 
     static uint8_t state = 0;
 
+    pulses2MHzptr = pulses2MHz;
+    
     if(state==0){
 
         if((dsmDat[0] == 0) || ! keyState(SW_Trainer) ){ //init - bind!

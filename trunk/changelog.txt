@@ -10,6 +10,17 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 19-11-2011 MPB
+Move Frsky 10 mS code into frsky.cpp (from drivers.cpp) 
+Add audioQueue::frskyevent() in audio.cpp
+Make double size decimal point take less space + flash saving
+Add frsky alarm options in system menu, these don't change anything yet
+Add frsky alarm setting to myeeprom.h
+Fix dsm2 reboot problem?
+Initialise bandgap and battery values - faster settling of display voltage
+
+
+******************************************
 CHANGELOG: 14-11-2011 RFT
 Audio array loop change to save cpu cycle
 

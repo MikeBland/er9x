@@ -46,6 +46,9 @@ void audioQueue::aqinit()
     toneRepeatCnt = 0;
     inToneRepeat = 0;
     hapticTick = 0;
+#ifdef FRSKY
+		frskySample = 0;
+#endif    
 
 		heartbeatTimer = 0;
 
@@ -330,6 +333,56 @@ void audioQueue::playASAP(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRe
         commit();
 }	
 
+#ifdef FRSKY		
+
+		//this is done so the menu selections only plays tone once!
+		void audioQueue::frskyeventSample(uint8_t e){
+			if(frskySample != e){
+					frskyevent(e);
+					frskySample = e;
+			}
+	  }
+
+		void audioQueue::frskyevent(uint8_t e){
+			 // example playASAP(tStart,tLen,tPause,tHaptic,tRepeat,tEnd);
+				switch(e){
+						case AUDIO_FRSKY_TONE1:
+									playASAP(BEEP_DEFAULT_FREQ+10,2,1,0,1);			
+									break;			
+						case AUDIO_FRSKY_TONE2:
+									playASAP(BEEP_DEFAULT_FREQ+20,2,1,0,2);		
+									break;	
+						case AUDIO_FRSKY_TONE3:
+									playASAP(BEEP_DEFAULT_FREQ+30,2,1,0,3);				
+									break;	
+						case AUDIO_FRSKY_TONE4:
+									playASAP(BEEP_DEFAULT_FREQ+40,2,1,0,4);				
+									break;	
+						case AUDIO_FRSKY_TONE5:
+									playASAP(BEEP_DEFAULT_FREQ+50,2,1,0,5);				
+									break;																			
+						case AUDIO_FRSKY_HTONE1:
+									playASAP(BEEP_DEFAULT_FREQ+10,2,1,1,1);			
+									break;			
+						case AUDIO_FRSKY_HTONE2:
+									playASAP(BEEP_DEFAULT_FREQ+20,2,1,1,2);			
+									break;	
+						case AUDIO_FRSKY_HTONE3:
+									playASAP(BEEP_DEFAULT_FREQ+30,2,1,1,3);				
+									break;	
+						case AUDIO_FRSKY_HTONE4:
+									playASAP(BEEP_DEFAULT_FREQ+40,2,1,1,4);				
+									break;	
+						case AUDIO_FRSKY_HTONE5:
+									playASAP(BEEP_DEFAULT_FREQ+50,2,1,1,5);			
+									break;
+						default:
+							break;
+				}			
+			
+		}	
+#endif
+
 void audioQueue::event(uint8_t e,uint8_t f){
 	
 	/*
@@ -508,7 +561,7 @@ void audioQueue::event(uint8_t e,uint8_t f){
 						playASAP(60,4,3,2,1,70);						
 						playASAP(80,4,3,2,1,70);
 						break;						
-												
+																												
 			default:
 				break;	
 		

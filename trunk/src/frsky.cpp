@@ -340,7 +340,7 @@ uint8_t FrskyDelay = 0 ;
 uint8_t FrskyRSSIsend = 0 ;
 
 
-void FRSKY10mspoll(void)
+static void FRSKY10mspoll(void)
 {
   if (FrskyDelay)
   {
@@ -571,6 +571,29 @@ void resetTelemetry()
 {
   memset(frskyTelemetry, 0, sizeof(frskyTelemetry));
   memset(frskyRSSI, 0, sizeof(frskyRSSI));
+}
+
+void check_frsky()
+{
+  // Used to detect presence of valid FrSky telemetry packets inside the
+  // last FRSKY_TIMEOUT10ms 10ms intervals
+  if (frskyStreaming > 0) frskyStreaming--;
+  if (frskyUsrStreaming > 0) frskyUsrStreaming--;
+	
+  if ( FrskyAlarmSendState )
+  {
+    FRSKY10mspoll() ;
+  }
+
+  if ( g_model.frsky.channels[0].type == 3 )		// Current (A)
+  {
+    // value * ratio / 100 gives 10ths of amps
+    // add this every 10 ms, when over 3600, we have 1 mAh
+    // so subtract 3600 and add 1 to mAh total
+    // alternatively, add up the raw value, and use 3600 * 100 / 176 for 1mAh
+
+  }
+	
 }
 
 
