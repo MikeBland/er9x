@@ -99,16 +99,21 @@ typedef struct t_EEGeneral {
   uint8_t   disableSplashScreen:1;
   uint8_t   disablePotScroll:1;
   uint8_t   disableBG:1;
-  uint8_t   res1:1;
+  uint8_t   frskyinternalalarm:1;
   uint8_t   filterInput;
   uint8_t   lightAutoOff;
   uint8_t   templateSetup;  //RETA order according to chout_ar array 
   int8_t    PPM_Multiplier;
-  uint8_t   respre[2];
+  //uint8_t   respre[2]; //mike please check these are correct
+  uint8_t	FRSkyYellow:4;
+  uint8_t	FRSkyOrange:4;
+  uint8_t	FRSkyRed:4;  //mike please check these are correct
+	uint8_t spare:4;
   uint8_t   speakerPitch;
   uint8_t	hapticStrength;
   uint8_t	speakerMode;
   uint8_t   res[1];
+//  uint8_t	FRSkyRed;  //mike please check these are correct
   char      ownerName[GENERAL_OWNER_NAME_LEN];
 } __attribute__((packed)) EEGeneral;
 

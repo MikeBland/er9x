@@ -284,18 +284,6 @@ void per10ms()
     keys[enuk].input(in & pgm_read_byte(crossTrim+i),(EnumKeys)enuk);
     ++enuk;
   }
-
-#ifdef FRSKY
-  // Used to detect presence of valid FrSky telemetry packets inside the
-  // last FRSKY_TIMEOUT10ms 10ms intervals
-  if (frskyStreaming > 0) frskyStreaming--;
-  if (frskyUsrStreaming > 0) frskyUsrStreaming--;
-	
-  if ( FrskyAlarmSendState )
-  {
-    FRSKY10mspoll() ;
-  }
-#endif
 }
 
 

@@ -2420,22 +2420,40 @@ void menuProcSetup(uint8_t event)
 #define COUNT_ITEMS 20
 #endif
 */
-uint8_t vCountItems = 21; //21 is default
 
-switch (g_eeGeneral.speakerMode){
-		//beeper
-		case 0:
-				vCountItems = 21;
-				break;
-		//piezo speaker
-	 	case 1:
-	 			vCountItems = 23;
-	 			break;
-	 	//pcmwav
-	  case 2:
-				vCountItems = 21;
-				break;	  	
-}
+#ifdef FRSKY
+		uint8_t vCountItems = 25; //25 is default
+		switch (g_eeGeneral.speakerMode){
+				//beeper
+				case 0:
+						vCountItems = 25;
+						break;
+				//piezo speaker
+			 	case 1:
+			 			vCountItems = 28;
+			 			break;
+			 	//pcmwav
+			  case 2:
+						vCountItems = 25;
+						break;	  	
+		}
+#else 
+		uint8_t vCountItems = 21; //21 is default
+		switch (g_eeGeneral.speakerMode){
+				//beeper
+				case 0:
+						vCountItems = 21;
+						break;
+				//piezo speaker
+			 	case 1:
+			 			vCountItems = 23;
+			 			break;
+			 	//pcmwav
+			  case 2:
+						vCountItems = 21;
+						break;	  	
+		}
+#endif
 
 
   //  SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, COUNT_ITEMS+1);
@@ -2519,7 +2537,7 @@ switch (g_eeGeneral.speakerMode){
         if((y+=FH)>7*FH) return;
     }subN++;
 
-//#ifdef BEEPSPKR
+
 if(g_eeGeneral.speakerMode == 1){
 	
     if(s_pgOfs<subN) {
@@ -2541,10 +2559,7 @@ if(g_eeGeneral.speakerMode == 1){
         }
         if((y+=FH)>7*FH) return;
     }subN++;
-    
 }
-//#endif
-
 
     if(s_pgOfs<subN) {
         lcd_puts_P(0, y,PSTR("Contrast"));
@@ -2702,6 +2717,7 @@ if(g_eeGeneral.speakerMode == 1){
         if((y+=FH)>7*FH) return;
     }subN++;
 
+    
     if(s_pgOfs<subN)
     {
         uint8_t b ;
@@ -2723,6 +2739,60 @@ if(g_eeGeneral.speakerMode == 1){
         g_eeGeneral.disableBG = 1-onoffMenuItem( b, y, PSTR("BandGap"), sub, subN, event ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
+
+//frsky alert mappings
+#ifdef FRSKY
+    
+		if(s_pgOfs<subN) {
+        g_eeGeneral.frskyinternalalarm = onoffMenuItem( g_eeGeneral.frskyinternalalarm, y, PSTR("Int. Frsky alarm"), sub, subN, event ) ;
+        if((y+=FH)>7*FH) return;
+    }subN++;
+  
+	
+	for ( uint8_t i = 0 ; i < 3 ; i += 1 )
+  {
+    uint8_t b ;
+
+    b = g_eeGeneral.FRSkyYellow ;    // Done here to stop a compiler warning
+    if(s_pgOfs<subN)
+		{
+			
+			if ( i == 0 )
+			{
+        lcd_puts_P(0, y,PSTR("Alert [Yel]"));
+			}
+			else if ( i == 1 )
+			{
+        b = g_eeGeneral.FRSkyOrange ;
+        lcd_puts_P(0, y,PSTR("Alert [Org]"));
+			}
+			else if ( i == 2 )
+			{
+        b = g_eeGeneral.FRSkyRed ;
+        lcd_puts_P(0, y,PSTR("Alert [Red]"));
+			}
+      lcd_putsnAtt(PARAM_OFS - FW - 4, y, PSTR("Tone1 ""Tone2 ""Tone3 ""Tone4 ""Tone5 ""hTone1""hTone2""hTone3""hTone4""hTone5")+6*b,6,(sub==subN ? INVERS:0));
+      if(sub==subN)
+			{
+				CHECK_INCDEC_H_GENVAR(event, b, 0, 9);
+				if ( i == 0 )
+				{
+		      g_eeGeneral.FRSkyYellow = b ;
+				}
+				else if ( i == 1 )
+				{
+		      g_eeGeneral.FRSkyOrange = b ;
+				}
+				else if ( i == 2 )
+				{
+		      g_eeGeneral.FRSkyRed = b ;
+				}
+			  audio.frskyeventSample(b);
+			}
+			if((y+=FH)>7*FH) return;
+    }subN++;
+  }
+#endif
 
     if(s_pgOfs<subN) {
         lcd_puts_P( 1*FW, y, PSTR("Mode"));//sub==3?INVERS:0);
