@@ -22,9 +22,9 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
     static uint8_t   pulsePol;
     static uint16_t *pulsePtr = pulses2MHz;
 
-    uint8_t i = 0;
-    while((TCNT1L < 10) && (++i < 50))  // Timer does not read too fast, so i
-        ;
+//    uint8_t i = 0;
+//    while((TCNT1L < 10) && (++i < 50))  // Timer does not read too fast, so i
+//        ;
     uint16_t dt=TCNT1;//-OCR1A;
 
     if(pulsePol)
@@ -35,8 +35,6 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
         PORTB &= ~(1<<OUT_B_PPM);
         pulsePol = 1;
     }
-    if ( dt > g_tmr1Latency_max) g_tmr1Latency_max = dt ;    // max has leap, therefore vary in length
-    if ( dt < g_tmr1Latency_min) g_tmr1Latency_min = dt ;    // max has leap, therefore vary in length
 
     //  if (g_model.protocol==PROTO_PPM)
     //  {
@@ -57,6 +55,9 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
     //  }
     //  PulseTotal += (OCR1A  = *pulsePtr++);
     OCR1A  = *pulsePtr++;
+    
+		if ( dt > g_tmr1Latency_max) g_tmr1Latency_max = dt ;    // max has leap, therefore vary in length
+    if ( dt < g_tmr1Latency_min) g_tmr1Latency_min = dt ;    // max has leap, therefore vary in length
 
     if( *pulsePtr == 0) {
         //currpulse=0;
@@ -68,8 +69,17 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
         TIMSK &= ~(1<<OCIE1A); //stop reentrance
         sei();
         setupPulses();
+				// For DSM2 problem, missed interrupt
+		    if (g_model.protocol == PROTO_DSM2)
+				{
+					if ( TIFR & (1 << OCF1A ) )		// Interrupt pending
+					{
+						TCNT1 = 0 ;					
+					}
+				}
         cli();
         TIMSK |= (1<<OCIE1A);
+        sei();
     }
     heartbeat |= HEART_TIMER2Mhz;
 }
@@ -207,7 +217,7 @@ void setupPulsesDsm2(uint8_t chns)
         if((dsmDat[0] == 0) || ! keyState(SW_Trainer) ){ //init - bind!
             dsmDat[0]=0; dsmDat[1]=0;  //DSM2_Header = 0,0;
             for(uint8_t i=0; i<chns; i++){
-                uint16_t pulse = limit(0, g_chans512[i]+512,1023);
+                uint16_t pulse = limit(0, (g_chans512[i]>>1)+512,1023);
                 dsmDat[2+2*i] = (i<<2) | ((pulse>>8)&0x03);
                 dsmDat[3+2*i] = pulse & 0xff;
             }
@@ -216,8 +226,9 @@ void setupPulsesDsm2(uint8_t chns)
     sendByteDsm2(dsmDat[state++]);
     sendByteDsm2(dsmDat[state++]);
     if(state >= 2+chns*2){
-        pulses2MHzptr-=3; //remove last stopbits and
+        pulses2MHzptr-=1; //remove last stopbits and
         _send_1(20000u*2 -1); //prolong them
         state=0;
     }
+    _send_1(0);           //end of pulse stream
 }

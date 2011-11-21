@@ -111,12 +111,22 @@ struct FrskyData {
 	void setoffset();
 };
 
+struct Frsky_current_info
+{
+uint16_t Amp_hour_boundary ;
+uint16_t Amp_hour_prescale ;
+uint16_t Amp_hours ;
+void update(uint8_t value);
+} ;
+ 
+extern Frsky_current_info Frsky_current[2] ;
+
 // Global Fr-Sky telemetry data variables
 extern uint8_t frskyStreaming; // >0 (true) == data is streaming in. 0 = nodata detected for some time
 extern uint8_t frskyUsrStreaming; // >0 (true) == user data is streaming in. 0 = no user data detected for some time
 extern uint8_t FrskyAlarmSendState;
-extern FrskyData frskyTelemetry[2];
-extern FrskyData frskyRSSI[2];
+extern FrskyData frskyTelemetry[4];
+//extern FrskyData frskyRSSI[2];
 extern int16_t FrskyHubData[] ;
 
 void FRSKY_Init(void);
@@ -124,10 +134,7 @@ void FRSKY_Init(void);
 void FRSKY_setTxPacket( uint8_t type, uint8_t value, uint8_t p1, uint8_t p2 ) ;
 void check_frsky( void ) ;
 
-inline void FRSKY_setModelAlarms(void)
-{
-  FrskyAlarmSendState |= 0x0F ;
-}
+void FRSKY_setModelAlarms(void) ;
 
 bool FRSKY_alarmRaised(uint8_t idx);
 
