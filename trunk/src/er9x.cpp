@@ -1114,7 +1114,7 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 
   cli();
   TIMSK |= (1<<OCIE0);
-//  sei();	The RETI will do this
+  sei();
 }
 
 
@@ -1157,7 +1157,7 @@ ISR(TIMER3_CAPT_vect, ISR_NOBLOCK) //capture ppm in 16MHz / 8 = 2MHz
 
   cli();
   ETIMSK |= (1<<TICIE3);
-//  sei();	The RETI will do this
+  sei();
 }
 
 extern uint16_t g_timeMain;

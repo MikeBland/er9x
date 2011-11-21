@@ -40,8 +40,9 @@ uint8_t FrskyRxBufferReady = 0;
 uint8_t frskyStreaming = 0;
 uint8_t frskyUsrStreaming = 0;
 
-FrskyData frskyTelemetry[2];
-FrskyData frskyRSSI[2];
+FrskyData frskyTelemetry[4];
+//FrskyData frskyRSSI[2];
+Frsky_current_info Frsky_current[2] ;
 
 uint8_t frskyRSSIlevel[2] ;
 uint8_t frskyRSSItype[2] ;
@@ -161,8 +162,10 @@ void processFrskyPacket(uint8_t *packet)
     case LINKPKT: // A1/A2/RSSI values
       frskyTelemetry[0].set(packet[1]);
       frskyTelemetry[1].set(packet[2]);
-      frskyRSSI[0].set(packet[3]);
-      frskyRSSI[1].set(packet[4] / 2);
+      frskyTelemetry[2].set(packet[3]);
+      frskyTelemetry[3].set(packet[4] / 2);
+//      frskyRSSI[0].set(packet[3]);
+//      frskyRSSI[1].set(packet[4] / 2);
       break;
 
 		case RSSIRXPKT :
@@ -441,14 +444,18 @@ void FRSKY_setTxPacket( uint8_t type, uint8_t value, uint8_t p1, uint8_t p2 )
 
 bool FRSKY_alarmRaised(uint8_t idx)
 {
+	uint8_t value ;
+	uint8_t alarm_value ;
   for (int i=0; i<2; i++) {
     if (ALARM_LEVEL(idx, i) != alarm_off) {
+			value = frskyTelemetry[idx].value ;
+			alarm_value = g_model.frsky.channels[idx].alarms_value[i] ;
       if (ALARM_GREATER(idx, i)) {
-        if (frskyTelemetry[idx].value > g_model.frsky.channels[idx].alarms_value[i])
+        if (value > alarm_value)
           return true;
       }
       else {
-        if (frskyTelemetry[idx].value < g_model.frsky.channels[idx].alarms_value[i])
+        if (value < alarm_value)
           return true;
       }
     }
@@ -561,7 +568,7 @@ void FrskyData::set(uint8_t value)
 	 	 value = 0 ;
 	 }
    this->value = value;
-   if (!max || max < value)
+   if (max < value)
      max = value;
    if (!min || min > value)
      min = value;
@@ -570,8 +577,20 @@ void FrskyData::set(uint8_t value)
 void resetTelemetry()
 {
   memset(frskyTelemetry, 0, sizeof(frskyTelemetry));
-  memset(frskyRSSI, 0, sizeof(frskyRSSI));
+	Frsky_current[0].Amp_hours = 0 ;
+	Frsky_current[1].Amp_hours = 0 ;
+//  memset(frskyRSSI, 0, sizeof(frskyRSSI));
 }
+
+void Frsky_current_info::update(uint8_t value)
+{
+	if ( ( Amp_hour_prescale += value ) > Amp_hour_boundary )
+	{
+		Amp_hour_prescale -= Amp_hour_boundary ;
+		Amp_hours += 1 ;			
+	}
+}
+
 
 void check_frsky()
 {
@@ -585,15 +604,31 @@ void check_frsky()
     FRSKY10mspoll() ;
   }
 
-  if ( g_model.frsky.channels[0].type == 3 )		// Current (A)
-  {
-    // value * ratio / 100 gives 10ths of amps
-    // add this every 10 ms, when over 3600, we have 1 mAh
-    // so subtract 3600 and add 1 to mAh total
-    // alternatively, add up the raw value, and use 3600 * 100 / 176 for 1mAh
-
-  }
-	
+	for( uint8_t i = 0 ; i < 2 ; i += 1 )
+	{
+  	if ( g_model.frsky.channels[i].type == 3 )		// Current (A)
+  	{
+  	  // value * ratio / 100 gives 10ths of amps
+  	  // add this every 10 ms, when over 3600, we have 1 mAh
+  	  // so subtract 3600 and add 1 to mAh total
+  	  // alternatively, add up the raw value, and use 3600 * 100 / ratio for 1mAh
+			
+			Frsky_current[i].update(frskyTelemetry[i].value ) ;
+  	}	
+	}
 }
+
+
+void FRSKY_setModelAlarms(void)
+{
+  FrskyAlarmSendState |= 0x0F ;
+	
+  Frsky_current[0].Amp_hour_boundary = 360000L/ g_model.frsky.channels[0].ratio ;
+	Frsky_current[1].Amp_hour_boundary = 360000L/ g_model.frsky.channels[1].ratio ;
+}
+
+
+
+
 
 
