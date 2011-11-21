@@ -36,6 +36,7 @@ void audioQueue::aqinit()
         queueToneRepeat[i] = 0;
         queueToneHaptic[i] = 0;
     }
+   
 
     //set key vars to 0 to ensure no garbage
     toneFreq = 0;
@@ -78,12 +79,25 @@ void audioQueue::commit()
             } 
         }
     }  else {
+				//aqinit();
         queueToneStart[0] = t_queueToneStart;
         queueToneEnd[0] = t_queueToneEnd;
         queueToneLength[0] = t_queueToneLength;
         queueTonePause[0] = t_queueTonePause;
         queueToneRepeat[0] = t_queueToneRepeat;
         queueToneHaptic[0] = t_queueToneHaptic;
+
+				//force everything else in queue to be flushed
+				//as this stops things sounding broken on an interrupt routine!
+		    for(uint8_t i=1; i<AUDIO_QUEUE_LENGTH; i++){
+		        queueToneStart[i] = 0;
+		        queueToneEnd[i] = 0;
+		        queueToneLength[i] = 0;
+		        queueTonePause[i] = 0;
+		        queueToneRepeat[i] = 0;
+		        queueToneHaptic[i] = 0;
+		    }        
+        
         flushTemp();
     }
     
@@ -106,24 +120,23 @@ void audioQueue::flushTemp()
 
 void audioQueue::restack()
 {
-    //for(uint8_t i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
-    for(uint8_t i=0; i<AUDIO_QUEUE_LENGTH; i++){
-        if(i == (AUDIO_QUEUE_LENGTH -1)){          //set the last entry to 0 as nothing in stack to add too!
-            queueToneStart[i] = 0;
-            queueToneEnd[i] = 0;
-            queueToneLength[i] = 0;
-            queueTonePause[i] = 0;
-            queueToneRepeat[i] = 0;
-            queueToneHaptic[i] = 0;
-        } else {      //shift all values one up in the stack.
-            queueToneStart[i] = queueToneStart[i+1];
-            queueToneEnd[i] = queueToneEnd[i+1];
-            queueToneLength[i] = queueToneLength[i+1];
-            queueTonePause[i] = queueTonePause[i+1];
-            queueToneRepeat[i] = queueToneRepeat[i+1];
-            queueToneHaptic[i] = queueToneHaptic[i+1];
-        }
-    }
+			    for(uint8_t i=0; i<AUDIO_QUEUE_LENGTH; i++){
+			        if(i == (AUDIO_QUEUE_LENGTH -1)){          //set the last entry to 0 as nothing in stack to add too!
+			            queueToneStart[i] = 0;
+			            queueToneEnd[i] = 0;
+			            queueToneLength[i] = 0;
+			            queueTonePause[i] = 0;
+			            queueToneRepeat[i] = 0;
+			            queueToneHaptic[i] = 0;
+			        } else {      //shift all values one up in the stack.
+			            queueToneStart[i] = queueToneStart[i+1];
+			            queueToneEnd[i] = queueToneEnd[i+1];
+			            queueToneLength[i] = queueToneLength[i+1];
+			            queueTonePause[i] = queueTonePause[i+1];
+			            queueToneRepeat[i] = queueToneRepeat[i+1];
+			            queueToneHaptic[i] = queueToneHaptic[i+1];
+			        }
+			    }   
 }
 
 
@@ -200,43 +213,33 @@ void audioQueue::heartbeat()
     //step through array checking if we have any tones to play
     //next heartbeat will play whatever we put in queue
     if((queueToneStart[0] > 0 || queueToneHaptic[0] == 1) && toneTimeLeft <= 0 && queueState == 0){
-
-
-        //scaling handler
-        if(queueToneEnd[0] > 0 && queueToneEnd[0] != queueToneStart[0]){
-
-            //if toneEnd is set then we scale the sound to from start to finish
-            //at an effective speed determined by the queueToneLength value
-//            toneFreq = queueToneStart[0] + g_eeGeneral.speakerPitch;
-            //calculate the rate of climb
-            if(queueToneStart[0] > queueToneEnd[0]){  //tone going down
-                z = queueToneStart[0] - queueToneEnd[0];
-                y = 0;
-            } else { //tone going up
-                z = queueToneEnd[0] - queueToneStart[0];
-                y = 1;
-            }
-            toneFreq=queueToneStart[0] + g_eeGeneral.speakerPitch; // add pitch compensator
-            toneFreqEnd=queueToneEnd[0] + g_eeGeneral.speakerPitch;
-//            toneTimeLeft = queueToneLength[0];
-            rateOfChange = 1;
-            DirectionOfChange = y;
-            toneTimeLeft = z;
-            tonePause = queueTonePause[0];
-            toneRepeat = queueToneRepeat[0];
-            toneHaptic = queueToneHaptic[0];
-        }	else {
-
-            //simple tone handler
-            toneFreq=(queueToneStart[0] + g_eeGeneral.speakerPitch) + BEEP_OFFSET; // add pitch compensator
-            DirectionOfChange = 0;
-            rateOfChange = 0;
-            toneFreqEnd = 0;
-            toneTimeLeft = queueToneLength[0];
-            tonePause = queueTonePause[0];
-            toneRepeat = queueToneRepeat[0];
-            toneHaptic = queueToneHaptic[0];
-        }
+	        if(queueToneEnd[0] > 0 && queueToneEnd[0] != queueToneStart[0]){
+	            if(queueToneStart[0] > queueToneEnd[0]){  //tone going down
+	                z = queueToneStart[0] - queueToneEnd[0];
+	                y = 0;
+	            } else { //tone going up
+	                z = queueToneEnd[0] - queueToneStart[0];
+	                y = 1;
+	            }
+	            toneFreq=queueToneStart[0] + g_eeGeneral.speakerPitch; // add pitch compensator
+	            toneFreqEnd=queueToneEnd[0] + g_eeGeneral.speakerPitch;
+	            rateOfChange = 1;
+	            DirectionOfChange = y;
+	            toneTimeLeft = z;
+	            tonePause = queueTonePause[0];
+	            toneRepeat = queueToneRepeat[0];
+	            toneHaptic = queueToneHaptic[0];
+	        }	else {					
+	            //simple tone handler
+	            toneFreq=(queueToneStart[0] + g_eeGeneral.speakerPitch) + BEEP_OFFSET; // add pitch compensator
+	            DirectionOfChange = 0;
+	            rateOfChange = 0;
+	            toneFreqEnd = 0;
+	            toneTimeLeft = queueToneLength[0];
+	            tonePause = queueTonePause[0];
+	            toneRepeat = queueToneRepeat[0];
+	            toneHaptic = queueToneHaptic[0];
+	        }			        
         queueState = 1;
         //HapticTimer = BEEP_HAPTIC_LENGTH;
 
@@ -338,6 +341,7 @@ void audioQueue::playASAP(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRe
 		//this is done so the menu selections only plays tone once!
 		void audioQueue::frskyeventSample(uint8_t e){
 			if(frskySample != e){
+					aqinit(); //flush the queue
 					frskyevent(e);
 					frskySample = e;
 			}
@@ -346,39 +350,63 @@ void audioQueue::playASAP(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRe
 		void audioQueue::frskyevent(uint8_t e){
 			 // example playASAP(tStart,tLen,tPause,tHaptic,tRepeat,tEnd);
 				switch(e){
-						case AUDIO_FRSKY_TONE1:
-									playASAP(BEEP_DEFAULT_FREQ+10,2,1,0,1);			
+						case AUDIO_FRSKY_WARN1: 
+									playASAP(BEEP_DEFAULT_FREQ+20,25,5,2,1);		
 									break;			
-						case AUDIO_FRSKY_TONE2:
-									playASAP(BEEP_DEFAULT_FREQ+20,2,1,0,2);		
+						case AUDIO_FRSKY_WARN2:
+									playASAP(BEEP_DEFAULT_FREQ+30,25,5,2,1);		
 									break;	
-						case AUDIO_FRSKY_TONE3:
-									playASAP(BEEP_DEFAULT_FREQ+30,2,1,0,3);				
+						case AUDIO_FRSKY_CHEEP:
+									playASAP(BEEP_DEFAULT_FREQ+30,20,2,2,1,BEEP_DEFAULT_FREQ+25);				
 									break;	
-						case AUDIO_FRSKY_TONE4:
-									playASAP(BEEP_DEFAULT_FREQ+40,2,1,0,4);				
+						case AUDIO_FRSKY_RING:
+									playASAP(BEEP_DEFAULT_FREQ+25,2,2,10,1);
+									playASAP(BEEP_DEFAULT_FREQ+25,2,10,1,1);	
+									playASAP(BEEP_DEFAULT_FREQ+25,2,2,10,1);																		
 									break;	
-						case AUDIO_FRSKY_TONE5:
-									playASAP(BEEP_DEFAULT_FREQ+50,2,1,0,5);				
+						case AUDIO_FRSKY_SCIFI:
+									playASAP(80,4,3,2,0,70);								
+									playASAP(60,4,3,2,0,70);						
+									playASAP(70,2,1,0,2);			
 									break;																			
-						case AUDIO_FRSKY_HTONE1:
-									playASAP(BEEP_DEFAULT_FREQ+10,2,1,1,1);			
+						case AUDIO_FRSKY_ROBOT: 
+									playASAP(70,2,1,1,1);
+									playASAP(50,6,2,1,1);	
+									playASAP(80,6,2,1,1);		
 									break;			
-						case AUDIO_FRSKY_HTONE2:
-									playASAP(BEEP_DEFAULT_FREQ+20,2,1,1,2);			
+						case AUDIO_FRSKY_CHIRP:
+									
+									playASAP(BEEP_DEFAULT_FREQ+40,2,1,2,1);		
+									playASAP(BEEP_DEFAULT_FREQ+54,2,1,3,1);	
 									break;	
-						case AUDIO_FRSKY_HTONE3:
-									playASAP(BEEP_DEFAULT_FREQ+30,2,1,1,3);				
+						case AUDIO_FRSKY_TADA:
+									playASAP(50,10,5);
+									playASAP(90,10,5);
+									playASAP(110,6,4,2);		
 									break;	
-						case AUDIO_FRSKY_HTONE4:
-									playASAP(BEEP_DEFAULT_FREQ+40,2,1,1,4);				
+						case AUDIO_FRSKY_CRICKET:
+									playASAP(80,1,10,3,1);
+									playASAP(80,1,20,1,1);
+									playASAP(80,1,10,3,1);			
 									break;	
-						case AUDIO_FRSKY_HTONE5:
-									playASAP(BEEP_DEFAULT_FREQ+50,2,1,1,5);			
+						case AUDIO_FRSKY_SIREN:
+									playASAP(10,10,10,3,1,70);								
 									break;
+						case AUDIO_FRSKY_ALARMC:
+									playASAP(50,5,10,2,1);
+									playASAP(70,5,20,1,1);									
+									playASAP(50,5,10,2,1);
+									playASAP(70,5,20,1,1);
+									break;	
+						case AUDIO_FRSKY_RATATA:	
+									playASAP(BEEP_DEFAULT_FREQ+50,2,10,10,1);
+									break;	
+						case AUDIO_FRSKY_TICK:				
+									playASAP(BEEP_DEFAULT_FREQ+50,2,50,2,1);	
+									break;																																					
 						default:
 							break;
-				}			
+				}				
 			
 		}	
 #endif
@@ -480,9 +508,9 @@ void audioQueue::event(uint8_t e,uint8_t f){
 			//trim sticks move
 			//case 7:
 			case AUDIO_TRIM_MOVE:
-						if(beepVal != BEEP_NOKEYS){
+						//if(beepVal != BEEP_NOKEYS){
 							playNow(f,2,1);		
-						}
+						//}
 						break;
 							
 			//trim sticks center

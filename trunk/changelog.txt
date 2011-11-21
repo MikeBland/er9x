@@ -10,6 +10,15 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 21-11-2011 RFT
+Updated audio.cpp & audio.h to include the fancy frsky alert souunds
+Updated menu.cpp to show menu for fancy sounds
+Updated audio.cpp to fix an issue with sound playback when running the sound interupt function
+
+******************************************
+
+
+******************************************
 CHANGELOG: 19-11-2011 MPB
 Move Frsky 10 mS code into frsky.cpp (from drivers.cpp) 
 Add audioQueue::frskyevent() in audio.cpp
@@ -18,7 +27,6 @@ Add frsky alarm options in system menu, these don't change anything yet
 Add frsky alarm setting to myeeprom.h
 Fix dsm2 reboot problem?
 Initialise bandgap and battery values - faster settling of display voltage
-
 
 ******************************************
 CHANGELOG: 14-11-2011 RFT
