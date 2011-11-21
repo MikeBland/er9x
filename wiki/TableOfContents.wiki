@@ -9,5 +9,6 @@
       * [WhichFirmware Which Firmware?]
     * [HardwareGuides Hardware Mods]
     * [HardwareRepair Hardware Repair Guides]
+    * [9xSchematic 9X Main Board Schematic]
 
          
