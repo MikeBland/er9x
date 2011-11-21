@@ -2771,10 +2771,12 @@ if(g_eeGeneral.speakerMode == 1){
         b = g_eeGeneral.FRSkyRed ;
         lcd_puts_P(0, y,PSTR("Alert [Red]"));
 			}
-      lcd_putsnAtt(PARAM_OFS - FW - 4, y, PSTR("Tone1 ""Tone2 ""Tone3 ""Tone4 ""Tone5 ""hTone1""hTone2""hTone3""hTone4""hTone5")+6*b,6,(sub==subN ? INVERS:0));
+      //lcd_putsnAtt(PARAM_OFS - FW - 4, y, PSTR("Tone1 ""Tone2 ""Tone3 ""Tone4 ""Tone5 ""hTone1""hTone2""hTone3""hTone4""hTone5")+6*b,6,(sub==subN ? INVERS:0));
+      lcd_putsnAtt(PARAM_OFS - FW - 4, y, PSTR("Warn1 ""Warn2 ""Cheep ""Ring  ""SciFi ""Robot ""Chirp ""Tada  ""Crickt""Siren ""AlmClk""Ratata""Tick  ")+6*b,6,(sub==subN ? INVERS:0));
       if(sub==subN)
 			{
-				CHECK_INCDEC_H_GENVAR(event, b, 0, 9);
+				//CHECK_INCDEC_H_GENVAR(event, b, 0, 9);
+				CHECK_INCDEC_H_GENVAR(event, b, 0, 12);
 				if ( i == 0 )
 				{
 		      g_eeGeneral.FRSkyYellow = b ;
