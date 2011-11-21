@@ -1,10 +1,10 @@
 ===== Starting build =====
 Timestamp
-Sat Nov 19 23:01:25 UTC 2011
+Mon Nov 21 12:52:08 UTC 2011
 ==========================
 
 ===== Updating from SVN =====
-At revision 626.
+At revision 632.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -36,10 +36,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "19.11.2011"
-#define TIME_STR "18:06:27"
-#define SUB_VERS 5155-erez
-#define SVN_VERS "trunk-r627"
+#define DATE_STR "21.11.2011"
+#define TIME_STR "07:07:10"
+#define SUB_VERS 5162-erez
+#define SVN_VERS "trunk-r633"
 #define MOD_VERS "JETI   "
 
 Compiling C++: er9x.cpp
@@ -98,7 +98,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   54454 bytes (83.1% Full)
+Program:   54474 bytes (83.1% Full)
 (.text + .data + .bootloader)
 
 Data:       3522 bytes (86.0% Full)
@@ -140,10 +140,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "19.11.2011"
-#define TIME_STR "18:06:29"
-#define SUB_VERS 5156-erez
-#define SVN_VERS "trunk-r627"
+#define DATE_STR "21.11.2011"
+#define TIME_STR "07:07:13"
+#define SUB_VERS 5163-erez
+#define SVN_VERS "trunk-r633"
 #define MOD_VERS "FRSKY   "
 
 Compiling C++: er9x.cpp
@@ -202,7 +202,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   59654 bytes (91.0% Full)
+Program:   59990 bytes (91.5% Full)
 (.text + .data + .bootloader)
 
 Data:       3664 bytes (89.5% Full)
@@ -244,10 +244,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "19.11.2011"
-#define TIME_STR "18:06:32"
-#define SUB_VERS 5157-erez
-#define SVN_VERS "trunk-r627"
+#define DATE_STR "21.11.2011"
+#define TIME_STR "07:07:16"
+#define SUB_VERS 5164-erez
+#define SVN_VERS "trunk-r633"
 #define MOD_VERS "FRSKY NHT  "
 
 Compiling C++: er9x.cpp
@@ -306,7 +306,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   58438 bytes (89.2% Full)
+Program:   58774 bytes (89.7% Full)
 (.text + .data + .bootloader)
 
 Data:       3660 bytes (89.4% Full)
@@ -348,10 +348,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "19.11.2011"
-#define TIME_STR "18:06:35"
-#define SUB_VERS 5158-erez
-#define SVN_VERS "trunk-r627"
+#define DATE_STR "21.11.2011"
+#define TIME_STR "07:07:18"
+#define SUB_VERS 5165-erez
+#define SVN_VERS "trunk-r633"
 #define MOD_VERS "ARDU   "
 
 Compiling C++: er9x.cpp
@@ -410,7 +410,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   56312 bytes (85.9% Full)
+Program:   56332 bytes (86.0% Full)
 (.text + .data + .bootloader)
 
 Data:       3520 bytes (85.9% Full)
@@ -452,10 +452,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "19.11.2011"
-#define TIME_STR "18:06:38"
-#define SUB_VERS 5159-erez
-#define SVN_VERS "trunk-r627"
+#define DATE_STR "21.11.2011"
+#define TIME_STR "07:07:21"
+#define SUB_VERS 5166-erez
+#define SVN_VERS "trunk-r633"
 #define MOD_VERS "NMEA   "
 
 Compiling C++: er9x.cpp
@@ -514,7 +514,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   57068 bytes (87.1% Full)
+Program:   57088 bytes (87.1% Full)
 (.text + .data + .bootloader)
 
 Data:       3580 bytes (87.4% Full)
@@ -556,10 +556,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "19.11.2011"
-#define TIME_STR "18:06:41"
-#define SUB_VERS 5160-erez
-#define SVN_VERS "trunk-r627"
+#define DATE_STR "21.11.2011"
+#define TIME_STR "07:07:24"
+#define SUB_VERS 5167-erez
+#define SVN_VERS "trunk-r633"
 #define MOD_VERS " NHT  "
 
 Compiling C++: er9x.cpp
@@ -615,7 +615,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   52698 bytes (80.4% Full)
+Program:   52718 bytes (80.4% Full)
 (.text + .data + .bootloader)
 
 Data:       3482 bytes (85.0% Full)
@@ -657,10 +657,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "19.11.2011"
-#define TIME_STR "18:06:44"
-#define SUB_VERS 5161-erez
-#define SVN_VERS "trunk-r627"
+#define DATE_STR "21.11.2011"
+#define TIME_STR "07:07:27"
+#define SUB_VERS 5168-erez
+#define SVN_VERS "trunk-r633"
 #define MOD_VERS "   "
 
 Compiling C++: er9x.cpp
@@ -716,7 +716,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   53914 bytes (82.3% Full)
+Program:   53934 bytes (82.3% Full)
 (.text + .data + .bootloader)
 
 Data:       3486 bytes (85.1% Full)
