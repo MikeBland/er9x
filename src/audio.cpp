@@ -47,6 +47,7 @@ void audioQueue::aqinit()
     toneRepeatCnt = 0;
     inToneRepeat = 0;
     hapticTick = 0;
+
 #ifdef FRSKY
 		frskySample = 0;
 #endif    
@@ -151,7 +152,8 @@ void audioQueue::heartbeat()
 
     if(queueState == 1){
 
-			if(g_eeGeneral.beeperVal > 0){ //never do sounds if we are set to go quiet
+			if(g_eeGeneral.beeperVal > 0){ 
+						//never do sounds if we are set to go quiet 
 
 							switch (g_eeGeneral.speakerMode){
 								
@@ -221,8 +223,12 @@ void audioQueue::heartbeat()
 	                z = queueToneEnd[0] - queueToneStart[0];
 	                y = 1;
 	            }
-	            toneFreq=queueToneStart[0] + g_eeGeneral.speakerPitch; // add pitch compensator
-	            toneFreqEnd=queueToneEnd[0] + g_eeGeneral.speakerPitch;
+	            if(queueToneStart[0] > 0){
+	            	toneFreq=queueToneStart[0] + g_eeGeneral.speakerPitch + BEEP_OFFSET; // add pitch compensator
+	          	} else {
+	          		toneFreq=queueToneStart[0]; // done so hapticOnly option can work
+	          	}
+	            toneFreqEnd=queueToneEnd[0] + g_eeGeneral.speakerPitch + BEEP_OFFSET;
 	            rateOfChange = 1;
 	            DirectionOfChange = y;
 	            toneTimeLeft = z;
@@ -231,7 +237,11 @@ void audioQueue::heartbeat()
 	            toneHaptic = queueToneHaptic[0];
 	        }	else {					
 	            //simple tone handler
-	            toneFreq=(queueToneStart[0] + g_eeGeneral.speakerPitch) + BEEP_OFFSET; // add pitch compensator
+	            if(queueToneStart[0] > 0){
+	            	toneFreq=(queueToneStart[0] + g_eeGeneral.speakerPitch) + BEEP_OFFSET; // add pitch compensator
+	          	} else {
+	          		toneFreq=queueToneStart[0];
+	          	}	
 	            DirectionOfChange = 0;
 	            rateOfChange = 0;
 	            toneFreqEnd = 0;
@@ -348,7 +358,7 @@ void audioQueue::playASAP(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRe
 	  }
 
 		void audioQueue::frskyevent(uint8_t e){
-			 // example playASAP(tStart,tLen,tPause,tHaptic,tRepeat,tEnd);
+			 // example playASAP(tStart,tLen,tPause,tRepeat,tHaptic,tEnd);
 				switch(e){
 						case AUDIO_FRSKY_WARN1: 
 									playASAP(BEEP_DEFAULT_FREQ+20,25,5,2,1);		
@@ -404,6 +414,15 @@ void audioQueue::playASAP(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRe
 						case AUDIO_FRSKY_TICK:				
 									playASAP(BEEP_DEFAULT_FREQ+50,2,50,2,1);	
 									break;																																					
+						case AUDIO_FRSKY_HAPTIC1:				
+									playASAP(0,2,10,1,1);	
+									break;		
+						case AUDIO_FRSKY_HAPTIC2:				
+									playASAP(0,2,10,2,1);	
+									break;
+						case AUDIO_FRSKY_HAPTIC3:				
+									playASAP(0,2,10,3,1);	
+									break;
 						default:
 							break;
 				}				

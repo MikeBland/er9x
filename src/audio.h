@@ -69,6 +69,9 @@
 #define AUDIO_FRSKY_ALARMC (10)
 #define AUDIO_FRSKY_RATATA (11)
 #define AUDIO_FRSKY_TICK (12)
+#define AUDIO_FRSKY_HAPTIC1 (13)
+#define AUDIO_FRSKY_HAPTIC2 (14)
+#define AUDIO_FRSKY_HAPTIC3 (15)
 #endif
 
 
@@ -112,6 +115,7 @@ struct audioQueue{
     uint8_t toneHaptic;
     uint8_t hapticTick;
    	uint8_t heartbeatTimer;
+
 
 #ifdef FRSKY
 		uint8_t frskySample;
