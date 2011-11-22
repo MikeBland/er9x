@@ -10,6 +10,10 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 21-11-2011 MPB
+Fix WsHowHi metric/imperial bug
+
+******************************************
 CHANGELOG: 22-11-2011 RFT
 Audio option to enable 'just haptic' alerts to work
 Added haptic to frsky alerts menu
