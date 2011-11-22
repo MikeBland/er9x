@@ -3424,18 +3424,25 @@ void menuProc0(uint8_t event)
                     lcd_puts_P(9*FW, 2*FH, PSTR("RPM="));
                     lcd_outdezAtt(13*FW, 1*FH, FrskyHubData[3]*30, DBLSIZE|LEFT);
                     lcd_puts_P(0, 4*FH, PSTR("Alt="));
-                    unit = 'm' ;
                     value = FrskyHubData[16] + AltOffset ;
+										if (g_model.FrSkyUsrProto == 1)  // WS How High
+										{
+                        unit = 'f' ;  // and ignore met/imp option
+										}
+										else
+										{
+                      unit = 'm' ;
                     //                  if ( value < 0 )
                     //                  {
                     //                    value = 0 ;
                     //                  }
-                    if ( g_model.FrSkyImperial )
-                    {
+                      if ( g_model.FrSkyImperial )
+                      {
                         // m to ft *105/32
-                        value = value * 3 + ( value >> 2 ) + (value >> 5) ;
+                       	value = value * 3 + ( value >> 2 ) + (value >> 5) ;
                         unit = 'f' ;
-                    }
+                      }
+										}
                     lcd_putc( 3*FW, 3*FH, unit ) ;
                     lcd_outdezAtt(4*FW, 3*FH, value, DBLSIZE|LEFT);
                 }	
