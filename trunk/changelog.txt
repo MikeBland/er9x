@@ -10,6 +10,11 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 22-11-2011 RFT
+Audio option to enable 'just haptic' alerts to work
+Added haptic to frsky alerts menu
+
+******************************************
 CHANGELOG: 21-11-2011 MPB
 Re-arrange FrSky telemetry structures
 Add FrSky battery capacity used function
