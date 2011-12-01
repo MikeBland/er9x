@@ -9,11 +9,15 @@ CHANGELOG: 1-11-2011
 description here
 ====================================================================================
 ******************************************
+CHANGELOG: 1-12-2011 MPB
+Add A2 to altitude telemetry display, improve bandgap A2d reading
+
+******************************************
 CHANGELOG: 01-12-2011 RFT
 Cleaned up menus.cpp in relation to frsky yel/org/red option displays.
 
 ******************************************
-CHANGELOG: 21-11-2011 MPB
+CHANGELOG: 22-11-2011 MPB
 Fix WsHowHi metric/imperial bug
 
 ******************************************

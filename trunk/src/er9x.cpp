@@ -892,7 +892,7 @@ void perMain()
 
         int16_t ab = anaIn(7);
         ab = ab*16 + ab/8*(6+g_eeGeneral.vBatCalib) ;
-        ab /= g_eeGeneral.disableBG ? 240 : BandGap ;
+        ab = (uint16_t) ab / (g_eeGeneral.disableBG ? 240 : BandGap ) ;  // ab might be more than 32767
         g_vbat100mV = (ab + g_vbat100mV + 1) >> 1 ;  // Filter it a bit => more stable display
 
         static uint8_t s_batCheck;
@@ -1044,10 +1044,10 @@ void getADC_bandgap()
 {
   ADMUX=0x1E|ADC_VREF_TYPE;
   // Start the AD conversion
-  ADCSRA|=0x40;
+//  ADCSRA|=0x40;
   // Wait for the AD conversion to complete
-  while ((ADCSRA & 0x10)==0);
-  ADCSRA|=0x10;
+//  while ((ADCSRA & 0x10)==0);
+//  ADCSRA|=0x10;
   // Do it twice, first conversion may be wrong
   ADCSRA|=0x40;
   // Wait for the AD conversion to complete
@@ -1066,7 +1066,7 @@ getADCp getADC[3] = {
 
 volatile uint8_t g_tmr16KHz;
 
-ISR(TIMER0_OVF_vect) //continuous timer 16ms (16MHz/1024)
+ISR(TIMER0_OVF_vect, ISR_NOBLOCK) //continuous timer 16ms (16MHz/1024)
 {
   g_tmr16KHz++;
 }
@@ -1309,8 +1309,9 @@ void mainSequence()
 {
       uint16_t t0 = getTmr16KHz();
       getADC[g_eeGeneral.filterInput]();
+      ADMUX=0x1E|ADC_VREF_TYPE;   // Select bandgap
+      perMain();      // Give bandgap plenty of time to settle
       getADC_bandgap() ;
-      perMain();
       //while(get_tmr10ms()==old10ms) sleep_mode();
       if(heartbeat == 0x3)
       {
