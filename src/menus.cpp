@@ -3468,6 +3468,12 @@ void menuProc0(uint8_t event)
                     lcd_puts_P(0, 6*FH, PSTR("A1="));
                     putsTelemValue( 3*FW-2, 5*FH, staticTelemetry[0], 0,  blink|DBLSIZE|LEFT, 1 ) ;
                 }
+                if (g_model.frsky.channels[1].ratio)
+                {
+                    blink = (alarmRaised[1] ? INVERS : 0);
+                    lcd_puts_P(11*FW-2, 6*FH, PSTR("A2="));
+                    putsTelemValue( 14*FW-2, 5*FH, staticTelemetry[1], 0,  blink|DBLSIZE|LEFT, 1 ) ;
+                }
                 lcd_puts_P(0, 7*FH, PSTR("Rx="));
                 lcd_outdezAtt(3 * FW, 7*FH, staticTelemetry[2], LEFT);
                 lcd_puts_P(8 * FW, 7*FH, PSTR("Tx="));
