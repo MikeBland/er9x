@@ -8,6 +8,9 @@ Format is as follows:
 CHANGELOG: 1-11-2011
 description here
 ====================================================================================
+******************************************
+CHANGELOG: 01-12-2011 RFT
+Cleaned up menus.cpp in relation to frsky yel/org/red option displays.
 
 ******************************************
 CHANGELOG: 21-11-2011 MPB
