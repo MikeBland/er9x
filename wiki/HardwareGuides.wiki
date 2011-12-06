@@ -8,6 +8,7 @@ The following are a list of tutorials that have been sourced from the community 
 
  * [Backlight Installing a backlight]
  * [TelemetryMods Telemetry Mods]
+ * [MPLS4DSMMods MPLS4DSM2 Install]
  * [CustomSpray Custom Spray]
  * [SpeakerMod Speaker Mod]
  * [SpeakerModVibrate Speaker Mod with Haptic Feedback (basic mod - no longer recommended)]
