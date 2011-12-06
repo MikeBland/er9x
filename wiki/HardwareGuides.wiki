@@ -8,7 +8,7 @@ The following are a list of tutorials that have been sourced from the community 
 
  * [Backlight Installing a backlight]
  * [TelemetryMods Telemetry Mods]
- * [MPLS4DSMMods MPLS4DSM2 Install]
+ * <a href="http://er9x.googlecode.com/svn/trunk/doc/ER9X%20MPLS4DSM%20Install%20Guide.pdf">Using the MPLS4DSM module to convert your 9X to a DSM2 based transmitter</a>
  * [CustomSpray Custom Spray]
  * [SpeakerMod Speaker Mod]
  * [SpeakerModVibrate Speaker Mod with Haptic Feedback (basic mod - no longer recommended)]
