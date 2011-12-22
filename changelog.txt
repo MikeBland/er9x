@@ -9,6 +9,10 @@ CHANGELOG: 1-11-2011
 description here
 ====================================================================================
 ******************************************
+CHANGELOG: 22-12-2011 MPB
+Fix A2 on altitude telemetry display bug
+
+******************************************
 CHANGELOG: 1-12-2011 MPB
 Add A2 to altitude telemetry display, improve bandgap A2d reading
 
