@@ -3403,7 +3403,7 @@ void menuProc0(uint8_t event)
                 lcd_outdezAtt(4 * FW, 7*FH, frskyTelemetry[2].min, 0);
                 lcd_outdezAtt(6 * FW, 7*FH, frskyTelemetry[2].max, LEFT);
                 lcd_puts_P(11 * FW - 2, 6*FH, PSTR("Tx="));
-                lcd_outdezAtt(14 * FW - 4, 5*FH, staticTelemetry[2], DBLSIZE|LEFT);
+                lcd_outdezAtt(14 * FW - 4, 5*FH, staticTelemetry[3], DBLSIZE|LEFT);
                 lcd_outdezAtt(15 * FW - 2, 7*FH, frskyTelemetry[3].min, 0);
                 lcd_outdezAtt(17 * FW - 2, 7*FH, frskyTelemetry[3].max, LEFT);
             }
@@ -3520,38 +3520,6 @@ void menuProc0(uint8_t event)
     }
 #endif
     else if(view<e_timer2){
-        //    #define BOX_WIDTH     23
-        //    #define BAR_HEIGHT    (BOX_WIDTH-1l)
-        //    #define MARKER_WIDTH  5
-        //    #define SCREEN_WIDTH  128
-        //    #define SCREEN_HEIGHT 64
-        //    #define BOX_LIMIT     (BOX_WIDTH-MARKER_WIDTH)
-        //    #define LBOX_CENTERX  (  SCREEN_WIDTH/4 + 10)
-        //    #define LBOX_CENTERY  (SCREEN_HEIGHT-9-BOX_WIDTH/2)
-        //    #define RBOX_CENTERX  (3*SCREEN_WIDTH/4 - 10)
-        //    #define RBOX_CENTERY  (SCREEN_HEIGHT-9-BOX_WIDTH/2)
-
-        //    DO_SQUARE(LBOX_CENTERX,LBOX_CENTERY,BOX_WIDTH);
-        //    DO_SQUARE(RBOX_CENTERX,RBOX_CENTERY,BOX_WIDTH);
-
-        //    DO_CROSS(LBOX_CENTERX,LBOX_CENTERY,3)
-        //    DO_CROSS(RBOX_CENTERX,RBOX_CENTERY,3)
-        //    DO_SQUARE(LBOX_CENTERX+(calibratedStick[0]*BOX_LIMIT/(2*RESX)), LBOX_CENTERY-(calibratedStick[1]*BOX_LIMIT/(2*RESX)), MARKER_WIDTH)
-        //    DO_SQUARE(RBOX_CENTERX+(calibratedStick[3]*BOX_LIMIT/(2*RESX)), RBOX_CENTERY-(calibratedStick[2]*BOX_LIMIT/(2*RESX)), MARKER_WIDTH)
-
-        ////    V_BAR(SCREEN_WIDTH/2-5,SCREEN_HEIGHT-10,((calibratedStick[4]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P1
-        ////    V_BAR(SCREEN_WIDTH/2  ,SCREEN_HEIGHT-10,((calibratedStick[5]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P2
-        ////    V_BAR(SCREEN_WIDTH/2+5,SCREEN_HEIGHT-10,((calibratedStick[6]+RESX)*BAR_HEIGHT/(RESX*2))+1l) //P3
-
-        //    // Optimization by Mike Blandford
-        //    {
-        //        uint8_t x, y, len ;			// declare temporary variables
-        //        for( x = -5, y = 4 ; y < 7 ; x += 5, y += 1 )
-        //        {
-        //            len = ((calibratedStick[y]+RESX)*BAR_HEIGHT/(RESX*2))+1l ;  // calculate once per loop
-        //            V_BAR(SCREEN_WIDTH/2+x,SCREEN_HEIGHT-10, len )
-        //        }
-        //    }
 
         doMainScreenGrphics();
 
