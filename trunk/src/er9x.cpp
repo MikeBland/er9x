@@ -15,6 +15,7 @@
  */
 
 #include "er9x.h"
+#include "splashmarker.h"
 #include "s9xsplash.lbm"
 
 /*

@@ -26,7 +26,8 @@ HEADERS += \
     er9x.h \
     ardupilot.h \
     nmea.h \
-    pulses.h
+    pulses.h \
+    splashmarker.h
 
 SOURCES += \
     templates.cpp \
