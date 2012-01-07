@@ -8,6 +8,12 @@ Format is as follows:
 CHANGELOG: 1-11-2011
 description here
 ====================================================================================
+
+******************************************
+CHANGELOG: 7-1-2012 
+Added "Splash" marker to help eePe find the splash screen data
+NEMA Changes
+
 ******************************************
 CHANGELOG: 22-12-2011 MPB
 Fix A2 on altitude telemetry display bug

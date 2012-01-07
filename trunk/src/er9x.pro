@@ -42,4 +42,5 @@ SOURCES += \
     drivers.cpp \
     ardupilot.cpp \
     audio.cpp \
-    pulses.cpp
+    pulses.cpp \
+    nmea.cpp
