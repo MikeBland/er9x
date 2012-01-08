@@ -47,7 +47,7 @@ void generalDefault()
     g_eeGeneral.calibSpanNeg[i] = 0x180;
     g_eeGeneral.calibSpanPos[i] = 0x180;
   }
-  strcpy_P(g_model.name,PSTR("ME        "));
+  strncpy_P(g_eeGeneral.ownerName,PSTR("ME        "),10);
   int16_t sum=0;
   for(int i=0; i<12;i++) sum+=g_eeGeneral.calibMid[i];
   g_eeGeneral.chkSum = sum;
@@ -78,7 +78,7 @@ bool eeLoadGeneral()
 void modelDefault(uint8_t id)
 {
   memset(&g_model, 0, sizeof(ModelData));
-  strcpy_P(g_model.name,PSTR("MODEL     "));
+  strncpy_P(g_model.name,PSTR("MODEL     "), 10);
   g_model.name[5]='0'+(id+1)/10;
   g_model.name[6]='0'+(id+1)%10;
   g_model.mdVers = MDVERS;

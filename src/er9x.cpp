@@ -1296,7 +1296,8 @@ if(g_eeGeneral.speakerMode == 1){
   FrskyAlarmSendState |= 0x40 ;
 #endif
   
-  OCR1A = 2000 ;        // set to 1mS
+  // This bit depends on protocol
+	OCR1A = 2000 ;        // set to 1mS
   TIFR = 1 << OCF1A ;   // Clear pending interrupt
 
   PULSEGEN_ON; // Pulse generator enable immediately before mainloop
@@ -1321,6 +1322,14 @@ void mainSequence()
       }
       t0 = getTmr16KHz() - t0;
       if ( t0 > g_timeMain ) g_timeMain = t0 ;
+#ifdef FRSKY
+			if ( FrskyAlarmCheckFlag )
+			{
+				FrskyAlarmCheckFlag = 0 ;
+				// Check for alarms here
+				// Including Altitude limit
+			}
+#endif
 }
 
 

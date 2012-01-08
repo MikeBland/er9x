@@ -1891,13 +1891,27 @@ if(s_pgOfs<subN) {
         lcd_putsAtt(    17*FW,    y, PSTR("uSec"),0);
         lcd_outdezAtt(  17*FW, y,  (g_model.ppmDelay*50)+300, (sub==subN && subSub==2 ? (s_editMode ? BLINK : INVERS):0));
     }
+    if (g_model.protocol == PROTO_DSM2)
+		{
+ //       CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,0,2);
+			int8_t x ;
+				x = g_model.ppmNCH ;
+				if ( x < 0 ) x = 0 ;
+				if ( x > 2 ) x = 2 ;
+				g_model.ppmNCH = x ;
+        lcd_putsnAtt(12*FW,y, PSTR(DSM2_STR)+DSM2_STR_LEN*(x),DSM2_STR_LEN,
+                    (sub==subN && subSub==1 ? (s_editMode ? BLINK : INVERS):0));
+		}
     if(sub==subN && (s_editMode || p1valdiff))
         switch (subSub){
         case 0:
             CHECK_INCDEC_H_MODELVAR(event,g_model.protocol,0,PROT_MAX);
             break;
         case 1:
-            CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,-2,4);
+            if (g_model.protocol == PROTO_DSM2)
+                  CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,0,2);
+            else  
+                  CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,-2,4);
             break;
         case 2:
             CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
@@ -2965,6 +2979,7 @@ void trace()   // called in perOut - once envery 0.01sec
     static uint16_t s_time;
     static uint16_t s_cnt;
     static uint16_t s_sum;
+//    static uint8_t test = 1;
     s_cnt++;
     s_sum+=val;
     if(( get_tmr10ms()-s_time)<1000) //10 sec
@@ -2973,6 +2988,8 @@ void trace()   // called in perOut - once envery 0.01sec
         //    if(( time10ms-s_time)<1000) //10 sec
         return;
     s_time= get_tmr10ms() ;
+ 
+    if ((g_model.protocol==PROTO_DSM2)&&getSwitch(MAX_DRSWITCH-1,0,0) ) audioDefevent(AUDIO_TADA);   //DSM2 bind mode warning
     //    s_time= time10ms ;
     val   = s_sum/s_cnt;
     s_sum = 0;
@@ -3489,8 +3506,10 @@ void menuProc0(uint8_t event)
                 lcd_outdezNAtt(8*FW, 3*FH, FrskyHubData[18], LEADING0, -5);
                 lcd_putc(8*FW, 3*FH, '.') ;
                 lcd_outdezNAtt(12*FW, 3*FH, FrskyHubData[26], LEADING0, -4);
-
-                //              lcd_putsAtt(6, 2*FH, PSTR("To Be Done"), DBLSIZE);
+                lcd_puts_P(0, 3*FH, PSTR("Alt=")) ;
+                lcd_outdezAtt(8 * FW, 4*FH, FrskyHubData[1], 0 ) ;
+                
+								//              lcd_putsAtt(6, 2*FH, PSTR("To Be Done"), DBLSIZE);
             }
             else
             {

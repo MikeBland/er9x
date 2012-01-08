@@ -9,6 +9,14 @@ CHANGELOG: 1-11-2011
 description here
 ====================================================================================
 
+
+******************************************
+CHANGELOG: 8-1-2012  MPB
+Frsky telemetry internal alarm scheduling
+Frsky telemetry GPS Altitude display
+DSM protocol implementation (Pat Mackenzie)
+Fix default owner name and model name settings
+
 ******************************************
 CHANGELOG: 7-1-2012 
 Frsky telemetry fix

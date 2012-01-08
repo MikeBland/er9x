@@ -128,6 +128,7 @@ extern uint8_t FrskyAlarmSendState;
 extern FrskyData frskyTelemetry[4];
 //extern FrskyData frskyRSSI[2];
 extern int16_t FrskyHubData[] ;
+extern uint8_t FrskyAlarmCheckFlag ;
 
 void FRSKY_Init(void);
 // static void FRSKY10mspoll(void);

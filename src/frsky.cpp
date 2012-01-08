@@ -39,6 +39,8 @@ uint8_t frskyTxBufferCount = 0;
 uint8_t FrskyRxBufferReady = 0;
 uint8_t frskyStreaming = 0;
 uint8_t frskyUsrStreaming = 0;
+uint8_t FrskyAlarmTimer = 200 ;		// Units of 10 mS
+uint8_t FrskyAlarmCheckFlag = 0 ;
 
 FrskyData frskyTelemetry[4];
 //FrskyData frskyRSSI[2];
@@ -60,6 +62,8 @@ uint8_t Frsky_user_id ;
 uint8_t Frsky_user_lobyte ;
 
 int16_t FrskyHubData[38] ;  // All 38 words
+
+// Entry 16 is altitude, need to organise an alarm at 400 ft (122 m)
 
 void frsky_proc_user_byte( uint8_t byte )
 {
@@ -591,7 +595,7 @@ void Frsky_current_info::update(uint8_t value)
 	}
 }
 
-
+// Called every 10 mS in interrupt routine
 void check_frsky()
 {
   // Used to detect presence of valid FrSky telemetry packets inside the
@@ -615,6 +619,13 @@ void check_frsky()
 			
 			Frsky_current[i].update(frskyTelemetry[i].value ) ;
   	}	
+	}
+
+	// See if time for alarm checking
+	if (--FrskyAlarmTimer == 0 )
+	{
+		FrskyAlarmTimer = 200 ;		// Restart timer
+		FrskyAlarmCheckFlag = 1 ;	// Flag time to check alarms
 	}
 }
 
