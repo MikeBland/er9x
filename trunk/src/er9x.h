@@ -331,6 +331,11 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define PROT_MAX         2
 #define PROT_STR "PPM   PXX   DSM2  "
 #define PROT_STR_LEN     6
+#define DSM2_STR "LP4/LP5  DSM2only DSM2/DSMX"
+#define DSM2_STR_LEN   9
+#define LPXDSM2          0
+#define DSM2only         1
+#define DSM2_DSMX        2
 
 typedef void (*MenuFuncP)(uint8_t event);
 typedef void (*getADCp)();
@@ -453,6 +458,9 @@ int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 #define STORE_GENERALVARS eeDirty(EE_GENERAL)
 #define BACKLIGHT_ON    PORTB |=  (1<<OUT_B_LIGHT)
 #define BACKLIGHT_OFF   PORTB &= ~(1<<OUT_B_LIGHT)
+
+#define SPY_ON    //PORTB |=  (1<<OUT_B_LIGHT)
+#define SPY_OFF   //PORTB &= ~(1<<OUT_B_LIGHT)
 
 
 #define PULSEGEN_ON     TIMSK |=  (1<<OCIE1A)
@@ -643,7 +651,7 @@ extern volatile uint8_t   g_blinkTmr10ms;
 extern uint8_t            g_beepCnt;
 //extern uint8_t            g_beepVal[5];
 extern const PROGMEM char modi12x3[];
-extern uint16_t           pulses2MHz[70];
+extern union p2mhz_t pulses2MHz ;
 extern int16_t            g_ppmIns[8];
 extern int16_t            g_chans512[NUM_CHNOUT];
 extern volatile uint8_t   tick10ms;
