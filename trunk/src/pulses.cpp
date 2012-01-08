@@ -329,7 +329,7 @@ ISR(TIMER1_CAPT_vect) //2MHz pulse generation
 
    ISR(TIMER1_CAPT_vect) //2MHz pulse generation
     {
-      static uint8_t  pulsePol;
+//      static uint8_t  pulsePol;
       uint8_t x ;
       PORTB ^=  (1<<OUT_B_PPM);
       x = *Dsm2_pulsePtr++;      // Byte size
