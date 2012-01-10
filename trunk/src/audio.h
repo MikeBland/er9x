@@ -15,7 +15,7 @@
 #define audio_h
 
 //audio
-#define AUDIO_QUEUE_LENGTH (5)  //5 seems to suit most alerts
+#define AUDIO_QUEUE_LENGTH (10)  //10 seems to suit most alerts
 #define BEEP_DEFAULT_FREQ (70)
 #define BEEP_OFFSET (10)
 #define BEEP_KEY_UP_FREQ  (BEEP_DEFAULT_FREQ+5)
@@ -166,6 +166,8 @@ public:
 extern audioQueue  audio;
 //void audioevent(uint8_t e,uint8_t f=BEEP_DEFAULT_FREQ);
 void audioDefevent(uint8_t e);
+
+
 
 
 

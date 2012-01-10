@@ -378,8 +378,9 @@ static void FRSKY10mspoll(void)
 	    uint8_t channel = 1 - (i / 2);
   	  uint8_t alarm = 1 - (i % 2);
     
-			FRSKY_setTxPacket( A22PKT + i, g_model.frsky.channels[channel].alarms_value[alarm],
-													 ALARM_GREATER(channel, alarm), ALARM_LEVEL(channel, alarm) ) ;
+								FRSKY_setTxPacket( A22PKT + i, g_model.frsky.channels[channel].alarms_value[alarm],
+																 ALARM_GREATER(channel, alarm), ALARM_LEVEL(channel, alarm) ) ;						
+									 
 		}
 		else if( i < 6 )
 		{
@@ -446,26 +447,52 @@ void FRSKY_setTxPacket( uint8_t type, uint8_t value, uint8_t p1, uint8_t p2 )
 	frskyTxBufferCount = i + 8 ;
 }
 
-bool FRSKY_alarmRaised(uint8_t idx)
+bool FRSKY_alarmRaised(uint8_t idx, uint8_t alarm)
 {
-	uint8_t value ;
-	uint8_t alarm_value ;
+    uint8_t value ;
+    uint8_t alarm_value ;
   for (int i=0; i<2; i++) {
-    if (ALARM_LEVEL(idx, i) != alarm_off) {
-			value = frskyTelemetry[idx].value ;
-			alarm_value = g_model.frsky.channels[idx].alarms_value[i] ;
-      if (ALARM_GREATER(idx, i)) {
-        if (value > alarm_value)
-          return true;
-      }
-      else {
-        if (value < alarm_value)
-          return true;
-      }
-    }
+        if ( ( alarm == i ) || ( alarm > 1 ) )
+        {
+        if (ALARM_LEVEL(idx, i) != alarm_off) {
+                value = frskyTelemetry[idx].value ;
+                alarm_value = g_model.frsky.channels[idx].alarms_value[i] ;
+          if (ALARM_GREATER(idx, i)) {
+            if (value > alarm_value)
+              return true;
+          }
+          else {
+            if (value < alarm_value)
+              return true;
+          }
+        }
+        }
   }
   return false;
 }
+
+bool FRSKY_alarmPlay(uint8_t idx, uint8_t alarm){			
+			uint8_t alarmLevel = ALARM_LEVEL(idx, alarm);
+			
+			if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 0){   // this check is done here so haptic still works even if frsky beeper used.
+					switch (alarmLevel){			
+								case alarm_off:
+														break;
+								case alarm_yellow:
+														audio.frskyevent(g_eeGeneral.FRSkyYellow);
+														break;														
+								case alarm_orange:
+														audio.frskyevent(g_eeGeneral.FRSkyOrange);
+														break;												
+								case alarm_red:
+														audio.frskyevent(g_eeGeneral.FRSkyRed);
+														break;		
+					}	
+			}
+			
+}
+
+
 
 inline void FRSKY_EnableTXD(void)
 {

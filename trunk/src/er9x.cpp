@@ -1328,6 +1328,39 @@ void mainSequence()
 				FrskyAlarmCheckFlag = 0 ;
 				// Check for alarms here
 				// Including Altitude limit
+			
+				// this var prevents and alarm sounding if an earlier alarm is already sounding
+				// firing two alarms at once is pointless and sounds rubbish!
+				// this also means channel A alarms always over ride channel B
+				// up to debate if this is correct!  Technically this should really
+				// trigger a red alert over an orange etc.. but that involves loads more checks.
+				bool AlarmRaisedAlready = false; 
+				
+				// CHANNEL A ALARM1			
+				if(FRSKY_alarmRaised(0,0) && AlarmRaisedAlready == false){
+								FRSKY_alarmPlay(0,0);
+								AlarmRaisedAlready = true;
+				} 
+				
+				// CHANNEL A ALARM2	
+				if(FRSKY_alarmRaised(0,1) && AlarmRaisedAlready == false){
+								FRSKY_alarmPlay(0,1);
+								AlarmRaisedAlready = true;
+				}		
+				
+				// CHANNEL B ALARM1			
+				if(FRSKY_alarmRaised(1,0) && AlarmRaisedAlready == false){
+								FRSKY_alarmPlay(1,0);
+								AlarmRaisedAlready = true;
+				}
+				
+				// CHANNEL B ALARM2
+				if(FRSKY_alarmRaised(1,1) && AlarmRaisedAlready == false){
+								FRSKY_alarmPlay(1,1);
+								AlarmRaisedAlready = true;
+				}										
+
+
 			}
 #endif
 }
