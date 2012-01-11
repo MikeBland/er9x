@@ -1336,30 +1336,31 @@ void mainSequence()
 				// trigger a red alert over an orange etc.. but that involves loads more checks.
 				bool AlarmRaisedAlready = false; 
 				
-				// CHANNEL A ALARM1			
-				if(FRSKY_alarmRaised(0,0) && AlarmRaisedAlready == false){
-								FRSKY_alarmPlay(0,0);
-								AlarmRaisedAlready = true;
-				} 
-				
-				// CHANNEL A ALARM2	
-				if(FRSKY_alarmRaised(0,1) && AlarmRaisedAlready == false){
-								FRSKY_alarmPlay(0,1);
-								AlarmRaisedAlready = true;
-				}		
-				
-				// CHANNEL B ALARM1			
-				if(FRSKY_alarmRaised(1,0) && AlarmRaisedAlready == false){
-								FRSKY_alarmPlay(1,0);
-								AlarmRaisedAlready = true;
+				if (frskyStreaming){
+						// CHANNEL A ALARM1			
+						if(FRSKY_alarmRaised(0,0) && AlarmRaisedAlready == false){
+										FRSKY_alarmPlay(0,0);
+										AlarmRaisedAlready = true;
+						} 
+						
+						// CHANNEL A ALARM2	
+						if(FRSKY_alarmRaised(0,1) && AlarmRaisedAlready == false){
+										FRSKY_alarmPlay(0,1);
+										AlarmRaisedAlready = true;
+						}		
+						
+						// CHANNEL B ALARM1			
+						if(FRSKY_alarmRaised(1,0) && AlarmRaisedAlready == false){
+										FRSKY_alarmPlay(1,0);
+										AlarmRaisedAlready = true;
+						}
+						
+						// CHANNEL B ALARM2
+						if(FRSKY_alarmRaised(1,1) && AlarmRaisedAlready == false){
+										FRSKY_alarmPlay(1,1);
+										AlarmRaisedAlready = true;
+						}										
 				}
-				
-				// CHANNEL B ALARM2
-				if(FRSKY_alarmRaised(1,1) && AlarmRaisedAlready == false){
-								FRSKY_alarmPlay(1,1);
-								AlarmRaisedAlready = true;
-				}										
-
 
 			}
 #endif

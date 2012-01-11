@@ -11,6 +11,11 @@ description here
 
 
 ******************************************
+CHANGELOG: 09-1-2012  & 10-1-2012 RFT
+FRSky internal alarm scheduleding and sound mapping
+
+
+******************************************
 CHANGELOG: 8-1-2012  MPB
 Frsky telemetry internal alarm scheduling
 Frsky telemetry GPS Altitude display
