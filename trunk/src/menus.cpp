@@ -2451,7 +2451,7 @@ void menuProcSetup(uint8_t event)
 						vCountItems = 23;
 						break;	  	
 		}		
-		if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 0){ // add in alert red/org/yel
+		if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 1){ // add in alert red/org/yel
 				vCountItems = vCountItems + 3;
 		}		
 		
@@ -2762,13 +2762,20 @@ if(g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2 ){
 #ifdef FRSKY
 
 		if(g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2){
-						if(s_pgOfs<subN) {
-				        g_eeGeneral.frskyinternalalarm = onoffMenuItem( g_eeGeneral.frskyinternalalarm, y, PSTR("Int. Frsky alarm"), sub, subN, event ) ;
+						if(s_pgOfs<subN)
+						{
+					    uint8_t b = g_eeGeneral.frskyinternalalarm ;
+							
+				        g_eeGeneral.frskyinternalalarm = onoffMenuItem( b, y, PSTR("Int. Frsky alarm"), sub, subN, event ) ;
+					    	if ( b != g_eeGeneral.frskyinternalalarm )
+								{
+									FRSKY_setModelAlarms(); // update Fr-Sky module when changed
+								}
 				        if((y+=FH)>7*FH) return;
 				    }subN++;
 		}		    
 				    
-    if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 0){ 
+    if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 1){ 
     
 
 					  
@@ -3415,6 +3422,13 @@ void menuProc0(uint8_t event)
                         }
                     }
 //                }
+								// Fuel Gauge
+                if (frskyUsrStreaming)
+								{
+                	lcd_puts_P(0, 1*FH, PSTR("Fuel=")) ;
+									x0 = FrskyHubData[4] ;		// Fuel gauge value
+                	lcd_outdezAtt(5 * FW, 1*FH, x0, LEFT) ;
+								}
                 lcd_puts_P(0, 6*FH, PSTR("Rx="));
                 lcd_outdezAtt(3 * FW - 2, 5*FH, staticTelemetry[2], DBLSIZE|LEFT);
                 lcd_outdezAtt(4 * FW, 7*FH, frskyTelemetry[2].min, 0);
@@ -3506,7 +3520,7 @@ void menuProc0(uint8_t event)
                 lcd_outdezNAtt(8*FW, 3*FH, FrskyHubData[18], LEADING0, -5);
                 lcd_putc(8*FW, 3*FH, '.') ;
                 lcd_outdezNAtt(12*FW, 3*FH, FrskyHubData[26], LEADING0, -4);
-                lcd_puts_P(0, 3*FH, PSTR("Alt=")) ;
+                lcd_puts_P(0, 4*FH, PSTR("Alt=")) ;
                 lcd_outdezAtt(8 * FW, 4*FH, FrskyHubData[1], 0 ) ;
                 
 								//              lcd_putsAtt(6, 2*FH, PSTR("To Be Done"), DBLSIZE);
