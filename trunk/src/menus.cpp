@@ -3384,7 +3384,7 @@ void menuProc0(uint8_t event)
         static uint8_t displayCount = 0;
         static uint8_t staticTelemetry[4];
 //        static uint8_t staticRSSI[2];
-        static bool alarmRaised[2];
+        static enum AlarmLevel alarmRaised[2];
         if (frskyStreaming) {
             uint8_t y0, x0, blink;
             if (++displayCount > 49) {

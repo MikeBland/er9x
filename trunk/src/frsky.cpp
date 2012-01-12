@@ -447,28 +447,29 @@ void FRSKY_setTxPacket( uint8_t type, uint8_t value, uint8_t p1, uint8_t p2 )
 	frskyTxBufferCount = i + 8 ;
 }
 
-bool FRSKY_alarmRaised(uint8_t idx, uint8_t alarm)
+enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm)
 {
     uint8_t value ;
     uint8_t alarm_value ;
+		enum AlarmLevel level = alarm_off ;
   for (int i=0; i<2; i++) {
         if ( ( alarm == i ) || ( alarm > 1 ) )
         {
-        if (ALARM_LEVEL(idx, i) != alarm_off) {
+        if ( ( level = (enum AlarmLevel)ALARM_LEVEL(idx, i) ) != alarm_off) {
                 value = frskyTelemetry[idx].value ;
                 alarm_value = g_model.frsky.channels[idx].alarms_value[i] ;
           if (ALARM_GREATER(idx, i)) {
             if (value > alarm_value)
-              return true;
+              return level;
           }
           else {
             if (value < alarm_value)
-              return true;
+              return level;
           }
         }
         }
   }
-  return false;
+  return alarm_off;
 }
 
 void FRSKY_alarmPlay(uint8_t idx, uint8_t alarm){			

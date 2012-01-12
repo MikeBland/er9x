@@ -1333,24 +1333,25 @@ void mainSequence()
 				// firing two alarms at once is pointless and sounds rubbish!
 				// this also means channel A alarms always over ride same level alarms on channel B
 				// up to debate if this is correct!  
-				bool AlarmRaisedAlready = false; 
+//				bool AlarmRaisedAlready = false; 
 				
 				if (frskyStreaming){
+					enum AlarmLevel level[4] ;
 								// RED ALERTS	
-								if(FRSKY_alarmRaised(0,0) && AlarmRaisedAlready == false && ALARM_LEVEL(0, 0) == alarm_red){ FRSKY_alarmPlay(0,0); AlarmRaisedAlready = true; } 
-								if(FRSKY_alarmRaised(0,1) && AlarmRaisedAlready == false && ALARM_LEVEL(0, 1) == alarm_red){ FRSKY_alarmPlay(0,1); AlarmRaisedAlready = true;}		
-								if(FRSKY_alarmRaised(1,0) && AlarmRaisedAlready == false && ALARM_LEVEL(1, 0) == alarm_red){ FRSKY_alarmPlay(1,0); AlarmRaisedAlready = true; }
-								if(FRSKY_alarmRaised(1,1) && AlarmRaisedAlready == false && ALARM_LEVEL(1, 1) == alarm_red){ FRSKY_alarmPlay(1,1); AlarmRaisedAlready = true; }										
+								if( (level[0]=FRSKY_alarmRaised(0,0)) == alarm_red) FRSKY_alarmPlay(0,0);
+					 else if( (level[1]=FRSKY_alarmRaised(0,1)) == alarm_red) FRSKY_alarmPlay(0,1);
+					 else	if( (level[2]=FRSKY_alarmRaised(1,0)) == alarm_red) FRSKY_alarmPlay(1,0);
+					 else if( (level[3]=FRSKY_alarmRaised(1,1)) == alarm_red) FRSKY_alarmPlay(1,1);
 								// ORANGE ALERTS
-								if(FRSKY_alarmRaised(0,0) && AlarmRaisedAlready == false && ALARM_LEVEL(0, 0) == alarm_orange){ FRSKY_alarmPlay(0,0); AlarmRaisedAlready = true; } 
-								if(FRSKY_alarmRaised(0,1) && AlarmRaisedAlready == false && ALARM_LEVEL(0, 1) == alarm_orange){ FRSKY_alarmPlay(0,1); AlarmRaisedAlready = true;}		
-								if(FRSKY_alarmRaised(1,0) && AlarmRaisedAlready == false && ALARM_LEVEL(1, 0) == alarm_orange){ FRSKY_alarmPlay(1,0); AlarmRaisedAlready = true; }
-								if(FRSKY_alarmRaised(1,1) && AlarmRaisedAlready == false && ALARM_LEVEL(1, 1) == alarm_orange){ FRSKY_alarmPlay(1,1); AlarmRaisedAlready = true; }		
+					 else	if( level[0] == alarm_orange) FRSKY_alarmPlay(0,0);
+					 else if( level[1] == alarm_orange) FRSKY_alarmPlay(0,1);
+					 else	if( level[2] == alarm_orange) FRSKY_alarmPlay(1,0);
+					 else if( level[3] == alarm_orange) FRSKY_alarmPlay(1,1); 
 								// YELLOW ALERTS
-								if(FRSKY_alarmRaised(0,0) && AlarmRaisedAlready == false && ALARM_LEVEL(0, 0) == alarm_yellow){ FRSKY_alarmPlay(0,0); AlarmRaisedAlready = true; } 
-								if(FRSKY_alarmRaised(0,1) && AlarmRaisedAlready == false && ALARM_LEVEL(0, 1) == alarm_yellow){ FRSKY_alarmPlay(0,1); AlarmRaisedAlready = true;}		
-								if(FRSKY_alarmRaised(1,0) && AlarmRaisedAlready == false && ALARM_LEVEL(1, 0) == alarm_yellow){ FRSKY_alarmPlay(1,0); AlarmRaisedAlready = true; }
-								if(FRSKY_alarmRaised(1,1) && AlarmRaisedAlready == false && ALARM_LEVEL(1, 1) == alarm_yellow){ FRSKY_alarmPlay(1,1); AlarmRaisedAlready = true; }	
+					 else	if( level[0] == alarm_yellow) FRSKY_alarmPlay(0,0);
+					 else if( level[1] == alarm_yellow) FRSKY_alarmPlay(0,1);
+					 else	if( level[2] == alarm_yellow) FRSKY_alarmPlay(1,0);
+					 else if( level[3] == alarm_yellow) FRSKY_alarmPlay(1,1);
 				}
 
 			}

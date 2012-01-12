@@ -137,7 +137,7 @@ void check_frsky( void ) ;
 
 void FRSKY_setModelAlarms(void) ;
 
-bool FRSKY_alarmRaised(uint8_t idx, uint8_t alarm=2) ;
+enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm=2) ;
 void FRSKY_alarmPlay(uint8_t idx, uint8_t alarm) ;
 void resetTelemetry();
 
