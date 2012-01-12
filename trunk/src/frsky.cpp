@@ -471,7 +471,7 @@ bool FRSKY_alarmRaised(uint8_t idx, uint8_t alarm)
   return false;
 }
 
-bool FRSKY_alarmPlay(uint8_t idx, uint8_t alarm){			
+void FRSKY_alarmPlay(uint8_t idx, uint8_t alarm){			
 			uint8_t alarmLevel = ALARM_LEVEL(idx, alarm);
 			
 			if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 0){   // this check is done here so haptic still works even if frsky beeper used.

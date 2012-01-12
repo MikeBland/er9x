@@ -9,6 +9,11 @@ CHANGELOG: 1-11-2011
 description here
 ====================================================================================
 
+******************************************
+CHANGELOG: 12-1-2012  & 10-1-2012 RFT
+Update to sound mapping to play red alarms over orange
+and orange over yellow
+
 
 ******************************************
 CHANGELOG: 09-1-2012  & 10-1-2012 RFT

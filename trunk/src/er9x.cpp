@@ -1337,29 +1337,21 @@ void mainSequence()
 				bool AlarmRaisedAlready = false; 
 				
 				if (frskyStreaming){
-						// CHANNEL A ALARM1			
-						if(FRSKY_alarmRaised(0,0) && AlarmRaisedAlready == false){
-										FRSKY_alarmPlay(0,0);
-										AlarmRaisedAlready = true;
-						} 
-						
-						// CHANNEL A ALARM2	
-						if(FRSKY_alarmRaised(0,1) && AlarmRaisedAlready == false){
-										FRSKY_alarmPlay(0,1);
-										AlarmRaisedAlready = true;
-						}		
-						
-						// CHANNEL B ALARM1			
-						if(FRSKY_alarmRaised(1,0) && AlarmRaisedAlready == false){
-										FRSKY_alarmPlay(1,0);
-										AlarmRaisedAlready = true;
-						}
-						
-						// CHANNEL B ALARM2
-						if(FRSKY_alarmRaised(1,1) && AlarmRaisedAlready == false){
-										FRSKY_alarmPlay(1,1);
-										AlarmRaisedAlready = true;
-						}										
+								// RED ALERTS	
+								if(FRSKY_alarmRaised(0,0) && AlarmRaisedAlready == false && ALARM_LEVEL(0, 0) == alarm_red){ FRSKY_alarmPlay(0,0); AlarmRaisedAlready = true; } 
+								if(FRSKY_alarmRaised(0,1) && AlarmRaisedAlready == false && ALARM_LEVEL(0, 1) == alarm_red){ FRSKY_alarmPlay(0,1); AlarmRaisedAlready = true;}		
+								if(FRSKY_alarmRaised(1,0) && AlarmRaisedAlready == false && ALARM_LEVEL(1, 0) == alarm_red){ FRSKY_alarmPlay(1,0); AlarmRaisedAlready = true; }
+								if(FRSKY_alarmRaised(1,1) && AlarmRaisedAlready == false && ALARM_LEVEL(1, 1) == alarm_red){ FRSKY_alarmPlay(1,1); AlarmRaisedAlready = true; }										
+								// ORANGE ALERTS
+								if(FRSKY_alarmRaised(0,0) && AlarmRaisedAlready == false && ALARM_LEVEL(0, 0) == alarm_orange){ FRSKY_alarmPlay(0,0); AlarmRaisedAlready = true; } 
+								if(FRSKY_alarmRaised(0,1) && AlarmRaisedAlready == false && ALARM_LEVEL(0, 1) == alarm_orange){ FRSKY_alarmPlay(0,1); AlarmRaisedAlready = true;}		
+								if(FRSKY_alarmRaised(1,0) && AlarmRaisedAlready == false && ALARM_LEVEL(1, 0) == alarm_orange){ FRSKY_alarmPlay(1,0); AlarmRaisedAlready = true; }
+								if(FRSKY_alarmRaised(1,1) && AlarmRaisedAlready == false && ALARM_LEVEL(1, 1) == alarm_orange){ FRSKY_alarmPlay(1,1); AlarmRaisedAlready = true; }		
+								// YELLOW ALERTS
+								if(FRSKY_alarmRaised(0,0) && AlarmRaisedAlready == false && ALARM_LEVEL(0, 0) == alarm_yellow){ FRSKY_alarmPlay(0,0); AlarmRaisedAlready = true; } 
+								if(FRSKY_alarmRaised(0,1) && AlarmRaisedAlready == false && ALARM_LEVEL(0, 1) == alarm_yellow){ FRSKY_alarmPlay(0,1); AlarmRaisedAlready = true;}		
+								if(FRSKY_alarmRaised(1,0) && AlarmRaisedAlready == false && ALARM_LEVEL(1, 0) == alarm_yellow){ FRSKY_alarmPlay(1,0); AlarmRaisedAlready = true; }
+								if(FRSKY_alarmRaised(1,1) && AlarmRaisedAlready == false && ALARM_LEVEL(1, 1) == alarm_yellow){ FRSKY_alarmPlay(1,1); AlarmRaisedAlready = true; }	
 				}
 
 			}
