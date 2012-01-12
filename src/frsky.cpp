@@ -378,8 +378,12 @@ static void FRSKY10mspoll(void)
 	    uint8_t channel = 1 - (i / 2);
   	  uint8_t alarm = 1 - (i % 2);
     
-			FRSKY_setTxPacket( A22PKT + i, g_eeGeneral.frskyinternalalarm ? 0 :g_model.frsky.channels[channel].alarms_value[alarm],
-																 ALARM_GREATER(channel, alarm), ALARM_LEVEL(channel, alarm) ) ;						
+		//	FRSKY_setTxPacket( A22PKT + i, g_eeGeneral.frskyinternalalarm ? 0 :g_model.frsky.channels[channel].alarms_value[alarm],
+		//														 ALARM_GREATER(channel, alarm), ALARM_LEVEL(channel, alarm) ) ;					
+		
+		            FRSKY_setTxPacket( A22PKT + i, g_model.frsky.channels[channel].alarms_value[alarm],
+                                                                 ALARM_GREATER(channel, alarm), g_eeGeneral.frskyinternalalarm ? 0 :ALARM_LEVEL(channel, alarm) ) ;
+	
 									 
 		}
 		else if( i < 6 )
