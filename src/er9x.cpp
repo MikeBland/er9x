@@ -1332,8 +1332,7 @@ void mainSequence()
 				// this var prevents and alarm sounding if an earlier alarm is already sounding
 				// firing two alarms at once is pointless and sounds rubbish!
 				// this also means channel A alarms always over ride channel B
-				// up to debate if this is correct!  Technically this should really
-				// trigger a red alert over an orange etc.. but that involves loads more checks.
+				// up to debate if this is correct!  
 				bool AlarmRaisedAlready = false; 
 				
 				if (frskyStreaming){
