@@ -1331,7 +1331,7 @@ void mainSequence()
 			
 				// this var prevents and alarm sounding if an earlier alarm is already sounding
 				// firing two alarms at once is pointless and sounds rubbish!
-				// this also means channel A alarms always over ride channel B
+				// this also means channel A alarms always over ride same level alarms on channel B
 				// up to debate if this is correct!  
 				bool AlarmRaisedAlready = false; 
 				

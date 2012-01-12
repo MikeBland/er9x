@@ -378,7 +378,7 @@ static void FRSKY10mspoll(void)
 	    uint8_t channel = 1 - (i / 2);
   	  uint8_t alarm = 1 - (i % 2);
     
-								FRSKY_setTxPacket( A22PKT + i, g_model.frsky.channels[channel].alarms_value[alarm],
+			FRSKY_setTxPacket( A22PKT + i, g_eeGeneral.frskyinternalalarm ? 0 :g_model.frsky.channels[channel].alarms_value[alarm],
 																 ALARM_GREATER(channel, alarm), ALARM_LEVEL(channel, alarm) ) ;						
 									 
 		}
@@ -474,7 +474,7 @@ bool FRSKY_alarmRaised(uint8_t idx, uint8_t alarm)
 void FRSKY_alarmPlay(uint8_t idx, uint8_t alarm){			
 			uint8_t alarmLevel = ALARM_LEVEL(idx, alarm);
 			
-			if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 0){   // this check is done here so haptic still works even if frsky beeper used.
+			if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 1){   // this check is done here so haptic still works even if frsky beeper used.
 					switch (alarmLevel){			
 								case alarm_off:
 														break;
