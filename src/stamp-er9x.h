@@ -1,6 +1,6 @@
 //Automatically generated file - do not edit
-#define DATE_STR "08.01.2012"
-#define TIME_STR "14:02:28"
-#define SUB_VERS 5262-erez
-#define SVN_VERS "trunk-r656"
+#define DATE_STR "12.01.2012"
+#define TIME_STR "21:09:38"
+#define SUB_VERS 5292-erez
+#define SVN_VERS "trunk-r664"
 #define MOD_VERS "   "

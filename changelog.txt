@@ -10,9 +10,8 @@ description here
 ====================================================================================
 
 ******************************************
-CHANGELOG: 12-1-2012  & 10-1-2012 RFT
-Update to sound mapping to play red alarms over orange
-and orange over yellow
+CHANGELOG: 12-1-2012  & 12-1-2012 ER
+Allow hiding of owner name on splash screen
 
 
 ******************************************
