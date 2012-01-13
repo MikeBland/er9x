@@ -2435,20 +2435,22 @@ void menuProcSetup(uint8_t event)
 #endif
 */
 
+#define DEFAULT_COUNT_ITEMS 22
+
 #ifdef FRSKY
-		uint8_t vCountItems = 21; //21 is default
+                uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
 		switch (g_eeGeneral.speakerMode){
 				//beeper
 				case 0:
-						vCountItems = 21;
+                                                vCountItems = DEFAULT_COUNT_ITEMS;
 						break;
 				//piezo speaker
 			 	case 1:
-			 			vCountItems = 24;
+                                                vCountItems = DEFAULT_COUNT_ITEMS + 3;
 			 			break;
 			 	//pcmwav
 			  case 2:
-						vCountItems = 23;
+                                                vCountItems = DEFAULT_COUNT_ITEMS + 2;
 						break;	  	
 		}		
 		if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 1){ // add in alert red/org/yel
@@ -2456,19 +2458,19 @@ void menuProcSetup(uint8_t event)
 		}		
 		
 #else 
-		uint8_t vCountItems = 21; //21 is default
+                uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
 		switch (g_eeGeneral.speakerMode){
 				//beeper
 				case 0:
-						vCountItems = 21;
+                                                vCountItems = DEFAULT_COUNT_ITEMS;
 						break;
 				//piezo speaker
 			 	case 1:
-			 			vCountItems = 23;
+                                                vCountItems = DEFAULT_COUNT_ITEMS + 2;
 			 			break;
 			 	//pcmwav
 			  case 2:
-						vCountItems = 22;
+                                                vCountItems = DEFAULT_COUNT_ITEMS + 1;
 						break;	  	
 		}
 #endif
@@ -2680,6 +2682,12 @@ if(g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2 ){
         //            g_eeGeneral.disableSplashScreen = 1-b;
         //        }
         g_eeGeneral.disableSplashScreen = 1-onoffMenuItem( b, y, PSTR("Splash screen"), sub, subN, event ) ;
+        if((y+=FH)>7*FH) return;
+    }subN++;
+
+    if(s_pgOfs<subN) {
+        uint8_t b = 1-g_eeGeneral.hideNameOnSplash;
+        g_eeGeneral.hideNameOnSplash = 1-onoffMenuItem( b, y, PSTR("Splash Name"), sub, subN, event ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 

@@ -384,7 +384,8 @@ void doSplash()
 
         lcd_clear();
         lcd_img(0, 0, s9xsplash,0,0);
-        lcd_putsnAtt(0*FW, 7*FH, g_eeGeneral.ownerName ,sizeof(g_eeGeneral.ownerName),BSS);
+        if(!g_eeGeneral.hideNameOnSplash)
+            lcd_putsnAtt(0*FW, 7*FH, g_eeGeneral.ownerName ,sizeof(g_eeGeneral.ownerName),BSS);
 
         refreshDiplay();
         lcdSetRefVolt(g_eeGeneral.contrast);
