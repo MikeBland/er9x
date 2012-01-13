@@ -60,6 +60,13 @@ void audioQueue::aqinit()
 
 }
 
+bool audioQueue::busy(){
+			if(toneTimeLeft > 0){
+					return true;
+			}	 else {
+					return false;
+			}	
+}
 
 void audioQueue::commit()
 {

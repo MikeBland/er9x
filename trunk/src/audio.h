@@ -143,6 +143,7 @@ public:
 		//interupt queue (Now) and the other queues for playing ASAP.
 		void playNow(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRepeat=0,uint8_t tHaptic=0,uint8_t tEnd=0);	
 		void playASAP(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tHaptic=0,uint8_t tRepeat=0,uint8_t tEnd=0);
+    bool busy();
 
 		void event(uint8_t e,uint8_t f=BEEP_DEFAULT_FREQ);
 

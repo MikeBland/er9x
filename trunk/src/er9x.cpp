@@ -792,24 +792,26 @@ inline bool checkSlaveMode()
 {
   // no power -> only phone jack = slave mode
 
+
 #ifdef BUZZER_MOD
   return SLAVE_MODE;
 #else
   static bool lastSlaveMode = false;
-// // commented out as seems to serve no purpose with new sound engine 
-//  static uint8_t checkDelay = 0;
-//  if (g_beepCnt || beepAgain || beepOn) {
-//    checkDelay = 20;
-//  }
-//  else if (checkDelay) {
-//    --checkDelay;
-//  }
-//  else {
+
+  static uint8_t checkDelay = 0;
+  if (audio.busy()) {
+    checkDelay = 20;
+  }
+  else if (checkDelay) {
+    --checkDelay;
+  }
+  else {
     lastSlaveMode = SLAVE_MODE;//
-//  }
+  }
   return lastSlaveMode;
 #endif
 }
+
 
 uint8_t Timer2_running = 0 ;
 uint8_t Timer2_pre = 0 ;
