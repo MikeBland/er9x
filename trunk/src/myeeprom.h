@@ -195,12 +195,12 @@ typedef struct t_ModelData {
   uint8_t   t2throttle:1 ;  // Start timer2 using throttle
   uint8_t   FrSkyUsrProto:2 ;  // Protocol in FrSky User Data, 0=FrSky Hub, 1=WS HowHigh
   uint8_t   FrSkyImperial:1 ;  // Convert FrSky values to imperial units
-  uint8_t   spare:2;
+  uint8_t   FrSkyAltAlarm:2;
   uint16_t  tmrVal;
   uint8_t   protocol;
   int8_t    ppmNCH;
-  int8_t    thrTrim:4;            // Enable Throttle Trim
-  int8_t    thrExpo:4;            // Enable Throttle Expo
+  uint8_t   thrTrim:4;            // Enable Throttle Trim
+  uint8_t   thrExpo:4;            // Enable Throttle Expo
   int8_t    trimInc;              // Trim Increments
   int8_t    ppmDelay;
   int8_t    trimSw;

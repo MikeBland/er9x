@@ -432,9 +432,9 @@ void alertMessages( const prog_char * s, const prog_char * t )
 {
   lcd_clear();
   lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
-  lcd_puts_P(0,4*FH,s);
-  lcd_puts_P(0,5*FH,t);
-  lcd_puts_P(0,6*FH,  PSTR("Press any key to skip") ) ;
+  lcd_puts_Pleft(4*FH,s);
+  lcd_puts_Pleft(5*FH,t);
+  lcd_puts_Pleft(6*FH,  PSTR("Press any key to skip") ) ;
   refreshDiplay();
   lcdSetRefVolt(g_eeGeneral.contrast);
 
@@ -567,7 +567,7 @@ void message(const prog_char * s)
 {
   lcd_clear();
   lcd_putsAtt(64-5*FW,0*FH,PSTR("MESSAGE"),DBLSIZE);
-  lcd_puts_P(0,4*FW,s);
+  lcd_puts_Pleft(4*FW,s);
   refreshDiplay();
   lcdSetRefVolt(g_eeGeneral.contrast);
 }
@@ -576,7 +576,7 @@ void alert(const prog_char * s, bool defaults)
 {
     lcd_clear();
     lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
-    lcd_puts_P(0,4*FW,s);
+    lcd_puts_Pleft(4*FW,s);
     lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
     refreshDiplay();
     lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
@@ -1310,6 +1310,10 @@ if(g_eeGeneral.speakerMode == 1){
   }
 }
 
+#ifdef FRSKY
+extern int16_t AltOffset ;
+#endif
+
 void mainSequence()
 {
       uint16_t t0 = getTmr16KHz();
@@ -1331,7 +1335,28 @@ void mainSequence()
 				FrskyAlarmCheckFlag = 0 ;
 				// Check for alarms here
 				// Including Altitude limit
-			
+
+				if (frskyUsrStreaming)
+				{
+			  	int16_t limit = g_model.FrSkyAltAlarm ;
+					if ( limit )
+					{
+						if (limit == 2)  // 400
+						{
+        		  limit = 400 ;	//ft
+						}
+						else
+						{
+        		  limit = 122 ;	//m
+						}
+						if ( ( FrskyHubData[16] + AltOffset ) > limit )
+						{
+	      		  audioDefevent(AUDIO_WARNING2) ;
+						}
+					}
+				}
+
+
 				// this var prevents and alarm sounding if an earlier alarm is already sounding
 				// firing two alarms at once is pointless and sounds rubbish!
 				// this also means channel A alarms always over ride same level alarms on channel B

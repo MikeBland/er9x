@@ -328,8 +328,9 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define PROTO_PPM        0
 #define PROTO_PXX        1
 #define PROTO_DSM2       2
-#define PROT_MAX         2
-#define PROT_STR "PPM   PXX   DSM2  "
+#define PROTO_PPM16			 3
+#define PROT_MAX         3
+#define PROT_STR "PPM   PXX   DSM2  PPM16 "
 #define PROT_STR_LEN     6
 #define DSM2_STR "LP4/LP5  DSM2only DSM2/DSMX"
 #define DSM2_STR_LEN   9

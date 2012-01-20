@@ -40,6 +40,8 @@
 #include "er9x.h"
 #include "templates.h"
 
+#ifndef NO_TEMPLATES
+
 static prog_char APM string_1[] = "Simple 4-CH";
 static prog_char APM string_2[] = "T-Cut";
 static prog_char APM string_3[] = "Sticky T-Cut";
@@ -60,6 +62,8 @@ PGM_P n_Templates[8] PROGMEM = {
     string_8
 };
 
+#endif
+
 MixData* setDest(uint8_t dch)
 {
     uint8_t i = 0;
@@ -73,11 +77,13 @@ MixData* setDest(uint8_t dch)
     return &g_model.mixData[i];
 }
 
+
 void clearMixes()
 {
     memset(g_model.mixData,0,sizeof(g_model.mixData)); //clear all mixes
 }
 
+#ifndef NO_TEMPLATES
 void clearCurves()
 {
     memset(g_model.curves5,0,sizeof(g_model.curves5)); //clear all curves
@@ -99,19 +105,23 @@ void setSwitch(uint8_t idx, uint8_t func, int8_t v1, int8_t v2)
     g_model.customSw[idx-1].v2   = v2;
 }
 
+#endif
+
 __attribute__((noinline)) uint8_t convert_mode_helper(uint8_t x)
 {
     return pgm_read_byte(modn12x3 + g_eeGeneral.stickMode*4 + (x) - 1) ;
 }
 
+
 void applyTemplate(uint8_t idx)
 {
+#ifndef NO_TEMPLATES
     int8_t heli_ar1[] = {-100, -20, 30, 70, 90};
     int8_t heli_ar2[] = {80, 70, 60, 70, 100};
     int8_t heli_ar3[] = {100, 90, 80, 90, 100};
     int8_t heli_ar4[] = {-30,  -15, 0, 50, 100};
     int8_t heli_ar5[] = {-100, -50, 0, 50, 100};
-
+#endif
     MixData *md = &g_model.mixData[0];
 
     //CC(STK)   -> vSTK
@@ -133,6 +143,7 @@ void applyTemplate(uint8_t idx)
         md=setDest(ICC(STK_THR));  md->srcRaw=CM(STK_THR);  md->weight=100;
         md=setDest(ICC(STK_AIL));  md->srcRaw=CM(STK_AIL);  md->weight=100;
     }
+#ifndef NO_TEMPLATES
 
     //T-Cut
     if(idx==j++)
@@ -238,6 +249,8 @@ void applyTemplate(uint8_t idx)
 
     STORE_MODELVARS;
     eeWaitComplete() ;
+
+#endif
 
 }
 
