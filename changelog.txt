@@ -10,19 +10,36 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 19-1-2012  & 12-1-2012 MPB
+Add PXX and PPM16 protocols
+Add Altitude Alarm
+Various code shrinking
+
+******************************************
 CHANGELOG: 13-1-2012  & 12-1-2012 RFT
 Trainer jack audio conflic fix
 
+******************************************
+CHANGELOG: 12-1-2012 MPB
+FrSky internal alarm, code shrinking
+
+******************************************
+CHANGELOG: 12-1-2012 MPB
+FrSky internal alarm, turn off external alarm
+FrSky telemetry, add FUEL guage to display
+
+******************************************
+CHANGELOG: 12-1-2012  & 10-1-2012 RFT
+Update to sound mapping to play red alarms over orange
+and orange over yellow
 
 ******************************************
 CHANGELOG: 12-1-2012  & 12-1-2012 ER
 Allow hiding of owner name on splash screen
 
-
 ******************************************
 CHANGELOG: 09-1-2012  & 10-1-2012 RFT
 FRSky internal alarm scheduleding and sound mapping
-
 
 ******************************************
 CHANGELOG: 8-1-2012  MPB

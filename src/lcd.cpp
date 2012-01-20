@@ -159,6 +159,12 @@ uint8_t lcd_putsAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t mode)
   }
   return x;
 }
+
+void lcd_puts_Pleft(uint8_t y,const prog_char * s)
+{
+  lcd_putsAtt( 0, y, s, 0);
+}
+
 void lcd_puts_P(uint8_t x,uint8_t y,const prog_char * s)
 {
   lcd_putsAtt( x, y, s, 0);

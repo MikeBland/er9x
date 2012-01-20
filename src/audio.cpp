@@ -28,14 +28,16 @@ void audioQueue::aqinit()
 
     //initialize all arrays
     //for(uint8_t i=0; i<=AUDIO_QUEUE_LENGTH-1; i++){
-    for(uint8_t i=0; i<AUDIO_QUEUE_LENGTH; i++){
-        queueToneStart[i] = 0;
-        queueToneEnd[i] = 0;
-        queueToneLength[i] = 0;
-        queueTonePause[i] = 0;
-        queueToneRepeat[i] = 0;
-        queueToneHaptic[i] = 0;
-    }
+		flushqueue( 0 ) ;
+
+//    for(uint8_t i=0; i<AUDIO_QUEUE_LENGTH; i++){
+//        queueToneStart[i] = 0;
+//        queueToneEnd[i] = 0;
+//        queueToneLength[i] = 0;
+//        queueTonePause[i] = 0;
+//        queueToneRepeat[i] = 0;
+//        queueToneHaptic[i] = 0;
+//    }
    
 
     //set key vars to 0 to ensure no garbage
@@ -68,7 +70,7 @@ bool audioQueue::busy(){
 			}	
 }
 
-void audioQueue::commit()
+void audioQueue::commit( uint8_t toneInterupt )
 {
 
     if(toneInterupt == 0){
@@ -97,19 +99,35 @@ void audioQueue::commit()
 
 				//force everything else in queue to be flushed
 				//as this stops things sounding broken on an interrupt routine!
-		    for(uint8_t i=1; i<AUDIO_QUEUE_LENGTH; i++){
-		        queueToneStart[i] = 0;
-		        queueToneEnd[i] = 0;
-		        queueToneLength[i] = 0;
-		        queueTonePause[i] = 0;
-		        queueToneRepeat[i] = 0;
-		        queueToneHaptic[i] = 0;
-		    }        
+				flushqueue( 1 ) ;
+
+//		    for(uint8_t i=1; i<AUDIO_QUEUE_LENGTH; i++){
+//		        queueToneStart[i] = 0;
+//		        queueToneEnd[i] = 0;
+//		        queueToneLength[i] = 0;
+//		        queueTonePause[i] = 0;
+//		        queueToneRepeat[i] = 0;
+//		        queueToneHaptic[i] = 0;
+//		    }        
         
         flushTemp();
     }
     
 }
+
+void audioQueue::flushqueue( uint8_t startpos )
+{
+	for( ; startpos<AUDIO_QUEUE_LENGTH; startpos++)
+	{
+		queueToneStart[startpos] = 0;
+		queueToneEnd[startpos] = 0;
+		queueToneLength[startpos] = 0;
+		queueTonePause[startpos] = 0;
+		queueToneRepeat[startpos] = 0;
+		queueToneHaptic[startpos] = 0;
+	}        
+}
+
 
 //set all temporary buffers to default
 void audioQueue::flushTemp()
@@ -121,30 +139,32 @@ void audioQueue::flushTemp()
     t_queueToneRepeat = 0;
     t_queueToneHaptic = 0;
     rateOfChange = 0;
-    toneInterupt = 0;
+//    toneInterupt = 0;
     toneHaptic = 0;
 }
 
 
 void audioQueue::restack()
 {
-			    for(uint8_t i=0; i<AUDIO_QUEUE_LENGTH; i++){
-			        if(i == (AUDIO_QUEUE_LENGTH -1)){          //set the last entry to 0 as nothing in stack to add too!
-			            queueToneStart[i] = 0;
-			            queueToneEnd[i] = 0;
-			            queueToneLength[i] = 0;
-			            queueTonePause[i] = 0;
-			            queueToneRepeat[i] = 0;
-			            queueToneHaptic[i] = 0;
-			        } else {      //shift all values one up in the stack.
+			    for(uint8_t i=0; i<AUDIO_QUEUE_LENGTH-1; i++){
+//			        if(i == (AUDIO_QUEUE_LENGTH -1)){          //set the last entry to 0 as nothing in stack to add too!
+//			            queueToneStart[i] = 0;
+//			            queueToneEnd[i] = 0;
+//			            queueToneLength[i] = 0;
+//			            queueTonePause[i] = 0;
+//			            queueToneRepeat[i] = 0;
+//			            queueToneHaptic[i] = 0;
+//			        } else {      //shift all values one up in the stack.
 			            queueToneStart[i] = queueToneStart[i+1];
 			            queueToneEnd[i] = queueToneEnd[i+1];
 			            queueToneLength[i] = queueToneLength[i+1];
 			            queueTonePause[i] = queueTonePause[i+1];
 			            queueToneRepeat[i] = queueToneRepeat[i+1];
 			            queueToneHaptic[i] = queueToneHaptic[i+1];
-			        }
+//			        }
+
 			    }   
+					flushqueue( AUDIO_QUEUE_LENGTH -1 ) ;     //set the last entry to 0 as nothing in stack to add too!
 }
 
 
@@ -153,7 +173,7 @@ void audioQueue::restack()
 void audioQueue::heartbeat()
 {
 
-    uint8_t y; //direction calulations
+//    uint8_t y; //direction calulations
     uint8_t z; //direction calulations
 		uint8_t hTimer; //heartbeat timer
 
@@ -225,10 +245,12 @@ void audioQueue::heartbeat()
 	        if(queueToneEnd[0] > 0 && queueToneEnd[0] != queueToneStart[0]){
 	            if(queueToneStart[0] > queueToneEnd[0]){  //tone going down
 	                z = queueToneStart[0] - queueToneEnd[0];
-	                y = 0;
+			            rateOfChange = -1;
+//	                y = 0;
 	            } else { //tone going up
 	                z = queueToneEnd[0] - queueToneStart[0];
-	                y = 1;
+	            		rateOfChange = 1;
+//	                y = 1;
 	            }
 	            if(queueToneStart[0] > 0){
 	            	toneFreq=queueToneStart[0] + g_eeGeneral.speakerPitch + BEEP_OFFSET; // add pitch compensator
@@ -236,8 +258,8 @@ void audioQueue::heartbeat()
 	          		toneFreq=queueToneStart[0]; // done so hapticOnly option can work
 	          	}
 	            toneFreqEnd=queueToneEnd[0] + g_eeGeneral.speakerPitch + BEEP_OFFSET;
-	            rateOfChange = 1;
-	            DirectionOfChange = y;
+//	            rateOfChange = 1;
+//	            DirectionOfChange = y;
 	            toneTimeLeft = z;
 	            tonePause = queueTonePause[0];
 	            toneRepeat = queueToneRepeat[0];
@@ -249,7 +271,7 @@ void audioQueue::heartbeat()
 	          	} else {
 	          		toneFreq=queueToneStart[0];
 	          	}	
-	            DirectionOfChange = 0;
+//	            DirectionOfChange = 0;
 	            rateOfChange = 0;
 	            toneFreqEnd = 0;
 	            toneTimeLeft = queueToneLength[0];
@@ -281,24 +303,25 @@ void audioQueue::heartbeat()
     
 
 
+ 		hTimer = AUDIO_QUEUE_HEARTBEAT_NORM;		// default
     if(g_eeGeneral.beeperVal == 2){
     			//xshort
     			 hTimer= AUDIO_QUEUE_HEARTBEAT_XSHORT;		
     }else if(g_eeGeneral.beeperVal == 3){
     			//short
     			 hTimer= AUDIO_QUEUE_HEARTBEAT_SHORT;
-		} else if(g_eeGeneral.beeperVal == 4){
-    			//normal
-    			 hTimer= AUDIO_QUEUE_HEARTBEAT_NORM;    			 
+//		} else if(g_eeGeneral.beeperVal == 4){
+//    			//normal
+//    			 hTimer= AUDIO_QUEUE_HEARTBEAT_NORM;    			 
     } else if(g_eeGeneral.beeperVal == 5){
     			//long
     			hTimer = AUDIO_QUEUE_HEARTBEAT_LONG;
  		} else if(g_eeGeneral.beeperVal == 6){
  					//xlong
     			hTimer = AUDIO_QUEUE_HEARTBEAT_XLONG;		   			
-    } else {
-	    		//default
-	    		hTimer = AUDIO_QUEUE_HEARTBEAT_NORM;
+//    } else {
+//	    		//default
+//	    		hTimer = AUDIO_QUEUE_HEARTBEAT_NORM;
     }				
 		
 		heartbeatTimer++;
@@ -306,26 +329,21 @@ void audioQueue::heartbeat()
         
         heartbeatTimer=0;
 
-        if(toneTimeLeft > 0 && queueState == 1){
-            //play the tone
-
-
-            //alter tone for scaling sound effect
-            if(rateOfChange == 1){
-                if(DirectionOfChange == 1){
-                    toneFreq = toneFreq + rateOfChange;
-                } else {
-                    toneFreq = toneFreq - rateOfChange;
-                }
-            }
-
+				if(queueState == 1)
+				{
+					if(toneTimeLeft > 0 )
+					{
+            toneFreq += rateOfChange;		// -1, 0 or 1
             toneTimeLeft--; //time gets counted down
-        }
-        if(toneTimeLeft <= 0 && queueState == 1){
+					}
+	        if(toneTimeLeft <= 0 )
+					{
             if(tonePause--	<= 0){
                 queueState = 0;
             }
-        }
+					}
+				}	
+       
     }
 
 }
@@ -338,8 +356,8 @@ void audioQueue::playNow(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRep
    			t_queueToneHaptic=tHaptic;
    			t_queueToneRepeat=tRepeat;
    			t_queueToneEnd=tEnd;
-        toneInterupt = 1; //always interrupt in this function
-        commit();
+//        toneInterupt = 1; //always interrupt in this function
+        commit(1);
 }	
 
 void audioQueue::playASAP(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRepeat,uint8_t tHaptic,uint8_t tEnd){
@@ -349,8 +367,8 @@ void audioQueue::playASAP(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRe
    			t_queueToneHaptic=tHaptic;
    			t_queueToneRepeat=tRepeat;
    			t_queueToneEnd=tEnd;
-        toneInterupt = 0; //queue the request
-        commit();
+//        toneInterupt = 0; //queue the request
+        commit(0);
 }	
 
 #ifdef FRSKY		

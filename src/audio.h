@@ -104,9 +104,9 @@ struct audioQueue{
     uint8_t toneFreq;
     uint8_t toneFreqEnd;
     uint8_t toneTimeLeft;
-    uint8_t rateOfChange;
-    uint8_t DirectionOfChange;
-    uint8_t toneInterupt;
+    int8_t rateOfChange;
+//    uint8_t DirectionOfChange;
+//    uint8_t toneInterupt;
     uint8_t tonePause;
     uint8_t queueState;
     uint8_t toneRepeat;
@@ -130,7 +130,7 @@ struct audioQueue{
     uint8_t queueToneHaptic[AUDIO_QUEUE_LENGTH];
     
     //beep length table
-    uint8_t beepLenTable[10];
+//    uint8_t beepLenTable[10];
 
 
 public:
@@ -152,10 +152,11 @@ public:
 		void frskyeventSample(uint8_t e);
 #endif
 
-    void commit();
+    void commit( uint8_t toneInterupt );
     
     //set all temporary buffers to default
     void flushTemp();
+		void flushqueue( uint8_t startpos ) ;
 
     void restack();
     //heartbeat is responsibile for issueing the audio tones and general square waves
