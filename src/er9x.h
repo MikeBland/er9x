@@ -338,6 +338,11 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define DSM2only         1
 #define DSM2_DSMX        2
 
+#define PXX_SEND_RXNUM     0x01
+#define PXX_SEND_FAILSAFE  0x02
+
+extern uint8_t pxxFlag;
+
 typedef void (*MenuFuncP)(uint8_t event);
 typedef void (*getADCp)();
 
