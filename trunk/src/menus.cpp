@@ -1901,46 +1901,72 @@ if(s_pgOfs<subN) {
 
 if(s_pgOfs<subN) {
     lcd_puts_Pleft(    y, PSTR("Proto"));//sub==2 ? INVERS:0);
-    lcd_putsnAtt(  6*FW, y, PSTR(PROT_STR)+PROT_STR_LEN*g_model.protocol,PROT_STR_LEN,
-                 (sub==subN && subSub==0 ? (s_editMode ? BLINK : INVERS):0));
-    if( g_model.protocol != PROTO_DSM2 ) {
+    lcd_putsnAtt(  6*FW, y, PSTR(PROT_STR)+PROT_STR_LEN*g_model.protocol,PROT_STR_LEN, (sub==subN && subSub==0 ? (s_editMode ? BLINK : INVERS):0));
+    if( g_model.protocol == PROTO_PPM ) {
         lcd_putsnAtt(  10*FW, y, PSTR("4CH 6CH 8CH 10CH12CH14CH16CH")+4*(g_model.ppmNCH+2),4,(sub==subN && subSub==1  ? (s_editMode ? BLINK : INVERS):0));
         lcd_putsAtt(    17*FW,    y, PSTR("uSec"),0);
         lcd_outdezAtt(  17*FW, y,  (g_model.ppmDelay*50)+300, (sub==subN && subSub==2 ? (s_editMode ? BLINK : INVERS):0));
     }
-    if (g_model.protocol == PROTO_DSM2)
-		{
- //       CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,0,2);
-			int8_t x ;
-				x = g_model.ppmNCH ;
-				if ( x < 0 ) x = 0 ;
-				if ( x > 2 ) x = 2 ;
-				g_model.ppmNCH = x ;
-        lcd_putsnAtt(12*FW,y, PSTR(DSM2_STR)+DSM2_STR_LEN*(x),DSM2_STR_LEN,
-                    (sub==subN && subSub==1 ? (s_editMode ? BLINK : INVERS):0));
-		}
+    if (g_model.protocol == PROTO_PPM16)
+    {
+        lcd_putsAtt(    15*FW,    y, PSTR("uSec"),0);
+        lcd_outdezAtt(  15*FW, y,  (g_model.ppmDelay*50)+300, (sub==subN && subSub==1 ? (s_editMode ? BLINK : INVERS):0));
+    }
+    if (g_model.protocol == PROTO_PXX)
+    {
+        lcd_putsAtt(    11*FW,    y, PSTR(" RxNum"),0);
+        lcd_outdezAtt(  21*FW, y,  g_model.rxnum+1, (sub==subN && subSub==1 ? (s_editMode ? BLINK : INVERS):0));
+    }
+
     if(sub==subN && (s_editMode || p1valdiff))
         switch (subSub){
         case 0:
             CHECK_INCDEC_H_MODELVAR(event,g_model.protocol,0,PROT_MAX);
             break;
         case 1:
-            if (g_model.protocol == PROTO_DSM2)
-                  CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,0,2);
-            else  
-                  CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,-2,4);
+            if (g_model.protocol == PROTO_PPM)
+                CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,-2,4);
+            else if (g_model.protocol == PROTO_PPM16)
+                CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
+            else if (g_model.protocol == PROTO_PXX)
+                CHECK_INCDEC_H_MODELVAR(event,g_model.rxnum,0,124);
             break;
         case 2:
-            CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
+            if (g_model.protocol == PROTO_PPM)
+                CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
             break;
         }
     if((y+=FH)>7*FH) return;
 }subN++;
 
 if(s_pgOfs<subN) {
-    lcd_puts_Pleft(    y, PSTR("PPM FrLen    mSec"));
-    lcd_outdezAtt(  13*FW, y, (int16_t)g_model.ppmFrameLength*5 + 225 ,(sub==subN ? INVERS:0) | PREC1);
-    if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.ppmFrameLength,-20,20);
+    if(g_model.protocol == PROTO_PPM || g_model.protocol == PROTO_PPM16)
+    {
+        lcd_puts_Pleft(    y, PSTR("PPM FrLen    mSec"));
+        lcd_outdezAtt(  13*FW, y, (int16_t)g_model.ppmFrameLength*5 + 225 ,(sub==subN ? INVERS:0) | PREC1);
+        if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.ppmFrameLength,-20,20);
+    }
+    else if(g_model.protocol == PROTO_PXX)
+    {
+        lcd_putsAtt(0,    y, PSTR("Send Rx Number [MENU]"), (sub==subN ? INVERS:0));
+
+        if(sub==subN && event==EVT_KEY_LONG(KEY_MENU))
+        {
+            //send reset code
+            pxxFlag = PXX_SEND_RXNUM;
+        }
+    }
+    else
+    {
+        lcd_puts_Pleft(    y, PSTR("DSM Type"));
+        int8_t x ;
+        x = g_model.ppmNCH ;
+        if ( x < 0 ) x = 0 ;
+        if ( x > 2 ) x = 2 ;
+        g_model.ppmNCH = x ;
+        lcd_putsnAtt(10*FW,y, PSTR(DSM2_STR)+DSM2_STR_LEN*(x),DSM2_STR_LEN, (sub==subN ? (s_editMode ? BLINK : INVERS):0));
+        if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,0,2);
+    }
     if((y+=FH)>7*FH) return;
 }subN++;
 
@@ -1986,23 +2012,6 @@ if(s_pgOfs<subN) {
         killEvents(event);
         DupIfNonzero = 0 ;
         pushMenu(menuDeleteDupModel);
-        //        pushMenu(menuDeleteModel);
-
-        //EFile::rm(FILE_MODEL(g_eeGeneral.currModel)); //delete file
-
-        //uint8_t i = g_eeGeneral.currModel;//loop to find next available model
-        //while (!EFile::exists(FILE_MODEL(i))) {
-        //i--;
-        //if(i>MAX_MODELS) i=MAX_MODELS-1;
-        //if(i==g_eeGeneral.currModel) {
-        //i=0;
-        //break;
-        //}
-        //}
-        //g_eeGeneral.currModel = i;
-
-        //eeLoadModel(g_eeGeneral.currModel); //load default values
-        //chainMenu(menuProcModelSelect);
     }
     if((y+=FH)>7*FH) return;
 }subN++;
