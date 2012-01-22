@@ -496,23 +496,20 @@ void checkSwitches()
   if(g_eeGeneral.disableSwitchWarning) return; // if warning is on
 
   // first - display warning
-  alertMessages( PSTR("Switches not off"), PSTR("Please reset them") ) ;
+  alertMessages( PSTR("Switches Warning"), PSTR("Please Reset Switches") ) ;
   
 	//loop until all switches are reset
   while (1)
   {
     uint8_t i;
-    for(i=SW_BASE; i<SW_Trainer; i++)
+    for(i=0; i<(SW_Trainer+SW_BASE); i++)
     {
-        if(i==SW_ID0) continue;
-//#if (defined(JETI) || defined(FRSKY))
-//        if(i==SW_AileDR || i==SW_ThrCt) continue; //issue 166 - commented out since the issue was in error
-//#endif
-        if(getSwitch(i-SW_BASE+1,0)) break;
+//        if(getSwitch(i+1,0) == ((bool)(g_eeGeneral.switchWarningStates & (1<<i)))) break;  // if state of sw <> saved state
+//        if(keyState((EnumKeys)(SW_BASE+i)) )
+
     }
 
-    if((i==SW_Trainer) ||
-       (keyDown()))
+    if((i==SW_Trainer) || (keyDown()))
     {
         return;  //wait for key release
     }
@@ -787,6 +784,7 @@ void pushMenu(MenuFuncP newMenu)
 uint8_t  g_vbat100mV = 74 ;
 volatile uint8_t tick10ms = 0;
 uint16_t g_LightOffCounter;
+uint8_t  stickMoved = 0;
 
 inline bool checkSlaveMode()
 {
@@ -853,8 +851,14 @@ void perMain()
     uint8_t evt=getEvent();
     evt = checkTrim(evt);
 
+    uint16_t a = 0;
+    uint16_t b = 0;
     if(g_LightOffCounter) g_LightOffCounter--;
-    if(evt) g_LightOffCounter = g_eeGeneral.lightAutoOff*500; // on keypress turn the light on 5*100
+    if(evt) a = g_eeGeneral.lightAutoOff*500; // on keypress turn the light on 5*100
+    if(stickMoved) b = g_eeGeneral.lightOnStickMove*500;
+    if(a>g_LightOffCounter) g_LightOffCounter = a;
+    if(b>g_LightOffCounter) g_LightOffCounter = b;
+
 
     if(getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
         BACKLIGHT_ON;
@@ -927,6 +931,8 @@ void perMain()
         break;
     }
 
+
+    stickMoved = 0; //reset this flag
 }
 
 int16_t g_ppmIns[8];

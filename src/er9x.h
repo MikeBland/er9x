@@ -342,6 +342,7 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define PXX_SEND_FAILSAFE  0x02
 
 extern uint8_t pxxFlag;
+extern uint8_t stickMoved;
 
 typedef void (*MenuFuncP)(uint8_t event);
 typedef void (*getADCp)();
