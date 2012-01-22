@@ -8,6 +8,11 @@ Format is as follows:
 CHANGELOG: 1-11-2011
 description here
 ====================================================================================
+******************************************
+CHANGELOG: 22-1-2012  & 12-1-2012 MPB
+Menu changes for protocols
+Enable light on by moving sticks
+More elaborate sw warning
 
 ******************************************
 CHANGELOG: 19-1-2012  & 12-1-2012 MPB

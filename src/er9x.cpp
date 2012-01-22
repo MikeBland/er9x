@@ -498,18 +498,24 @@ void checkSwitches()
   // first - display warning
   alertMessages( PSTR("Switches Warning"), PSTR("Please Reset Switches") ) ;
   
-	//loop until all switches are reset
+  uint8_t x = g_eeGeneral.switchWarningStates & SWP_IL5;
+  if(x==SWP_IL1 || x==SWP_IL2 || x==SWP_IL3 || x==SWP_IL4 || x==SWP_IL5) //illegal states for ID0/1/2
+  {
+      g_eeGeneral.switchWarningStates &= ~SWP_IL5; // turn all off, make sure only one is on
+      g_eeGeneral.switchWarningStates |=  SWP_ID0B;
+  }
+
+  //loop until all switches are reset
   while (1)
   {
-    uint8_t i;
-    for(i=0; i<(SW_Trainer+SW_BASE); i++)
+    uint8_t i = 0;
+    for(uint8_t j=0; j<8; j++)
     {
-//        if(getSwitch(i+1,0) == ((bool)(g_eeGeneral.switchWarningStates & (1<<i)))) break;  // if state of sw <> saved state
-//        if(keyState((EnumKeys)(SW_BASE+i)) )
-
+        bool t=keyState((EnumKeys)(SW_BASE_DIAG+j));
+        i |= t<<j;
     }
 
-    if((i==SW_Trainer) || (keyDown()))
+    if((i==g_eeGeneral.switchWarningStates) || (keyDown())) // check state against settings
     {
         return;  //wait for key release
     }

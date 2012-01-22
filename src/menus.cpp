@@ -1916,7 +1916,7 @@ if(s_pgOfs<subN) {
     if (g_model.protocol == PROTO_PXX)
     {
         lcd_putsAtt(    11*FW,    y, PSTR(" RxNum"),0);
-        lcd_outdezAtt(  21*FW, y,  g_model.rxnum+1, (sub==subN && subSub==1 ? (s_editMode ? BLINK : INVERS):0));
+        lcd_outdezAtt(  21*FW, y,  g_model.ppmNCH+1, (sub==subN && subSub==1 ? (s_editMode ? BLINK : INVERS):0));
     }
 
     if(sub==subN && (s_editMode || p1valdiff))
@@ -1928,7 +1928,7 @@ if(s_pgOfs<subN) {
             if ((g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16))
                 CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,-2,4);
             else if (g_model.protocol == PROTO_PXX)
-                CHECK_INCDEC_H_MODELVAR(event,g_model.rxnum,0,124);
+                CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,0,124);
             break;
         case 2:
             if ((g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16))
@@ -2452,16 +2452,7 @@ uint8_t onoffMenuItem( uint8_t value, uint8_t y, const prog_char *s, uint8_t con
 void menuProcSetup(uint8_t event)
 {
 
-
-/*
-#ifdef BEEPSPKR
-#define COUNT_ITEMS 22
-#else
-#define COUNT_ITEMS 20
-#endif
-*/
-
-#define DEFAULT_COUNT_ITEMS 23
+#define DEFAULT_COUNT_ITEMS 24
 
 #ifdef FRSKY
                 uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
@@ -2504,7 +2495,7 @@ void menuProcSetup(uint8_t event)
 
   //  SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, COUNT_ITEMS+1);
 			SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, vCountItems+1);
-    uint8_t  sub    = mstate2.m_posVert;
+    uint8_t sub    = mstate2.m_posVert;
     uint8_t subSub = mstate2.m_posHorz;
 
     evalOffset(sub, 7);
@@ -2526,11 +2517,13 @@ void menuProcSetup(uint8_t event)
         break;
     case EVT_KEY_REPT(KEY_LEFT):
     case EVT_KEY_FIRST(KEY_LEFT):
-        if(sub==1 && subSub>0 && s_editMode) mstate2.m_posHorz--;
+        if(sub==1 && subSub>0 && s_editMode) mstate2.m_posHorz--; //for owner name
+        if(sub==19 && subSub>0) mstate2.m_posHorz--;   //for Sw Position
         break;
     case EVT_KEY_REPT(KEY_RIGHT):
     case EVT_KEY_FIRST(KEY_RIGHT):
         if(sub==1 && subSub<sizeof(g_model.name)-1 && s_editMode) mstate2.m_posHorz++;
+        if(sub==19 && subSub<7) mstate2.m_posHorz++;
         break;
     case EVT_KEY_REPT(KEY_UP):
     case EVT_KEY_FIRST(KEY_UP):
@@ -2755,6 +2748,55 @@ if(g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2 ){
         g_eeGeneral.disableSwitchWarning = 1-onoffMenuItem( b, y, PSTR("Switch Warning"), sub==subN, event ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
+
+    if(s_pgOfs<subN) {
+        lcd_puts_Pleft(    y, PSTR("Default Sw"));
+        for(uint8_t i=0;i<8;i++) lcd_putsnAtt((11+i)*FW, y, PSTR("TRE012AG")+i,1,  ((g_eeGeneral.switchWarningStates & (1<<i)) ? INVERS : 0 ) );
+
+        if(sub==subN){
+            mstate2.m_posHorz -= scrollLR;
+            if((int8_t(mstate2.m_posHorz))<0) mstate2.m_posHorz = 0;
+            if((int8_t(mstate2.m_posHorz))>(GENERAL_OWNER_NAME_LEN-1)) mstate2.m_posHorz = GENERAL_OWNER_NAME_LEN-1;
+            scrollLR = 0;
+
+            lcd_putsnAtt((11+subSub)*FW, y, PSTR("TRE012AG")+subSub,1,  BLINK );
+
+            if((event==EVT_KEY_FIRST(KEY_MENU)) || p1valdiff) {
+                killEvents(event);
+                s_editMode = false;
+                uint8_t p = (1<<(subSub));
+                g_eeGeneral.switchWarningStates ^= p;
+
+                switch (p)
+                {
+                case (SWP_ID0B):
+                    if(g_eeGeneral.switchWarningStates & p) //if on - turn the others off
+                        g_eeGeneral.switchWarningStates &= ~(SWP_ID1B | SWP_ID2B);
+                    else
+                        g_eeGeneral.switchWarningStates |= p; //else - turn on
+                    break;
+                case (SWP_ID1B):
+                    if(g_eeGeneral.switchWarningStates & p) //if on - turn the others off
+                        g_eeGeneral.switchWarningStates &= ~(SWP_ID0B | SWP_ID2B);
+                    else
+                        g_eeGeneral.switchWarningStates |= p; //else - turn on
+                    break;
+                case (SWP_ID2B):
+                    if(g_eeGeneral.switchWarningStates & p) //if on - turn the others off
+                        g_eeGeneral.switchWarningStates &= ~(SWP_ID0B | SWP_ID1B);
+                    else
+                        g_eeGeneral.switchWarningStates |= p; //else - turn on
+                    break;
+                }
+
+                STORE_GENERALVARS;
+                eeWaitComplete() ;
+            }
+        }
+
+        if((y+=FH)>7*FH) return;
+    }subN++;
+
 
     if(s_pgOfs<subN) {
         uint8_t b = 1-g_eeGeneral.disableMemoryWarning;

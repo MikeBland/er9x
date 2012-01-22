@@ -617,7 +617,7 @@ void setupPulsesPXX()
     PcmBitCount = PcmByte = 0 ;
     PcmOnesCount = 0 ;
     putPcmByte( 0x7E ) ;  // sync byte
-    putPcmByte( g_model.rxnum ) ;     // putPcmByte( g_model.rxnum ) ;  //
+    putPcmByte( g_model.ppmNCH ) ;     // putPcmByte( g_model.rxnum ) ;  //
     putPcmByte( pxxFlag ) ;     // First byte of flags
     putPcmByte( 0 ) ;     // Second byte of flags
     pxxFlag = 0;          // reset flag after send
