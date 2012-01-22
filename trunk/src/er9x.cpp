@@ -371,16 +371,30 @@ void clearKeyEvents()
     putEvent(0);
 }
 
+void check_backlight()
+{
+  if(getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
+    BACKLIGHT_ON;
+  else
+    BACKLIGHT_OFF;
+}
+
+uint16_t stickMoveValue()
+{
+#define INAC_DEVISOR 256   // Issue 206 - bypass splash screen with stick movement
+    uint16_t sum = 0;
+    for(uint8_t i=0; i<4; i++)
+       sum += anaIn(i)/INAC_DEVISOR;
+		return sum ;
+}
+
 void doSplash()
 {
     if(!g_eeGeneral.disableSplashScreen)
     {
 
 
-        if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff)
-             BACKLIGHT_ON;
-        else
-             BACKLIGHT_OFF;
+				check_backlight() ;
 
         lcd_clear();
         lcd_img(0, 0, s9xsplash,0,0);
@@ -395,25 +409,21 @@ void doSplash()
         for(uint8_t i=0; i<32; i++)
             getADC_filt(); // init ADC array
 
-#define INAC_DEVISOR 256   // Issue 206 - bypass splash screen with stick movement
-        uint16_t inacSum = 0;
-        for(uint8_t i=0; i<4; i++)
-           inacSum += anaIn(i)/INAC_DEVISOR;
+        uint16_t inacSum = stickMoveValue();
+//        for(uint8_t i=0; i<4; i++)
+//           inacSum += anaIn(i)/INAC_DEVISOR;
 
         uint16_t tgtime = get_tmr10ms() + SPLASH_TIMEOUT;  
         while(tgtime != get_tmr10ms())
         {
             getADC_filt();
-            uint16_t tsum = 0;
-            for(uint8_t i=0; i<4; i++)
-               tsum += anaIn(i)/INAC_DEVISOR;
+            uint16_t tsum = stickMoveValue();
+//            for(uint8_t i=0; i<4; i++)
+//               tsum += anaIn(i)/INAC_DEVISOR;
 
             if(keyDown() || (tsum!=inacSum))   return;  //wait for key release
 
-            if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff)
-                BACKLIGHT_ON;
-            else
-                BACKLIGHT_OFF;
+						check_backlight() ;
         }
     }
 }
@@ -469,10 +479,7 @@ void checkTHR()
           return;
       }
 
-      if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff)
-          BACKLIGHT_ON;
-      else
-          BACKLIGHT_OFF;
+			check_backlight() ;
   }
 }
 
@@ -520,10 +527,7 @@ void checkSwitches()
         return;  //wait for key release
     }
 
-    if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff)
-        BACKLIGHT_ON;
-    else
-        BACKLIGHT_OFF;
+		check_backlight() ;
   }
 }
 
@@ -865,12 +869,7 @@ void perMain()
     if(a>g_LightOffCounter) g_LightOffCounter = a;
     if(b>g_LightOffCounter) g_LightOffCounter = b;
 
-
-    if(getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
-        BACKLIGHT_ON;
-    else
-        BACKLIGHT_OFF;
-
+		check_backlight() ;
 
     static int16_t p1valprev;
     p1valdiff = (p1val-calibratedStick[6])/32;
@@ -1074,11 +1073,11 @@ void getADC_bandgap()
 //      BandGap = 256;
 }
 
-getADCp getADC[3] = {
-  getADC_single,
-  getADC_osmp,
-  getADC_filt
-  };
+//getADCp getADC[3] = {
+//  getADC_single,
+//  getADC_osmp,
+//  getADC_filt
+//  };
 
 volatile uint8_t g_tmr16KHz;
 
@@ -1329,7 +1328,19 @@ extern int16_t AltOffset ;
 void mainSequence()
 {
       uint16_t t0 = getTmr16KHz();
-      getADC[g_eeGeneral.filterInput]();
+//      getADC[g_eeGeneral.filterInput]();
+			if ( g_eeGeneral.filterInput == 1)
+			{
+  			getADC_filt() ;				
+			}
+			else if ( g_eeGeneral.filterInput == 2)
+			{
+  			getADC_osmp() ;				
+			}
+			else
+			{
+  			getADC_single() ;				
+			}
       ADMUX=0x1E|ADC_VREF_TYPE;   // Select bandgap
       perMain();      // Give bandgap plenty of time to settle
       getADC_bandgap() ;
