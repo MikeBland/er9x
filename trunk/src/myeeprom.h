@@ -33,7 +33,8 @@
 #define MDVERS_r261 6
 #define MDVERS_r352 7
 #define MDVERS_r365 8
-#define MDVERS      9
+#define MDVERS_r668 9
+#define MDVERS      10
 
 //OBSOLETE - USE ONLY MDVERS NOW
 //#define GENERAL_MYVER_r261 3
@@ -104,18 +105,18 @@ typedef struct t_EEGeneral {
   uint8_t   lightAutoOff;
   uint8_t   templateSetup;  //RETA order according to chout_ar array 
   int8_t    PPM_Multiplier;
-  //uint8_t   respre[2]; //mike please check these are correct
   uint8_t   FRSkyYellow:4;
   uint8_t   FRSkyOrange:4;
-  uint8_t   FRSkyRed:4;  //mike please check these are correct
+  uint8_t   FRSkyRed:4;
   uint8_t   hideNameOnSplash:1;
   uint8_t   spare:3;
   uint8_t   speakerPitch;
   uint8_t   hapticStrength;
   uint8_t   speakerMode;
-  uint8_t   res[1];
-//  uint8_t	FRSkyRed;  //mike please check these are correct
+  uint8_t   lightOnStickMove;
   char      ownerName[GENERAL_OWNER_NAME_LEN];
+  uint8_t   switchWarningStates;
+  uint8_t   res[4];
 } __attribute__((packed)) EEGeneral;
 
 

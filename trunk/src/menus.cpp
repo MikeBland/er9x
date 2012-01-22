@@ -1909,8 +1909,9 @@ if(s_pgOfs<subN) {
     }
     if (g_model.protocol == PROTO_PPM16)
     {
-        lcd_putsAtt(    15*FW,    y, PSTR("uSec"),0);
-        lcd_outdezAtt(  15*FW, y,  (g_model.ppmDelay*50)+300, (sub==subN && subSub==1 ? (s_editMode ? BLINK : INVERS):0));
+        lcd_putsnAtt(  12*FW, y, PSTR("4CH 6CH 8CH 10CH12CH14CH16CH")+4*(g_model.ppmNCH+2),4,(sub==subN && subSub==1  ? (s_editMode ? BLINK : INVERS):0));
+        lcd_putsAtt(    19*FW,    y, PSTR("uS"),0);
+        lcd_outdezAtt(  19*FW, y,  (g_model.ppmDelay*50)+300, (sub==subN && subSub==2 ? (s_editMode ? BLINK : INVERS):0));
     }
     if (g_model.protocol == PROTO_PXX)
     {
@@ -1924,15 +1925,13 @@ if(s_pgOfs<subN) {
             CHECK_INCDEC_H_MODELVAR(event,g_model.protocol,0,PROT_MAX);
             break;
         case 1:
-            if (g_model.protocol == PROTO_PPM)
+            if ((g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16))
                 CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,-2,4);
-            else if (g_model.protocol == PROTO_PPM16)
-                CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
             else if (g_model.protocol == PROTO_PXX)
                 CHECK_INCDEC_H_MODELVAR(event,g_model.rxnum,0,124);
             break;
         case 2:
-            if (g_model.protocol == PROTO_PPM)
+            if ((g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16))
                 CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
             break;
         }
@@ -1954,6 +1953,7 @@ if(s_pgOfs<subN) {
         {
             //send reset code
             pxxFlag = PXX_SEND_RXNUM;
+            audioDefevent(AUDIO_WARNING1);
         }
     }
     else
@@ -2461,7 +2461,7 @@ void menuProcSetup(uint8_t event)
 #endif
 */
 
-#define DEFAULT_COUNT_ITEMS 22
+#define DEFAULT_COUNT_ITEMS 23
 
 #ifdef FRSKY
                 uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
@@ -2696,6 +2696,18 @@ if(g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2 ){
         else
             lcd_putsnAtt(PARAM_OFS, y, PSTR("OFF"),3,(sub==subN ? INVERS:0));
         if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightAutoOff, 0, 600/5);
+        if((y+=FH)>7*FH) return;
+    }subN++;
+
+    if(s_pgOfs<subN) {
+        lcd_puts_Pleft( y,PSTR("Light on Stk Mv"));
+        if(g_eeGeneral.lightOnStickMove) {
+            lcd_outdezAtt(PARAM_OFS, y, g_eeGeneral.lightOnStickMove*5,LEFT|(sub==subN ? INVERS : 0));
+            lcd_putc(lcd_lastPos, y, 's');
+        }
+        else
+            lcd_putsnAtt(PARAM_OFS, y, PSTR("OFF"),3,(sub==subN ? INVERS:0));
+        if(sub==subN) CHECK_INCDEC_H_GENVAR(event, g_eeGeneral.lightOnStickMove, 0, 600/5);
         if((y+=FH)>7*FH) return;
     }subN++;
 
@@ -3668,7 +3680,14 @@ void perOut(int16_t *chanOut, uint8_t att)
 
     if(tick10ms) {
         if(s_noHi) s_noHi--;
-        if( (g_eeGeneral.inactivityTimer + 10) && (g_vbat100mV>49)) {
+        uint16_t tsum = 0;
+        for(uint8_t i=0;i<4;i++) tsum += anas[i];
+        if(abs(int16_t(tsum-inacSum))>INACTIVITY_THRESHOLD){
+            inacSum = tsum;
+            stickMoved = 1;  // reset in perMain
+        }
+        if( (g_eeGeneral.inactivityTimer + 10) && (g_vbat100mV>49))
+        {
             if (++inacPrescale > 15 )
             {
                 inacCounter++;
@@ -3676,10 +3695,7 @@ void perOut(int16_t *chanOut, uint8_t att)
             }
             uint16_t tsum = 0;
             for(uint8_t i=0;i<4;i++) tsum += anas[i];
-            if(abs(int16_t(tsum-inacSum))>INACTIVITY_THRESHOLD){
-                inacSum = tsum;
-                inacCounter=0;
-            }
+            if(stickMoved) inacCounter=0;
             if(inacCounter>((uint16_t)(g_eeGeneral.inactivityTimer+10)*(100*60/16)))
                 if((inacCounter&0x3)==1) {
                     audioDefevent(AUDIO_INACTIVITY);
