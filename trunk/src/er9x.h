@@ -198,7 +198,7 @@ enum EnumKeys {
     SW_AileDR ,
     SW_Gear   ,
     SW_Trainer
-};
+}; 
 
 #define SWITCHES_STR "THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN""SW1""SW2""SW3""SW4""SW5""SW6""SW7""SW8""SW9""SWA""SWB""SWC"
 #define NUM_CSW  12 //number of custom switches
@@ -240,6 +240,20 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define SW_BASE_DIAG SW_ThrCt
 //#define SWITCHES_STR "  NC  ON THR RUD ELE ID0 ID1 ID2 AILGEARTRNR"
 #define MAX_DRSWITCH (1+SW_Trainer-SW_ThrCt+1+NUM_CSW)
+
+#define SWP_ID0 (SW_ID0-SW_BASE)
+#define SWP_ID1 (SW_ID1-SW_BASE)
+#define SWP_ID2 (SW_ID2-SW_BASE)
+#define SWP_ID0B (1<<SWP_ID0)
+#define SWP_ID1B (1<<SWP_ID1)
+#define SWP_ID2B (1<<SWP_ID2)
+
+//Switch Position Illigal states
+#define SWP_IL1 (0)
+#define SWP_IL2 (SWP_ID0B | SWP_ID1B)
+#define SWP_IL3 (SWP_ID0B | SWP_ID2B)
+#define SWP_IL4 (SWP_ID1B | SWP_ID2B)
+#define SWP_IL5 (SWP_ID0B | SWP_ID1B | SWP_ID2B)
 
 #define SWASH_TYPE_STR   "---   ""120   ""120X  ""140   ""90    "
 
