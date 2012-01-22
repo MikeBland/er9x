@@ -129,6 +129,7 @@ extern FrskyData frskyTelemetry[4];
 //extern FrskyData frskyRSSI[2];
 extern int16_t FrskyHubData[] ;
 extern uint8_t FrskyAlarmCheckFlag ;
+extern uint8_t MaxGpsSpeed ;
 
 void FRSKY_Init(void);
 // static void FRSKY10mspoll(void);

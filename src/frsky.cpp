@@ -62,6 +62,7 @@ uint8_t Frsky_user_id ;
 uint8_t Frsky_user_lobyte ;
 
 int16_t FrskyHubData[38] ;  // All 38 words
+uint8_t MaxGpsSpeed ;
 
 // Entry 16 is altitude, need to organise an alarm at 400 ft (122 m)
 
@@ -111,6 +112,12 @@ void frsky_proc_user_byte( uint8_t byte )
 						if ( Frsky_user_id < 38 )
 						{
 						  FrskyHubData[Frsky_user_id] = ( byte << 8 ) + Frsky_user_lobyte ;
+							if ( Frsky_user_id == 17 )			// GPS Speed
+							{
+								if ( MaxGpsSpeed < FrskyHubData[Frsky_user_id] )
+								{	MaxGpsSpeed = FrskyHubData[Frsky_user_id] ;
+								}
+							}
 						}	
 						Frsky_user_state = 0 ;
 					}
