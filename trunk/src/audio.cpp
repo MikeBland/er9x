@@ -59,7 +59,7 @@ bool audioQueue::busy(){
 
 bool audioQueue::freeslots(uint8_t slots){
 		//find out if enough queue space exists to add the requested routine!
-			for(uint8_t i=AUDIO_QUEUE_LENGTH ; i--;){
+			for(uint8_t i=AUDIO_QUEUE_LENGTH-1 ; i--;){
 					slots--;
 					if(slots == 0){ break; }	//only loop for the number of items indicated in slots
 					if(queueToneStart[i] != 0){ 
