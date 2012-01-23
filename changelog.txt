@@ -10,6 +10,11 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 23-1-2012  RFT
+Some updates to audio queue to prevent sound overruns 
+when playing 'long sounds'
+
+******************************************
 CHANGELOG: 22-1-2012  ER
 Menu changes for protocols
 Enable light on by moving sticks

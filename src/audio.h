@@ -15,7 +15,7 @@
 #define audio_h
 
 //audio
-#define AUDIO_QUEUE_LENGTH (10)  //10 seems to suit most alerts
+#define AUDIO_QUEUE_LENGTH (8)  //8 seems to suit most alerts
 #define BEEP_DEFAULT_FREQ (70)
 #define BEEP_OFFSET (10)
 #define BEEP_KEY_UP_FREQ  (BEEP_DEFAULT_FREQ+5)
@@ -85,10 +85,6 @@
 #define BEEP_XLONG (6)
 
 
-
-//extern uint8_t g_beepVal[5];
-
-
 struct audioQueue{
 
 
@@ -105,8 +101,6 @@ struct audioQueue{
     uint8_t toneFreqEnd;
     uint8_t toneTimeLeft;
     int8_t rateOfChange;
-//    uint8_t DirectionOfChange;
-//    uint8_t toneInterupt;
     uint8_t tonePause;
     uint8_t queueState;
     uint8_t toneRepeat;
@@ -142,7 +136,7 @@ public:
 		//only difference between these two functions is that one does the 
 		//interupt queue (Now) and the other queues for playing ASAP.
 		void playNow(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRepeat=0,uint8_t tHaptic=0,uint8_t tEnd=0);	
-		void playASAP(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tHaptic=0,uint8_t tRepeat=0,uint8_t tEnd=0);
+		void playASAP(uint8_t tStart,uint8_t tLen,uint8_t tPause,uint8_t tRepeat=0,uint8_t tHaptic=0,uint8_t tEnd=0);
     bool busy();
 
 		void event(uint8_t e,uint8_t f=BEEP_DEFAULT_FREQ);
@@ -162,6 +156,7 @@ public:
     //heartbeat is responsibile for issueing the audio tones and general square waves
     // it is essentially the life of the class.
     void heartbeat();
+    bool freeslots(uint8_t slots);
 };
 
 //wrapper function - dirty but results in a space saving!!!
@@ -170,8 +165,5 @@ extern audioQueue  audio;
 void audioDefevent(uint8_t e);
 
 
-
-
-
-
 #endif // audio_h
+
