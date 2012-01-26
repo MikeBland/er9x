@@ -1,7 +1,6 @@
  * [About About]
  * [WhyER9X Why use er9x]
- * [Licence Licence]
- * [Disclaimer Disclaimer]
+ * [Licence License and Disclaimer]
  * [Howto Howto Guides]
     * [SoftwareGuides Software Tutorials]
       * [OtherGuides Other Guides]
