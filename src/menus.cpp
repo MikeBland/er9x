@@ -2456,6 +2456,7 @@ void menuProcSetup(uint8_t event)
 {
 
 #define DEFAULT_COUNT_ITEMS 24
+int8_t sw_offset = -5;
 
 #ifdef FRSKY
                 uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
@@ -2476,6 +2477,7 @@ void menuProcSetup(uint8_t event)
 		if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 1){ // add in alert red/org/yel
 				vCountItems = vCountItems + 3;
 		}		
+		sw_offset = -3;
 		
 #else 
                 uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
@@ -2497,7 +2499,8 @@ void menuProcSetup(uint8_t event)
 
 
   //  SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, COUNT_ITEMS+1);
-			SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, vCountItems+1);
+	SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, vCountItems+1);
+	sw_offset += vCountItems;
     uint8_t sub    = mstate2.m_posVert;
     uint8_t subSub = mstate2.m_posHorz;
 
@@ -2521,12 +2524,12 @@ void menuProcSetup(uint8_t event)
     case EVT_KEY_REPT(KEY_LEFT):
     case EVT_KEY_FIRST(KEY_LEFT):
         if(sub==1 && subSub>0 && s_editMode) mstate2.m_posHorz--; //for owner name
-        if(sub==19 && subSub>0) mstate2.m_posHorz--;   //for Sw Position
+        if(sub==sw_offset && subSub>0) mstate2.m_posHorz--;   //for Sw Position
         break;
     case EVT_KEY_REPT(KEY_RIGHT):
     case EVT_KEY_FIRST(KEY_RIGHT):
         if(sub==1 && subSub<sizeof(g_model.name)-1 && s_editMode) mstate2.m_posHorz++;
-        if(sub==19 && subSub<7) mstate2.m_posHorz++;
+        if(sub==sw_offset && subSub<7) mstate2.m_posHorz++;
         break;
     case EVT_KEY_REPT(KEY_UP):
     case EVT_KEY_FIRST(KEY_UP):
