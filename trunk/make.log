@@ -1,10 +1,10 @@
 ===== Starting build =====
 Timestamp
-Tue Jan 24 01:39:43 UTC 2012
+Fri Jan 27 23:36:11 UTC 2012
 ==========================
 
 ===== Updating from SVN =====
-At revision 676.
+At revision 685.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -36,10 +36,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "23.01.2012"
-#define TIME_STR "20:08:44"
-#define SUB_VERS 5390-erez
-#define SVN_VERS "trunk-r677"
+#define DATE_STR "27.01.2012"
+#define TIME_STR "18:06:12"
+#define SUB_VERS 5404-erez
+#define SVN_VERS "trunk-r686"
 #define MOD_VERS "JETI   "
 
 Compiling C++: er9x.cpp
@@ -98,7 +98,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   57332 bytes (87.5% Full)
+Program:   57382 bytes (87.6% Full)
 (.text + .data + .bootloader)
 
 Data:       3496 bytes (85.4% Full)
@@ -140,10 +140,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "23.01.2012"
-#define TIME_STR "20:08:48"
-#define SUB_VERS 5391-erez
-#define SVN_VERS "trunk-r677"
+#define DATE_STR "27.01.2012"
+#define TIME_STR "18:06:16"
+#define SUB_VERS 5405-erez
+#define SVN_VERS "trunk-r686"
 #define MOD_VERS "FRSKY   "
 
 Compiling C++: er9x.cpp
@@ -202,10 +202,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   64270 bytes (98.1% Full)
+Program:   64334 bytes (98.2% Full)
 (.text + .data + .bootloader)
 
-Data:       3656 bytes (89.3% Full)
+Data:       3658 bytes (89.3% Full)
 (.data + .bss + .noinit)
 
 
@@ -244,10 +244,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "23.01.2012"
-#define TIME_STR "20:08:52"
-#define SUB_VERS 5392-erez
-#define SVN_VERS "trunk-r677"
+#define DATE_STR "27.01.2012"
+#define TIME_STR "18:06:20"
+#define SUB_VERS 5406-erez
+#define SVN_VERS "trunk-r686"
 #define MOD_VERS "FRSKY NHT  "
 
 Compiling C++: er9x.cpp
@@ -305,10 +305,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   61682 bytes (94.1% Full)
+Program:   61748 bytes (94.2% Full)
 (.text + .data + .bootloader)
 
-Data:       3626 bytes (88.5% Full)
+Data:       3630 bytes (88.6% Full)
 (.data + .bss + .noinit)
 
 
@@ -347,10 +347,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "23.01.2012"
-#define TIME_STR "20:08:56"
-#define SUB_VERS 5393-erez
-#define SVN_VERS "trunk-r677"
+#define DATE_STR "27.01.2012"
+#define TIME_STR "18:06:24"
+#define SUB_VERS 5407-erez
+#define SVN_VERS "trunk-r686"
 #define MOD_VERS "ARDU   "
 
 Compiling C++: er9x.cpp
@@ -409,7 +409,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   59170 bytes (90.3% Full)
+Program:   59220 bytes (90.4% Full)
 (.text + .data + .bootloader)
 
 Data:       3494 bytes (85.3% Full)
@@ -451,10 +451,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "23.01.2012"
-#define TIME_STR "20:08:00"
-#define SUB_VERS 5394-erez
-#define SVN_VERS "trunk-r677"
+#define DATE_STR "27.01.2012"
+#define TIME_STR "18:06:27"
+#define SUB_VERS 5408-erez
+#define SVN_VERS "trunk-r686"
 #define MOD_VERS "NMEA   "
 
 Compiling C++: er9x.cpp
@@ -513,7 +513,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   60280 bytes (92.0% Full)
+Program:   60330 bytes (92.1% Full)
 (.text + .data + .bootloader)
 
 Data:       3566 bytes (87.1% Full)
@@ -555,10 +555,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "23.01.2012"
-#define TIME_STR "20:08:04"
-#define SUB_VERS 5395-erez
-#define SVN_VERS "trunk-r677"
+#define DATE_STR "27.01.2012"
+#define TIME_STR "18:06:31"
+#define SUB_VERS 5409-erez
+#define SVN_VERS "trunk-r686"
 #define MOD_VERS " NHT  "
 
 Compiling C++: er9x.cpp
@@ -613,7 +613,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   54184 bytes (82.7% Full)
+Program:   54234 bytes (82.8% Full)
 (.text + .data + .bootloader)
 
 Data:       3432 bytes (83.8% Full)
@@ -655,10 +655,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "23.01.2012"
-#define TIME_STR "20:08:07"
-#define SUB_VERS 5396-erez
-#define SVN_VERS "trunk-r677"
+#define DATE_STR "27.01.2012"
+#define TIME_STR "18:06:35"
+#define SUB_VERS 5410-erez
+#define SVN_VERS "trunk-r686"
 #define MOD_VERS "   "
 
 Compiling C++: er9x.cpp
@@ -714,7 +714,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   56770 bytes (86.6% Full)
+Program:   56820 bytes (86.7% Full)
 (.text + .data + .bootloader)
 
 Data:       3460 bytes (84.5% Full)

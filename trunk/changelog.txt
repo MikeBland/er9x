@@ -10,6 +10,10 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 1-27-2012  ER
+Fix for default sw position menu item.
+
+******************************************
 CHANGELOG: 23-1-2012  RFT
 Some updates to audio queue to prevent sound overruns 
 when playing 'long sounds'

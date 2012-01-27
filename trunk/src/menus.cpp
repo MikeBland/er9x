@@ -2456,51 +2456,51 @@ void menuProcSetup(uint8_t event)
 {
 
 #define DEFAULT_COUNT_ITEMS 24
-int8_t sw_offset = -5;
 
 #ifdef FRSKY
-                uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
-		switch (g_eeGeneral.speakerMode){
-				//beeper
-				case 0:
-                                                vCountItems = DEFAULT_COUNT_ITEMS;
-						break;
-				//piezo speaker
-			 	case 1:
-                                                vCountItems = DEFAULT_COUNT_ITEMS + 3;
-			 			break;
-			 	//pcmwav
-			  case 2:
-                                                vCountItems = DEFAULT_COUNT_ITEMS + 2;
-						break;	  	
-		}		
-		if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 1){ // add in alert red/org/yel
-				vCountItems = vCountItems + 3;
-		}		
-		sw_offset = -3;
-		
-#else 
-                uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
-		switch (g_eeGeneral.speakerMode){
-				//beeper
-				case 0:
-                                                vCountItems = DEFAULT_COUNT_ITEMS;
-						break;
-				//piezo speaker
-			 	case 1:
-                                                vCountItems = DEFAULT_COUNT_ITEMS + 2;
-			 			break;
-			 	//pcmwav
-			  case 2:
-                                                vCountItems = DEFAULT_COUNT_ITEMS + 1;
-						break;	  	
-		}
+    int8_t sw_offset = -6 ;
+    uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
+    switch (g_eeGeneral.speakerMode){
+    //beeper
+    case 0:
+        sw_offset += 1 ;
+        break;
+        //piezo speaker
+    case 1:
+        vCountItems = DEFAULT_COUNT_ITEMS + 3;
+        break;
+        //pcmwav
+    case 2:
+        vCountItems = DEFAULT_COUNT_ITEMS + 2;
+        break;
+    }
+    if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 1){ // add in alert red/org/yel
+        vCountItems = vCountItems + 3;
+        sw_offset -= 3 ;
+    }
+
+#else
+    int8_t sw_offset = -5 ;
+    uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
+    switch (g_eeGeneral.speakerMode){
+    //beeper
+    case 0:
+        break;
+        //piezo speaker
+    case 1:
+        vCountItems = DEFAULT_COUNT_ITEMS + 2;
+        break;
+        //pcmwav
+    case 2:
+        vCountItems = DEFAULT_COUNT_ITEMS + 1;
+        break;
+    }
 #endif
+    sw_offset += vCountItems ;
 
 
-  //  SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, COUNT_ITEMS+1);
-	SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, vCountItems+1);
-	sw_offset += vCountItems;
+    //  SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, COUNT_ITEMS+1);
+    SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, vCountItems+1);
     uint8_t sub    = mstate2.m_posVert;
     uint8_t subSub = mstate2.m_posHorz;
 
