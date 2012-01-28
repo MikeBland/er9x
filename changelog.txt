@@ -10,6 +10,11 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 1-28-2012  ER
+Light to turn on while booting up.
+On sw warning display the out of position switches.
+
+******************************************
 CHANGELOG: 1-27-2012  ER
 Fix for default sw position menu item.
 
