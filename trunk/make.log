@@ -1,10 +1,10 @@
 ===== Starting build =====
 Timestamp
-Sat Jan 28 17:07:48 UTC 2012
+Sat Jan 28 18:05:33 UTC 2012
 ==========================
 
 ===== Updating from SVN =====
-At revision 687.
+At revision 689.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -37,9 +37,9 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "28.01.2012"
-#define TIME_STR "12:12:49"
-#define SUB_VERS 5429-erez
-#define SVN_VERS "trunk-r688"
+#define TIME_STR "13:01:34"
+#define SUB_VERS 5438-erez
+#define SVN_VERS "trunk-r690"
 #define MOD_VERS "JETI   "
 
 Compiling C++: er9x.cpp
@@ -141,44 +141,43 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "28.01.2012"
-#define TIME_STR "12:12:53"
-#define SUB_VERS 5430-erez
-#define SVN_VERS "trunk-r688"
-#define MOD_VERS "FRSKY   "
+#define TIME_STR "13:01:37"
+#define SUB_VERS 5439-erez
+#define SVN_VERS "trunk-r690"
+#define MOD_VERS "FRSKY NOT  "
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
-templates.cpp:54:22: warning: only initialized variables can be placed into program memory area
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: pulses.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
 
 Compiling C++: audio.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
 
 Compiling C++: frsky.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 --combine -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
@@ -202,10 +201,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   64640 bytes (98.6% Full)
+Program:   62748 bytes (95.7% Full)
 (.text + .data + .bootloader)
 
-Data:       3658 bytes (89.3% Full)
+Data:       3632 bytes (88.7% Full)
 (.data + .bss + .noinit)
 
 
@@ -245,9 +244,9 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "28.01.2012"
-#define TIME_STR "12:12:57"
-#define SUB_VERS 5431-erez
-#define SVN_VERS "trunk-r688"
+#define TIME_STR "13:01:41"
+#define SUB_VERS 5440-erez
+#define SVN_VERS "trunk-r690"
 #define MOD_VERS "FRSKY NHT  "
 
 Compiling C++: er9x.cpp
@@ -348,9 +347,9 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "28.01.2012"
-#define TIME_STR "12:12:01"
-#define SUB_VERS 5432-erez
-#define SVN_VERS "trunk-r688"
+#define TIME_STR "13:01:45"
+#define SUB_VERS 5441-erez
+#define SVN_VERS "trunk-r690"
 #define MOD_VERS "ARDU   "
 
 Compiling C++: er9x.cpp
@@ -452,9 +451,9 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "28.01.2012"
-#define TIME_STR "12:12:04"
-#define SUB_VERS 5433-erez
-#define SVN_VERS "trunk-r688"
+#define TIME_STR "13:01:49"
+#define SUB_VERS 5442-erez
+#define SVN_VERS "trunk-r690"
 #define MOD_VERS "NMEA   "
 
 Compiling C++: er9x.cpp
@@ -556,9 +555,9 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "28.01.2012"
-#define TIME_STR "12:12:08"
-#define SUB_VERS 5434-erez
-#define SVN_VERS "trunk-r688"
+#define TIME_STR "13:01:52"
+#define SUB_VERS 5443-erez
+#define SVN_VERS "trunk-r690"
 #define MOD_VERS " NHT  "
 
 Compiling C++: er9x.cpp
@@ -656,9 +655,9 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 //Automatically generated file - do not edit
 #define DATE_STR "28.01.2012"
-#define TIME_STR "12:12:11"
-#define SUB_VERS 5435-erez
-#define SVN_VERS "trunk-r688"
+#define TIME_STR "13:01:56"
+#define SUB_VERS 5444-erez
+#define SVN_VERS "trunk-r690"
 #define MOD_VERS "   "
 
 Compiling C++: er9x.cpp
