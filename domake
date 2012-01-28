@@ -24,7 +24,7 @@ echo "===== Making FRSKY Version ====="
 echo ">>> cleaning"
 make clean
 echo ">>>  making"
-make EXT=FRSKY
+make EXT=FRSKY TEMPLATES=NO
 echo ">>>  moving"
 mv er9x.hex ../er9x-frsky.hex
 
