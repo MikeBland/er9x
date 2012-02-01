@@ -507,12 +507,12 @@ void menuProcNMEA2(uint8_t event)
     case EVT_KEY_LONG(KEY_LEFT):
 	  ignore_break = 1;
         beep_on=0;
-        audioDefevent(AUDIO_MENUS); 						// short blip 
+        audioDefevent(AU_MENUS); 						// short blip 
         break;
     case EVT_KEY_LONG(KEY_RIGHT):
 	  ignore_break = 1;
         beep_on=1;
-        audioDefevent(AUDIO_MENUS); 						// short blip
+        audioDefevent(AU_MENUS); 						// short blip
         break;
 
 //Altitude setting
@@ -540,18 +540,18 @@ void menuProcNMEA2(uint8_t event)
 	  if (save_alt==0)			// wenn noch keine Home Höhe gesetzt war, wird sie es jetzt, weil sonst
 							// das Umschalten keine Wirkung zeigt
 	      save_alt = home_alt = abs_alt;			// absolute altitude
-        audioDefevent(AUDIO_MENUS); 						// short blip for non negative lift
+        audioDefevent(AU_MENUS); 						// short blip for non negative lift
         break;
 
     case EVT_KEY_LONG(KEY_MENU):
 	  ignore_break = 1;
         save_alt = home_alt = abs_alt;	// Home altitude auf aktuelle absolute Höhe setzen
-        audioDefevent(AUDIO_MENUS); 						// short blip for non negative lift
+        audioDefevent(AU_MENUS); 						// short blip for non negative lift
         break;
 
     case EVT_KEY_LONG(KEY_EXIT):		// Max Altitude auf 0 zurücksetzen
 	  max_alt=0;
-        audioDefevent(AUDIO_MENUS); 						// short blip for non negative lift
+        audioDefevent(AU_MENUS); 						// short blip for non negative lift
         break;
 
     }
@@ -603,7 +603,7 @@ void menuProcNMEA2(uint8_t event)
         prev_alt = rel_alt;
 
         if ((lift_alt >= 0) && (sbuf[1]>0x30) && beep_on)			// GGA record must have Fix> 0	
-            audioDefevent(AUDIO_MENUS); 						// short blip for non negative lift
+            audioDefevent(AU_MENUS); 						// short blip for non negative lift
 
     }
 

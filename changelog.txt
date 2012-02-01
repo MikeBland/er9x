@@ -8,6 +8,13 @@ Format is as follows:
 CHANGELOG: 1-11-2011
 description here
 ====================================================================================
+******************************************
+CHANGELOG: 02-01-2012  RFT
+complere rework of audio system.
+less firmware space
+less cpu usage
+please all test before active use.
+
 
 ******************************************
 CHANGELOG: 1-28-2012  ER

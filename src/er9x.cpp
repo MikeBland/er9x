@@ -618,7 +618,7 @@ void alert(const prog_char * s, bool defaults)
     refreshDiplay();
     lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
 
-    audioDefevent(AUDIO_ERROR);
+    audioDefevent(AU_ERROR);
     clearKeyEvents();
     while(1)
     {
@@ -668,14 +668,14 @@ uint8_t checkTrim(uint8_t event)
         if(((x==0)  ||  ((x>=0) != (tm>=0))) && (!thro) && (tm!=0)){
             *TrimPtr[idx]=0;
             killEvents(event);
-            audioDefevent(AUDIO_TRIM_MIDDLE);
+            audioDefevent(AU_TRIM_MIDDLE);
 
         } else if(x>-125 && x<125){
             *TrimPtr[idx] = (int8_t)x;
             STORE_MODELVARS_TRIM;
             //if(event & _MSK_KEY_REPT) warble = true;
             if(x <= 125 && x >= -125){
-                audio.event(AUDIO_TRIM_MOVE,(abs(x)/4)+60);
+                audio.event(AU_TRIM_MOVE,(abs(x)/4)+60);
             }
         }
         else
@@ -683,7 +683,7 @@ uint8_t checkTrim(uint8_t event)
             *TrimPtr[idx] = (x>0) ? 125 : -125;
             STORE_MODELVARS_TRIM;
             if(x <= 125 && x >= -125){
-                audio.event(AUDIO_TRIM_MOVE,(-abs(x)/4)+60);
+                audio.event(AU_TRIM_MOVE,(-abs(x)/4)+60);
             }
         }
 
@@ -711,13 +711,13 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
     if(event==EVT_KEY_FIRST(kpl) || event== EVT_KEY_REPT(kpl) || (s_editMode && (event==EVT_KEY_FIRST(KEY_UP) || event== EVT_KEY_REPT(KEY_UP))) ) {
         newval++;
 
-        audioDefevent(AUDIO_KEYPAD_UP);
+        audioDefevent(AU_KEYPAD_UP);
 
         kother=kmi;
     }else if(event==EVT_KEY_FIRST(kmi) || event== EVT_KEY_REPT(kmi) || (s_editMode && (event==EVT_KEY_FIRST(KEY_DOWN) || event== EVT_KEY_REPT(KEY_DOWN))) ) {
         newval--;
 
-        audioDefevent(AUDIO_KEYPAD_DOWN);
+        audioDefevent(AU_KEYPAD_DOWN);
 
         kother=kpl;
     }
@@ -740,13 +740,13 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
     {
         newval = i_max;
         killEvents(event);
-        audioDefevent(AUDIO_KEYPAD_UP);
+        audioDefevent(AU_KEYPAD_UP);
     }
     else if(newval < i_min)
     {
         newval = i_min;
         killEvents(event);
-        audioDefevent(AUDIO_KEYPAD_DOWN);
+        audioDefevent(AU_KEYPAD_DOWN);
 
     }
     if(newval != val) {
@@ -754,9 +754,9 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
             pauseEvents(event);
 
             if (newval>val){
-                audioDefevent(AUDIO_KEYPAD_UP);
+                audioDefevent(AU_KEYPAD_UP);
             } else {
-                audioDefevent(AUDIO_KEYPAD_DOWN);
+                audioDefevent(AU_KEYPAD_DOWN);
             }
 
         }
@@ -793,7 +793,7 @@ void popMenu(bool uppermost)
 {
     if(g_menuStackPtr>0 || uppermost){
         g_menuStackPtr = uppermost ? 0 : g_menuStackPtr-1;
-        audioDefevent(AUDIO_MENUS);
+        audioDefevent(AU_MENUS);
         (*g_menuStack[g_menuStackPtr])(EVT_ENTRY_UP);
     }else{
         alert(PSTR("menuStack underflow"));
@@ -804,7 +804,7 @@ void chainMenu(MenuFuncP newMenu)
 {
     g_menuStack[g_menuStackPtr] = newMenu;
     (*newMenu)(EVT_ENTRY);
-    audioDefevent(AUDIO_MENUS);
+    audioDefevent(AU_MENUS);
 }
 void pushMenu(MenuFuncP newMenu)
 {
@@ -816,7 +816,7 @@ void pushMenu(MenuFuncP newMenu)
         alert(PSTR("menuStack overflow"));
         return;
     }
-    audioDefevent(AUDIO_MENUS);
+    audioDefevent(AU_MENUS);
     g_menuStack[g_menuStackPtr] = newMenu;
     (*newMenu)(EVT_ENTRY);
 }
@@ -947,7 +947,7 @@ void perMain()
         s_batCheck+=32;
         if((s_batCheck==0) && (g_vbat100mV<g_eeGeneral.vBatWarn) && (g_vbat100mV>49)){
 
-            audioDefevent(AUDIO_TX_BATTERY_LOW);
+            audioDefevent(AU_TX_BATTERY_LOW);
             if (g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
         }
     }
@@ -1140,17 +1140,15 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 
     OCR0 += 2;
 
+  
+  AUDIO_DRIVER();  // the tone generator
 
-    //call to sound heatbeat.
-    audio.heartbeat();
+  static uint8_t cnt10ms = 77; // execute 10ms code once every 78 ISRs
+  if (cnt10ms-- == 0) { // BEGIN { ... every 10ms ... }
+    // Begin 10ms event
+    cnt10ms = 77;
 
-
-    static uint8_t cnt10ms = 77; // execute 10ms code once every 78 ISRs
-    if (cnt10ms-- == 0) // BEGIN { ... every 10ms ... }
-    {
-        // Begin 10ms event
-        cnt10ms = 77;
-
+		AUDIO_HEARTBEAT();  // the queue processing
 
         per10ms();
 #ifdef FRSKY
@@ -1322,7 +1320,7 @@ int main(void)
     if(g_eeGeneral.speakerMode == 1){
         if(!g_eeGeneral.disableSplashScreen)
         {
-            audioDefevent(AUDIO_TADA);
+            audioDefevent(AU_TADA);
         }
     }
     doSplash();
@@ -1421,7 +1419,7 @@ void mainSequence()
                 }
                 if ( ( FrskyHubData[16] + AltOffset ) > limit )
                 {
-                    audioDefevent(AUDIO_WARNING2) ;
+                    audioDefevent(AU_WARNING2) ;
                 }
             }
         }
