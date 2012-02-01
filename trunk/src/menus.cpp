@@ -2950,7 +2950,9 @@ if(g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2 ){
 							      g_eeGeneral.FRSkyRed = b ;
 									}
 									
-								  audio.frskyeventSample(b);
+								   if (checkIncDec_Ret) {
+											audio.frskyevent(b);
+									 }
 								}
 								if((y+=FH)>7*FH) return;
 					    }subN++;
