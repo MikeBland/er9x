@@ -67,7 +67,6 @@
 #define AU_TX_BATTERY_LOW (19)
 
 #ifdef FRSKY	
-
 #define AU_FRSKY_WARN1 (0)
 #define AU_FRSKY_WARN2 (1)
 #define AU_FRSKY_CHEEP (2)
@@ -112,7 +111,6 @@ class audioQueue
 
 #if defined(FRSKY)
     void frskyevent(uint8_t e);
-    void frskyeventSample(uint8_t e);
 #endif
 
 #if defined(ISER9X)
@@ -159,7 +157,11 @@ inline void driver() {
     // it is essentially the life of the class.
     void heartbeat();
 
-    // TODO bool freeslots(uint8_t slots);
+    // bool freeslots(uint8_t slots);
+
+    inline bool empty() {
+      return (t_queueRidx == t_queueWidx);
+    }
 
   protected:
     void aqinit(); // To stop constructor being compiled twice
@@ -181,10 +183,6 @@ inline void driver() {
     uint8_t queueToneLength[AUDIO_QUEUE_LENGTH];
     uint8_t queueTonePause[AUDIO_QUEUE_LENGTH];
     uint8_t queueToneRepeat[AUDIO_QUEUE_LENGTH];
-
-#ifdef FRSKY
-  uint8_t frskySample;
-#endif
 
 #ifdef HAPTIC
   uint8_t toneHaptic;
