@@ -15,30 +15,12 @@
 #ifndef audio_h
 #define audio_h
 
-#define ISER9X  //enable this define for er9x.  comment out for open9x
-
-#if defined(ISER9X)
-#define HAPTIC
-#define PCBSTD
-#endif
-
-
-// TODO remove them when everything commited in open9x.h!!!
-#if defined(HAPTIC)
-#if defined(PCBV4)
-#define HAPTIC_OFF  PORTD |=  (1<<7)
-#define HAPTIC_ON   PORTD &= ~(1<<7)
-#else
 #define HAPTIC_OFF  PORTG &= ~(1<<2)
 #define HAPTIC_ON   PORTG |=  (1<<2)
-#endif
-#else
-#define HAPTIC_OFF
-#define HAPTIC_ON
-#endif
 
 //audio
 #define AUDIO_QUEUE_LENGTH (8)  //8 seems to suit most alerts
+#define AUDIO_QUEUE_FREESLOTS (3)  //free before we insert new sounds
 #define BEEP_DEFAULT_FREQ  (70)
 #define BEEP_OFFSET        (10)
 #define BEEP_KEY_UP_FREQ   (BEEP_DEFAULT_FREQ+5)
@@ -113,7 +95,7 @@ class audioQueue
     void frskyevent(uint8_t e);
 #endif
 
-#if defined(ISER9X)
+
 inline void driver() {
   if (toneTimeLeft > 0) {	
 					switch (g_eeGeneral.speakerMode){					
@@ -137,27 +119,12 @@ inline void driver() {
 			PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
 	}								  	     
 }	
-#else 
-
-#if defined(PCBSTD)
-    inline void driver() {
-      if (toneTimeLeft > 0) {
-        toneCounter += toneFreq;
-        if ((toneCounter & 0x80) == 0x80)
-          PORTE |= (1 << OUT_E_BUZZER);
-        else
-          PORTE &= ~(1 << OUT_E_BUZZER);
-      }
-    }
-#endif
-
-#endif
 
     // heartbeat is responsibile for issueing the audio tones and general square waves
     // it is essentially the life of the class.
     void heartbeat();
 
-    // bool freeslots(uint8_t slots);
+    bool freeslots();
 
     inline bool empty() {
       return (t_queueRidx == t_queueWidx);
@@ -184,15 +151,11 @@ inline void driver() {
     uint8_t queueTonePause[AUDIO_QUEUE_LENGTH];
     uint8_t queueToneRepeat[AUDIO_QUEUE_LENGTH];
 
-#ifdef HAPTIC
-  uint8_t toneHaptic;
-  uint8_t hapticTick;
-  uint8_t queueToneHaptic[AUDIO_QUEUE_LENGTH];
-#endif
+	  uint8_t toneHaptic;
+	  uint8_t hapticTick;
+	  uint8_t queueToneHaptic[AUDIO_QUEUE_LENGTH];
+	  uint8_t toneCounter;
 
-#if defined(PCBSTD)
-  uint8_t toneCounter;
-#endif
 };
 
 //wrapper function - dirty but results in a space saving!!!
@@ -218,10 +181,8 @@ void audioDefevent(uint8_t e);
 #define AUDIO_MIX_WARNING_1() audioDefevent(AU_MIX_WARNING_1)
 #define AUDIO_MIX_WARNING_3() audioDefevent(AU_MIX_WARNING_3)
 
-#if defined(PCBSTD)
-#define AUDIO_DRIVER()      audio.driver()
-#endif
 
+#define AUDIO_DRIVER()      audio.driver()
 #define AUDIO_HEARTBEAT()   audio.heartbeat()
 
 #endif // audio_h

@@ -8,6 +8,11 @@ Format is as follows:
 CHANGELOG: 1-11-2011
 description here
 ====================================================================================
+
+******************************************
+CHANGELOG: 02-02-2012  RFT
+Few minor audio updates
+
 ******************************************
 CHANGELOG: 02-01-2012  RFT
 complere rework of audio system.
