@@ -514,7 +514,7 @@ stamp:
 	@echo "#define DATE_STR \"`date +%d.%m.%Y`\"" >> stamp-er9x.h
 	@echo "#define TIME_STR \"`date +%H:%I:%S`\"" >> stamp-er9x.h
 	@echo "#define SUB_VERS $(VER)-$(USER)" >> stamp-er9x.h
-	@echo "#define SVN_VERS \"trunk-r$(REV)\"" >> stamp-er9x.h
+	@echo "#define SVN_VERS \"er9x-r$(REV)\"" >> stamp-er9x.h
 	@echo "#define MOD_VERS \"$(EXT_MOD) $(HT_MOD) $(BEEPER_MOD) \"" >> stamp-er9x.h
 	@cat stamp-er9x.h
 
