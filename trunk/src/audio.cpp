@@ -14,12 +14,8 @@
 
 #include "er9x.h"
 
-#if defined(PCBV4)
-#define SPEAKER_OFF  TCCR0A &= ~(1<<COM0A0)  // tone off
-#define SPEAKER_ON   TCCR0A |= (1<<COM0A0)   // tone on
-#else
 #define SPEAKER_OFF  PORTE &= ~(1 << OUT_E_BUZZER) // speaker output 'low'
-#endif
+
 
 audioQueue::audioQueue()
 {
@@ -38,10 +34,9 @@ void audioQueue::aqinit()
   t_queueRidx = 0;
   t_queueWidx = 0;
 
-#ifdef HAPTIC
   toneHaptic = 0;
   hapticTick = 0;
-#endif
+
 }
 
 bool audioQueue::busy()
@@ -49,12 +44,12 @@ bool audioQueue::busy()
   return (toneTimeLeft > 0);
 }
 
-#if 0
-bool audioQueue::freeslots(uint8_t slots)
+
+bool audioQueue::freeslots()
 {
-  return AUDIO_QUEUE_LENGTH - ((t_queueWidx + AUDIO_QUEUE_LENGTH - t_queueRidx) % AUDIO_QUEUE_LENGTH) >= slots;
+  return AUDIO_QUEUE_LENGTH - ((t_queueWidx + AUDIO_QUEUE_LENGTH - t_queueRidx) % AUDIO_QUEUE_LENGTH) >= AUDIO_QUEUE_FREESLOTS;
 }
-#endif
+
 
 // heartbeat is responsibile for issueing the audio tones and general square waves
 // it is essentially the life of the class.
@@ -62,14 +57,8 @@ bool audioQueue::freeslots(uint8_t slots)
 void audioQueue::heartbeat()
 {
   if (toneTimeLeft > 0) {
-#if defined(PCBV4)
-    OCR0A = (5000 / toneFreq); // sticking with old values approx 20(abs. min) to 90, 60 being the default tone(?).
-    SPEAKER_ON;
-#endif
     toneTimeLeft--; //time gets counted down
     toneFreq += toneFreqIncr;
-
-#if defined(HAPTIC)
     if (toneHaptic){
       if (hapticTick-- > 0) {
         HAPTIC_ON; // haptic output 'high'
@@ -79,22 +68,22 @@ void audioQueue::heartbeat()
         hapticTick = g_eeGeneral.hapticStrength;
       }
     }
-#endif
   }
   else {
     SPEAKER_OFF;
     HAPTIC_OFF;
 
-    if (tonePause-- <= 0) {
+    //if (tonePause-- <= 0) {
+    if (tonePause > 0) {
+      tonePause--;
+    } else  {  
       if (t_queueRidx != t_queueWidx) {
         toneFreq = queueToneFreq[t_queueRidx];
         toneTimeLeft = queueToneLength[t_queueRidx];
         toneFreqIncr = queueToneFreqIncr[t_queueRidx];
         tonePause = queueTonePause[t_queueRidx];
-#if defined(HAPTIC)
         toneHaptic = queueToneHaptic[t_queueRidx];
         hapticTick = 0;
-#endif
         if (!queueToneRepeat[t_queueRidx]--) {
           t_queueRidx = (t_queueRidx + 1) % AUDIO_QUEUE_LENGTH;
         }
@@ -126,14 +115,17 @@ inline uint8_t audioQueue::getToneLength(uint8_t tLen)
 void audioQueue::playNow(uint8_t tFreq, uint8_t tLen, uint8_t tPause,
     uint8_t tRepeat, uint8_t tHaptic, int8_t tFreqIncr)
 {
+	
+	if(!freeslots()){
+			return;
+	}
+	
   if (g_eeGeneral.beeperVal) {
     toneFreq = (tFreq ? tFreq + g_eeGeneral.speakerPitch + BEEP_OFFSET : 0); // add pitch compensator
     toneTimeLeft = getToneLength(tLen);
     tonePause = tPause;
-#if defined(HAPTIC)
     toneHaptic = tHaptic;
     hapticTick = 0;
-#endif
     toneFreqIncr = tFreqIncr;
     t_queueWidx = t_queueRidx;
 
@@ -146,15 +138,17 @@ void audioQueue::playNow(uint8_t tFreq, uint8_t tLen, uint8_t tPause,
 void audioQueue::playASAP(uint8_t tFreq, uint8_t tLen, uint8_t tPause,
     uint8_t tRepeat, uint8_t tHaptic, int8_t tFreqIncr)
 {
+	if(!freeslots()){
+			return;
+	}	
+	
   if (g_eeGeneral.beeperVal) {
     uint8_t next_queueWidx = (t_queueWidx + 1) % AUDIO_QUEUE_LENGTH;
     if (next_queueWidx != t_queueRidx) {
       queueToneFreq[t_queueWidx] = (tFreq ? tFreq + g_eeGeneral.speakerPitch + BEEP_OFFSET : 0); // add pitch compensator
       queueToneLength[t_queueWidx] = getToneLength(tLen);
       queueTonePause[t_queueWidx] = tPause;
-#if defined(HAPTIC)
       queueToneHaptic[t_queueWidx] = tHaptic;
-#endif
       queueToneRepeat[t_queueWidx] = tRepeat;
       queueToneFreqIncr[t_queueWidx] = tFreqIncr;
       t_queueWidx = next_queueWidx;
@@ -251,31 +245,26 @@ void audioQueue::event(uint8_t e, uint8_t f) {
         playASAP(110, 5, 4, 2);
       }
       break;
-
       //warning one
       // case 1:
     case AU_WARNING1:
       playNow(BEEP_DEFAULT_FREQ, 10, 1, 0, 1);
       break;
-
       //warning two
       //case 2:
     case AU_WARNING2:
       playNow(BEEP_DEFAULT_FREQ, 20, 1, 0, 1);
       break;
-
       //warning three
       //case 3:
     case AU_WARNING3:
       playNow(BEEP_DEFAULT_FREQ, 30, 1, 0, 1);
       break;
-
       //error
       //case 4:
     case AU_ERROR:
       playNow(BEEP_DEFAULT_FREQ, 40, 1, 0, 1);
       break;
-
       //keypad up (seems to be used when going left/right through system menu options. 0-100 scales etc)
       //case 5:
     case AU_KEYPAD_UP:
@@ -283,7 +272,6 @@ void audioQueue::event(uint8_t e, uint8_t f) {
         playNow(BEEP_KEY_UP_FREQ, 10, 1);
       }
       break;
-
       //keypad down (seems to be used when going left/right through system menu options. 0-100 scales etc)
       //case 6:
     case AU_KEYPAD_DOWN:
@@ -291,7 +279,6 @@ void audioQueue::event(uint8_t e, uint8_t f) {
         playNow(BEEP_KEY_DOWN_FREQ, 10, 1);
       }
       break;
-
       //trim sticks move
       //case 7:
     case AU_TRIM_MOVE:
@@ -299,7 +286,6 @@ void audioQueue::event(uint8_t e, uint8_t f) {
       playNow(f, 6, 1);
       //}
       break;
-
       //trim sticks center
       //case 8:
     case AU_TRIM_MIDDLE:
@@ -307,7 +293,6 @@ void audioQueue::event(uint8_t e, uint8_t f) {
       playNow(BEEP_DEFAULT_FREQ, 10, 2, 0, 1);
       //}
       break;
-
       //menu display (also used by a few generic beeps)
       //case 9:
     case AU_MENUS:
@@ -320,55 +305,46 @@ void audioQueue::event(uint8_t e, uint8_t f) {
     case AU_POT_STICK_MIDDLE:
       playNow(BEEP_DEFAULT_FREQ + 50, 10, 1, 0, 0);
       break;
-
       //mix warning 1
       //case 11:
     case AU_MIX_WARNING_1:
       playNow(BEEP_DEFAULT_FREQ + 50, 10, 1, 1, 1);
       break;
-
       //mix warning 2
       //case 12:
     case AU_MIX_WARNING_2:
       playNow(BEEP_DEFAULT_FREQ + 52, 10, 1, 2, 1);
       break;
-
       //mix warning 3
       //case 13:
     case AU_MIX_WARNING_3:
       playNow(BEEP_DEFAULT_FREQ + 54, 10, 1, 3, 1);
       break;
-
       //time 30 seconds left
       //case 14:
     case AU_TIMER_30:
       playNow(BEEP_DEFAULT_FREQ + 50, 15, 3, 3, 1);
       break;
-
       //time 20 seconds left
       //case 15:
     case AU_TIMER_20:
       playNow(BEEP_DEFAULT_FREQ + 50, 15, 3, 2, 1);
       break;
-
       //time 10 seconds left
       //case 16:
     case AU_TIMER_10:
       playNow(BEEP_DEFAULT_FREQ + 50, 15, 3, 1, 1);
       break;
-
       //time <3 seconds left
       //case 17:
     case AU_TIMER_LT3:
       playNow(BEEP_DEFAULT_FREQ, 20, 25, 1, 1);
       break;
-
       //inactivity timer alert
       //case 18:
     case AU_INACTIVITY:
       playNow(70, 10, 2,2);
       break;
-
       //low battery in tx
       //case 19:
     case AU_TX_BATTERY_LOW:
@@ -377,7 +353,6 @@ void audioQueue::event(uint8_t e, uint8_t f) {
         playASAP(80, 20, 3, 2, 1, -1);
       }
       break;
-
     default:
       break;
   }
