@@ -154,7 +154,7 @@ inline void driver() {
 	  uint8_t toneHaptic;
 	  uint8_t hapticTick;
 	  uint8_t queueToneHaptic[AUDIO_QUEUE_LENGTH];
-	  uint8_t toneCounter;
+	 // uint8_t toneCounter;
 
 };
 
