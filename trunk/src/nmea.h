@@ -17,11 +17,12 @@
 #ifndef nmea_h
 #define nmea_h
 
-#include "audio.h"
 
 void NMEA_Init(void);
 void NMEA_EnableRXD (void);
 void menuProcNMEA(uint8_t event);
+class audioQueue;
 extern audioQueue  audio;
+
 #endif
 
