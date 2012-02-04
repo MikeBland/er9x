@@ -61,10 +61,12 @@ uint8_t Frsky_user_stuff ;
 uint8_t Frsky_user_id ;
 uint8_t Frsky_user_lobyte ;
 
-int16_t FrskyHubData[38] ;  // All 38 words
+#define HUBDATALENGTH 41
+int16_t FrskyHubData[HUBDATALENGTH] ;  // All 38 words
 uint8_t MaxGpsSpeed ;
+uint8_t FrskyVolts[12];
+uint8_t FrskyBattCells=0;
 
-// Entry 16 is altitude, need to organise an alarm at 400 ft (122 m)
 
 void frsky_proc_user_byte( uint8_t byte )
 {
@@ -109,7 +111,7 @@ void frsky_proc_user_byte( uint8_t byte )
 					}
 					else
 					{
-						if ( Frsky_user_id < 38 )
+						if ( Frsky_user_id < HUBDATALENGTH )
 						{
 						  FrskyHubData[Frsky_user_id] = ( byte << 8 ) + Frsky_user_lobyte ;
 							if ( Frsky_user_id == 17 )			// GPS Speed
@@ -117,6 +119,22 @@ void frsky_proc_user_byte( uint8_t byte )
 								if ( MaxGpsSpeed < FrskyHubData[Frsky_user_id] )
 								{	MaxGpsSpeed = FrskyHubData[Frsky_user_id] ;
 								}
+							}
+							if ( Frsky_user_id == 6 )			// Cell Voltage
+							{
+  							uint8_t battnumber = ( FrskyHubData[6] >> 12 ) & 0x000F ;
+  							if (FrskyBattCells < battnumber+1)
+								{
+ 							  	if (battnumber+1>=6)
+									{
+  								  FrskyBattCells=6;
+  								}
+									else
+									{
+  								  FrskyBattCells=battnumber+1;
+  								}
+  							}
+  							FrskyVolts[battnumber] = FrskyHubData[6] /10 ;
 							}
 						}	
 						Frsky_user_state = 0 ;
@@ -196,9 +214,9 @@ void processFrskyPacket(uint8_t *packet)
 			j = 3 ;              // Index to user bytes
 			while ( j < i )
 			{
-				frsky_proc_user_byte( packet[j] ) ;								
+				frsky_proc_user_byte( packet[j] ) ;
         frskyUsrStreaming = FRSKY_TIMEOUT10ms*3; // reset counter only if valid frsky packets are being detected
-				j += 1 ; 
+				j += 1 ;
 			}
     }	
     break;
@@ -668,9 +686,10 @@ void check_frsky()
 	}
 }
 
-
+// New model loaded
 void FRSKY_setModelAlarms(void)
 {
+	FrskyBattCells = 0 ;
   FrskyAlarmSendState |= 0x0F ;
 	
   Frsky_current[0].Amp_hour_boundary = 360000L/ g_model.frsky.channels[0].ratio ;

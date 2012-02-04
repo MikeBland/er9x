@@ -148,25 +148,18 @@
 
 #define SLAVE_MODE (PING & (1<<INP_G_RF_POW))
 
-const prog_uint8_t APM modn12x3[]= {
-    1, 2, 3, 4,
-    1, 3, 2, 4,
-    4, 2, 3, 1,
-    4, 3, 2, 1 };
+extern const prog_uint8_t APM modn12x3[] ;
 
-//R=1
-//E=2
-//T=3
-//A=4
-
-extern const prog_uint8_t APM chout_ar[] ;
+//extern const prog_uint8_t APM chout_ar[] ;
+extern const prog_uint8_t APM bchout_ar[] ;
 
 //convert from mode 1 to mode g_eeGeneral.stickMode
 //NOTICE!  =>  1..4 -> 1..4
 extern uint8_t convert_mode_helper(uint8_t x) ;
 
 #define CONVERT_MODE(x)  (((x)<=4) ? convert_mode_helper(x) : (x))
-#define CHANNEL_ORDER(x) (pgm_read_byte(chout_ar + g_eeGeneral.templateSetup*4 + (x)-1))
+//#define CHANNEL_ORDER(x) (pgm_read_byte(chout_ar + g_eeGeneral.templateSetup*4 + (x)-1))
+#define CHANNEL_ORDER(x) ( ( (pgm_read_byte(bchout_ar + g_eeGeneral.templateSetup) >> (6-(x-1) * 2)) & 3 ) + 1 )
 #define THR_STICK       (2-(g_eeGeneral.stickMode&1))
 #define ELE_STICK       (1+(g_eeGeneral.stickMode&1))
 #define AIL_STICK       ((g_eeGeneral.stickMode&2) ? 0 : 3)
@@ -683,7 +676,7 @@ extern volatile uint16_t  g_tmr10ms;
 extern volatile uint8_t   g_blinkTmr10ms;
 extern uint8_t            g_beepCnt;
 //extern uint8_t            g_beepVal[5];
-extern const PROGMEM char modi12x3[];
+//extern const PROGMEM char modi12x3[];
 extern union p2mhz_t pulses2MHz ;
 extern int16_t            g_ppmIns[8];
 extern int16_t            g_chans512[NUM_CHNOUT];

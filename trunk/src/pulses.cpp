@@ -99,7 +99,7 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
         //				}
         if ( (g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16) )
         {
-            cli();
+//            cli();		// Not needed if sei() not done above
             TIMSK |= (1<<OCIE1A);
             sei();
         }
@@ -437,7 +437,7 @@ uint16_t B3_comp_value ;
 ISR(TIMER3_COMPA_vect) //2MHz pulse generation
 {
     static uint8_t   pulsePol;
-    static uint16_t *pulsePtr = pulses2MHz.pword;
+    static uint16_t *pulsePtr = &pulses2MHz.pword[PULSES_WORD_SIZE/2];
 
     if(pulsePol)
     {
