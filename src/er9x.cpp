@@ -30,12 +30,16 @@ mode4 ail thr ele rud
 EEGeneral  g_eeGeneral;
 ModelData  g_model;
 
-const prog_uint8_t APM chout_ar[] = { //First number is 0..23 -> template setup,  Second is relevant channel out
-                                      1,2,3,4 , 1,2,4,3 , 1,3,2,4 , 1,3,4,2 , 1,4,2,3 , 1,4,3,2,
-                                      2,1,3,4 , 2,1,4,3 , 2,3,1,4 , 2,3,4,1 , 2,4,1,3 , 2,4,3,1,
-                                      3,1,2,4 , 3,1,4,2 , 3,2,1,4 , 3,2,4,1 , 3,4,1,2 , 3,4,2,1,
-                                      4,1,2,3 , 4,1,3,2 , 4,2,1,3 , 4,2,3,1 , 4,3,1,2 , 4,3,2,1    };
-
+//const prog_uint8_t APM chout_ar[] = { //First number is 0..23 -> template setup,  Second is relevant channel out
+//                                      1,2,3,4 , 1,2,4,3 , 1,3,2,4 , 1,3,4,2 , 1,4,2,3 , 1,4,3,2,
+//                                      2,1,3,4 , 2,1,4,3 , 2,3,1,4 , 2,3,4,1 , 2,4,1,3 , 2,4,3,1,
+//                                      3,1,2,4 , 3,1,4,2 , 3,2,1,4 , 3,2,4,1 , 3,4,1,2 , 3,4,2,1,
+//                                      4,1,2,3 , 4,1,3,2 , 4,2,1,3 , 4,2,3,1 , 4,3,1,2 , 4,3,2,1    };
+const prog_uint8_t APM bchout_ar[] = {
+																			0x1B, 0x1E, 0x27, 0x2D, 0x36, 0x39,
+																			0x4B, 0x4E, 0x63, 0x6C, 0x72, 0x78,
+                                      0x87, 0x8D, 0x93, 0x9C, 0xB1, 0xB4,
+                                      0xC6, 0xC9, 0xD2, 0xD8, 0xE1, 0xE4		} ;
 
 //new audio object
 audioQueue  audio;
@@ -43,10 +47,22 @@ audioQueue  audio;
 uint8_t sysFlags = 0;
 
 const prog_char APM modi12x3[]=
-"RUD ELE THR AIL "
-"RUD THR ELE AIL "
-"AIL ELE THR RUD "
-"AIL THR ELE RUD ";
+"RUD ELE THR AIL ";
+//"RUD THR ELE AIL "
+//"AIL ELE THR RUD "
+//"AIL THR ELE RUD ";
+// Now indexed using modn2x3 from below
+
+const prog_uint8_t APM modn12x3[]= {
+    1, 2, 3, 4,
+    1, 3, 2, 4,
+    4, 2, 3, 1,
+    4, 3, 2, 1 };
+
+//R=1
+//E=2
+//T=3
+//A=4
 
 MixData *mixaddress( uint8_t idx )
 {
@@ -86,15 +102,33 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
     if(idx==0)
         lcd_putsnAtt(x,y,PSTR("----"),4,att);
     else if(idx<=4)
-        lcd_putsnAtt(x,y,modi12x3+g_eeGeneral.stickMode*16+4*(idx-1),4,att);
+        lcd_putsnAtt(x,y,&modi12x3[(pgm_read_byte(modn12x3+g_eeGeneral.stickMode*4+(idx-1))-1)*4],4,att);
+//        lcd_putsnAtt(x,y,modi12x3+g_eeGeneral.stickMode*16+4*(idx-1),4,att);
     else if(idx<=NUM_XCHNRAW)
         lcd_putsnAtt(x,y,PSTR("P1  P2  P3  MAX FULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"TELEMETRY_CHANNELS)+4*(idx-5),4,att);
 }
 void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 {
+	if ( idx1 == 0 )
+	{
+    lcd_putsnAtt(x,y,PSTR("--- "),4,att);
+	}
+	else
+	{
+		uint8_t x1 ;
+		x1 = x + 4*FW-2 ;
+		if ( idx1 < 10 )
+		{
+			x1 -= FWNUM ;			
+		}
+//		lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
+//  	lcd_outdezNAtt(x+2*FW,y,idx1,LEFT|att,2);
+  	lcd_outdezAtt(x1,y,idx1,att);
+    lcd_putsnAtt(x,y,PSTR("CH"),2,att);
+	}
     // !! todo NUM_CHN !!
-    lcd_putsnAtt(x,y,PSTR("--- CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"
-                          "CH17CH18CH19CH20CH21CH22CH23CH24CH25CH26CH27CH28CH29CH30")+4*idx1,4,att);
+//    lcd_putsnAtt(x,y,PSTR("--- CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"
+//                          "CH17CH18CH19CH20CH21CH22CH23CH24CH25CH26CH27CH28CH29CH30")+4*idx1,4,att);
 }
 
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
@@ -498,6 +532,11 @@ void checkWarnings()
     }
 }
 
+void putWarnSwitch( uint8_t x, const prog_char * s )
+{
+  lcd_putsnAtt( x, 2*FH, s, 3, 0) ;
+}
+
 void checkSwitches()
 {
     if(g_eeGeneral.disableSwitchWarning) return; // if warning is on
@@ -520,8 +559,9 @@ void checkSwitches()
         uint8_t i = 0;
         for(uint8_t j=0; j<8; j++)
         {
-            bool t=keyState((EnumKeys)(SW_BASE_DIAG+j));
-            i |= t<<j;
+            bool t=keyState((EnumKeys)(SW_BASE_DIAG+7-j));
+						i <<= 1 ;
+            i |= t;
         }
 //        alertMessages( PSTR("Switches Warning"), PSTR("Please Reset Switches") ) ;
 
@@ -534,26 +574,26 @@ void checkSwitches()
         lcd_putsnAtt(0*FW, 2*FH, PSTR("                      "), 22, 0);
 
         if(x & SWP_THRB)
-            lcd_putsnAtt(2 + 0*FW, 2*FH, PSTR("THR"), 3, 0);
+            putWarnSwitch(2 + 0*FW, get_switches_string() );
         if(x & SWP_RUDB)
-            lcd_putsnAtt(2 + 3*FW + FW/2, 2*FH, PSTR("RUD"), 3, 0);
+            putWarnSwitch(2 + 3*FW + FW/2, get_switches_string()+3 );
         if(x & SWP_ELEB)
-            lcd_putsnAtt(2 + 7*FW, 2*FH, PSTR("ELE"), 3, 0);
+            putWarnSwitch(2 + 7*FW, get_switches_string()+6 );
 
         if(x & SWP_IL5)
         {
             if(i & SWP_ID0B)
-                lcd_putsnAtt(2 + 10*FW + FW/2, 2*FH, PSTR("ID0"), 3, 0);
+                putWarnSwitch(2 + 10*FW + FW/2, get_switches_string()+9 );
             if(i & SWP_ID1B)
-                lcd_putsnAtt(2 + 10*FW + FW/2, 2*FH, PSTR("ID1"), 3, 0);
+                putWarnSwitch(2 + 10*FW + FW/2, get_switches_string()+12 );
             if(i & SWP_ID2B)
-                lcd_putsnAtt(2 + 10*FW + FW/2, 2*FH, PSTR("ID2"), 3, 0);
+                putWarnSwitch(2 + 10*FW + FW/2, get_switches_string()+15 );
         }
 
         if(x & SWP_AILB)
-            lcd_putsnAtt(2 + 14*FW, 2*FH, PSTR("AIL"), 3, 0);
+            putWarnSwitch(2 + 14*FW, get_switches_string()+18 );
         if(x & SWP_GEAB)
-            lcd_putsnAtt(2 + 17*FW + FW/2, 2*FH, PSTR("GEA"), 3, 0);
+            putWarnSwitch(2 + 17*FW + FW/2, get_switches_string()+21 );
 
 
         refreshDiplay();
@@ -1422,6 +1462,15 @@ void mainSequence()
                     audioDefevent(AU_WARNING2) ;
                 }
             }
+				    for (uint8_t k=0; k<FrskyBattCells; k++)
+						{
+	        		if ( FrskyVolts[k] < g_model.frSkyVoltThreshold )
+							{
+	            	audioDefevent(AU_WARNING3);
+	            	break;
+			        }
+	  			  }
+
         }
 
 

@@ -10,6 +10,13 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 04-2-2012  MPB
+Flash and RAM saving
+Add GPS speed display, with max speed
+Add individual cell voltages from FrSky hub 2.0
+Text now allows embedded move to X position characters
+
+******************************************
 CHANGELOG: 02-02-2012  RFT
 Few minor audio updates
 

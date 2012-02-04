@@ -155,6 +155,8 @@ MenuFuncP_PROGMEM APM menuTabDiag[] = {
     menuProcDiagCalib
 };
 
+uint8_t TITLEP( const prog_char *pstr) { return lcd_putsAtt(0,0,pstr,INVERS) ; }
+
 const prog_char *get_curve_string()
 {
     return PSTR(CURV_STR)	;
@@ -296,8 +298,8 @@ void MState2::check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t men
             //            scrollLR = 0;
         }
     }
-
-    switch(event)
+		
+		switch(event)
     {
     case EVT_ENTRY:
         //if(m_posVert>maxrow)
@@ -772,7 +774,7 @@ extern uint8_t frskyRSSItype[2] ;
 
 void menuProcTelemetry2(uint8_t event)
 {
-    MENU("TELEMETRY2", menuTabModel, e_Telemetry2, 4, {0, 1, 1, 0});
+    MENU("TELEMETRY2", menuTabModel, e_Telemetry2, 5, {0, 1, 1, 0});
 
 uint8_t  sub    = mstate2.m_posVert;
 uint8_t subSub = mstate2.m_posHorz;
@@ -816,10 +818,18 @@ for (uint8_t j=0; j<2; j++)
 }
 
 	lcd_puts_Pleft(5*FH, PSTR("AltAlarm"));
-  lcd_putsnAtt(11*FW, 5*FH, PSTR("OFF122400")+3*g_model.FrSkyAltAlarm,3,(sub==subN && subSub==0 ? blink:0));
+  lcd_putsnAtt(11*FW, 5*FH, PSTR("OFF122400")+3*g_model.FrSkyAltAlarm,3,(sub==subN ? blink:0));
   if(sub==subN) {
   	g_model.FrSkyAltAlarm = checkIncDec16(event, g_model.FrSkyAltAlarm, 0, 2, EE_MODEL);
 	}
+  subN++;
+
+  lcd_puts_Pleft(6*FH, PSTR("Volt Thres="));
+  lcd_outdezNAtt(  14*FW, 6*FH, g_model.frSkyVoltThreshold * 2 ,((sub==subN) ? blink:0) | PREC2, 4);
+  if(sub==subN)
+	{
+    g_model.frSkyVoltThreshold=checkIncDec16(event, g_model.frSkyVoltThreshold, 0, 210, EE_MODEL);
+  }
 }
 
 #endif
@@ -1718,7 +1728,7 @@ void menuDeleteDupModel(uint8_t event)
     //  lcd_putsAtt(0,1*FH,PSTR("DELETE MODEL"),0);
     lcd_putsnAtt(1,2*FH, g_model.name,sizeof(g_model.name),BSS);
     lcd_putc(sizeof(g_model.name)*FW+FW,2*FH,'?');
-    lcd_puts_P(3*FW,5*FH,PSTR("YES     NO"));
+    lcd_puts_P(3*FW,5*FH,PSTR("YES\013NO"));
     lcd_puts_P(3*FW,6*FH,PSTR("[MENU]  [EXIT]"));
 
     uint8_t i;
@@ -1951,7 +1961,7 @@ if(s_pgOfs<subN) {
 if(s_pgOfs<subN) {
     if(g_model.protocol == PROTO_PPM || g_model.protocol == PROTO_PPM16)
     {
-        lcd_puts_Pleft(    y, PSTR("PPM FrLen    mSec"));
+        lcd_puts_Pleft(    y, PSTR("PPM FrLen\015mSec"));
         lcd_outdezAtt(  13*FW, y, (int16_t)g_model.ppmFrameLength*5 + 225 ,(sub==subN ? INVERS:0) | PREC1);
         if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.ppmFrameLength,-20,20);
     }
@@ -2015,7 +2025,7 @@ if(s_pgOfs<subN) {
 }subN++;
 
 if(s_pgOfs<subN) {
-    lcd_putsAtt(0*FW, y, PSTR("DELETE MODEL   [MENU]"),s_noHi ? 0 : (sub==subN?INVERS:0));
+    lcd_putsAtt(0*FW, y, PSTR("DELETE MODEL\017[MENU]"),s_noHi ? 0 : (sub==subN?INVERS:0));
     if(sub==subN && event==EVT_KEY_LONG(KEY_MENU)){
         s_editMode = false;
         s_noHi = NO_HI_LEN;
@@ -2150,7 +2160,7 @@ void menuProcModelSelect(uint8_t event)
 #ifndef NO_TEMPLATES
         if(event==EVT_KEY_FIRST(KEY_LEFT))  chainMenu(menuProcTemplates);//{killEvents(event);popMenu(true);}
 #elif defined(FRSKY)
-        if(event==EVT_KEY_FIRST(KEY_LEFT))  chainMenu(menuProcTelemetry);//{killEvents(event);popMenu(true);}
+        if(event==EVT_KEY_FIRST(KEY_LEFT))  chainMenu(menuProcTelemetry2);//{killEvents(event);popMenu(true);}
 #else
         if(event==EVT_KEY_FIRST(KEY_LEFT))  chainMenu(menuProcSafetySwitches);//{killEvents(event);popMenu(true);}
 #endif
@@ -2206,7 +2216,7 @@ void menuProcModelSelect(uint8_t event)
 }
 
 
-const prog_char APM menuWhenDone[] = " [MENU] WHEN DONE " ;
+const prog_char APM menuWhenDone[] = "[MENU] WHEN DONE" ;
 
 
 void menuProcDiagCalib(uint8_t event)
@@ -2257,15 +2267,15 @@ void menuProcDiagCalib(uint8_t event)
     case 0:
         //START CALIBRATION
         //[MENU]
-        lcd_putsnAtt(2*FW, 2*FH, PSTR("START CALIBRATION "), 18, sub>0 ? INVERS : 0);
-        lcd_putsnAtt(2*FW, 3*FH, PSTR(" [MENU] TO START  "), 18, sub>0 ? INVERS : 0);
+        lcd_putsnAtt(2*FW, 2*FH, PSTR("START CALIBRATION"), 17, sub>0 ? INVERS : 0);
+        lcd_putsnAtt(3*FW, 3*FH, PSTR("[MENU] TO START"), 15, sub>0 ? INVERS : 0);
         break;
 
     case 1: //get mid
         //SET MIDPOINT
         //[MENU]
-        lcd_putsnAtt(2*FW, 2*FH, PSTR("   SET MIDPOINT   "), 18, sub>0 ? INVERS : 0);
-        lcd_putsnAtt(2*FW, 3*FH, menuWhenDone, 18, sub>0 ? BLINK : 0);
+        lcd_putsnAtt(5*FW, 2*FH, PSTR("SET MIDPOINT"), 12, sub>0 ? INVERS : 0);
+        lcd_putsnAtt(3*FW, 3*FH, menuWhenDone, 16, sub>0 ? BLINK : 0);
 
         for(uint8_t i=0; i<7; i++)
         {
@@ -2278,8 +2288,8 @@ void menuProcDiagCalib(uint8_t event)
     case 2:
         //MOVE STICKS/POTS
         //[MENU]
-        lcd_putsnAtt(2*FW, 2*FH, PSTR(" MOVE STICKS/POTS "), 18, sub>0 ? INVERS : 0);
-        lcd_putsnAtt(2*FW, 3*FH, menuWhenDone, 18, sub>0 ? BLINK : 0);
+        lcd_putsnAtt(3*FW, 2*FH, PSTR("MOVE STICKS/POTS"), 16, sub>0 ? INVERS : 0);
+        lcd_putsnAtt(3*FW, 3*FH, menuWhenDone, 16, sub>0 ? BLINK : 0);
 
         for(uint8_t i=0; i<7; i++)
             if(abs(loVals[i]-hiVals[i])>50) {
@@ -2387,7 +2397,7 @@ if (SLAVE_MODE) { // i am the slave
     return;
 }
 
-lcd_puts_P(3*FW, 1*FH, PSTR("mode   % src  sw"));
+lcd_puts_P(3*FW, 1*FH, PSTR("mode\012% src  sw"));
 
 sub--;
 y = 2*FH;
@@ -2460,41 +2470,41 @@ void menuProcSetup(uint8_t event)
 #ifdef FRSKY
     int8_t sw_offset = -6 ;
     uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
-    switch (g_eeGeneral.speakerMode){
-    //beeper
-    case 0:
-        sw_offset += 1 ;
-        break;
-        //piezo speaker
-    case 1:
-        vCountItems = DEFAULT_COUNT_ITEMS + 3;
-        break;
-        //pcmwav
-    case 2:
-        vCountItems = DEFAULT_COUNT_ITEMS + 2;
-        break;
-    }
-    if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 1){ // add in alert red/org/yel
-        vCountItems = vCountItems + 3;
-        sw_offset -= 3 ;
-    }
-
-#else
+		if (g_eeGeneral.speakerMode == 0) sw_offset += 1 ;
+		switch (g_eeGeneral.speakerMode){
+				//beeper
+//				case 0:
+//						break;
+				//piezo speaker
+			 	case 1:
+                                                vCountItems = DEFAULT_COUNT_ITEMS + 3;
+			 			break;
+			 	//pcmwav
+			  case 2:
+                                                vCountItems = DEFAULT_COUNT_ITEMS + 2;
+						break;	  	
+		}		
+		if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 1){ // add in alert red/org/yel
+				vCountItems = vCountItems + 3;
+				sw_offset -= 3 ;
+		}		
+		
+#else 
     int8_t sw_offset = -5 ;
-    uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
-    switch (g_eeGeneral.speakerMode){
-    //beeper
-    case 0:
-        break;
-        //piezo speaker
-    case 1:
-        vCountItems = DEFAULT_COUNT_ITEMS + 2;
-        break;
-        //pcmwav
-    case 2:
-        vCountItems = DEFAULT_COUNT_ITEMS + 1;
-        break;
-    }
+                uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
+		switch (g_eeGeneral.speakerMode){
+				//beeper
+//				case 0:
+//						break;
+				//piezo speaker
+			 	case 1:
+                                                vCountItems = DEFAULT_COUNT_ITEMS + 2;
+			 			break;
+			 	//pcmwav
+			  case 2:
+                                                vCountItems = DEFAULT_COUNT_ITEMS + 1;
+						break;	  	
+		}
 #endif
     sw_offset += vCountItems ;
 
@@ -2786,6 +2796,7 @@ if(g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2 ){
 
     if(s_pgOfs<subN) {
         lcd_puts_Pleft(    y, PSTR("Default Sw"));
+
         for(uint8_t i=0;i<8;i++) lcd_putsnAtt((11+i)*FW, y, PSTR("TRE012AG")+i,1,  ((g_eeGeneral.switchWarningStates & (1<<i)) ? INVERS : 0 ) );
 
         if(sub==subN){
@@ -3159,16 +3170,16 @@ void menuProcStatistic2(uint8_t event)
         chainMenu(menuProc0);
         break;
     }
-    lcd_puts_Pleft( 1*FH, PSTR("tmr1Lat max    us"));
+    lcd_puts_Pleft( 1*FH, PSTR("tmr1Lat max\017us"));
     lcd_outdez(14*FW , 1*FH, g_tmr1Latency_max/2 );
-    lcd_puts_Pleft( 2*FH, PSTR("tmr1Lat min    us"));
+    lcd_puts_Pleft( 2*FH, PSTR("tmr1Lat min\017us"));
     lcd_outdez(14*FW , 2*FH, g_tmr1Latency_min/2 );
-    lcd_puts_Pleft( 3*FH, PSTR("tmr1 Jitter    us"));
+    lcd_puts_Pleft( 3*FH, PSTR("tmr1 Jitter\017us"));
     lcd_outdez(14*FW , 3*FH, (g_tmr1Latency_max - g_tmr1Latency_min) /2 );
-    lcd_puts_Pleft( 4*FH, PSTR("tmain          ms"));
+    lcd_puts_Pleft( 4*FH, PSTR("tmain\017ms"));
     lcd_outdezAtt(14*FW , 4*FH, (g_timeMain*100)/16 ,PREC2);
 
-    lcd_puts_Pleft( 5*FH, PSTR("Stack          b"));
+    lcd_puts_Pleft( 5*FH, PSTR("Stack\017b"));
     lcd_outhex4( 10*FW+3, 5*FH, stack_free() ) ;
 
     lcd_puts_P( 3*FW,  7*FH, PSTR("[MENU] to refresh"));
@@ -3229,14 +3240,14 @@ void menuProcStatistic(uint8_t event)
         break;
     }
 
-    lcd_puts_P(  1*FW, FH*1, PSTR("TME"));
+    lcd_puts_P(  1*FW, FH*1, PSTR("TME\021TSW"));
     putsTime(    7*FW, FH*1, s_timeCumAbs, 0, 0);
-    lcd_puts_P( 17*FW, FH*1, PSTR("TSW"));
+//    lcd_puts_P( 17*FW, FH*1, PSTR("TSW"));
     putsTime(   13*FW, FH*1, s_timeCumSw,      0, 0);
 
-    lcd_puts_P(  1*FW, FH*2, PSTR("STK"));
+    lcd_puts_P(  1*FW, FH*2, PSTR("STK\021ST%"));
     putsTime(    7*FW, FH*2, s_timeCumThr, 0, 0);
-    lcd_puts_P( 17*FW, FH*2, PSTR("ST%"));
+//    lcd_puts_P( 17*FW, FH*2, PSTR("ST%"));
     putsTime(   13*FW, FH*2, s_timeCum16ThrP/16, 0, 0);
 
     lcd_puts_P( 17*FW, FH*0, PSTR("TOT"));
@@ -3655,11 +3666,38 @@ void menuProc0(uint8_t event)
                 lcd_puts_Pleft( 4*FH, PSTR("Alt=")) ;
                 lcd_outdezAtt(8 * FW, 4*FH, FrskyHubData[1], 0 ) ;
                 
-								lcd_puts_Pleft( 5*FH, PSTR("Spd=")) ;
+								lcd_puts_Pleft( 5*FH, PSTR("Spd=\011kts Max=")) ;
                 lcd_outdezAtt(8*FW, 5*FH, FrskyHubData[17], 0);
-                lcd_puts_P(9*FW-2, 5*FH, PSTR("kts Max="));
+//                lcd_puts_P(9*FW-2, 5*FH, PSTR("kts Max="));
                 lcd_outdezAtt(20*FW, 5*FH, MaxGpsSpeed, 0);
+
                 
+								lcd_puts_Pleft( 6*FH, PSTR("V1=\007V2=\016V3=")) ;
+								lcd_puts_Pleft( 7*FH, PSTR("V4=\007V5=\016V6=")) ;
+								{
+									uint8_t x, y ;
+									x = 6*FW ;
+									y = 6*FH ;
+	      					for (uint8_t k=0; k<FrskyBattCells; k++)
+									{
+										uint8_t blink=0;
+										if ( k == 3 )
+										{
+											x = 6*FW ;
+											y = 7*FH ;
+										}
+										if ((FrskyVolts[k] < g_model.frSkyVoltThreshold))
+										{
+										  blink = BLINK ;
+										}
+  									lcd_outdezNAtt( x, y, FrskyVolts[k] * 2 , blink | PREC2, 4 ) ;
+										x += 7*FW ;
+										if ( k == 5 )		// Max 6 cels displayable
+										{
+											break ;											
+										}
+	      					}
+								}
 								//              lcd_putsAtt(6, 2*FH, PSTR("To Be Done"), DBLSIZE);
             }
             else

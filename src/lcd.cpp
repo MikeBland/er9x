@@ -55,15 +55,25 @@ void lcd_putc(uint8_t x,uint8_t y,const char c)
 }
 
 /// invers: 0 no 1=yes 2=blink
-void lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
+uint8_t lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
 {
     uint8_t *p    = &displayBuf[ y / 8 * DISPLAY_W + x ];
     //uint8_t *pmax = &displayBuf[ DISPLAY_H/8 * DISPLAY_W ];
-
+		if ( c < 22 )		// Move to specific x position (c)*FW
+		{
+			x = c * FW ;
+  		if(mode&DBLSIZE)
+			{
+				x += x ;
+			}
+			return x ;
+		}
+		x += FW ;
     prog_uchar    *q = &font_5x8_x20_x7f[(c-0x20)*5];
     bool         inv = (mode & INVERS) ? true : (mode & BLINK ? BLINK_ON_PHASE : false);
     if(mode&DBLSIZE)
     {
+			if ( (c!=0x2E)) x+=FW; //check for decimal point
 	/* each letter consists of ten top bytes followed by
 	 * five bottom by ten bottom bytes (20 bytes per 
 	 * char) */
@@ -111,6 +121,7 @@ void lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
         if (mode & CONDENSED) {
             *p++ = inv ? ~0 : 0;
             condense=1;
+	    	x += FW-FWNUM ;
 	}
 
         for(char i=5; i!=0; i--){
@@ -123,19 +134,20 @@ void lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
         }
         if(p<DISPLAY_END) *p++ = inv ? ~0 : 0;
     }
+		return x ;
 }
 
 void lcd_putsnAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t len,uint8_t mode)
 {
 	uint8_t source ;
-	uint8_t size ;
+//	uint8_t size ;
 	source = mode & BSS ;
-	size = mode & DBLSIZE ;
+//	size = mode & DBLSIZE ;
   while(len!=0) {
     char c = (source) ? *s++ : pgm_read_byte(s++);
-    lcd_putcAtt(x,y,c,mode);
-    x+=FW;
-		if ((size)&& (c!=0x2E)) x+=FW; //check for decimal point
+    x = lcd_putcAtt(x,y,c,mode);
+//    x+=FW;
+//		if ((size)&& (c!=0x2E)) x+=FW; //check for decimal point
     len--;
   }
 }
@@ -146,16 +158,16 @@ void lcd_putsn_P(uint8_t x,uint8_t y,const prog_char * s,uint8_t len)
 uint8_t lcd_putsAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t mode)
 {
 	uint8_t source ;
-	uint8_t size ;
+//	uint8_t size ;
 	source = mode & BSS ;
-	size = mode & DBLSIZE ;
+//	size = mode & DBLSIZE ;
   //while(char c=pgm_read_byte(s++)) {
   while(1) {
     char c = (source) ? *s++ : pgm_read_byte(s++);
     if(!c) break;
-    lcd_putcAtt(x,y,c,mode);
-    x+=FW;
-		if ((size)&& (c!=0x2E)) x+=FW; //check for decimal point
+    x = lcd_putcAtt(x,y,c,mode);
+//    x+=FW;
+//		if ((size)&& (c!=0x2E)) x+=FW; //check for decimal point
   }
   return x;
 }
@@ -197,7 +209,7 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
 {
   uint8_t fw = FWNUM;
   uint8_t prec = PREC(mode);
-  int32_t tmp = abs(val);
+	uint8_t negative = 0 ;
   uint8_t xn = 0;
   uint8_t ln = 2;
   char c;
@@ -207,6 +219,12 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
 	{
 		fullwidth = 1 ;
 		len = -len ;		
+	}
+
+  if ( val < 0 )
+	{
+		val = -val ;
+		negative = 1 ;
 	}
 
   if (mode & DBLSIZE)
@@ -222,28 +240,28 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
   }
 
   if (mode & LEFT) {
-//    if (tmp >= 10000)
+//    if (val >= 10000)
 //      x += fw;
-    if(val<0)
+    if(negative)
     {
       x += fw;
     }
-    if (tmp >= 1000)
+    if (val >= 1000)
       x += fw;
-    if (tmp >= 100)
+    if (val >= 100)
       x += fw;
-    if (tmp >= 10)
+    if (val >= 10)
       x += fw;
     if ( prec )
     {
       if ( prec == 2 )
       {
-        if ( tmp < 100 )
+        if ( val < 100 )
         {
           x += fw;
         }
       }
-      if ( tmp < 10 )
+      if ( val < 10 )
       {
         x+= fw;
       }
@@ -261,13 +279,13 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
   }
 
   for (uint8_t i=1; i<=len; i++) {
-    c = (tmp % 10) + '0';
+    c = (val % 10) + '0';
     lcd_putcAtt(x, y, c, mode);
     if (prec==i) {
       if (mode & DBLSIZE) {
         xn = x;
         if(c=='2' || c=='3' || c=='1') ln++;
-        uint8_t tn = (tmp/10) % 10;
+        uint8_t tn = (val/10) % 10;
         if(tn==2 || tn==4) {
           if (c=='4') {
             xn++;
@@ -284,11 +302,11 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
         else
           lcd_plot(x+1, y+6);
       }
-      if (tmp >= 10)
+      if (val >= 10)
         prec = 0;
     }
-    tmp /= 10;
-    if (!tmp)
+    val /= 10;
+    if (!val)
     {
       if (prec)
       {
@@ -320,7 +338,7 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
     lcd_hline(xn, y+2*FH-4, ln);
     lcd_hline(xn, y+2*FH-3, ln);
   }
-  if(val<0) lcd_putcAtt(x-fw,y,'-',mode);
+  if(negative) lcd_putcAtt(x-fw,y,'-',mode);
 }
 
 void lcd_plot(uint8_t x,uint8_t y)

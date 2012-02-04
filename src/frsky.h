@@ -26,8 +26,9 @@ DataID Meaning       Unit   Range   Note
 0x03   RPM           BPS    0-60000
 0x04   Fuel Level    %      0, 25, 50, 75, 100
 0x05   Temperature2  °C     -30-250
-0x06   Volt          1/500v 0-4.2v
-0x10   Altitude      m      0-9999
+0x06   Volt          1/500v 0-4.2v, top 4 bits are cell #
+0x10   Altitude      m      0-9999  Before “.”
+0x21   Altitude      m              After "."
 0x11   GPS speed     Knots          Before “.”
 0x19                                After “.”
 0x12   Longitude     dddmm.mmmm     Before “.”
@@ -45,6 +46,9 @@ DataID Meaning       Unit   Range   Note
 0x24   Acc-x         1/256g -8g ~ +8g
 0x25   Acc-y         1/256g -8g ~ +8g
 0x26   Acc-z         1/256g -8g ~ +8g
+0x28   Current       1A   0-100A
+0x3A   Voltage(amp sensor) 0.5v 0-48V Before “.”
+0x3B   Voltage(amp sensor)            After “.”
  
 DataID Meaning       Unit   Range   Note
 0x01   GPS altitude  m              Before”.”
@@ -79,14 +83,22 @@ DataID Meaning       Unit   Range   Note
 0x1E
 0x1F
 0x20
-0x21
+0x21   Altitude      m              After "."
 0x22   E/W
 0x23   N/S
 0x24   Acc-x         1/256g -8g ~ +8g
 0x25   Acc-y         1/256g -8g ~ +8g
 0x26   Acc-z         1/256g -8g ~ +8g
+0x27
+0x28   Current       1A   0-100A
+// . . .
+0x3A   Voltage(amp sensor) 0.5v 0-48V Before “.”
+0x3B   Voltage(amp sensor)            After “.”
   
  */
+
+
+
 
 
 // .20 seconds
@@ -128,6 +140,8 @@ extern uint8_t FrskyAlarmSendState;
 extern FrskyData frskyTelemetry[4];
 //extern FrskyData frskyRSSI[2];
 extern int16_t FrskyHubData[] ;
+extern uint8_t FrskyVolts[];
+extern uint8_t FrskyBattCells;
 extern uint8_t FrskyAlarmCheckFlag ;
 extern uint8_t MaxGpsSpeed ;
 

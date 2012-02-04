@@ -47,7 +47,14 @@ bool audioQueue::busy()
 
 bool audioQueue::freeslots()
 {
-  return AUDIO_QUEUE_LENGTH - ((t_queueWidx + AUDIO_QUEUE_LENGTH - t_queueRidx) % AUDIO_QUEUE_LENGTH) >= AUDIO_QUEUE_FREESLOTS;
+	uint8_t temp ;
+	temp = t_queueWidx ;
+	temp += AUDIO_QUEUE_LENGTH ;
+	temp -= t_queueRidx ;
+	temp %= AUDIO_QUEUE_LENGTH ;
+	temp = AUDIO_QUEUE_LENGTH - temp ;
+	return temp >= AUDIO_QUEUE_FREESLOTS ;
+//  return AUDIO_QUEUE_LENGTH - ((t_queueWidx + AUDIO_QUEUE_LENGTH - t_queueRidx) % AUDIO_QUEUE_LENGTH) >= AUDIO_QUEUE_FREESLOTS;
 }
 
 

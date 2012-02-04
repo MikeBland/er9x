@@ -74,7 +74,7 @@ void evalOffset(int8_t sub, uint8_t max);
 
 typedef PROGMEM void (*MenuFuncP_PROGMEM)(uint8_t event);
 
-#define TITLEP(pstr) lcd_putsAtt(0,0,pstr,INVERS)
+//#define TITLEP(pstr) lcd_putsAtt(0,0,pstr,INVERS)
 #define TITLE(str)   TITLEP(PSTR(str))
 
 #define MENU(title, tab, menu, lines_count, lines...) \
