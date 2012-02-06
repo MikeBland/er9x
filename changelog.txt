@@ -10,6 +10,10 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 06-2-2012  MPB
+Fix bug in myeeprom.h - frskyVoltThreshold wrong size
+
+******************************************
 CHANGELOG: 04-2-2012  MPB
 Flash and RAM saving
 Add GPS speed display, with max speed
