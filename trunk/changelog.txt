@@ -9,6 +9,11 @@ CHANGELOG: 1-11-2011
 description here
 ====================================================================================
 
+
+******************************************
+CHANGELOG: 07-02-2012  RFT
+Audio update to save space. 324 bytes saved
+
 ******************************************
 CHANGELOG: 06-2-2012  MPB
 Fix bug in myeeprom.h - frskyVoltThreshold wrong size

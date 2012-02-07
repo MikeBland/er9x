@@ -2480,9 +2480,9 @@ void menuProcSetup(uint8_t event)
                                                 vCountItems = DEFAULT_COUNT_ITEMS + 3;
 			 			break;
 			 	//pcmwav
-			  case 2:
-                                                vCountItems = DEFAULT_COUNT_ITEMS + 2;
-						break;	  	
+			 // case 2:
+       //                                         vCountItems = DEFAULT_COUNT_ITEMS + 2;
+				//		break;	  	
 		}		
 		if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 1){ // add in alert red/org/yel
 				vCountItems = vCountItems + 3;
@@ -2501,9 +2501,9 @@ void menuProcSetup(uint8_t event)
                                                 vCountItems = DEFAULT_COUNT_ITEMS + 2;
 			 			break;
 			 	//pcmwav
-			  case 2:
-                                                vCountItems = DEFAULT_COUNT_ITEMS + 1;
-						break;	  	
+			 // case 2:
+       //                                         vCountItems = DEFAULT_COUNT_ITEMS + 1;
+				//		break;	  	
 		}
 #endif
     sw_offset += vCountItems ;
@@ -2587,8 +2587,9 @@ void menuProcSetup(uint8_t event)
         uint8_t b ;
         b = g_eeGeneral.speakerMode ;
         lcd_puts_Pleft( y,PSTR("Sound Mode"));
-        lcd_putsnAtt(PARAM_OFS - FW - 4, y, PSTR("Beeper""PiSpkr""PcmWav")+6*b,6,(sub==subN ? INVERS:0));
-        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 2); g_eeGeneral.speakerMode = b ; }
+        //lcd_putsnAtt(PARAM_OFS - FW - 4, y, PSTR("Beeper""PiSpkr""PcmWav")+6*b,6,(sub==subN ? INVERS:0));
+        lcd_putsnAtt(PARAM_OFS - FW - 4, y, PSTR("Beeper""PiSpkr")+6*b,6,(sub==subN ? INVERS:0));
+        if(sub==subN) { CHECK_INCDEC_H_GENVAR(event, b, 0, 1); g_eeGeneral.speakerMode = b ; }
 
         if((y+=FH)>7*FH) return;
     }subN++;
@@ -2937,16 +2938,13 @@ if(g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2 ){
 					        b = g_eeGeneral.FRSkyRed ;
 					        lcd_puts_Pleft( y,PSTR("Alert [Red]"));
 								}
-					      //lcd_putsnAtt(PARAM_OFS - FW - 4, y, PSTR("Tone1 ""Tone2 ""Tone3 ""Tone4 ""Tone5 ""hTone1""hTone2""hTone3""hTone4""hTone5")+6*b,6,(sub==subN ? INVERS:0));
-					      if(g_eeGeneral.speakerMode == 1){
-					      			lcd_putsnAtt(PARAM_OFS - FW - 4, y, PSTR("Warn1 ""Warn2 ""Cheep ""Ring  ""SciFi ""Robot ""Chirp ""Tada  ""Crickt""Siren ""AlmClk""Ratata""Tick  ""Haptc1""Haptc2""Haptc3")+6*b,6,(sub==subN ? INVERS:0));
-								}
-					      if(g_eeGeneral.speakerMode == 2){
-					      			lcd_putsnAtt(PARAM_OFS - FW - 4, y, PSTR("Trck1 ""Trck2 ""Trck3 ""Trck4 ""Trck4 ""Trck5 ""Trck6 ""Trck7 ""Trck8 ""Trck9 ""Trck10""Trck11""Trck12""Haptc1""Haptc2""Haptc3")+6*b,6,(sub==subN ? INVERS:0));
-								}								
+		
+					      
+					      //audio menu
+								lcd_putsnAtt(PARAM_OFS - FW - 4, y, PSTR("Warn1 ""Warn2 ""Cheap ""Ring  ""SciFi ""Robot ""Chirp ""Tada  ""Crickt""Siren ""AlmClk""Ratata""Tick  ""Haptc1""Haptc2""Haptc3")+6*b,6,(sub==subN ? INVERS:0));
+						
 					      if(sub==subN)
 								{
-									//CHECK_INCDEC_H_GENVAR(event, b, 0, 9);
 									CHECK_INCDEC_H_GENVAR(event, b, 0, 15);
 									if ( i == 0 )
 									{
@@ -2962,7 +2960,7 @@ if(g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2 ){
 									}
 									
 								   if (checkIncDec_Ret) {
-											audio.frskyevent(b);
+											audio.event(b);
 									 }
 								}
 								if((y+=FH)>7*FH) return;

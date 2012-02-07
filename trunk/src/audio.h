@@ -26,46 +26,52 @@
 #define BEEP_KEY_UP_FREQ   (BEEP_DEFAULT_FREQ+5)
 #define BEEP_KEY_DOWN_FREQ (BEEP_DEFAULT_FREQ-5)
 
-/* make sure the defines below always go in numeric order */
-#define AU_TADA (0)
-#define AU_WARNING1 (1)
-#define AU_WARNING2 (2)
-#define AU_WARNING3 (3)
-#define AU_ERROR (4)
-#define AU_KEYPAD_UP (5)
-#define AU_KEYPAD_DOWN (6)
-#define AU_TRIM_MOVE (7)
-#define AU_TRIM_MIDDLE (8)
-#define AU_MENUS (9)
-#define AU_POT_STICK_MIDDLE (10)
-#define AU_MIX_WARNING_1 (11)
-#define AU_MIX_WARNING_2 (12)
-#define AU_MIX_WARNING_3 (13)
-#define AU_TIMER_30 (14)
-#define AU_TIMER_20 (15)
-#define AU_TIMER_10 (16)
-#define AU_TIMER_LT3 (17)
-#define AU_INACTIVITY (18)
-#define AU_TX_BATTERY_LOW (19)
 
-#ifdef FRSKY	
-#define AU_FRSKY_WARN1 (0)
-#define AU_FRSKY_WARN2 (1)
-#define AU_FRSKY_CHEEP (2)
-#define AU_FRSKY_RING (3)
-#define AU_FRSKY_SCIFI (4)
-#define AU_FRSKY_ROBOT (5)
-#define AU_FRSKY_CHIRP (6)
-#define AU_FRSKY_TADA (7)
-#define AU_FRSKY_CRICKET (8)
-#define AU_FRSKY_SIREN (9)
-#define AU_FRSKY_ALARMC (10)
-#define AU_FRSKY_RATATA (11)
-#define AU_FRSKY_TICK (12)
-#define AU_FRSKY_HAPTIC1 (13)
-#define AU_FRSKY_HAPTIC2 (14)
-#define AU_FRSKY_HAPTIC3 (15)
-#endif
+/* the audio selection menu in the system config page */
+
+// a line similar to this 
+// "Warn1 ""Warn2 ""Warn3 ""Warn1 ""Cheap ""Ring  ""SciFi "....
+// is needed in menu.cpp for the audo selection.
+// these are directly related to the order of the audio items below.
+
+
+/* make sure the defines below always go in numeric order */
+#define AU_WARNING1 (0)
+#define AU_WARNING2 (1)
+#define AU_CHEEP (2)
+#define AU_RING (3)
+#define AU_SCIFI (4)
+#define AU_ROBOT (5)
+#define AU_CHIRP (6)
+#define AU_TADA (7)
+#define AU_CRICKET (8)
+#define AU_SIREN (9)
+#define AU_ALARMC (10)
+#define AU_RATATA (11)
+#define AU_TICK (12)
+#define AU_HAPTIC1 (13)
+#define AU_HAPTIC2 (14)
+#define AU_HAPTIC3 (15)
+// end of audio menu alerts.  
+// not sure why but no more than 16 can be added?
+// believe this is a menu size limitation
+#define AU_INACTIVITY (16)
+#define AU_TX_BATTERY_LOW (17)
+#define AU_ERROR (18)
+#define AU_KEYPAD_UP (19)
+#define AU_KEYPAD_DOWN (20)
+#define AU_TRIM_MOVE (21)
+#define AU_TRIM_MIDDLE (22)
+#define AU_MENUS (23)
+#define AU_POT_STICK_MIDDLE (24)
+#define AU_TIMER_30 (25)
+#define AU_TIMER_20 (26)
+#define AU_TIMER_10 (27)
+#define AU_TIMER_LT3 (28)
+#define AU_WARNING3 (29)
+#define AU_MIX_WARNING_1 (30)
+#define AU_MIX_WARNING_2 (31)
+#define AU_MIX_WARNING_3 (32)
 
 #define BEEP_QUIET (0)
 #define BEEP_NOKEYS (1)
@@ -91,9 +97,7 @@ class audioQueue
 
     void event(uint8_t e,uint8_t f=BEEP_DEFAULT_FREQ);
 
-#if defined(FRSKY)
-    void frskyevent(uint8_t e);
-#endif
+
 
 
 inline void driver() {
@@ -126,9 +130,9 @@ inline void driver() {
 
     bool freeslots();
 
-    inline bool empty() {
-      return (t_queueRidx == t_queueWidx);
-    }
+    //inline bool empty() {
+    //  return (t_queueRidx == t_queueWidx);
+    //}
 
   protected:
     void aqinit(); // To stop constructor being compiled twice

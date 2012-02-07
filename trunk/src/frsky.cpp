@@ -509,13 +509,13 @@ void FRSKY_alarmPlay(uint8_t idx, uint8_t alarm){
 								case alarm_off:
 														break;
 								case alarm_yellow:
-														audio.frskyevent(g_eeGeneral.FRSkyYellow);
+														audio.event(g_eeGeneral.FRSkyYellow);
 														break;														
 								case alarm_orange:
-														audio.frskyevent(g_eeGeneral.FRSkyOrange);
+														audio.event(g_eeGeneral.FRSkyOrange);
 														break;												
 								case alarm_red:
-														audio.frskyevent(g_eeGeneral.FRSkyRed);
+														audio.event(g_eeGeneral.FRSkyRed);
 														break;		
 					}	
 			}
