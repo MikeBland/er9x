@@ -96,8 +96,8 @@ BEEPER = BUZZER
 #	JETI | FRSKY | ARDU | NMEA
 
 #	HELI and TEMPLATES are combined to 
-#	NOH	HELI = NO
-#	NOT	TEMPLATES = NO
+#	NH	HELI = NO
+#	NT	TEMPLATES = NO
 #	NHT	HELI = NO and TEMPLATES = NO
 
 #	possible values for BUZZER are
@@ -118,11 +118,11 @@ ifeq ($(HELI), NO)
 	ifeq ($(TEMPLATES),NO)
 		HT_MOD = NHT
 	else
-		HT_MOD = NOH
+		HT_MOD = NH
 	endif
 else
 	ifeq ($(TEMPLATES),NO)
-		HT_MOD = NOT
+		HT_MOD = NT
 	endif	
 endif
 
@@ -574,18 +574,18 @@ gccversion :
 
 
 
-# Program the device.
-wflash: $(TARGET).hex
-	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH)
-
-weeprom: $(TARGET).bin
-	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_EEPROM)
-
-rflash: $(TARGET).hex
-	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_READ_FLASH)
-
-reeprom: $(TARGET).bin
-	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_READ_EEPROM)
+# Program the device.  Depreciated
+#wflash: $(TARGET).hex
+#	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH)
+#
+#weeprom: $(TARGET).bin
+#	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_EEPROM)
+#
+#rflash: $(TARGET).hex
+#	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_READ_FLASH)
+#
+#reeprom: $(TARGET).bin
+#	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_READ_EEPROM)
 
 
 # Generate avr-gdb config/init file which does the following:
