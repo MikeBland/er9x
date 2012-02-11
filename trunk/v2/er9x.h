@@ -157,13 +157,19 @@ extern const prog_uint8_t APM bchout_ar[] ;
 //NOTICE!  =>  1..4 -> 1..4
 extern uint8_t convert_mode_helper(uint8_t x) ;
 
+
+//R=1
+//E=2
+//T=3
+//A=4
+
 #define CONVERT_MODE(x)  (((x)<=4) ? convert_mode_helper(x) : (x))
 //#define CHANNEL_ORDER(x) (pgm_read_byte(chout_ar + g_eeGeneral.templateSetup*4 + (x)-1))
 #define CHANNEL_ORDER(x) ( ( (pgm_read_byte(bchout_ar + g_eeGeneral.templateSetup) >> (6-(x-1) * 2)) & 3 ) + 1 )
-#define THR_STICK       (2-(g_eeGeneral.stickMode&1))
-#define ELE_STICK       (1+(g_eeGeneral.stickMode&1))
-#define AIL_STICK       ((g_eeGeneral.stickMode&2) ? 0 : 3)
-#define RUD_STICK       ((g_eeGeneral.stickMode&2) ? 3 : 0)
+#define THR_STICK       3
+#define ELE_STICK       2
+#define AIL_STICK       4
+#define RUD_STICK       1
 
 enum EnumKeys {
     KEY_MENU ,
@@ -314,7 +320,7 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define THRCHK_DEADBAND 16
 #define SPLASH_TIMEOUT  (4*100)  //400 msec - 4 seconds
 
-#define IS_THROTTLE(x)  (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4))
+#define IS_THROTTLE(x)  (x==THR_STICK)
 
 
 #define NUM_KEYS TRM_RH_UP+1
