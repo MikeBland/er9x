@@ -99,7 +99,7 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
         //				}
         if ( (g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16) )
         {
-//            cli();		// Not needed if sei() not done above
+            //            cli();		// Not needed if sei() not done above
             TIMSK |= (1<<OCIE1A);
             sei();
         }
@@ -604,6 +604,20 @@ void putPcmByte( uint8_t byte )
     }
 }
 
+void putPcmHead()
+{
+    // send 7E, do not CRC
+    // 01111110
+    putPcmPart( 0xC0 ) ;
+    putPcmPart( 0x80 ) ;
+    putPcmPart( 0x80 ) ;
+    putPcmPart( 0x80 ) ;
+    putPcmPart( 0x80 ) ;
+    putPcmPart( 0x80 ) ;
+    putPcmPart( 0x80 ) ;
+    putPcmPart( 0xC0 ) ;
+}
+
 //void setUpPulsesPCM()
 void setupPulsesPXX()
 {
@@ -616,7 +630,7 @@ void setupPulsesPXX()
     PcmCrc = 0 ;
     PcmBitCount = PcmByte = 0 ;
     PcmOnesCount = 0 ;
-    putPcmByte( 0x7E ) ;  // sync byte
+    putPcmHead(  ) ;  // sync byte
     putPcmByte( g_model.ppmNCH ) ;     // putPcmByte( g_model.rxnum ) ;  //
     putPcmByte( pxxFlag ) ;     // First byte of flags
     putPcmByte( 0 ) ;     // Second byte of flags
@@ -640,7 +654,7 @@ void setupPulsesPXX()
     chan = PcmCrc ;		        // get the crc
     putPcmByte( chan ) ; 			// Checksum lo
     putPcmByte( chan >> 8 ) ; // Checksum hi
-    putPcmByte( 0x7E ) ;      // sync byte
+    putPcmHead(  ) ;      // sync byte
     putPcmFlush() ;
     OCR1C += 40000 ;		// 20mS on
     PORTB |= (1<<OUT_B_PPM);

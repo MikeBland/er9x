@@ -3825,14 +3825,11 @@ void perOut(int16_t *chanOut, uint8_t att)
         }
     }
     {
-        uint8_t ele_stick, ail_stick ;
-        ele_stick = ELE_STICK ;
-        ail_stick = AIL_STICK ;
         //===========Swash Ring================
         if(g_model.swashRingValue)
         {
-            uint32_t v = (int32_t(calibratedStick[ele_stick])*calibratedStick[ele_stick] +
-                          int32_t(calibratedStick[ail_stick])*calibratedStick[ail_stick]);
+            uint32_t v = (int32_t(calibratedStick[ELE_STICK])*calibratedStick[ELE_STICK] +
+                          int32_t(calibratedStick[AIL_STICK])*calibratedStick[AIL_STICK]);
             uint32_t q = int32_t(RESX)*g_model.swashRingValue/100;
             q *= q;
             if(v>q)
@@ -3851,15 +3848,15 @@ void perOut(int16_t *chanOut, uint8_t att)
                                                               g_eeGeneral.calibSpanNeg[i])));
             if(v <= -RESX) v = -RESX;
             if(v >=  RESX) v =  RESX;
-	  				if ( g_eeGeneral.throttleReversed )
-						{
-							if ( i == THR_STICK )
-							{
-								v = -v ;
-							}
-						}
+            if ( g_eeGeneral.throttleReversed )
+            {
+                if ( i == THR_STICK )
+                {
+                    v = -v ;
+                }
+            }
             calibratedStick[i] = v; //for show in expo
-            if(!(v/16)) anaCenter |= 1<<(CONVERT_MODE((i+1))-1);
+            if(!(v/16)) anaCenter |= 1<<i;
 
 
             if(i<4) { //only do this for sticks
@@ -3881,7 +3878,7 @@ void perOut(int16_t *chanOut, uint8_t att)
                 }
 
                 //===========Swash Ring================
-                if(d && (i==ele_stick || i==ail_stick))
+                if(d && (i==ELE_STICK || i==AIL_STICK))
                     v = int32_t(v)*g_model.swashRingValue*RESX/(int32_t(d)*100);
                 //===========Swash Ring================
 
@@ -3933,14 +3930,14 @@ void perOut(int16_t *chanOut, uint8_t att)
         //===========Swash Ring================
         if(g_model.swashRingValue)
         {
-            uint32_t v = ((int32_t)anas[ele_stick]*anas[ele_stick] + (int32_t)anas[ail_stick]*anas[ail_stick]);
+            uint32_t v = ((int32_t)anas[ELE_STICK]*anas[ELE_STICK] + (int32_t)anas[AIL_STICK]*anas[AIL_STICK]);
             uint32_t q = (int32_t)RESX*g_model.swashRingValue/100;
             q *= q;
             if(v>q)
             {
                 uint16_t d = isqrt32(v);
-                anas[ele_stick] = (int32_t)anas[ele_stick]*g_model.swashRingValue*RESX/((int32_t)d*100);
-                anas[ail_stick] = (int32_t)anas[ail_stick]*g_model.swashRingValue*RESX/((int32_t)d*100);
+                anas[ELE_STICK] = (int32_t)anas[ELE_STICK]*g_model.swashRingValue*RESX/((int32_t)d*100);
+                anas[AIL_STICK] = (int32_t)anas[AIL_STICK]*g_model.swashRingValue*RESX/((int32_t)d*100);
             }
         }
 
@@ -3949,8 +3946,8 @@ void perOut(int16_t *chanOut, uint8_t att)
 
         if(g_model.swashType)
         {
-            int16_t vp = anas[ele_stick]+trimA[ele_stick];
-            int16_t vr = anas[ail_stick]+trimA[ail_stick];
+            int16_t vp = anas[ELE_STICK]+trimA[ELE_STICK];
+            int16_t vr = anas[AIL_STICK]+trimA[AIL_STICK];
 
             if(att&NO_INPUT)  //zero input for setStickCenter()
             {

@@ -1043,7 +1043,7 @@ uint16_t anaIn(uint8_t chan)
 {
     //                     ana-in:   3 1 2 0 4 5 6 7
     //static prog_char APM crossAna[]={4,2,3,1,5,6,7,0}; // wenn schon Tabelle, dann muss sich auch lohnen
-    static prog_char APM crossAna[]={3,1,2,0,4,5,6,7};
+    static prog_char APM crossAna[]={3,1,2,0,4,5,6,7}; // this needs to change based on MODE
     volatile uint16_t *p = &s_anaFilt[pgm_read_byte(crossAna+chan)];
     //  AutoLock autoLock;
     return  *p;
