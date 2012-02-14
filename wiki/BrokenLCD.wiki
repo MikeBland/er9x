@@ -1,11 +1,3 @@
-= Your LCD has died =
+This content has moved to:
 
-Until recently the replacement LCD has been the achillies heal of the 9x.  The most common part to fail, and near no chance of a replacement without buying a new radio!
-
-Good news is that by working with the supply chain, we have arranged for a Chinese supplier to stock the LCD as a spare.
-
-They can be purchased from:
-
-<a href="http://www.r2hobbies.com/eng/proddetail.php?prod=rcps2845001&PARTNER=robthomson">www.r2hobbies.com</a>
-
-Note! The R2 site lists these as being for the Eurgle Radio.  The Eurgle Radio is simply a rebranded 9X, so it will work in any of the 9X based radios!
+http://9xforums.com/wiki/index.php/Your_LCD_has_died%3F
