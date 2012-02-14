@@ -1,42 +1,5 @@
 = Speaker Mods with Haptic Feedback =
 
-This circuit shows the way that the vibration motor can be wired up to the radio for use with the -SPEAKER range of firmware options.  This firmare version provides greater control of when the vibration motor is actually used!
+This content can now be found on:
 
-Modifying the radio is dead simple. 
-
-Note!  Currently this mod does not require a specific version of the firmware.  It simply uses the port on the cpu and sends the tones.
-
-In time it may be moved into a -haptic version of the firmware!
-
-You will need a few part on your shopping list:
-
-1. A piezo speaker(ceramic/capacitor speaker). (this speaker needs to no more than 2.5cm to 3cm diameter.)
-(a normal speaker will work but its not totally safe!
-- it could burn the output from the controller, tests have shown a piezo has a much lower power draw so its safe to use)
-
-2.  a capacitor. (4.7u) seems to do the trick.
-
-3. a capacitor (10uf preferred - 2,2uF to 47uF could be used) - totally optional but "helps" and its very cheap! so it won't harm!
-
-4.  a 4mm or similar vibration motor to provide the haptic feedback.
-
-5. a 220 ohm to 1K resistor (this will improve safety with, virtually, any type of battery (any voltage)!
-
-6. a diode!  1N4001 will do the job!
-
-
-These parts can all be purchased easily eBay, Conrad or Radioshack!
-
-The following image:
-
-<img src="http://static.rcgroups.net/forums/attachments/3/7/1/9/9/5/a4325417-62-speaker%20%26%20vibration%20mood.jpg">
-
-shows how you need to modify your radio.  It should be largely self explanatory!
-
-The lead to the 'free pin' is a single line that is soldered to pin 43 on the cpu.
-
-This is marked in 'red' on the following image.
-
-<img src="http://static.rcgroups.net/forums/attachments/3/2/9/0/3/2/a4280719-150-pcb-ref-top.jpg">
-
-This pin is right next to the pins used for the frsky mod, so if doing that mod, then probably best to do this at the same time!
+http://9xforums.com/wiki/index.php/Speaker_Mod_with_Haptic_Feedback
