@@ -2,14 +2,6 @@
 
 = How to modify your 9x for frsky telemetry =
 
-To run the FRSKY build of er9x you will need to make some modifications to the hardware in your radio.  These modifications require soldering of small tracks on the radio circuit board.  Be warned that it is possible to damage the board permanently if care is not taken.
- 
-The following guides have been created by different members of the community to explain how they approached the mods.  
+This content can now be found on:
 
-A good suggestion would be to read all of them!  Then decide which method you would like to follow.  As a general rule they all follow much the same formular, just with different hardware configurations.
-
- * <a href="http://er9x.googlecode.com/svn/trunk/doc/FrSky%20Telemetry%20%20details.pdf">FRSKY Telemetry details</a> by Phil.
- * <a href="http://code.google.com/p/gruvin9x/wiki/FrskyInterfacing">FRSKY interfacing tutorial</a> by gruvin.
- * <a href="http://er9x.googlecode.com/svn/trunk/doc/TelemetryMods.pdf">FRSKY Telemetry mods</a> by Mike Blandford.
- * <a href="http://er9x.googlecode.com/svn/trunk/doc/FRSKYTelemetry.pdf">FRSKY telemetry guide</a> by Rob Thomson. 
- * [FRSkyLiteTTL Using the FRSKY Lite as your TTL Convertor]
+http://9xforums.com/wiki/index.php/How_to_modify_your_9x_to_support_telemetry
