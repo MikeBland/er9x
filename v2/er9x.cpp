@@ -46,6 +46,9 @@ audioQueue  audio;
 
 uint8_t sysFlags = 0;
 
+const prog_char APM Str_OFF[] =  "OFF" ;
+const prog_char APM Str_ON[] = "ON " ;
+
 const prog_char APM modi12x3[]=
 "RUD ELE THR AIL ";
 //"RUD THR ELE AIL "
@@ -147,22 +150,37 @@ const prog_char *get_switches_string()
     return PSTR(SWITCHES_STR)	;
 }	
 
-void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
+void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t timer)
 {
-    int8_t tm = g_model.tmrMode;
-    if(abs(tm)<TMR_VAROFS) {
-        lcd_putsnAtt(  x, y, PSTR("OFFABSRUsRU%ELsEL%THsTH%ALsAL%P1 P1%P2 P2%P3 P3%")+3*abs(tm),3,attr);
-        if(tm<(-TMRMODE_ABS)) lcd_putcAtt(x-1*FW,  y,'!',attr);
+    int8_t tm = g_model.timer[timer].tmrModeA ;
+    if(tm<TMR_VAROFS) {
+//        lcd_putsnAtt(  x, y, PSTR("OFFABSRUsRU%ELsEL%THsTH%ALsAL%P1 P1%P2 P2%P3 P3%")+3*abs(tm),3,attr);
+        lcd_putsnAtt(  x, y, PSTR("OFFABSTHsTH%")+3*abs(tm),3,attr);
+//        if(tm<(-TMRMODE_ABS)) lcd_putcAtt(x-1*FW,  y,'!',attr);
         return;
     }
 
-    if(abs(tm)<(TMR_VAROFS+MAX_DRSWITCH-1)) { //normal on-off
-        putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS-1) : tm+(TMR_VAROFS-1),attr);
-        return;
-    }
+//    if(abs(tm)<(TMR_VAROFS+MAX_DRSWITCH-1)) { //normal on-off
+//        putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS-1) : tm+(TMR_VAROFS-1),attr);
+//        return;
+//    }
 
-    putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS+MAX_DRSWITCH-1-1) : tm+(TMR_VAROFS+MAX_DRSWITCH-1-1),attr);//momentary on-off
-    lcd_putcAtt(x+3*FW,  y,'m',attr);
+//  	if(abs(tm)<(TMR_VAROFS+MAX_DRSWITCH-1+MAX_DRSWITCH-1)) // momentary on-off
+//  	{
+//  	  putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS+MAX_DRSWITCH-1-1) : tm+(TMR_VAROFS+MAX_DRSWITCH-1-1),attr);//momentary on-off
+//  	  lcd_putcAtt(x+3*FW,  y,'m',attr);
+//			return ;
+//		}
+
+//  	lcd_putcAtt(x-1*FW,y, tm<0 ? '!' : ' ',attr);
+//  	tm = abs(tm) ;
+  	tm -= TMR_VAROFS ;
+  	lcd_putsnAtt(  x, y, PSTR( CURV_STR ) + 21 + 3*tm, 3, attr ) ;		// Cheat to get chan#
+		if ( tm < 9 )
+		{
+			x -= FW ;		
+		}
+  	lcd_putcAtt(x+3*FW,  y,'%',attr);
 }
 
 #ifdef FRSKY
@@ -174,14 +192,15 @@ void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t 
     uint8_t times2 ;
 
     value = val ;
+    times2 = 0 ;
     if (g_model.frsky.channels[channel].type == 2/*V*/)
     {
         times2 = 1 ;
     }
-    else
-    {
-        times2 = 0 ;
-    }
+//    else
+//    {
+//        times2 = 0 ;
+//    }
 
     if ( scale )
     {
@@ -891,16 +910,16 @@ inline bool checkSlaveMode()
 }
 
 
-uint8_t Timer2_running = 0 ;
-uint8_t Timer2_pre = 0 ;
-uint16_t Timer2 = 0 ;
+//uint8_t Timer2_running = 0 ;
+//uint8_t Timer2_pre = 0 ;
+//uint16_t Timer2 = 0 ;
 
-void resetTimer2()
-{
-    Timer2_pre = 0 ;
-    Timer2 = 0 ;
-    Timer2_running = 0 ;   // Stop and clear throttle started flag
-}
+//void resetTimer2()
+//{
+//    Timer2_pre = 0 ;
+//    Timer2 = 0 ;
+//    Timer2_running = 0 ;   // Stop and clear throttle started flag
+//}
 
 void doBackLight(uint8_t evt)
 {
@@ -929,14 +948,14 @@ void perMain()
     if(!tick10ms) return; //make sure the rest happen only every 10ms.
 
     //  if ( Timer2_running )
-    if ( Timer2_running & 1)  // ignore throttle started flag
-    {
-        if ( (Timer2_pre += 1 ) >= 100 )
-        {
-            Timer2_pre -= 100 ;
-            Timer2 += 1 ;
-        }
-    }
+//    if ( Timer2_running & 1)  // ignore throttle started flag
+//    {
+//        if ( (Timer2_pre += 1 ) >= 100 )
+//        {
+//            Timer2_pre -= 100 ;
+//            Timer2 += 1 ;
+//        }
+//    }
 
     eeCheck();
 
@@ -1379,8 +1398,7 @@ int main(void)
     wdt_enable(WDTO_500MS);
     perOut(g_chans512, 0);
 
-    pushMenu(menuProcModelSelect);
-    popMenu(true);  // this is so the first instance of [MENU LONG] doesn't freak out!
+    g_menuStack[1] =  menuProcModelSelect; // this is so the first instance of [MENU LONG] doesn't freak out!
     //g_menuStack[g_menuStackPtr+1] =
 
     lcdSetRefVolt(g_eeGeneral.contrast);

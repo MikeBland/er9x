@@ -137,6 +137,20 @@ uint8_t lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
 		return x ;
 }
 
+// Puts sub-string from string options
+// First byte of string is sub-string length
+// idx is index into string (in length units)
+// Output length characters
+void lcd_putsAttIdx(uint8_t x,uint8_t y,const prog_char * s,uint8_t idx,uint8_t att)
+{
+	uint8_t length ;
+	length = pgm_read_byte(s++) ;
+
+  lcd_putsnAtt(x,y,s+length*idx,length,att) ;
+}
+
+
+//uint8_t lcd_putsnAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t len,uint8_t mode)
 void lcd_putsnAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t len,uint8_t mode)
 {
 	uint8_t source ;

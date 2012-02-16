@@ -149,6 +149,8 @@
 #define SLAVE_MODE (PING & (1<<INP_G_RF_POW))
 
 extern const prog_uint8_t APM modn12x3[] ;
+extern const prog_char APM Str_OFF[] ;
+extern const prog_char APM Str_ON[] ;
 
 //extern const prog_uint8_t APM chout_ar[] ;
 extern const prog_uint8_t APM bchout_ar[] ;
@@ -168,7 +170,7 @@ extern uint8_t convert_mode_helper(uint8_t x) ;
 #define CHANNEL_ORDER(x) ( ( (pgm_read_byte(bchout_ar + g_eeGeneral.templateSetup) >> (6-(x-1) * 2)) & 3 ) + 1 )
 #define THR_STICK       3
 #define ELE_STICK       2
-#define AIL_STICK       4
+#define AIL_STICK       0
 #define RUD_STICK       1
 
 enum EnumKeys {
@@ -430,18 +432,18 @@ bool    getSwitch(int8_t swtch, bool nc, uint8_t level=0);
 ///   \param att   NO_INV,INVERS,BLINK
 ///
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t swtch,uint8_t att);
-void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr);
+extern void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t timer);
 
-extern uint8_t  s_timerState;
+extern uint8_t  s_timerState[];
 #define TMR_OFF     0
 #define TMR_RUNNING 1
 #define TMR_BEEPING 2
 #define TMR_STOPPED 3
 void resetTimer();
 
-extern uint8_t Timer2_running ;
-extern uint16_t Timer2 ;
-void resetTimer2() ;
+//extern uint8_t Timer2_running ;
+//extern uint16_t Timer2 ;
+//void resetTimer2() ;
 
 const prog_char *get_switches_string() ;
 const prog_char *get_curve_string() ;
@@ -600,7 +602,7 @@ extern inline uint16_t get_tmr10ms()
 
 
 
-#define TMR_VAROFS  16
+#define TMR_VAROFS  4
 
 #define SUB_MODE_V     1
 #define SUB_MODE_H     2
