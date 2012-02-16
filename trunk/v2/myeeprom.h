@@ -60,6 +60,8 @@
 #define GENERAL_OWNER_NAME_LEN 10
 #define MODEL_NAME_LEN         10
 
+
+
 typedef struct t_TrainerMix {
     uint8_t srcChn:3; //0-7 = ch1-8
     int8_t  swtch:5;
@@ -187,17 +189,30 @@ typedef struct t_FrSkyData {
     FrSkyChannelData channels[2];
 } __attribute__((packed)) FrSkyData;
 
+// Timer info
+//    int8_t    tmrMode;              // timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
+//    uint16_t  tmrVal;
+//    uint8_t   tmrDir:1;    //0=>Count Down, 1=>Count Up
+
+typedef struct t_TimerMode
+{
+    int8_t    tmrModeA ;            // timer trigger source -> off, abs, stk, stk%, cx%
+    int8_t    tmrModeB ;            // timer trigger source -> !sw, none, sw, m_sw
+    uint16_t  tmrVal ;
+} __attribute__((packed)) TimerMode ;
+
 typedef struct t_ModelData {
     char      name[MODEL_NAME_LEN];             // 10 must be first for eeLoadModelName
     uint8_t   mdVers;
-    int8_t    tmrMode;              // timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
-    uint8_t   tmrDir:1;    //0=>Count Down, 1=>Count Up
+    int8_t    spare21;              // timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
+//    uint8_t   sparex:1;      // was tmrDir, now use tmrVal>0 => count down
+    uint8_t   tmrDir:1;      // was tmrDir, now use tmrVal>0 => count down
     uint8_t   traineron:1;  // 0 disable trainer, 1 allow trainer
-    uint8_t   t2throttle:1 ;  // Start timer2 using throttle
+    uint8_t   spare22:1 ;  // Start timer2 using throttle
     uint8_t   FrSkyUsrProto:2 ;  // Protocol in FrSky User Data, 0=FrSky Hub, 1=WS HowHigh
     uint8_t   FrSkyImperial:1 ;  // Convert FrSky values to imperial units
     uint8_t   FrSkyAltAlarm:2;
-    uint16_t  tmrVal;
+    uint16_t  tmrValX;
     uint8_t   protocol;
     int8_t    ppmNCH;
     uint8_t   thrTrim:4;            // Enable Throttle Trim
@@ -223,9 +238,11 @@ typedef struct t_ModelData {
     int8_t    curves9[MAX_CURVE9][9];
     CSwData   customSw[NUM_CSW];
     uint8_t   frSkyVoltThreshold ;
-    uint8_t   res3[2];
+    int8_t    tmrModeBX;             // timer trigger source B -> off, sw/!sw, m_sw/!m_sw
+    uint8_t   res3[1];
     SafetySwData  safetySw[NUM_CHNOUT];
     FrSkyData frsky;
+		TimerMode timer[2] ;
 } __attribute__((packed)) ModelData;
 
 #define TOTAL_EEPROM_USAGE (sizeof(ModelData)*MAX_MODELS + sizeof(EEGeneral))

@@ -134,7 +134,7 @@ void eeLoadModel(uint8_t id)
 
         g_model.mdVers = MDVERS; //update mdvers
 
-        resetTimer2();
+//        resetTimer2();
 
 #ifdef FRSKY
   FrskyAlarmSendState |= 0x40 ;		// Get RSSI Alarms
