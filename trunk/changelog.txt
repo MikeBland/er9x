@@ -11,6 +11,11 @@ description here
 
 ******************************************
 CHANGELOG: 22-02-2012  MPB
+PXX - fix infinite loop in putPcmByte
++ V2 changes
+
+******************************************
+CHANGELOG: 22-02-2012  MPB
 PXX - change to MSB send first and data scaling + V2 changes
 
 ******************************************
