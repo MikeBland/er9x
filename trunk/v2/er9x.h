@@ -432,7 +432,7 @@ bool    getSwitch(int8_t swtch, bool nc, uint8_t level=0);
 ///   \param att   NO_INV,INVERS,BLINK
 ///
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t swtch,uint8_t att);
-extern void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t timer);
+extern void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t timer, uint8_t type ) ;
 
 extern uint8_t  s_timerState[];
 #define TMR_OFF     0
@@ -716,6 +716,21 @@ extern uint8_t sysFlags;
 
 //audio settungs are external to keep out clutter!
 #include "audio.h"
+
+// Re-useable byte array to save having multiple buffers
+union t_bytes 
+{
+	uint8_t eefs_buffer[BLOCKS] ;						// Used by EeFsck
+	char name_buf[sizeof(g_model.name)+5] ;	// Used by menuProcmodelSelect
+	struct
+	{
+   	int16_t midVals[7];
+   	int16_t loVals[7];
+   	int16_t hiVals[7];
+	} cal_data ;
+} ;
+
+extern union t_bytes Bytes ;
 
 #endif // er9x_h
 /*eof*/

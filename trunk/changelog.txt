@@ -10,6 +10,10 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 22-02-2012  MPB
+PXX - change to MSB send first and data scaling + V2 changes
+
+******************************************
 CHANGELOG: 11-02-2012  ER
 PXX work - change to not stuff the head and tail bytes.
 
