@@ -597,8 +597,8 @@ void putPcmByte( uint8_t byte )
 
     crc( byte ) ;
 
-//    for ( i = 0 ; i < 8 ; i += 1 )
-    for ( i = 7 ; i >= 0 ; i -- ) //msb
+    for ( i = 0 ; i < 8 ; i += 1 )
+//    for ( i = 7 ; i >= 0 ; i -- ) //msb <- this is infinite loop
     {
         putPcmBit( byte & 0x80 ) ;
         byte <<= 1 ;
