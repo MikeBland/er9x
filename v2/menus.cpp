@@ -917,7 +917,7 @@ void menuProcTemplates(uint8_t event)  //Issue 73
 
 void menuProcSafetySwitches(uint8_t event)
 {
-    MENU("SAFETY SWITCHES", menuTabModel, e_SafetySwitches, NUM_CHNOUT+1, {0, 2/*repeated*/});
+    MENU("SAFETY SWITCHES", menuTabModel, e_SafetySwitches, NUM_CHNOUT+1, {0, 1/*repeated*/});
 
 uint8_t y = 0;
 uint8_t k = 0;
@@ -934,7 +934,7 @@ for(uint8_t i=0; i<7; i++){
     if(k==NUM_CHNOUT) break;
     SafetySwData *sd = &g_model.safetySw[k];
     putsChn(0,y,k+1,0);
-    for(uint8_t j=0; j<=2;j++){
+    for(uint8_t j=0; j<2;j++){
         uint8_t attr = ((sub==k && subSub==j) ? (s_editMode ? BLINK : INVERS) : 0);
 				uint8_t active = (attr && (s_editMode || p1valdiff)) ;
         if (j == 0)
@@ -1876,7 +1876,7 @@ for ( uint8_t timer = 0 ; timer < 2 ; timer += 1 )
   if(t_pgOfs<subN) { //timer trigger source -> off, abs, THstk, THstk%, ch%
     lcd_puts_Pleft(    y, PSTR("TriggerA"));
     uint8_t attr = (sub==subN ?  INVERS : 0);
-    putsTmrMode(10*FW,y,attr, timer);
+    putsTmrMode(10*FW,y,attr, timer, 1 ) ;
 
     if(sub==subN)
         CHECK_INCDEC_H_MODELVAR( event,g_model.timer[timer].tmrModeA ,0,(1+2+16));
@@ -1886,20 +1886,21 @@ for ( uint8_t timer = 0 ; timer < 2 ; timer += 1 )
   if(t_pgOfs<subN) { //timer trigger source -> none, sw/!sw, m_sw
     lcd_puts_Pleft(    y, PSTR("TriggerB"));
     uint8_t attr = (sub==subN ?  INVERS : 0);
-    int8_t tm = g_model.timer[timer].tmrModeB;
-    if(abs(tm)>=(MAX_DRSWITCH))	 //momentary on-off
-		{
-  	  lcd_putcAtt(10*FW+3*FW,  y,'m',attr);
-			if ( tm > 0 )
-			{
-				tm -= MAX_DRSWITCH - 1 ;
-			}
+    putsTmrMode(10*FW,y,attr, timer, 2 ) ;
+//    int8_t tm = g_model.timer[timer].tmrModeB;
+//    if(abs(tm)>=(MAX_DRSWITCH))	 //momentary on-off
+//		{
+//  	  lcd_putcAtt(10*FW+3*FW,  y,'m',attr);
+//			if ( tm > 0 )
+//			{
+//				tm -= MAX_DRSWITCH - 1 ;
+//			}
 //			if ( tm < 0 )
 //			{
 //				tm += MAX_DRSWITCH - 1;
 //			}
-		}			 
-   	putsDrSwitches( 10*FW-1*FW, y, tm, attr );
+//		}			 
+//   	putsDrSwitches( 10*FW-1*FW, y, tm, attr );
 
     if(sub==subN)
         CHECK_INCDEC_H_MODELVAR( event,g_model.timer[timer].tmrModeB ,(1-MAX_DRSWITCH),(-2+2*MAX_DRSWITCH));
@@ -2243,14 +2244,14 @@ void menuProcModelSelect(uint8_t event)
 
     if(sub-s_pgOfs < 1)        s_pgOfs = max(0,sub-1);
     else if(sub-s_pgOfs >4 )  s_pgOfs = min(MAX_MODELS-6,sub-4);
+//		static char buf[sizeof(g_model.name)+5];
     for(uint8_t i=0; i<6; i++){
         uint8_t y=(i+2)*FH;
         uint8_t k=i+s_pgOfs;
         lcd_outdezNAtt(  3*FW, y, k+1, ((sub==k) ? INVERS : 0) + LEADING0,2);
-        static char buf[sizeof(g_model.name)+5];
         if(k==g_eeGeneral.currModel) lcd_putc(1,  y,'*');
-        eeLoadModelName(k,buf,sizeof(buf));
-        lcd_putsnAtt(  4*FW, y, buf,sizeof(buf),BSS|((sub==k) ? (sel_editMode ? INVERS : 0 ) : 0));
+        eeLoadModelName(k,Bytes.name_buf,sizeof(Bytes.name_buf));
+        lcd_putsnAtt(  4*FW, y, Bytes.name_buf,sizeof(Bytes.name_buf),BSS|((sub==k) ? (sel_editMode ? INVERS : 0 ) : 0));
     }
 
 }
@@ -2267,16 +2268,13 @@ void menuProcDiagCalib(uint8_t event)
     //    int8_t  sub    = mstate2.m_posVert ;
     int8_t  sub    = 0;
     mstate2.m_posVert = 0; // make sure we don't scroll or move cursor here
-    static int16_t midVals[7];
-    static int16_t loVals[7];
-    static int16_t hiVals[7];
     static uint8_t idxState;
 
 		// Is the next for loop needed now????
     for(uint8_t i=0; i<7; i++) { //get low and high vals for sticks and trims
         int16_t vt = anaIn(i);
-        loVals[i] = min(vt,loVals[i]);
-        hiVals[i] = max(vt,hiVals[i]);
+        Bytes.cal_data.loVals[i] = min(vt,Bytes.cal_data.loVals[i]);
+        Bytes.cal_data.hiVals[i] = max(vt,Bytes.cal_data.hiVals[i]);
         //if(i>=4) midVals[i] = (loVals[i] + hiVals[i])/2;
     }
 
@@ -2319,9 +2317,9 @@ void menuProcDiagCalib(uint8_t event)
 
         for(uint8_t i=0; i<7; i++)
         {
-            loVals[i] =  15000;
-            hiVals[i] = -15000;
-            midVals[i] = anaIn(i);
+            Bytes.cal_data.loVals[i] =  15000;
+            Bytes.cal_data.hiVals[i] = -15000;
+            Bytes.cal_data.midVals[i] = anaIn(i);
         }
         break;
 
@@ -2332,11 +2330,11 @@ void menuProcDiagCalib(uint8_t event)
         lcd_putsnAtt(3*FW, 3*FH, menuWhenDone, 16, sub>0 ? BLINK : 0);
 
         for(uint8_t i=0; i<7; i++)
-            if(abs(loVals[i]-hiVals[i])>50) {
-                g_eeGeneral.calibMid[i]  = midVals[i];
-                int16_t v = midVals[i] - loVals[i];
+            if(abs(Bytes.cal_data.loVals[i]-Bytes.cal_data.hiVals[i])>50) {
+                g_eeGeneral.calibMid[i]  = Bytes.cal_data.midVals[i];
+                int16_t v = Bytes.cal_data.midVals[i] - Bytes.cal_data.loVals[i];
                 g_eeGeneral.calibSpanNeg[i] = v - v/64;
-                v = hiVals[i] - midVals[i];
+                v = Bytes.cal_data.hiVals[i] - Bytes.cal_data.midVals[i];
                 g_eeGeneral.calibSpanPos[i] = v - v/64;
             }
         int16_t sum=0;
@@ -3031,15 +3029,19 @@ uint16_t s_timeCumTot;		// Total tx on time (secs)
 uint16_t s_timeCumAbs;  //laufzeit in 1/16 sec
 static uint16_t s_time;
 static uint8_t s_cnt;
-uint16_t s_timeCumSw[2];  //laufzeit in 1/16 sec
-uint16_t s_timeCumThr[2];  //gewichtete laufzeit in 1/16 sec
-uint16_t s_timeCum16ThrP[2]; //gewichtete laufzeit in 1/16 sec
-uint8_t  s_timerState[2];
-static uint16_t s_sum[2];
-static uint8_t lastSwPos[2] ;
-static uint8_t sw_toggled[2];
 
-int16_t  s_timerVal[2];
+
+struct t_timer
+{
+	uint16_t s_sum ;
+	uint8_t lastSwPos ;
+	uint8_t sw_toggled ;
+	uint16_t s_timeCumSw ;  //laufzeit in 1/16 sec
+	uint8_t  s_timerState ;
+	uint16_t s_timeCumThr ;  //gewichtete laufzeit in 1/16 sec
+	uint16_t s_timeCum16ThrP ; //gewichtete laufzeit in 1/16 sec
+	int16_t  s_timerVal ;
+} s_timer[2] ;
 
 // Timer triggers:
 // OFF - disabled
@@ -3091,30 +3093,30 @@ void timer(uint16_t throttle_val)
 		{ // We have a triggerA so timer is running 
     	if(tmb>=(MAX_DRSWITCH-1))	 // toggeled switch
 			{
-    	  if(!(sw_toggled[timer] | s_sum[timer] | s_cnt | s_time | lastSwPos[timer])) lastSwPos[timer] = 0 ;  // if initializing then init the lastSwPos
+    	  if(!(s_timer[timer].sw_toggled | s_timer[timer].s_sum | s_cnt | s_time | s_timer[timer].lastSwPos)) s_timer[timer].lastSwPos = 0 ;  // if initializing then init the lastSwPos
     	  uint8_t swPos = getSwitch( tmb-(MAX_DRSWITCH-1), 0 ) ;
-    	  if(swPos && !lastSwPos[timer])  sw_toggled[timer] = !sw_toggled[timer];  //if switch is flipped first time -> change counter state
-    	  lastSwPos[timer] = swPos;
+    	  if(swPos && !s_timer[timer].lastSwPos)  s_timer[timer].sw_toggled = !s_timer[timer].sw_toggled;  //if switch is flipped first time -> change counter state
+    	  s_timer[timer].lastSwPos = swPos;
     	}
     	else
 			{
 				if ( tmb )
 				{
-    	  	sw_toggled[timer] = getSwitch( tmb ,0); //normal switch
+    	  	s_timer[timer].sw_toggled = getSwitch( tmb ,0); //normal switch
 				}
 				else
 				{
-					sw_toggled[timer] = 1 ;	// No trigger B so use as active
+					s_timer[timer].sw_toggled = 1 ;	// No trigger B so use as active
 				}
 			}
 		}
 
-		if ( sw_toggled[timer] == 0 )
+		if ( s_timer[timer].sw_toggled == 0 )
 		{
 			val = 0 ;			
 		}
 
-    s_sum[timer] += val ;   // Add val in
+    s_timer[timer].s_sum += val ;   // Add val in
     if(( get_tmr10ms()-s_time)<100)
 		{
 			if ( timer == 0 )
@@ -3126,8 +3128,8 @@ void timer(uint16_t throttle_val)
 				return ;
 			}
 		}
-    val     = s_sum[timer]/s_cnt;   // Average of val over last 100mS
-    s_sum[timer]  -= val*s_cnt;     //rest (remainder not added in)
+    val     = s_timer[timer].s_sum/s_cnt;   // Average of val over last 100mS
+    s_timer[timer].s_sum  -= val*s_cnt;     //rest (remainder not added in)
 
 		if ( timer == 0 )
 		{
@@ -3139,69 +3141,69 @@ void timer(uint16_t throttle_val)
 	    s_cnt   = 0;    // ready for next 100mS
 			s_time += 100;  // 100*10mS passed
 		}
-    if(val) s_timeCumThr[timer]       += 1;
-    if(sw_toggled[timer]) s_timeCumSw[timer] += 1;
-    s_timeCum16ThrP[timer]            += val>>1;	// val/2
+    if(val) s_timer[timer].s_timeCumThr       += 1;
+    if(s_timer[timer].sw_toggled) s_timer[timer].s_timeCumSw += 1;
+    s_timer[timer].s_timeCum16ThrP            += val>>1;	// val/2
 
-    tv = s_timerVal[timer] = g_model.timer[timer].tmrVal ;
+    tv = s_timer[timer].s_timerVal = g_model.timer[timer].tmrVal ;
     if(tma == TMRMODE_NONE)
 		{
-			s_timerState[timer] = TMR_OFF;
+			s_timer[timer].s_timerState = TMR_OFF;
 		}
     else
 		{
 			if ( tma==TMRMODE_ABS )
 			{
-				if ( tmb == 0 ) s_timerVal[timer] -= s_timeCumAbs ;
-	    	else s_timerVal[timer] -= s_timeCumSw[timer]; //switch
+				if ( tmb == 0 ) s_timer[timer].s_timerVal -= s_timeCumAbs ;
+	    	else s_timer[timer].s_timerVal -= s_timer[timer].s_timeCumSw ; //switch
 			}
-	    else if(tma<TMR_VAROFS) s_timerVal[timer] -= (tma&1) ? s_timeCum16ThrP[timer]/16 : s_timeCumThr[timer];// stick% : stick
-		  else /*if(tmrMode>=TMR_VAROFS) */ s_timerVal[timer] -= s_timeCum16ThrP[timer]/16 ; // Cx%
+	    else if(tma<TMR_VAROFS-1) s_timer[timer].s_timerVal -= s_timer[timer].s_timeCumThr;	// stick
+		  else s_timer[timer].s_timerVal -= s_timer[timer].s_timeCum16ThrP/16 ; // stick% or Cx%
 		}   
 		 
-    switch(s_timerState[timer])
+    switch(s_timer[timer].s_timerState)
     {
     case TMR_OFF:
-        if(tma != TMRMODE_NONE) s_timerState[timer]=TMR_RUNNING;
+        if(tma != TMRMODE_NONE) s_timer[timer].s_timerState=TMR_RUNNING;
         break;
     case TMR_RUNNING:
-        if(s_timerVal[timer]<=0 && tv) s_timerState[timer]=TMR_BEEPING;
+        if(s_timer[timer].s_timerVal<=0 && tv) s_timer[timer].s_timerState=TMR_BEEPING;
         break;
     case TMR_BEEPING:
-        if(s_timerVal[timer] <= -MAX_ALERT_TIME)   s_timerState[timer]=TMR_STOPPED;
-        if(tv == 0)       s_timerState[timer]=TMR_RUNNING;
+        if(s_timer[timer].s_timerVal <= -MAX_ALERT_TIME)   s_timer[timer].s_timerState=TMR_STOPPED;
+        if(tv == 0)       s_timer[timer].s_timerState=TMR_RUNNING;
         break;
     case TMR_STOPPED:
         break;
     }
-    if( tv==0) s_timerVal[timer] = tv-s_timerVal[timer]; //if counting backwards - display backwards
+    if( tv==0) s_timer[timer].s_timerVal = tv-s_timer[timer].s_timerVal; //if counting backwards - display backwards
 	}
     
 		
 		static int16_t last_tmr;
 
-    if(last_tmr != s_timerVal[0])  //beep only if seconds advance
+    if(last_tmr != s_timer[0].s_timerVal)  //beep only if seconds advance
     {
-    		last_tmr = s_timerVal[0];
-        if(s_timerState[0]==TMR_RUNNING)
+    		last_tmr = s_timer[0].s_timerVal;
+        if(s_timer[0].s_timerState==TMR_RUNNING)
         {
             if(g_eeGeneral.preBeep && g_model.timer[0].tmrVal) // beep when 30, 15, 10, 5,4,3,2,1 seconds remaining
             {
-              	if(s_timerVal[0]==30) {audioDefevent(AU_TIMER_30);}	
-              	if(s_timerVal[0]==20) {audioDefevent(AU_TIMER_20);}		
-                if(s_timerVal[0]==10) {audioDefevent(AU_TIMER_10);}	
-                if(s_timerVal[0]<= 3) {audioDefevent(AU_TIMER_LT3);}	               
+              	if(s_timer[0].s_timerVal==30) {audioDefevent(AU_TIMER_30);}	
+              	if(s_timer[0].s_timerVal==20) {audioDefevent(AU_TIMER_20);}		
+                if(s_timer[0].s_timerVal==10) {audioDefevent(AU_TIMER_10);}	
+                if(s_timer[0].s_timerVal<= 3) {audioDefevent(AU_TIMER_LT3);}	               
 
-                if(g_eeGeneral.flashBeep && (s_timerVal[timer]==30 || s_timerVal[timer]==20 || s_timerVal[timer]==10 || s_timerVal[timer]<=3))
+                if(g_eeGeneral.flashBeep && (s_timer[0].s_timerVal==30 || s_timer[0].s_timerVal==20 || s_timer[0].s_timerVal==10 || s_timer[0].s_timerVal<=3))
                     g_LightOffCounter = FLASH_DURATION;
             }
-            if(g_eeGeneral.minuteBeep && (((g_model.timer[0].tmrVal ?  s_timerVal[0] : g_model.timer[0].tmrVal-s_timerVal[0])%60)==0)) //short beep every minute
+            if(g_eeGeneral.minuteBeep && (((g_model.timer[0].tmrVal ?  s_timer[0].s_timerVal : g_model.timer[0].tmrVal-s_timer[0].s_timerVal)%60)==0)) //short beep every minute
             {
                 audioDefevent(AU_WARNING1);
                 if(g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
             }
         }
-        else if(s_timerState[0]==TMR_BEEPING)
+        else if(s_timer[0].s_timerState==TMR_BEEPING)
         {
             audioDefevent(AU_TIMER_LT3);
             if(g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
@@ -3361,12 +3363,12 @@ void menuProcStatistic(uint8_t event)
     lcd_puts_P(  1*FW, FH*1, PSTR("TME\021TSW"));
     putsTime(    7*FW, FH*1, s_timeCumAbs, 0, 0);
 //    lcd_puts_P( 17*FW, FH*1, PSTR("TSW"));
-    putsTime(   13*FW, FH*1, s_timeCumSw[0],      0, 0);
+    putsTime(   13*FW, FH*1, s_timer[0].s_timeCumSw,      0, 0);
 
     lcd_puts_P(  1*FW, FH*2, PSTR("STK\021ST%"));
-    putsTime(    7*FW, FH*2, s_timeCumThr[0], 0, 0);
+    putsTime(    7*FW, FH*2, s_timer[0].s_timeCumThr, 0, 0);
 //    lcd_puts_P( 17*FW, FH*2, PSTR("ST%"));
-    putsTime(   13*FW, FH*2, s_timeCum16ThrP[0]/16, 0, 0);
+    putsTime(   13*FW, FH*2, s_timer[0].s_timeCum16ThrP/16, 0, 0);
 
     lcd_puts_P( 17*FW, FH*0, PSTR("TOT"));
     putsTime(   13*FW, FH*0, s_timeCumTot, 0, 0);
@@ -3393,15 +3395,15 @@ void menuProcStatistic(uint8_t event)
 
 void resetTimer()
 {
-    s_timerState[0] = TMR_OFF; //is changed to RUNNING dep from mode
+    s_timer[0].s_timerState = TMR_OFF; //is changed to RUNNING dep from mode
     s_timeCumAbs=0;
-    s_timeCumThr[0]=0;
-    s_timeCumSw[0]=0;
-    s_timeCum16ThrP[0]=0;
-    s_timerState[1] = TMR_OFF; //is changed to RUNNING dep from mode
-    s_timeCumThr[1]=0;
-    s_timeCumSw[1]=0;
-    s_timeCum16ThrP[1]=0;
+    s_timer[0].s_timeCumThr=0;
+    s_timer[0].s_timeCumSw=0;
+    s_timer[0].s_timeCum16ThrP=0;
+    s_timer[1].s_timerState = TMR_OFF; //is changed to RUNNING dep from mode
+    s_timer[1].s_timeCumThr=0;
+    s_timer[1].s_timeCumSw=0;
+    s_timer[1].s_timeCum16ThrP=0;
 }
 
 extern int8_t *TrimPtr[4] ;
@@ -3515,8 +3517,8 @@ void menuProc0(uint8_t event)
         killEvents(event);
         break;
     case EVT_KEY_FIRST(KEY_EXIT):
-        if(s_timerState[0]==TMR_BEEPING) {
-            s_timerState[0] = TMR_STOPPED;
+        if(s_timer[0].s_timerState==TMR_BEEPING) {
+            s_timer[0].s_timerState = TMR_STOPPED;
             audioDefevent(AU_MENUS);
         }
 //        else if(view == e_timer2) {
@@ -3559,10 +3561,10 @@ void menuProc0(uint8_t event)
         putsVBat(x+4*FW, 2*FH, att|NO_UNIT);
         lcd_putc(x+4*FW, 3*FH, 'V');
 
-        if(s_timerState[0] != TMR_OFF){
-            uint8_t att = DBLSIZE | (s_timerState[0]==TMR_BEEPING ? BLINK : 0);
-            putsTime(x+14*FW-2, FH*2, s_timerVal[0], att,att);
-            putsTmrMode(x+7*FW-FW/2,FH*3,0, 0 ) ;
+        if(s_timer[0].s_timerState != TMR_OFF){
+            uint8_t att = DBLSIZE | (s_timer[0].s_timerState==TMR_BEEPING ? BLINK : 0);
+            putsTime(x+14*FW-2, FH*2, s_timer[0].s_timerVal, att,att);
+            putsTmrMode(x+7*FW-FW/2,FH*3,0, 0, 2 ) ;
         }
 
         lcd_putsAttIdx(x+4*FW,     2*FH,PSTR("\003ExpExFFneMedCrs"),g_model.trimInc, 0);
@@ -3606,9 +3608,9 @@ void menuProc0(uint8_t event)
         lcd_putsnAtt(0, 0, g_model.name, sizeof(g_model.name), BSS|INVERS);
         uint8_t att = (g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0);
         putsVBat(14*FW,0,att);
-        if(s_timerState[0] != TMR_OFF){
-            att = (s_timerState[0]==TMR_BEEPING ? BLINK : 0);
-            putsTime(18*FW+3, 0, s_timerVal[0], att, att);
+        if(s_timer[0].s_timerState != TMR_OFF){
+            att = (s_timer[0].s_timerState==TMR_BEEPING ? BLINK : 0);
+            putsTime(18*FW+3, 0, s_timer[0].s_timerVal, att, att);
         }
     }
 
@@ -3863,7 +3865,7 @@ void menuProc0(uint8_t event)
     }
     else  // New Timer2 display
     {
-        putsTime(30+5*FW, FH*5, s_timerVal[1], DBLSIZE, DBLSIZE);
+        putsTime(30+5*FW, FH*5, s_timer[1].s_timerVal, DBLSIZE, DBLSIZE);
     }
 }
 
