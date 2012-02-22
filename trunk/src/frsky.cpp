@@ -122,7 +122,9 @@ void frsky_proc_user_byte( uint8_t byte )
 							}
 							if ( Frsky_user_id == 6 )			// Cell Voltage
 							{
-  							uint8_t battnumber = ( FrskyHubData[6] >> 12 ) & 0x000F ;
+								// It appears the cell voltage bytes are in the wrong order
+//  							uint8_t battnumber = ( FrskyHubData[6] >> 12 ) & 0x000F ;
+  							uint8_t battnumber = ( Frsky_user_lobyte >> 4 ) & 0x000F ;
   							if (FrskyBattCells < battnumber+1)
 								{
  							  	if (battnumber+1>=6)
@@ -134,7 +136,7 @@ void frsky_proc_user_byte( uint8_t byte )
   								  FrskyBattCells=battnumber+1;
   								}
   							}
-  							FrskyVolts[battnumber] = FrskyHubData[6] /10 ;
+  							FrskyVolts[battnumber] = ( ( ( Frsky_user_lobyte & 0x0F ) << 8 ) + byte ) / 10 ;
 							}
 						}	
 						Frsky_user_state = 0 ;
