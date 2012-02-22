@@ -2,13 +2,6 @@
  * [WhyER9X Why use er9x]
  * [Licence License and Disclaimer]
  * [Howto Howto Guides]
-    * [SoftwareGuides Software Tutorials]
-      * [OtherGuides Other Guides]
-      * [ExampleMixes Example Mixes]
-    * [Flashing9x Flashing the 9x]
-      * [WhichFirmware Which Firmware?]
-    * [HardwareGuides Hardware Mods]
-    * [HardwareRepair Hardware Repair Guides]
-    * [9xSchematic 9X Main Board Schematic]
+
 
          
