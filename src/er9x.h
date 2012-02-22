@@ -77,7 +77,7 @@
 //
 //PORTC  7      6       5       4       3       2       1       0
 //       -      -       O       O       O       O       O       -
-//       NC     NC    LCD_E   LCD_RNW  LCD_A0  LCD_RES LCD_CS1  NC
+//       FRSKY  FRSKY LCD_E   LCD_RNW  LCD_A0  LCD_RES LCD_CS1  NC
 //
 //PORTD  7      6       5       4       3       2       1       0
 //       i      i       i       i       i       i       i       i
@@ -93,7 +93,7 @@
 //                                      rud    thro   elev   aile
 //PORTG  7      6       5       4       3       2       1       0
 //       -      -       -       O       i               i       i
-//                            SIM_CTL  ID1      HAPTIC      RF_POW RuddDR
+//                            SIM_CTL  ID1    HAPTIC  RF_POW   RuddDR
 
 #define PORTA_LCD_DAT  PORTA
 #define OUT_B_LIGHT   7
