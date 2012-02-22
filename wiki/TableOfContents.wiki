@@ -1,6 +1,3 @@
-<script>
-document.location.href='http://9xforums.com/wiki';
-</script>
  * [About About]
  * [WhyER9X Why use er9x]
  * [Licence License and Disclaimer]
