@@ -597,7 +597,8 @@ void putPcmByte( uint8_t byte )
 
     crc( byte ) ;
 
-    for ( i = 0 ; i < 8 ; i += 1 )
+//    for ( i = 0 ; i < 8 ; i += 1 )
+    for ( i = 7 ; i >= 0 ; i -- ) //msb
     {
         putPcmBit( byte & 0x01 ) ;
         byte >>= 1 ;
