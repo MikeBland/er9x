@@ -10,8 +10,9 @@ description here
 ====================================================================================
 
 ******************************************
-CHANGELOG: 25-02-2012  MPB
+CHANGELOG: 25-02-2012  MPB+ER
 Space saving c.230 bytes flash
+Add confirmation screen to delete mix 
 
 ******************************************
 CHANGELOG: 22-02-2012  MPB
