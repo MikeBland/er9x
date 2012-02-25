@@ -149,6 +149,8 @@
 #define SLAVE_MODE (PING & (1<<INP_G_RF_POW))
 
 extern const prog_uint8_t APM modn12x3[] ;
+extern const prog_char APM Str_OFF[] ;
+extern const prog_char APM Str_ON[] ;
 
 //extern const prog_uint8_t APM chout_ar[] ;
 extern const prog_uint8_t APM bchout_ar[] ;

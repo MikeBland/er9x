@@ -46,6 +46,9 @@ audioQueue  audio;
 
 uint8_t sysFlags = 0;
 
+const prog_char APM Str_OFF[] =  "OFF" ;
+const prog_char APM Str_ON[] = "ON " ;
+
 const prog_char APM modi12x3[]=
 "RUD ELE THR AIL ";
 //"RUD THR ELE AIL "
