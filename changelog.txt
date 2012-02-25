@@ -11,7 +11,7 @@ description here
 
 ******************************************
 CHANGELOG: 25-02-2012  MPB+ER
-Space saving c.230 bytes flash
+Space saving c.230 bytes flash, and another 222 also saved
 Add confirmation screen to delete mix 
 
 ******************************************
