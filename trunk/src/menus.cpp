@@ -1321,6 +1321,32 @@ bool reachMixerCountLimit()
     }
 }
 
+uint8_t mixToDelete;
+
+void menuDeleteMix(uint8_t event)
+//void menuDeleteModel(uint8_t event)
+{
+    lcd_puts_Pleft(1*FH, PSTR("DELETE MIX?"));
+    lcd_puts_P(3*FW,5*FH,PSTR("YES\013NO"));
+    lcd_puts_P(3*FW,6*FH,PSTR("[MENU]  [EXIT]"));
+
+    switch(event){
+    case EVT_ENTRY:
+        audioDefevent(AU_WARNING1);
+        break;
+    case EVT_KEY_FIRST(KEY_MENU):
+        deleteMix(mixToDelete);
+        genMixTab();
+
+        //fallthrough
+    case EVT_KEY_FIRST(KEY_EXIT):
+        killEvents(event);
+        popMenu(true);
+        pushMenu(menuProcMix);
+        break;
+    }
+}
+
 void menuProcMix(uint8_t event)
 {
     SIMPLE_MENU("MIXER", menuTabModel, e_Mix, s_mixMaxSel);
@@ -1361,10 +1387,13 @@ void menuProcMix(uint8_t event)
         break;
     case EVT_KEY_FIRST(KEY_EXIT):
         if(s_moveMode) {
-            deleteMix(s_currMixIdx);
+//            deleteMix(s_currMixIdx);
+//            s_moveMode = false;
+//            genMixTab();
+            mixToDelete = s_currMixIdx;
             s_moveMode = false;
-            genMixTab();
             killEvents(event);
+            pushMenu(menuDeleteMix);
         }
         break;
     case EVT_KEY_LONG(KEY_MENU):
