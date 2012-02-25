@@ -634,7 +634,17 @@ void setupPulsesPXX()
     putPcmByte( g_model.ppmNCH ) ;     // putPcmByte( g_model.rxnum ) ;  //
     putPcmByte( pxxFlag ) ;     // First byte of flags
     putPcmByte( 0 ) ;     // Second byte of flags
-    pxxFlag = 0;          // reset flag after send
+//		if ( pxxFlag == PXX_SEND_RXNUM )
+//		{
+    	pxxFlag = 0 ;          // reset flag after send
+//		}
+//		else if ( pxxFlag )
+//		{
+//    	if ( (pxxFlag -= 2) < 0x10 )          // move flag value on
+//			{
+//    		pxxFlag = 0 ;        // reset flag after all sent
+//			}
+// 		}
     for ( i = 0 ; i < 8 ; i += 2 )		// First 8 channels only
     {																	// Next 8 channels would have 2048 added
         chan = g_chans512[i] *3 / 4 + 2250 ;
@@ -656,7 +666,7 @@ void setupPulsesPXX()
     putPcmByte( chan >> 8 ) ; // Checksum hi
     putPcmHead(  ) ;      // sync byte
     putPcmFlush() ;
-    OCR1C += 40000 ;		// 20mS on
+    OCR1C += 40000 ;		// 10mS on
     PORTB |= (1<<OUT_B_PPM);
 }
 

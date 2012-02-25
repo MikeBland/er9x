@@ -2031,6 +2031,20 @@ if(t_pgOfs<subN) {
     if((y+=FH)>7*FH) return;
 }subN++;
 
+//if(t_pgOfs<subN) {
+//	if (g_model.protocol == PROTO_PXX)
+//	{
+//    lcd_putsAtt(0,    y, PSTR("Send Failsafe  [MENU]"), (sub==subN ? INVERS:0));
+//      if(sub==subN && event==EVT_KEY_LONG(KEY_MENU))
+//      {
+//          //send failsafe codes
+//          pxxFlag = PXX_SEND_FAILSAFE ;
+//          audioDefevent(AU_WARNING1);
+//      }
+//	}
+//    if((y+=FH)>7*FH) return;
+//}subN++;
+
 if(t_pgOfs<subN) {
     lcd_puts_Pleft(    y, PSTR("Shift Sel"));
     lcd_putsnAtt(  10*FW, y, PSTR("POSNEG")+3*g_model.pulsePol,3,(sub==subN ? INVERS:0));

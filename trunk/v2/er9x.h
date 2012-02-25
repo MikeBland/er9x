@@ -366,7 +366,7 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define DSM2_DSMX        2
 
 #define PXX_SEND_RXNUM     0x01
-#define PXX_SEND_FAILSAFE  0x02
+#define PXX_SEND_FAILSAFE  0x1E
 
 extern uint8_t pxxFlag;
 extern uint8_t stickMoved;

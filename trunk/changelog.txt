@@ -10,6 +10,10 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 25-02-2012  MPB
+Space saving c.230 bytes flash
+
+******************************************
 CHANGELOG: 22-02-2012  MPB
 PXX - fix infinite loop in putPcmByte
 + V2 changes
