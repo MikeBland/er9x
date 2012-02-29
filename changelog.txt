@@ -5,45 +5,49 @@ above the previous change.
 
 Format is as follows:
 ******************************************
-CHANGELOG: 1-11-2011
+CHANGELOG: 25-APR-2011
 description here
 ====================================================================================
 
 ******************************************
-CHANGELOG: 25-02-2012  MPB+ER
+CHANGELOG: 28-FEB-2012  ER
+Changed "MAX" to "HALF" to clarify this for new comers
+
+******************************************
+CHANGELOG: 25-FEB-2012  MPB+ER
 Space saving c.230 bytes flash, and another 222 also saved
 Add confirmation screen to delete mix 
 
 ******************************************
-CHANGELOG: 22-02-2012  MPB
+CHANGELOG: 22-FEB-2012  MPB
 PXX - fix infinite loop in putPcmByte
 + V2 changes
 
 ******************************************
-CHANGELOG: 22-02-2012  MPB
+CHANGELOG: 22-FEB-2012  MPB
 PXX - change to MSB send first and data scaling + V2 changes
 
 ******************************************
-CHANGELOG: 11-02-2012  ER
+CHANGELOG: 11-FEB-2012  ER
 PXX work - change to not stuff the head and tail bytes.
 
 ******************************************
-CHANGELOG: 07-02-2012  RFT
+CHANGELOG: 07-FEB-2012  RFT
 Audio update to save space. 324 bytes saved
 
 ******************************************
-CHANGELOG: 06-2-2012  MPB
+CHANGELOG: 06-FEB-2012  MPB
 Fix bug in myeeprom.h - frskyVoltThreshold wrong size
 
 ******************************************
-CHANGELOG: 04-2-2012  MPB
+CHANGELOG: 04-FEB-2012  MPB
 Flash and RAM saving
 Add GPS speed display, with max speed
 Add individual cell voltages from FrSky hub 2.0
 Text now allows embedded move to X position characters
 
 ******************************************
-CHANGELOG: 02-02-2012  RFT
+CHANGELOG: 02-FEB-2012  RFT
 Few minor audio updates
 
 ******************************************
