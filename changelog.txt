@@ -11,7 +11,8 @@ description here
 
 ******************************************
 CHANGELOG: 28-FEB-2012  ER
-Changed "MAX" to "HALF" to clarify this for new comers
+Changed "MAX" to "HALF" to clarify this for newcomers
+Fix lockup issue when moving from PXX with rxnum>32 to PPM.
 
 ******************************************
 CHANGELOG: 25-FEB-2012  MPB+ER

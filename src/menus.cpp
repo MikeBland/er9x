@@ -1987,6 +1987,8 @@ if(t_pgOfs<subN) {
     }
 
     if(sub==subN && (s_editMode || p1valdiff))
+    {
+        uint8_t temp = g_model.protocol;
         switch (subSub){
         case 0:
             CHECK_INCDEC_H_MODELVAR(event,g_model.protocol,0,PROT_MAX);
@@ -2002,6 +2004,9 @@ if(t_pgOfs<subN) {
                 CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
             break;
         }
+        if(g_model.protocol != temp) // if change - reset ppmNCH
+            g_model.ppmNCH = 0;
+    }
     if((y+=FH)>7*FH) return;
 }subN++;
 
