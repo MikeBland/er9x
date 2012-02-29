@@ -189,7 +189,7 @@ typedef struct t_FrSkyData {
 
 typedef struct t_ModelData {
     char      name[MODEL_NAME_LEN];             // 10 must be first for eeLoadModelName
-    uint8_t   mdVers;
+    uint8_t   reserved_spare;  //used to be MDVERS - now depreciated
     int8_t    tmrMode;              // timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
     uint8_t   tmrDir:1;    //0=>Count Down, 1=>Count Up
     uint8_t   traineron:1;  // 0 disable trainer, 1 allow trainer

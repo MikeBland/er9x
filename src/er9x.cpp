@@ -545,7 +545,7 @@ void checkSwitches()
     if(g_eeGeneral.disableSwitchWarning) return; // if warning is on
 
     // first - display warning
-    alertMessages( PSTR("Switches Warning"), PSTR("Please Reset Switches") ) ;
+    alertMessages( PSTR("Switch Warning"), PSTR("Please Reset Switches") ) ;
 //    for(uint8_t i=0;i<8;i++) lcd_putsnAtt((5+i)*FW, 3*FH, PSTR("TRE012AG")+i,1,  ((g_eeGeneral.switchWarningStates & (1<<i)) ? INVERS : 0 ) );
 //    refreshDiplay();
 
