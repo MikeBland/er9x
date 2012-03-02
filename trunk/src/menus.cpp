@@ -1877,23 +1877,25 @@ if(t_pgOfs<subN) {
     putsTime(12*FW-1, y, g_model.tmrVal,(sub==subN && subSub==0 ? (s_editMode ? BLINK : INVERS):0),(sub==subN && subSub==1 ? (s_editMode ? BLINK : INVERS):0) );
 
     if(sub==subN && (s_editMode || p1valdiff))
+		{
+      int8_t sec=g_model.tmrVal%60;
         switch (subSub) {
         case 0:
         {
             int8_t min=g_model.tmrVal/60;
             CHECK_INCDEC_H_MODELVAR( event,min ,0,59);
-            g_model.tmrVal = g_model.tmrVal%60 + min*60;
+            g_model.tmrVal = sec + min*60;
             break;
         }
         case 1:
         {
-            int8_t sec=g_model.tmrVal%60;
             sec -= checkIncDec_hm( event,sec+2 ,1,62)-2;
             g_model.tmrVal -= sec ;
             if((int16_t)g_model.tmrVal < 0) g_model.tmrVal=0;
             break;
         }
         }
+		}
     if((y+=FH)>7*FH) return;
 }subN++;
 
@@ -3341,7 +3343,8 @@ int16_t AltOffset = 0 ;
 void menuProc0(uint8_t event)
 {
     static uint8_t trimSwLock;
-    uint8_t view = g_eeGeneral.view & 0xf;
+    uint8_t view = g_eeGeneral.view & 0x0f ;
+    uint8_t tview = g_eeGeneral.view & 0x30 ;
 
     switch(event)
     {
@@ -3355,11 +3358,11 @@ void menuProc0(uint8_t event)
         break;
     case  EVT_KEY_LONG(KEY_MENU):// go to last menu
 #ifdef FRSKY
-        if( (view == e_telemetry) && ((g_eeGeneral.view & 0x30) == 0x20 ) )
+        if( (view == e_telemetry) && ((tview & 0x30) == 0x20 ) )
         {
             AltOffset = -FrskyHubData[16] ;
         }
-        else if( (view == e_telemetry) && ((g_eeGeneral.view & 0x30) == 0 ) )
+        else if( (view == e_telemetry) && ((tview & 0x30) == 0 ) )
         {
             if ( g_model.frsky.channels[0].type == 3 )		// Current (A)
 						{
@@ -3388,7 +3391,7 @@ void menuProc0(uint8_t event)
 #ifdef FRSKY
     case EVT_KEY_BREAK(KEY_RIGHT):
         if(view == e_telemetry) {
-            g_eeGeneral.view = (g_eeGeneral.view + 0x10) & 0x3F;
+            g_eeGeneral.view = e_telemetry | ( ( tview + 0x10) & 0x30 ) ;
             //            STORE_GENERALVARS;     //eeWriteGeneral();
             //            eeDirty(EE_GENERAL);
             audioDefevent(AU_MENUS);
@@ -3396,7 +3399,7 @@ void menuProc0(uint8_t event)
         break;
     case EVT_KEY_BREAK(KEY_LEFT):
         if(view == e_telemetry) {
-            g_eeGeneral.view = (g_eeGeneral.view - 0x10) & 0x3F;
+            g_eeGeneral.view = e_telemetry | ( ( tview - 0x10) & 0x30 );
             //            STORE_GENERALVARS;     //eeWriteGeneral();
             //            eeDirty(EE_GENERAL);
             audioDefevent(AU_MENUS);
@@ -3409,17 +3412,19 @@ void menuProc0(uint8_t event)
         killEvents(event);
         break;
     case EVT_KEY_BREAK(KEY_UP):
-        g_eeGeneral.view = view+1;
-        if(g_eeGeneral.view>=MAX_VIEWS) g_eeGeneral.view=0;
+				view += 1 ;
+        if( view>=MAX_VIEWS) view = 0 ;
+        g_eeGeneral.view = view | tview ;
         STORE_GENERALVARS;     //eeWriteGeneral();
         //        eeDirty(EE_GENERAL);
         audioDefevent(AU_KEYPAD_UP);
         break;
     case EVT_KEY_BREAK(KEY_DOWN):
         if(view>0)
-            g_eeGeneral.view = view - 1;
+            view = view - 1;
         else
-            g_eeGeneral.view = MAX_VIEWS-1;
+            view = MAX_VIEWS-1;
+        g_eeGeneral.view = view | tview ;
         STORE_GENERALVARS;     //eeWriteGeneral();
         //        eeDirty(EE_GENERAL);
         audioDefevent(AU_KEYPAD_DOWN);
@@ -3439,7 +3444,9 @@ void menuProc0(uint8_t event)
         NMEA_EnableRXD(); // enable NMEA-Telemetry reception
         chainMenu(menuProcNMEA);
 #else
-        chainMenu(menuProcStatistic2);
+//        chainMenu(menuProcStatistic2);
+				g_eeGeneral.view = e_telemetry | tview ;
+        audioDefevent(AU_MENUS);
 #endif
         killEvents(event);
         break;
@@ -3479,7 +3486,7 @@ void menuProc0(uint8_t event)
     if(getSwitch(g_model.trimSw,0) && !trimSwLock) setStickCenter();
     trimSwLock = getSwitch(g_model.trimSw,0);
 
-    if (g_eeGeneral.view < 0x10) {
+    if (view != e_telemetry) {
         uint8_t x=FW*2;
         uint8_t att = (g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0) | DBLSIZE;
         for(uint8_t i=0;i<sizeof(g_model.name);i++)
@@ -3582,7 +3589,8 @@ void menuProc0(uint8_t event)
         static uint8_t staticTelemetry[4];
 //        static uint8_t staticRSSI[2];
         static enum AlarmLevel alarmRaised[2];
-        if (frskyStreaming) {
+        if ( (frskyStreaming) || ( tview  == 0x30 ) )
+				{
             uint8_t y0, x0, blink;
             if (++displayCount > 49) {
                 displayCount = 0;
@@ -3595,7 +3603,7 @@ void menuProc0(uint8_t event)
 										}
                 }
             }
-            if ((g_eeGeneral.view & 0x30) == 0x10 )
+            if ( tview == 0x10 )
             {
 //                if (g_model.frsky.channels[0].ratio || g_model.frsky.channels[1].ratio) {
                     x0 = 0;
@@ -3622,9 +3630,10 @@ void menuProc0(uint8_t event)
 								// Fuel Gauge
                 if (frskyUsrStreaming)
 								{
-                	lcd_puts_Pleft( 1*FH, PSTR("Fuel=")) ;
+                	lcd_puts_Pleft( 1*FH, PSTR("Fuel")) ;
 									x0 = FrskyHubData[4] ;		// Fuel gauge value
-                	lcd_outdezAtt(5 * FW, 1*FH, x0, LEFT) ;
+//                	lcd_outdezAtt(5 * FW, 1*FH, x0, LEFT) ;
+									lcd_hbar( 25, 9, 102, 6, x0 ) ;
 								}
                 lcd_puts_Pleft( 6*FH, Str_RXeq);
                 lcd_outdezAtt(3 * FW - 2, 5*FH, staticTelemetry[2], DBLSIZE|LEFT);
@@ -3635,7 +3644,7 @@ void menuProc0(uint8_t event)
                 lcd_outdezAtt(15 * FW - 2, 7*FH, frskyTelemetry[3].min, 0);
                 lcd_outdezAtt(17 * FW - 2, 7*FH, frskyTelemetry[3].max, LEFT);
             }
-            else if ((g_eeGeneral.view & 0x30) == 0x20 )
+            else if ( tview == 0x20 )
             {
                 if (frskyUsrStreaming)
                 {
@@ -3707,23 +3716,30 @@ void menuProc0(uint8_t event)
                 lcd_puts_P(8 * FW, 7*FH, Str_TXeq );
                 lcd_outdezAtt(11 * FW, 7*FH, staticTelemetry[3], LEFT);
             }
-            else if ((g_eeGeneral.view & 0x30) == 0x30 )
+            else if ( tview == 0x30 )
             {
+							uint8_t blink = BLINK ;
+              if (frskyUsrStreaming)
+							{
+								blink = 0 ;
+							}
+							
                 lcd_puts_Pleft( 2*FH, PSTR("Lat=")) ;
-                lcd_outdezNAtt(8*FW, 2*FH, FrskyHubData[19], LEADING0, -5);
+                lcd_outdezNAtt(8*FW, 2*FH, FrskyHubData[19], LEADING0 | blink, -5);
                 lcd_putc(8*FW, 2*FH, '.') ;
-                lcd_outdezNAtt(12*FW, 2*FH, FrskyHubData[27], LEADING0, -4);
+                lcd_outdezNAtt(12*FW, 2*FH, FrskyHubData[27], LEADING0 | blink, -4);
                 lcd_puts_Pleft( 3*FH, PSTR("Lon=")) ;
-                lcd_outdezNAtt(8*FW, 3*FH, FrskyHubData[18], LEADING0, -5);
+                lcd_outdezNAtt(8*FW, 3*FH, FrskyHubData[18], LEADING0 | blink, -5);
                 lcd_putc(8*FW, 3*FH, '.') ;
-                lcd_outdezNAtt(12*FW, 3*FH, FrskyHubData[26], LEADING0, -4);
+                lcd_outdezNAtt(12*FW, 3*FH, FrskyHubData[26], LEADING0 | blink, -4);
                 lcd_puts_Pleft( 4*FH, Str_ALTeq ) ;
                 lcd_outdezAtt(8 * FW, 4*FH, FrskyHubData[1], 0 ) ;
                 
 								lcd_puts_Pleft( 5*FH, PSTR("Spd=\011kts Max=")) ;
-                lcd_outdezAtt(8*FW, 5*FH, FrskyHubData[17], 0);
-//                lcd_puts_P(9*FW-2, 5*FH, PSTR("kts Max="));
                 lcd_outdezAtt(20*FW, 5*FH, MaxGpsSpeed, 0);
+              if (frskyUsrStreaming)
+							{
+                lcd_outdezAtt(8*FW, 5*FH, FrskyHubData[17], 0);
 
                 
 								lcd_puts_Pleft( 6*FH, PSTR("V1=\007V2=\016V3=")) ;
@@ -3746,13 +3762,14 @@ void menuProc0(uint8_t event)
 										}
   									lcd_outdezNAtt( x, y, FrskyVolts[k] * 2 , blink | PREC2, 4 ) ;
 										x += 7*FW ;
-										if ( k == 5 )		// Max 6 cels displayable
+										if ( k == 5 )		// Max 6 cells displayable
 										{
 											break ;											
 										}
 	      					}
 								}
 								//              lcd_putsAtt(6, 2*FH, PSTR("To Be Done"), DBLSIZE);
+							}
             }
             else
             {
@@ -3770,10 +3787,12 @@ void menuProc0(uint8_t event)
                 }
                 y0+=FH;
                 //lcd_puts_P(2*FW-3, y0, PSTR("RSSI:"));
-                lcd_puts_P(4*FW-3, y0, Str_RXeq );
-                lcd_outdezAtt(7*FW-3, y0, staticTelemetry[2], LEFT);
-                lcd_puts_P(13*FW-3, y0, Str_TXeq );
-                lcd_outdezAtt(16*FW-3, y0, staticTelemetry[3], LEFT);
+                lcd_putsn_P( 0, 7*FH, Str_RXeq, 2 );
+								lcd_hbar( 14, 57, 49, 6, staticTelemetry[2] ) ;
+//								lcd_outdezAtt(7*FW-3, y0, staticTelemetry[2], LEFT);
+                lcd_putsn_P( 116, 7*FH, Str_TXeq, 2 );
+								lcd_hbar( 65, 57, 49, 6, staticTelemetry[3] ) ;
+//                lcd_outdezAtt(16*FW-3, y0, staticTelemetry[3], LEFT);
             }
         }
         else {

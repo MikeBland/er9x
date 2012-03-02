@@ -10,6 +10,11 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 02-MAR-2012  MPB
+Fuel bar display, Telemetry screen access easier
++ V2 changes
+
+******************************************
 CHANGELOG: 28-FEB-2012  ER
 Changed "MAX" to "HALF" to clarify this for newcomers
 Fix lockup issue when moving from PXX with rxnum>32 to PPM.
