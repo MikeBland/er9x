@@ -77,6 +77,11 @@ LimitData *limitaddress( uint8_t idx )
     return &g_model.limitData[idx];
 }
 
+TimerMode *timeraddress( uint8_t timer)
+{
+	return &g_model.timer[timer] ;
+}
+
 void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
 {
     if ( tme<0 )
@@ -563,7 +568,7 @@ void checkSwitches()
     if(g_eeGeneral.disableSwitchWarning) return; // if warning is on
 
     // first - display warning
-    alertMessages( PSTR("Switches Warning"), PSTR("Please Reset Switches") ) ;
+    alertMessages( PSTR("Switch Warning"), PSTR("Please Reset Switches") ) ;
 //    for(uint8_t i=0;i<8;i++) lcd_putsnAtt((5+i)*FW, 3*FH, PSTR("TRE012AG")+i,1,  ((g_eeGeneral.switchWarningStates & (1<<i)) ? INVERS : 0 ) );
 //    refreshDiplay();
 

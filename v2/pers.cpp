@@ -81,7 +81,7 @@ void modelDefault(uint8_t id)
   strncpy_P(g_model.name,PSTR("MODEL     "), 10);
   g_model.name[5]='0'+(id+1)/10;
   g_model.name[6]='0'+(id+1)%10;
-  g_model.mdVers = MDVERS;
+//  g_model.mdVers = MDVERS;
 
   applyTemplate(0); //default 4 channel template
 }
@@ -132,7 +132,7 @@ void eeLoadModel(uint8_t id)
             g_model.name[i] = idx2char(idx);
         }
 
-        g_model.mdVers = MDVERS; //update mdvers
+//        g_model.mdVers = MDVERS; //update mdvers
 
 //        resetTimer2();
 

@@ -27,7 +27,6 @@ const prog_char APM Str_YelOrgRed[] = "\003---YelOrgRed" ;
 const prog_char APM Str_A_eq[] =  "A =" ;
 
 
-
 #define GET_DR_STATE(x) (!getSwitch(g_model.expoData[x].drSw1,0) ?   \
     DR_HIGH :                                  \
     !getSwitch(g_model.expoData[x].drSw2,0)?   \
@@ -101,6 +100,7 @@ extern int16_t p1valdiff;
 
 extern MixData *mixaddress( uint8_t idx ) ;
 extern LimitData *limitaddress( uint8_t idx ) ;
+extern t_TimerMode *timeraddress( uint8_t timer) ;
 
 #include "sticks.lbm"
 typedef PROGMEM void (*MenuFuncP_PROGMEM)(uint8_t event);
@@ -1800,7 +1800,7 @@ void menuDeleteDupModel(uint8_t event)
 
 void menuProcModel(uint8_t event)
 {
-    MENU("SETUP", menuTabModel, e_Model, 19, {0,sizeof(g_model.name)-1,1,0,0,1,0,0,0,0,0,0,6,2,0/*repeated...*/});
+    MENU("SETUP", menuTabModel, e_Model, 21, {0,sizeof(g_model.name)-1,1,0,0,1,0,0,0,0,0,0,0,0,6,2,0/*repeated...*/});
 
 int8_t  sub    = mstate2.m_posVert;
 uint8_t subSub = mstate2.m_posHorz;
@@ -1848,28 +1848,35 @@ if(t_pgOfs<subN) {
 
 for ( uint8_t timer = 0 ; timer < 2 ; timer += 1 )
 {
+	t_TimerMode *ptm ;
+
+	ptm = timeraddress( timer ) ;
+	
   if(t_pgOfs<subN) {
     lcd_puts_Pleft(    y, PSTR("Timer"));
-    putsTime(12*FW-1, y, g_model.timer[timer].tmrVal,(sub==subN && subSub==0 ? (s_editMode ? BLINK : INVERS):0),(sub==subN && subSub==1 ? (s_editMode ? BLINK : INVERS):0) );
+    putsTime(12*FW-1, y, ptm->tmrVal,(sub==subN && subSub==0 ? (s_editMode ? BLINK : INVERS):0),(sub==subN && subSub==1 ? (s_editMode ? BLINK : INVERS):0) );
 
     if(sub==subN && (s_editMode || p1valdiff))
-        switch (subSub) {
+		{
+      int8_t sec=ptm->tmrVal%60;
+      switch (subSub)
+			{
         case 0:
         {
-            int8_t min=g_model.timer[timer].tmrVal/60;
+            int8_t min=ptm->tmrVal/60;
             CHECK_INCDEC_H_MODELVAR( event,min ,0,59);
-            g_model.timer[timer].tmrVal = g_model.timer[timer].tmrVal%60 + min*60;
+            ptm->tmrVal = sec + min*60;
             break;
         }
         case 1:
         {
-            int8_t sec=g_model.timer[timer].tmrVal%60;
             sec -= checkIncDec_hm( event,sec+2 ,1,62)-2;
-            g_model.timer[timer].tmrVal -= sec ;
-            if((int16_t)g_model.timer[timer].tmrVal < 0) g_model.timer[timer].tmrVal=0;
+            ptm->tmrVal -= sec ;
+            if((int16_t)ptm->tmrVal < 0) ptm->tmrVal=0;
             break;
         }
-        }
+      }
+		}
     if((y+=FH)>7*FH) return;
   }subN++;
 
@@ -1879,7 +1886,7 @@ for ( uint8_t timer = 0 ; timer < 2 ; timer += 1 )
     putsTmrMode(10*FW,y,attr, timer, 1 ) ;
 
     if(sub==subN)
-        CHECK_INCDEC_H_MODELVAR( event,g_model.timer[timer].tmrModeA ,0,(1+2+16));
+        CHECK_INCDEC_H_MODELVAR( event,ptm->tmrModeA ,0,(1+2+16));
     if((y+=FH)>7*FH) return;
   }subN++;
 
@@ -1887,25 +1894,17 @@ for ( uint8_t timer = 0 ; timer < 2 ; timer += 1 )
     lcd_puts_Pleft(    y, PSTR("TriggerB"));
     uint8_t attr = (sub==subN ?  INVERS : 0);
     putsTmrMode(10*FW,y,attr, timer, 2 ) ;
-//    int8_t tm = g_model.timer[timer].tmrModeB;
-//    if(abs(tm)>=(MAX_DRSWITCH))	 //momentary on-off
-//		{
-//  	  lcd_putcAtt(10*FW+3*FW,  y,'m',attr);
-//			if ( tm > 0 )
-//			{
-//				tm -= MAX_DRSWITCH - 1 ;
-//			}
-//			if ( tm < 0 )
-//			{
-//				tm += MAX_DRSWITCH - 1;
-//			}
-//		}			 
-//   	putsDrSwitches( 10*FW-1*FW, y, tm, attr );
 
     if(sub==subN)
-        CHECK_INCDEC_H_MODELVAR( event,g_model.timer[timer].tmrModeB ,(1-MAX_DRSWITCH),(-2+2*MAX_DRSWITCH));
+        CHECK_INCDEC_H_MODELVAR( event,ptm->tmrModeB ,(1-MAX_DRSWITCH),(-2+2*MAX_DRSWITCH));
     if((y+=FH)>7*FH) return;
   }subN++;
+	
+	if(t_pgOfs<subN) {
+    lcd_putsAttIdx(  10*FW, y, PSTR("\012Count DownCount Up  "),ptm->tmrDir,(sub==subN ? INVERS:0));
+    if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,ptm->tmrDir,0,1);
+    if((y+=FH)>7*FH) return;
+	}subN++;
 }
 
 if(t_pgOfs<subN) {
@@ -1981,6 +1980,8 @@ if(t_pgOfs<subN) {
     }
 
     if(sub==subN && (s_editMode || p1valdiff))
+    {
+        uint8_t temp = g_model.protocol;
         switch (subSub){
         case 0:
             CHECK_INCDEC_H_MODELVAR(event,g_model.protocol,0,PROT_MAX);
@@ -1996,6 +1997,9 @@ if(t_pgOfs<subN) {
                 CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
             break;
         }
+        if(g_model.protocol != temp) // if change - reset ppmNCH
+            g_model.ppmNCH = 0;
+    }
     if((y+=FH)>7*FH) return;
 }subN++;
 
@@ -3089,7 +3093,7 @@ void timer(uint16_t throttle_val)
 	int8_t tma ;
   int8_t tmb ;
   uint16_t tv ;
-  
+
   s_cnt++;			// Numver of times val added in
 	for( timer = 0 ; timer < 2 ; timer += 1 )
 	{
@@ -3100,8 +3104,10 @@ void timer(uint16_t throttle_val)
 		val = throttle_val ;
    	if(tma>=TMR_VAROFS) // Cxx%
 		{
- 	    val = ( ex_chans[tma-TMR_VAROFS] + RESX ) / (RESX/16) ;
+ 	    val = ex_chans[tma-TMR_VAROFS] ;
 		}		
+
+		val = ( val + RESX ) / (RESX/16) ;
 
 		if ( tma != TMRMODE_NONE )		// Timer is not off
 		{ // We have a triggerA so timer is running 
@@ -3190,7 +3196,7 @@ void timer(uint16_t throttle_val)
     case TMR_STOPPED:
         break;
     }
-    if( tv==0) s_timer[timer].s_timerVal = tv-s_timer[timer].s_timerVal; //if counting backwards - display backwards
+    if( g_model.timer[timer].tmrDir) s_timer[timer].s_timerVal = tv-s_timer[timer].s_timerVal; //if counting backwards - display backwards
 	}
     
 		
@@ -3211,7 +3217,7 @@ void timer(uint16_t throttle_val)
                 if(g_eeGeneral.flashBeep && (s_timer[0].s_timerVal==30 || s_timer[0].s_timerVal==20 || s_timer[0].s_timerVal==10 || s_timer[0].s_timerVal<=3))
                     g_LightOffCounter = FLASH_DURATION;
             }
-            if(g_eeGeneral.minuteBeep && (((g_model.timer[0].tmrVal ?  s_timer[0].s_timerVal : g_model.timer[0].tmrVal-s_timer[0].s_timerVal)%60)==0)) //short beep every minute
+            if(g_eeGeneral.minuteBeep && (((g_model.timer[0].tmrDir ? g_model.timer[0].tmrVal-s_timer[0].s_timerVal : s_timer[0].s_timerVal)%60)==0)) //short beep every minute
             {
                 audioDefevent(AU_WARNING1);
                 if(g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
