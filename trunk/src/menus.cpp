@@ -3443,10 +3443,11 @@ void menuProc0(uint8_t event)
 #elif defined(NMEA)
         NMEA_EnableRXD(); // enable NMEA-Telemetry reception
         chainMenu(menuProcNMEA);
-#else
-//        chainMenu(menuProcStatistic2);
+#elif defined(FRSKY)
 				g_eeGeneral.view = e_telemetry | tview ;
         audioDefevent(AU_MENUS);
+#else
+        chainMenu(menuProcStatistic2);
 #endif
         killEvents(event);
         break;
@@ -3486,7 +3487,11 @@ void menuProc0(uint8_t event)
     if(getSwitch(g_model.trimSw,0) && !trimSwLock) setStickCenter();
     trimSwLock = getSwitch(g_model.trimSw,0);
 
+#ifdef FRSKY
     if (view != e_telemetry) {
+#else
+		if ( tview == 0 ) {
+#endif
         uint8_t x=FW*2;
         uint8_t att = (g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0) | DBLSIZE;
         for(uint8_t i=0;i<sizeof(g_model.name);i++)

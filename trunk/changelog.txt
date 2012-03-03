@@ -10,6 +10,10 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 03-MAR-2012  MPB
+Fix compile error when compiling non-FRSKY version
+
+******************************************
 CHANGELOG: 02-MAR-2012  MPB
 Fuel bar display, Telemetry screen access easier
 + V2 changes
