@@ -80,7 +80,7 @@ enum MainViews {
     e_timer2,
 #ifdef FRSKY
     e_telemetry,
-    e_telemetry2,
+//    e_telemetry2,
 #endif
     MAX_VIEWS
 };
@@ -721,7 +721,7 @@ b = g_model.FrSkyUsrProto ;
 lcd_putsAttIdx(  10*FW, FH, PSTR("\005FrHubWSHhi"),b,(sub==subN && subSub==0 ? INVERS:0));
 if(sub==subN && subSub==0 && s_editMode) { CHECK_INCDEC_H_MODELVAR(event,b,0,1); g_model.FrSkyUsrProto = b ; }
 b = g_model.FrSkyImperial ;
-lcd_putsAttIdx(  16*FW, FH, PSTR("MetImp"),b,(sub==subN && subSub==1 ? INVERS:0));
+lcd_putsAttIdx(  16*FW, FH, PSTR("\003MetImp"),b,(sub==subN && subSub==1 ? INVERS:0));
 if(sub==subN && subSub==1 && s_editMode) { CHECK_INCDEC_H_MODELVAR(event,b,0,1); g_model.FrSkyImperial = b ; }
 }
 subN++;
@@ -1108,7 +1108,7 @@ void menuProcMixOne(uint8_t event)
         case 3:
     				b = md2->enableFmTrim ;
             lcd_puts_P(  2*FW,y,PSTR("FlModetrim"));
-            lcd_putsAtt(FW*14,y, b ? Str_OFF : Str_ON,attr);  //default is 0=ON
+            lcd_putsAtt(FW*14,y, b ? Str_ON : Str_OFF,attr);  //default is 0=OF
             //            lcd_putsnAtt( x, y, PSTR("OFFON ")+3*value,3,mode ? INVERS:0) ;
             //            menu_lcd_onoff( FW*14, y, md2->enableFmTrim, sub==i ) ;
             if(attr) { CHECK_INCDEC_H_MODELVAR( event, b, 0,1); md2->enableFmTrim = b ; }
@@ -3741,7 +3741,7 @@ void menuProc0(uint8_t event)
                 lcd_outdezAtt(8 * FW, 4*FH, FrskyHubData[1], 0 ) ;
                 
 								lcd_puts_Pleft( 5*FH, PSTR("Spd=\011kts Max=")) ;
-                lcd_outdezAtt(20*FW, 5*FH, MaxGpsSpeed, 0);
+                lcd_outdezAtt(20*FW, 5*FH, MaxGpsSpeed, blink );
               if (frskyUsrStreaming)
 							{
                 lcd_outdezAtt(8*FW, 5*FH, FrskyHubData[17], 0);
