@@ -688,6 +688,17 @@ if(k==NUM_CHNOUT){
 }
 }
 
+#define PARAM_OFS   17*FW
+
+uint8_t onoffMenuItem( uint8_t value, uint8_t y, const prog_char *s, uint8_t condition, uint8_t event )
+{
+    lcd_puts_Pleft(y, s);
+    menu_lcd_onoff( PARAM_OFS, y, value, condition ) ;
+    if(condition) CHECK_INCDEC_H_GENVAR(event, value, 0, 1);
+    return value ;
+}
+
+
 #ifdef FRSKY
 void menuProcTelemetry(uint8_t event)
 {
@@ -776,16 +787,6 @@ for (int i=0; i<2; i++) {
         subN++; y+=FH;
     }
 }
-}
-
-#define PARAM_OFS   17*FW
-
-uint8_t onoffMenuItem( uint8_t value, uint8_t y, const prog_char *s, uint8_t condition, uint8_t event )
-{
-    lcd_puts_Pleft(y, s);
-    menu_lcd_onoff( PARAM_OFS, y, value, condition ) ;
-    if(condition) CHECK_INCDEC_H_GENVAR(event, value, 0, 1);
-    return value ;
 }
 
 
