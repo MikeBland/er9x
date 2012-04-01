@@ -637,7 +637,9 @@ for(uint8_t i=0; i<7; i++){
     if((g_chans512[k] - v) < -50) swVal[k] = (false==ld->revert);
     putsChn(0,y,k+1,0);
     lcd_putcAtt(12*FW+FW/2, y, (swVal[k] ? 127 : 126),0); //'<' : '>'
-    for(uint8_t j=0; j<4;j++)
+    
+    int8_t limit = (g_model.extendedLimits ? 125 : 100);
+		for(uint8_t j=0; j<4;j++)
 		{
         uint8_t attr = ((sub==k && subSub==j) ? (s_editMode ? BLINK : INVERS) : 0);
 				uint8_t active = (attr && (s_editMode || p1valdiff)) ;
@@ -653,10 +655,7 @@ for(uint8_t i=0; i<7; i++){
             lcd_outdezAtt(  12*FW, y, (int8_t)(ld->min-100),   attr);
             if(active) {
                 ld->min -=  100;
-                if(g_model.extendedLimits)
-                    CHECK_INCDEC_H_MODELVAR( event, ld->min, -125,125);
-                else
-                    CHECK_INCDEC_H_MODELVAR( event, ld->min, -100,100);
+                CHECK_INCDEC_H_MODELVAR( event, ld->min, -limit,limit);
                 ld->min +=  100;
             }
             break;
@@ -664,10 +663,7 @@ for(uint8_t i=0; i<7; i++){
             lcd_outdezAtt( 17*FW, y, (int8_t)(ld->max+100),    attr);
             if(active) {
                 ld->max +=  100;
-                if(g_model.extendedLimits)
-                    CHECK_INCDEC_H_MODELVAR( event, ld->max, -125,125);
-                else
-                    CHECK_INCDEC_H_MODELVAR( event, ld->max, -100,100);
+                CHECK_INCDEC_H_MODELVAR( event, ld->max, -limit,limit);
                 ld->max -=  100;
             }
             break;
@@ -782,13 +778,24 @@ for (int i=0; i<2; i++) {
 }
 }
 
+#define PARAM_OFS   17*FW
+
+uint8_t onoffMenuItem( uint8_t value, uint8_t y, const prog_char *s, uint8_t condition, uint8_t event )
+{
+    lcd_puts_Pleft(y, s);
+    menu_lcd_onoff( PARAM_OFS, y, value, condition ) ;
+    if(condition) CHECK_INCDEC_H_GENVAR(event, value, 0, 1);
+    return value ;
+}
+
+
 extern uint8_t frskyRSSIlevel[2] ;
 extern uint8_t frskyRSSItype[2] ;
 
 
 void menuProcTelemetry2(uint8_t event)
 {
-    MENU("TELEMETRY2", menuTabModel, e_Telemetry2, 5, {0, 1, 1, 0});
+    MENU("TELEMETRY2", menuTabModel, e_Telemetry2, 6, {0, 1, 1, 0});
 
 uint8_t  sub    = mstate2.m_posVert;
 uint8_t subSub = mstate2.m_posHorz;
@@ -844,6 +851,9 @@ for (uint8_t j=0; j<2; j++)
 	{
     g_model.frSkyVoltThreshold=checkIncDec16(event, g_model.frSkyVoltThreshold, 0, 210, EE_MODEL);
   }
+	subN++;
+	
+  g_model.FrSkyGpsAlt = onoffMenuItem( g_model.FrSkyGpsAlt, 7*FH, PSTR("GpsAltMain"), sub==subN, event ) ;
 }
 
 #endif
@@ -916,7 +926,7 @@ void menuProcTemplates(uint8_t event)  //Issue 73
 
 void menuProcSafetySwitches(uint8_t event)
 {
-    MENU("SAFETY SWITCHES", menuTabModel, e_SafetySwitches, NUM_CHNOUT+1, {0, 2/*repeated*/});
+    MENU("SAFETY SWITCHES", menuTabModel, e_SafetySwitches, NUM_CHNOUT+1, {0, 1/*repeated*/});
 
 uint8_t y = 0;
 uint8_t k = 0;
@@ -933,7 +943,7 @@ for(uint8_t i=0; i<7; i++){
     if(k==NUM_CHNOUT) break;
     SafetySwData *sd = &g_model.safetySw[k];
     putsChn(0,y,k+1,0);
-    for(uint8_t j=0; j<=2;j++){
+    for(uint8_t j=0; j<2;j++){
         uint8_t attr = ((sub==k && subSub==j) ? (s_editMode ? BLINK : INVERS) : 0);
 				uint8_t active = (attr && (s_editMode || p1valdiff)) ;
         if (j == 0)
@@ -1108,7 +1118,7 @@ void menuProcMixOne(uint8_t event)
         case 3:
     				b = md2->enableFmTrim ;
             lcd_puts_P(  2*FW,y,PSTR("FlModetrim"));
-            lcd_putsAtt(FW*14,y, b ? Str_ON : Str_OFF,attr);  //default is 0=OF
+            lcd_putsAtt(FW*14,y, b ? Str_ON : Str_OFF,attr);  //default is 0=OFF
             //            lcd_putsnAtt( x, y, PSTR("OFFON ")+3*value,3,mode ? INVERS:0) ;
             //            menu_lcd_onoff( FW*14, y, md2->enableFmTrim, sub==i ) ;
             if(attr) { CHECK_INCDEC_H_MODELVAR( event, b, 0,1); md2->enableFmTrim = b ; }
@@ -1966,7 +1976,7 @@ if(t_pgOfs<subN) {
 if(t_pgOfs<subN) {
     lcd_puts_Pleft(    y, PSTR("Proto"));//sub==2 ? INVERS:0);
     lcd_putsnAtt(  6*FW, y, PSTR(PROT_STR)+PROT_STR_LEN*g_model.protocol,PROT_STR_LEN, (sub==subN && subSub==0 ? (s_editMode ? BLINK : INVERS):0));
-    if( ( g_model.protocol == PROTO_PPM ) || (g_model.protocol == PROTO_PPM16) )
+    if( ( g_model.protocol == PROTO_PPM ) || (g_model.protocol == PROTO_PPM16) || (g_model.protocol == PROTO_PPMSIM) )
 		{
 			uint8_t x ;
 			if( g_model.protocol == PROTO_PPM )
@@ -1990,19 +2000,24 @@ if(t_pgOfs<subN) {
 
     if(sub==subN && (s_editMode || p1valdiff))
     {
+			  uint8_t prot_max = PROT_MAX ;
         uint8_t temp = g_model.protocol;
+				if ( g_eeGeneral.enablePpmsim == 0 )
+				{
+					prot_max -= 1 ;
+				}
         switch (subSub){
         case 0:
-            CHECK_INCDEC_H_MODELVAR(event,g_model.protocol,0,PROT_MAX);
+            CHECK_INCDEC_H_MODELVAR(event,g_model.protocol,0, prot_max ) ;
             break;
         case 1:
-            if ((g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16))
+            if ((g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16)|| (g_model.protocol == PROTO_PPMSIM) )
                 CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,-2,4);
             else if (g_model.protocol == PROTO_PXX)
                 CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,0,124);
             break;
         case 2:
-            if ((g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16))
+            if ((g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16) || (g_model.protocol == PROTO_PPMSIM) )
                 CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
             break;
         }
@@ -2013,7 +2028,7 @@ if(t_pgOfs<subN) {
 }subN++;
 
 if(t_pgOfs<subN) {
-    if(g_model.protocol == PROTO_PPM || g_model.protocol == PROTO_PPM16)
+    if( (g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16) || (g_model.protocol == PROTO_PPMSIM) )
     {
         lcd_puts_Pleft(    y, PSTR("PPM FrLen\015mSec"));
         lcd_outdezAtt(  13*FW, y, (int16_t)g_model.ppmFrameLength*5 + 225 ,(sub==subN ? INVERS:0) | PREC1);
@@ -2505,24 +2520,14 @@ if (edit) {
 }
 }
 
-#define PARAM_OFS   17*FW
-
-uint8_t onoffMenuItem( uint8_t value, uint8_t y, const prog_char *s, uint8_t condition, uint8_t event )
-{
-    lcd_puts_Pleft(y, s);
-    menu_lcd_onoff( PARAM_OFS, y, value, condition ) ;
-    if(condition) CHECK_INCDEC_H_GENVAR(event, value, 0, 1);
-    return value ;
-}
-
 
 void menuProcSetup(uint8_t event)
 {
 
-#define DEFAULT_COUNT_ITEMS 24
+#define DEFAULT_COUNT_ITEMS 25
 
 #ifdef FRSKY
-    int8_t sw_offset = -6 ;
+    int8_t sw_offset = -7 ;
     uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
 		if (g_eeGeneral.speakerMode == 0) sw_offset += 1 ;
 		switch (g_eeGeneral.speakerMode){
@@ -2531,8 +2536,8 @@ void menuProcSetup(uint8_t event)
 //						break;
 				//piezo speaker
 			 	case 1:
-                                                vCountItems = DEFAULT_COUNT_ITEMS + 3;
-			 			break;
+          vCountItems = DEFAULT_COUNT_ITEMS + 3;
+	 			break;
 			 	//pcmwav
 			 // case 2:
        //                                         vCountItems = DEFAULT_COUNT_ITEMS + 2;
@@ -2544,7 +2549,7 @@ void menuProcSetup(uint8_t event)
 		}		
 		
 #else 
-    int8_t sw_offset = -5 ;
+    int8_t sw_offset = -6 ;
                 uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
 		switch (g_eeGeneral.speakerMode){
 				//beeper
@@ -2552,8 +2557,8 @@ void menuProcSetup(uint8_t event)
 //						break;
 				//piezo speaker
 			 	case 1:
-                                                vCountItems = DEFAULT_COUNT_ITEMS + 2;
-			 			break;
+          vCountItems = DEFAULT_COUNT_ITEMS + 2;
+	 			break;
 			 	//pcmwav
 			 // case 2:
        //                                         vCountItems = DEFAULT_COUNT_ITEMS + 1;
@@ -2946,6 +2951,12 @@ if(g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2 ){
         //		    menu_lcd_onoff( 10*FW, y, b, sub==subN ) ;
         //		    if(sub==subN) { CHECK_INCDEC_H_MODELVAR(event,b,0,1); g_eeGeneral.disableBG = 1-b ; }
         g_eeGeneral.disableBG = 1-onoffMenuItem( b, y, PSTR("BandGap"), sub==subN, event ) ;
+        if((y+=FH)>7*FH) return;
+    }subN++;
+
+    if(t_pgOfs<subN)
+    {
+        g_eeGeneral.enablePpmsim = onoffMenuItem( g_eeGeneral.enablePpmsim, y, PSTR("Enable PPMSIM"), sub==subN, event ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 

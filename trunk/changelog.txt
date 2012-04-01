@@ -10,6 +10,12 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 01-APR-2012  MPB
+Add optional PPMSIM protocol, Fix Safety switch menu bug, Allow GPS altitude 
+on normal altitude screen with alarm and imperial conversion, fix time in 
+stamp.h (makefile), slim the code a bit.
+
+******************************************
 CHANGELOG: 03-MAR-2012  MPB
 Fix compile error when compiling non-FRSKY version
 

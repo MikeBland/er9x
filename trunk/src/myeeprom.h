@@ -109,7 +109,8 @@ typedef struct t_EEGeneral {
     uint8_t   FRSkyOrange:4;
     uint8_t   FRSkyRed:4;
     uint8_t   hideNameOnSplash:1;
-    uint8_t   spare:3;
+    uint8_t   enablePpmsim:1;
+    uint8_t   spare:2;
     uint8_t   speakerPitch;
     uint8_t   hapticStrength;
     uint8_t   speakerMode;
@@ -194,7 +195,8 @@ typedef struct t_ModelData {
     uint8_t   tmrDir:1;    //0=>Count Down, 1=>Count Up
     uint8_t   traineron:1;  // 0 disable trainer, 1 allow trainer
     uint8_t   t2throttle:1 ;  // Start timer2 using throttle
-    uint8_t   FrSkyUsrProto:2 ;  // Protocol in FrSky User Data, 0=FrSky Hub, 1=WS HowHigh
+    uint8_t   FrSkyUsrProto:1 ;  // Protocol in FrSky User Data, 0=FrSky Hub, 1=WS HowHigh
+    uint8_t   FrSkyGpsAlt:1 ;  	// Use Gps Altitude as main altitude reading
     uint8_t   FrSkyImperial:1 ;  // Convert FrSky values to imperial units
     uint8_t   FrSkyAltAlarm:2;
     uint16_t  tmrVal;

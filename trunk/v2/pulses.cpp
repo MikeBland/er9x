@@ -32,7 +32,7 @@ uint8_t pxxFlag = 0;
 
 void set_timer3_capture( void ) ;
 void set_timer3_ppm( void ) ;
-void setupPulsesPPM16( void ) ;
+void setupPulsesPPM16( uint8_t proto ) ;
 
 //uint16_t PulseTotal ;
 
@@ -168,13 +168,25 @@ void setupPulses()
             TIMSK |= 0x10 ;		// Enable COMPA
             TCCR1A = (0<<WGM10) ;
             TCCR1B = (1 << WGM12) | (2<<CS10) ; // CTC OCRA, 16MHz / 8
-            setupPulsesPPM16();
-            OCR3A = 50000 ;
+            setupPulsesPPM16(PROTO_PPM16);
+						OCR3A = 50000 ;
             OCR3B = 5000 ;
             set_timer3_ppm() ;
             break ;
-        }
-
+        
+        case PROTO_PPMSIM :
+            TCCR1B = 0 ;			// Stop counter
+            TCNT1 = 0 ;
+            TIMSK &= ~0x3C ;	// All interrupts off
+            ETIMSK &= ~(1<<OCIE1C) ;		// COMPC1 off
+            TIFR = 0x3C ;			// Clear all pending interrupts
+            ETIFR = 0x3F ;			// Clear all pending interrupts
+            setupPulsesPPM16(PROTO_PPMSIM);
+						OCR3A = 50000 ;
+            OCR3B = 5000 ;
+            set_timer3_ppm() ;
+            break ;
+				}
     }
     switch(g_model.protocol)
     {
@@ -326,7 +338,7 @@ void setupPulsesDsm2(uint8_t chns)
     dsmDat[1]=g_eeGeneral.currModel+1;  //DSM2 Header second byte for model match
     for(uint8_t i=0; i<chns; i++)
     {
-        uint16_t pulse = limit(0, (g_chans512[i]>>1)+512,1023);
+		    uint16_t pulse = limit(0, ((g_chans512[i]*13)>>5)+512,1023);
         dsmDat[2+2*i] = (i<<2) | ((pulse>>8)&0x03);
         dsmDat[3+2*i] = pulse & 0xff;
     }
@@ -462,11 +474,21 @@ ISR(TIMER3_COMPA_vect) //2MHz pulse generation
 ISR(TIMER3_COMPB_vect) //2MHz pulse generation
 {
     sei() ;
-    setupPulsesPPM16() ;
+    if ( Current_protocol != g_model.protocol )
+		{
+    	if ( Current_protocol == PROTO_PPMSIM )
+			{
+        setupPulses();
+			}
+		}
+		else
+		{
+    	setupPulsesPPM16(g_model.protocol) ;
+		}
 }
 
 
-void setupPulsesPPM16()
+void setupPulsesPPM16( uint8_t proto )
 {
     int16_t PPM_range = g_model.extendedLimits ? 640*2 : 512*2;   //range of 0.7..1.7msec
 
@@ -475,12 +497,12 @@ void setupPulsesPPM16()
     //The pulse ISR is 2mhz that's why everything is multiplied by 2
     uint16_t *ptr ;
     ptr = &pulses2MHz.pword[PULSES_WORD_SIZE/2] ;
-    uint8_t p= 16+g_model.ppmNCH*2; //Channels *2
+    uint8_t p= ( ( proto == PROTO_PPM16) ? 16 : 8 ) +g_model.ppmNCH*2 ; //Channels *2
     uint16_t q=(g_model.ppmDelay*50+300)*2; //Stoplen *2
     uint16_t rest=22500u*2-q; //Minimum Framelen=22.5 ms
     rest += (int16_t(g_model.ppmFrameLength))*1000;
     //    if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
-    for(uint8_t i=p-8;i<p;i++)
+		for( uint8_t i = (proto == PROTO_PPM16) ? p-8 : 0 ;i<p ; i++ )
     { //NUM_CHNOUT
         int16_t v = max(min(g_chans512[i],PPM_range),-PPM_range) + PPM_CENTER;
         rest-=(v+q);

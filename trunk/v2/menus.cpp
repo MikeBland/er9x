@@ -79,7 +79,7 @@ enum MainViews {
     e_timer2,
 #ifdef FRSKY
     e_telemetry,
-    e_telemetry2,
+//    e_telemetry2,
 #endif
     MAX_VIEWS
 };
@@ -722,7 +722,7 @@ b = g_model.FrSkyUsrProto ;
 lcd_putsAttIdx(  10*FW, FH, PSTR("\005FrHubWSHhi"),b,(sub==subN && subSub==0 ? INVERS:0));
 if(sub==subN && subSub==0 && s_editMode) { CHECK_INCDEC_H_MODELVAR(event,b,0,1); g_model.FrSkyUsrProto = b ; }
 b = g_model.FrSkyImperial ;
-lcd_putsAttIdx(  16*FW, FH, PSTR("MetImp"),b,(sub==subN && subSub==1 ? INVERS:0));
+lcd_putsAttIdx(  16*FW, FH, PSTR("\003MetImp"),b,(sub==subN && subSub==1 ? INVERS:0));
 if(sub==subN && subSub==1 && s_editMode) { CHECK_INCDEC_H_MODELVAR(event,b,0,1); g_model.FrSkyImperial = b ; }
 }
 subN++;
@@ -1109,7 +1109,7 @@ void menuProcMixOne(uint8_t event)
         case 3:
     				b = md2->enableFmTrim ;
             lcd_puts_P(  2*FW,y,PSTR("FlModetrim"));
-            lcd_putsAtt(FW*14,y, b ? Str_OFF : Str_ON,attr);  //default is 0=ON
+            lcd_putsAtt(FW*14,y, b ? Str_ON : Str_OFF,attr);  //default is 0=ON
             //            lcd_putsnAtt( x, y, PSTR("OFFON ")+3*value,3,mode ? INVERS:0) ;
             //            menu_lcd_onoff( FW*14, y, md2->enableFmTrim, sub==i ) ;
             if(attr) { CHECK_INCDEC_H_MODELVAR( event, b, 0,1); md2->enableFmTrim = b ; }
@@ -1957,7 +1957,7 @@ if(t_pgOfs<subN) {
 if(t_pgOfs<subN) {
     lcd_puts_Pleft(    y, PSTR("Proto"));//sub==2 ? INVERS:0);
     lcd_putsnAtt(  6*FW, y, PSTR(PROT_STR)+PROT_STR_LEN*g_model.protocol,PROT_STR_LEN, (sub==subN && subSub==0 ? (s_editMode ? BLINK : INVERS):0));
-    if( ( g_model.protocol == PROTO_PPM ) || (g_model.protocol == PROTO_PPM16) )
+    if( ( g_model.protocol == PROTO_PPM ) || (g_model.protocol == PROTO_PPM16) || (g_model.protocol == PROTO_PPMSIM) )
 		{
 			uint8_t x ;
 			if( g_model.protocol == PROTO_PPM )
@@ -1987,13 +1987,13 @@ if(t_pgOfs<subN) {
             CHECK_INCDEC_H_MODELVAR(event,g_model.protocol,0,PROT_MAX);
             break;
         case 1:
-            if ((g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16))
+            if ((g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16)|| (g_model.protocol == PROTO_PPMSIM) )
                 CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,-2,4);
             else if (g_model.protocol == PROTO_PXX)
                 CHECK_INCDEC_H_MODELVAR(event,g_model.ppmNCH,0,124);
             break;
         case 2:
-            if ((g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16))
+            if ((g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16) || (g_model.protocol == PROTO_PPMSIM) )
                 CHECK_INCDEC_H_MODELVAR(event,g_model.ppmDelay,-4,10);
             break;
         }
@@ -2004,7 +2004,7 @@ if(t_pgOfs<subN) {
 }subN++;
 
 if(t_pgOfs<subN) {
-    if(g_model.protocol == PROTO_PPM || g_model.protocol == PROTO_PPM16)
+    if( (g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16) || (g_model.protocol == PROTO_PPMSIM) )
     {
         lcd_puts_Pleft(    y, PSTR("PPM FrLen\015mSec"));
         lcd_outdezAtt(  13*FW, y, (int16_t)g_model.ppmFrameLength*5 + 225 ,(sub==subN ? INVERS:0) | PREC1);
@@ -3094,7 +3094,7 @@ void timer(uint16_t throttle_val)
   int8_t tmb ;
   uint16_t tv ;
 
-  s_cnt++;			// Numver of times val added in
+  s_cnt++;			// Number of times val added in
 	for( timer = 0 ; timer < 2 ; timer += 1 )
 	{
 		tma = g_model.timer[timer].tmrModeA ;
