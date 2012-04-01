@@ -1089,7 +1089,8 @@ void menuProcMixOne(uint8_t event)
         uint8_t y = (k+1) * FH;
         uint8_t i = k + s_pgOfs;
         uint8_t attr = sub==i ? INVERS : 0;
-    		uint8_t b ;
+        uint8_t b ;
+        uint16_t v;
         switch(i){
         case 0:
             lcd_puts_P(  2*FW,y,PSTR("Source"));
@@ -1149,23 +1150,31 @@ void menuProcMixOne(uint8_t event)
             break;
         case 9:
             lcd_puts_P(  2*FW,y,PSTR("Delay Down"));
-            lcd_outdezAtt(FW*16,y,md2->delayDown,attr);
-            if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->delayDown, 0,15); //!! bitfield
+            v = md2->delayDown;
+            v *= 25;
+            lcd_outdezAtt(FW*16,y,v,attr | PREC2);
+            if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->delayDown, 0,63); //!! bitfield
             break;
         case 10:
             lcd_puts_P(  2*FW,y,PSTR("Delay Up"));
-            lcd_outdezAtt(FW*16,y,md2->delayUp,attr);
-            if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->delayUp, 0,15); //!! bitfield
+            v = md2->delayUp;
+            v *= 25;
+            lcd_outdezAtt(FW*16,y,v,attr | PREC2);
+            if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->delayUp, 0,63); //!! bitfield
             break;
         case 11:
             lcd_puts_P(  2*FW,y,PSTR("Slow  Down"));
-            lcd_outdezAtt(FW*16,y,md2->speedDown,attr);
-            if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->speedDown, 0,15); //!! bitfield
+            v = md2->speedDown;
+            v *= 25;
+            lcd_outdezAtt(FW*16,y,v,attr | PREC2);
+            if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->speedDown, 0,63); //!! bitfield
             break;
         case 12:
             lcd_puts_P(  2*FW,y,PSTR("Slow  Up"));
-            lcd_outdezAtt(FW*16,y,md2->speedUp,attr);
-            if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->speedUp, 0,15); //!! bitfield
+            v = md2->speedUp;
+            v *= 25;
+            lcd_outdezAtt(FW*16,y,v,attr | PREC2);
+            if(attr)  CHECK_INCDEC_H_MODELVAR( event, md2->speedUp, 0,63); //!! bitfield
             break;
         case 13:
             lcd_putsAtt(  2*FW,y,PSTR("DELETE MIX [MENU]"),attr);

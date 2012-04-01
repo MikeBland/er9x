@@ -150,10 +150,10 @@ typedef struct t_MixData {
     int8_t  weight;
     int8_t  swtch;
     uint8_t curve;             //0=symmetrisch 1=no neg 2=no pos
-    uint8_t delayUp:4;
-    uint8_t delayDown:4;
-    uint8_t speedUp:4;         // Servogeschwindigkeit aus Tabelle (10ms Cycle)
-    uint8_t speedDown:4;       // 0 nichts
+    uint8_t delayUp:6;
+    uint8_t delayDown:6;
+    uint8_t speedUp:6;         // Servogeschwindigkeit aus Tabelle (10ms Cycle)
+    uint8_t speedDown:6;       // 0 nichts
     uint8_t carryTrim:1;
     uint8_t mltpx:3;           // multiplex method 0=+ 1=* 2=replace
     uint8_t mixWarn:2;         // mixer warning
