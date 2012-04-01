@@ -30,6 +30,8 @@ mode4 ail thr ele rud
 EEGeneral  g_eeGeneral;
 ModelData  g_model;
 
+uint8_t SlaveMode ;
+
 //const prog_uint8_t APM chout_ar[] = { //First number is 0..23 -> template setup,  Second is relevant channel out
 //                                      1,2,3,4 , 1,2,4,3 , 1,3,2,4 , 1,3,4,2 , 1,4,2,3 , 1,4,3,2,
 //                                      2,1,3,4 , 2,1,4,3 , 2,3,1,4 , 2,3,4,1 , 2,4,1,3 , 2,4,3,1,
@@ -873,9 +875,8 @@ inline bool checkSlaveMode()
 {
     // no power -> only phone jack = slave mode
 
-
 #ifdef BUZZER_MOD
-    return SLAVE_MODE;
+    return SlaveMode = SLAVE_MODE ;
 #else
     static bool lastSlaveMode = false;
 
@@ -889,7 +890,7 @@ inline bool checkSlaveMode()
     else {
         lastSlaveMode = SLAVE_MODE;//
     }
-    return lastSlaveMode;
+    return (SlaveMode = lastSlaveMode) ;
 #endif
 }
 
