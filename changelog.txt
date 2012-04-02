@@ -11,6 +11,10 @@ description here
 
 ******************************************
 CHANGELOG: 02-APR-2012  MPB
+Further fix to GPS altitude
+
+******************************************
+CHANGELOG: 02-APR-2012  MPB
 Long-down back, reset watchdog on EEPROM timeout
 
 ******************************************
