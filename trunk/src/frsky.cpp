@@ -116,7 +116,7 @@ void frsky_proc_user_byte( uint8_t byte )
 						  FrskyHubData[Frsky_user_id] = ( byte << 8 ) + Frsky_user_lobyte ;
 							if ( g_model.FrSkyGpsAlt )
 							{
-					  		FrskyHubData[1] = FrskyHubData[16] ;		// Copy Gps Alt instead
+					  		FrskyHubData[16] = FrskyHubData[1] ;		// Copy Gps Alt instead
 							}
 							
 							if ( Frsky_user_id == 17 )			// GPS Speed
