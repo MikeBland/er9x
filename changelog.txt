@@ -10,6 +10,10 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 02-APR-2012  MPB
+Remove long-down option to get to telemetry screens - can cause reboot
+
+******************************************
 CHANGELOG: 01-APR-2012  MPB
 move onoffmenuitem() outside FRSKY conditional compile
 

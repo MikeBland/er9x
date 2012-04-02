@@ -854,7 +854,10 @@ for (uint8_t j=0; j<2; j++)
   }
 	subN++;
 	
-  g_model.FrSkyGpsAlt = onoffMenuItem( g_model.FrSkyGpsAlt, 7*FH, PSTR("GpsAltMain"), sub==subN, event ) ;
+  lcd_puts_Pleft( 7*FH, PSTR("GpsAltMain") ) ;
+  menu_lcd_onoff( PARAM_OFS, 7*FH, g_model.FrSkyGpsAlt, sub==subN ) ;
+  if(sub==subN) CHECK_INCDEC_H_MODELVAR(event, g_model.FrSkyGpsAlt, 0, 1);
+
 }
 
 #endif
@@ -3455,9 +3458,10 @@ void menuProc0(uint8_t event)
 #elif defined(NMEA)
         NMEA_EnableRXD(); // enable NMEA-Telemetry reception
         chainMenu(menuProcNMEA);
-#elif defined(FRSKY)
-				g_eeGeneral.view = e_telemetry | tview ;
-        audioDefevent(AU_MENUS);
+//#elif defined(FRSKY)
+//				view = e_telemetry ;
+//				g_eeGeneral.view = view | tview ;
+//        audioDefevent(AU_MENUS);
 #else
         chainMenu(menuProcStatistic2);
 #endif
