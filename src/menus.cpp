@@ -3458,10 +3458,10 @@ void menuProc0(uint8_t event)
 #elif defined(NMEA)
         NMEA_EnableRXD(); // enable NMEA-Telemetry reception
         chainMenu(menuProcNMEA);
-//#elif defined(FRSKY)
-//				view = e_telemetry ;
-//				g_eeGeneral.view = view | tview ;
-//        audioDefevent(AU_MENUS);
+#elif defined(FRSKY)
+				view = e_telemetry ;
+				g_eeGeneral.view = view | tview ;
+        audioDefevent(AU_MENUS);
 #else
         chainMenu(menuProcStatistic2);
 #endif
