@@ -11,6 +11,10 @@ description here
 
 ******************************************
 CHANGELOG: 02-APR-2012  MPB
+Long-down back, reset watchdog on EEPROM timeout
+
+******************************************
+CHANGELOG: 02-APR-2012  MPB
 Remove long-down option to get to telemetry screens - can cause reboot
 
 ******************************************

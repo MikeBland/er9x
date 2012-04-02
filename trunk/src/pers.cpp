@@ -250,6 +250,12 @@ void eeCheck(bool immediately)
       if(theWriteFile.errno()==ERR_TMO){
         s_eeDirtyMsk |= EE_GENERAL; //try again
         s_eeDirtyTime10ms = get_tmr10ms() - WRITE_DELAY_10MS;
+    		if(heartbeat == 0x3)
+    		{
+    		    wdt_reset();
+    		    heartbeat = 0;
+    		}
+
       }else{
         alert(PSTR("EEPROM overflow"));
       }
@@ -269,6 +275,11 @@ void eeCheck(bool immediately)
           s_eeDirtyMsk |= EE_TRIM; //try again
         }
         s_eeDirtyTime10ms = get_tmr10ms() - WRITE_DELAY_10MS;
+    		if(heartbeat == 0x3)
+    		{
+    		    wdt_reset();
+    		    heartbeat = 0;
+    		}
       }else{
         if ( ( msk & EE_TRIM ) == 0 )		// Don't stop if trim adjust
         {
