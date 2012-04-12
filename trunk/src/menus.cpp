@@ -2120,11 +2120,13 @@ int8_t  sub    = mstate2.m_posVert;
 evalOffset(sub, 7);
 
 uint8_t y = 1*FH;
+  uint8_t b ;
 
 uint8_t subN = 1;
+    b = g_model.swashType ;
     lcd_puts_Pleft(    y, PSTR("Swash Type"));
-    lcd_putsnAtt(  14*FW, y, PSTR(SWASH_TYPE_STR)+6*g_model.swashType,6,(sub==subN ? INVERS:0));
-    if(sub==subN) CHECK_INCDEC_H_MODELVAR(event,g_model.swashType,0,SWASH_TYPE_NUM);
+    lcd_putsAttIdx( 14*FW, y, PSTR(SWASH_TYPE_STR),b,(sub==subN ? INVERS:0));
+    if(sub==subN) { CHECK_INCDEC_H_MODELVAR(event,b,0,SWASH_TYPE_NUM); g_model.swashType = b ; }
     if((y+=FH)>7*FH) return;
 subN++;
 
@@ -2140,7 +2142,6 @@ subN++;
     if((y+=FH)>7*FH) return;
 subN++;
 
-    uint8_t b ;
     b = g_model.swashInvertELE ;
     lcd_puts_Pleft(    y, PSTR("ELE Direction"));
     menu_lcd_HYPHINV( 14*FW, y, b, sub==subN ) ;
@@ -3388,6 +3389,11 @@ void menuProc0(uint8_t event)
 				      frskyTelemetry[1].setoffset() ;
 						}
         }
+        else if( (view == e_telemetry) && ((tview & 0x30) == 0x30 ) )	// GPS
+				{
+					MaxGpsSpeed = 0 ;
+					MaxGpsAlt = 0 ;
+				}
         else
         {
 #endif
@@ -3753,15 +3759,15 @@ void menuProc0(uint8_t event)
                 lcd_outdezNAtt(8*FW, 3*FH, FrskyHubData[18], LEADING0 | blink, -5);
                 lcd_putc(8*FW, 3*FH, '.') ;
                 lcd_outdezNAtt(12*FW, 3*FH, FrskyHubData[26], LEADING0 | blink, -4);
-                lcd_puts_Pleft( 4*FH, Str_ALTeq ) ;
-                lcd_outdezAtt(8 * FW, 4*FH, FrskyHubData[1], 0 ) ;
+                lcd_puts_Pleft( 4*FH, PSTR("Alt=\011m   Max=")) ;
+                lcd_outdezAtt(20*FW, 4*FH, MaxGpsAlt, 0);
                 
 								lcd_puts_Pleft( 5*FH, PSTR("Spd=\011kts Max=")) ;
                 lcd_outdezAtt(20*FW, 5*FH, MaxGpsSpeed, blink );
               if (frskyUsrStreaming)
 							{
+								lcd_outdezAtt(8 * FW, 4*FH, FrskyHubData[1], 0 ) ;
                 lcd_outdezAtt(8*FW, 5*FH, FrskyHubData[17], 0);
-
                 
 								lcd_puts_Pleft( 6*FH, PSTR("V1=\007V2=\016V3=")) ;
 								lcd_puts_Pleft( 7*FH, PSTR("V4=\007V5=\016V6=")) ;
