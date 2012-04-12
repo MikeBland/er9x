@@ -845,6 +845,12 @@ for (uint8_t j=0; j<2; j++)
 	{
     g_model.frSkyVoltThreshold=checkIncDec16(event, g_model.frSkyVoltThreshold, 0, 210, EE_MODEL);
   }
+  subN++;
+  
+	lcd_puts_Pleft( 7*FH, PSTR("GpsAltMain") ) ;
+  menu_lcd_onoff( PARAM_OFS, 7*FH, g_model.FrSkyGpsAlt, sub==subN ) ;
+  if(sub==subN) CHECK_INCDEC_H_MODELVAR(event, g_model.FrSkyGpsAlt, 0, 1);
+
 }
 
 #endif

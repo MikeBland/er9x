@@ -264,7 +264,7 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define SWP_IL4 (SWP_ID1B | SWP_ID2B)
 #define SWP_IL5 (SWP_ID0B | SWP_ID1B | SWP_ID2B)
 
-#define SWASH_TYPE_STR   "---   ""120   ""120X  ""140   ""90    "
+#define SWASH_TYPE_STR   "\006---   ""120   ""120X  ""140   ""90    "
 
 #define SWASH_TYPE_120   1
 #define SWASH_TYPE_120X  2

@@ -231,7 +231,7 @@ void setupPulses()
 
 void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
 {
-#define PPM_CENTER 1200*2
+#define PPM_CENTER 1500*2
     int16_t PPM_range = g_model.extendedLimits ? 640*2 : 512*2;   //range of 0.7..1.7msec
 
     //Total frame length = 22.5msec
@@ -246,12 +246,9 @@ void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
     //    if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
     for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
         int16_t v = max(min(g_chans512[i],PPM_range),-PPM_range) + PPM_CENTER;
-        rest-=(v+q);
-        //        *ptr++ = q;      //moved down two lines
-        //        pulses2MHz[j++] = q;
-        *ptr++ = v - q + 600; /* as Pat MacKenzie suggests */
-        //        pulses2MHz[j++] = v - q + 600; /* as Pat MacKenzie suggests */
-        *ptr++ = q;      //to here
+ 	      rest -= v ; // (*ptr + q);
+				*ptr++ = v - q ; /* as Pat MacKenzie suggests */
+				*ptr++ = q;      //to here
     }
     //    *ptr=q;       //reverse these two assignments
     //    *(ptr+1)=rest;
@@ -517,11 +514,9 @@ void setupPulsesPPM16( uint8_t proto )
 		for( uint8_t i = (proto == PROTO_PPM16) ? p-8 : 0 ;i<p ; i++ )
     { //NUM_CHNOUT
         int16_t v = max(min(g_chans512[i],PPM_range),-PPM_range) + PPM_CENTER;
-        rest-=(v+q);
-        *ptr++ = q;      //moved down two lines
-        //        pulses2MHz[j++] = q;
-        *ptr++ = v - q + 600; /* as Pat MacKenzie suggests */
-        //        pulses2MHz[j++] = v - q + 600; /* as Pat MacKenzie suggests */
+ 	      rest -= v ; // (*ptr + q);
+        *ptr++ = q;
+				*ptr++ = v - q ; /* as Pat MacKenzie suggests */
     }
     *ptr=q;       //reverse these two assignments
     *(ptr+1)=rest;

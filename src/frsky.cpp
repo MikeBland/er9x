@@ -64,6 +64,7 @@ uint8_t Frsky_user_lobyte ;
 #define HUBDATALENGTH 41
 int16_t FrskyHubData[HUBDATALENGTH] ;  // All 38 words
 uint8_t MaxGpsSpeed ;
+uint16_t MaxGpsAlt ;
 uint8_t FrskyVolts[12];
 uint8_t FrskyBattCells=0;
 
@@ -124,6 +125,12 @@ void frsky_proc_user_byte( uint8_t byte )
 								if ( MaxGpsSpeed < FrskyHubData[Frsky_user_id] )
 								{	MaxGpsSpeed = FrskyHubData[Frsky_user_id] ;
 								}
+							}
+							if ( Frsky_user_id == 1 )			// GPS Alt
+							{
+                if ( FrskyHubData[Frsky_user_id] > MaxGpsAlt )
+                { MaxGpsAlt = FrskyHubData[Frsky_user_id] ;
+								}	
 							}
 							if ( Frsky_user_id == 6 )			// Cell Voltage
 							{
