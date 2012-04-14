@@ -65,7 +65,7 @@
 #define CURVE5(x) ((x)-1)
 #define CURVE9(x) (MAX_CURVE5+(x)-1)
 
-extern PGM_P n_Templates[] ;
+extern const prog_char *const n_Templates[] ;
 
 
 

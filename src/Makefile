@@ -252,7 +252,8 @@ CFLAGS += -Wa,-adhlns=$(<:%.c=$(OBJDIR)/%.lst)
 CFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
 CFLAGS += $(CSTANDARD)
 
-CFLAGS+= --combine -fwhole-program
+#CFLAGS+= --combine -fwhole-program
+CFLAGS+= -fwhole-program
 
 
 #---------------- Compiler Options C++ ----------------

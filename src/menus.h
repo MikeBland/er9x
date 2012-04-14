@@ -65,8 +65,8 @@ struct MState2
   uint8_t m_posVert;
   uint8_t m_posHorz;
   void init(){m_posVert=m_posHorz=0;};
-  void check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t menuTabSize, prog_uint8_t *subTab, uint8_t subTabMax, uint8_t maxrow);
-  void check_simple(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t menuTabSize, uint8_t maxrow);
+  void check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8_t menuTabSize, const prog_uint8_t *subTab, uint8_t subTabMax, uint8_t maxrow);
+  void check_simple(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8_t menuTabSize, uint8_t maxrow);
   void check_submenu_simple(uint8_t event, uint8_t maxrow);
 };
 
@@ -80,7 +80,7 @@ typedef PROGMEM void (*MenuFuncP_PROGMEM)(uint8_t event);
 #define MENU(title, tab, menu, lines_count, lines...) \
 TITLE(title); \
 static MState2 mstate2; \
-static prog_uint8_t APM mstate_tab[] = lines; \
+const static prog_uint8_t APM mstate_tab[] = lines; \
 mstate2.check(event,menu,tab,DIM(tab),mstate_tab,DIM(mstate_tab)-1,lines_count-1)
 
 #define SIMPLE_MENU(title, tab, menu, lines_count) \
@@ -91,7 +91,7 @@ mstate2.check_simple(event,menu,tab,DIM(tab),lines_count-1)
 #define SUBMENU(title, lines_count, lines...) \
 TITLE(title); \
 static MState2 mstate2; \
-static prog_uint8_t APM mstate_tab[] = lines; \
+const static prog_uint8_t APM mstate_tab[] = lines; \
 mstate2.check(event,0,NULL,0,mstate_tab,DIM(mstate_tab)-1,lines_count-1)
 
 #define SIMPLE_SUBMENU_NOTITLE(lines_count) \

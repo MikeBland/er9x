@@ -102,6 +102,7 @@ extern int16_t p1valdiff;
 extern MixData *mixaddress( uint8_t idx ) ;
 extern LimitData *limitaddress( uint8_t idx ) ;
 
+const
 #include "sticks.lbm"
 typedef PROGMEM void (*MenuFuncP_PROGMEM)(uint8_t event);
 
@@ -126,7 +127,7 @@ enum EnumTabModel {
 #endif
 };
 
-MenuFuncP_PROGMEM APM menuTabModel[] = {
+const MenuFuncP_PROGMEM APM menuTabModel[] = {
     menuProcModelSelect,
     menuProcModel,
     #ifndef NO_HELI
@@ -156,7 +157,7 @@ enum EnumTabDiag {
     e_Calib
 };
 
-MenuFuncP_PROGMEM APM menuTabDiag[] = {
+const MenuFuncP_PROGMEM APM menuTabDiag[] = {
     menuProcSetup,
     menuProcTrainer,
     menuProcDiagVers,
@@ -182,7 +183,7 @@ void menu_lcd_HYPHINV( uint8_t x,uint8_t y, uint8_t value, uint8_t mode )
     lcd_putsAttIdx( x, y, PSTR("\003---INV"),value,mode ? INVERS:0) ;
 }
 
-void MState2::check_simple(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t menuTabSize, uint8_t maxrow)
+void MState2::check_simple(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8_t menuTabSize, uint8_t maxrow)
 {
     check(event, curr, menuTab, menuTabSize, 0, 0, maxrow);
 }
@@ -204,7 +205,7 @@ void DisplayScreenIndex(uint8_t index, uint8_t count, uint8_t attr)
 #define MAXCOL(row) (horTab ? pgm_read_byte(horTab+min(row, horTabMax)) : (const uint8_t)0)
 #define INC(val,max) if(val<max) {val++;} else {val=0;}
 #define DEC(val,max) if(val>0  ) {val--;} else {val=max;}
-void MState2::check(uint8_t event, uint8_t curr, MenuFuncP *menuTab, uint8_t menuTabSize, prog_uint8_t *horTab, uint8_t horTabMax, uint8_t maxrow)
+void MState2::check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8_t menuTabSize, const prog_uint8_t *horTab, uint8_t horTabMax, uint8_t maxrow)
 {
 	int16_t c4, c5 ;
     //    scrollLR = 0;

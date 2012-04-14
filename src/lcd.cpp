@@ -19,9 +19,11 @@
 
 uint8_t displayBuf[DISPLAY_W*DISPLAY_H/8];
 #define DISPLAY_END (displayBuf+sizeof(displayBuf))
+const
 #include "font.lbm"
 #define font_5x8_x20_x7f (font+3)
 
+const
 #include "font_dblsize.lbm"
 #define font_10x16_x20_x7f (font_dblsize+3)
 
@@ -69,7 +71,7 @@ uint8_t lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
 			return x ;
 		}
 		x += FW ;
-    prog_uchar    *q = &font_5x8_x20_x7f[(c-0x20)*5];
+    const prog_uchar    *q = &font_5x8_x20_x7f[(c-0x20)*5];
     bool         inv = (mode & INVERS) ? true : (mode & BLINK ? BLINK_ON_PHASE : false);
     if(mode&DBLSIZE)
     {
