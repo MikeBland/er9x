@@ -64,7 +64,7 @@ uint8_t Frsky_user_lobyte ;
 #define HUBDATALENGTH 41
 int16_t FrskyHubData[HUBDATALENGTH] ;  // All 38 words
 uint8_t MaxGpsSpeed ;
-uint16_t MaxGpsAlt ;
+int16_t MaxGpsAlt ;
 uint8_t FrskyVolts[12];
 uint8_t FrskyBattCells=0;
 

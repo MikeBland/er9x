@@ -266,7 +266,7 @@ void per10ms()
     keys[enuk].input(in & (1<<i),(EnumKeys)enuk);
     ++enuk;
   }
-  static  prog_uchar  APM crossTrim[]={
+  const static  prog_uchar  APM crossTrim[]={
     1<<INP_D_TRM_LH_DWN,
     1<<INP_D_TRM_LH_UP,
     1<<INP_D_TRM_LV_DWN,

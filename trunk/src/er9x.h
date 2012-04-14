@@ -37,10 +37,38 @@
 
 //#define __ATTR_PROGMEM__
 #include <avr/pgmspace.h>
+
+
+#undef prog_void
+#undef prog_char
+#undef prog_uchar
+#undef prog_int8_t
+#undef prog_uint8_t
+#undef prog_int16_t
+#undef prog_uint16_t
+#undef prog_int32_t
+#undef prog_uint32_t
+
+
+typedef void prog_void __attribute__((__progmem__));//,deprecated("prog_void type is deprecated.")));
+typedef char prog_char __attribute__((__progmem__));//,deprecated("prog_char type is deprecated.")));
+typedef unsigned char prog_uchar __attribute__((__progmem__));//,deprecated("prog_uchar type is deprecated.")));
+typedef int8_t    prog_int8_t   __attribute__((__progmem__));//,deprecated("prog_int8_t type is deprecated.")));
+typedef uint8_t   prog_uint8_t  __attribute__((__progmem__));//,deprecated("prog_uint8_t type is deprecated.")));
+typedef int16_t   prog_int16_t  __attribute__((__progmem__));//,deprecated("prog_int16_t type is deprecated.")));
+typedef uint16_t  prog_uint16_t __attribute__((__progmem__));//,deprecated("prog_uint16_t type is deprecated.")));
+typedef int32_t   prog_int32_t  __attribute__((__progmem__));//,deprecated("prog_int32_t type is deprecated.")));
+typedef uint32_t  prog_uint32_t __attribute__((__progmem__));//,deprecated("prog_uint32_t type is deprecated.")));
+
+#undef PGM_P
+#define PGM_P const prog_char *
+
+
+
 #ifdef __cplusplus
 #define APM __attribute__(( section(".progmem.data") ))
 #undef PSTR
-#define PSTR(s) (__extension__({static prog_char APM __c[] = (s);&__c[0];}))
+#define PSTR(s) (__extension__({const static prog_char APM __c[] = (s);&__c[0];}))
 #endif
 
 #include <avr/eeprom.h>

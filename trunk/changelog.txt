@@ -10,6 +10,10 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 14-APR-2012  MPB
+Fix signed/unsigned comp. add const(s) to allow gcc-avr 4.7.0 to work
+
+******************************************
 CHANGELOG: 12-APR-2012  MPB
 Fix PPM/PPM16 pulse generation, add max Gps Alt, minor code slim
 
