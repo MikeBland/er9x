@@ -153,22 +153,32 @@ const prog_char *get_switches_string()
     return PSTR(SWITCHES_STR)	;
 }	
 
-void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr)
+void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t type )
 {
-    int8_t tm = g_model.tmrMode;
+  int8_t tm = g_model.tmrMode;
+	if ( type < 2 )		// 0 or 1
+	{
     if(abs(tm)<TMR_VAROFS) {
         lcd_putsnAtt(  x, y, PSTR("OFFABSRUsRU%ELsEL%THsTH%ALsAL%P1 P1%P2 P2%P3 P3%")+3*abs(tm),3,attr);
         if(tm<(-TMRMODE_ABS)) lcd_putcAtt(x-1*FW,  y,'!',attr);
-        return;
+//        return;
     }
 
-    if(abs(tm)<(TMR_VAROFS+MAX_DRSWITCH-1)) { //normal on-off
+    else if(abs(tm)<(TMR_VAROFS+MAX_DRSWITCH-1)) { //normal on-off
         putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS-1) : tm+(TMR_VAROFS-1),attr);
-        return;
+//        return;
     }
 
-    putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS+MAX_DRSWITCH-1-1) : tm+(TMR_VAROFS+MAX_DRSWITCH-1-1),attr);//momentary on-off
-    lcd_putcAtt(x+3*FW,  y,'m',attr);
+		else
+		{
+    	putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS+MAX_DRSWITCH-1-1) : tm+(TMR_VAROFS+MAX_DRSWITCH-1-1),attr);//momentary on-off
+    	lcd_putcAtt(x+3*FW,  y,'m',attr);
+		}
+	}
+	if ( ( type == 2 ) || ( ( type == 0 ) && ( tm == 1 ) ) )
+	{
+   	putsDrSwitches( x-1*FW, y, g_model.tmrModeB, attr );
+	}
 }
 
 #ifdef FRSKY

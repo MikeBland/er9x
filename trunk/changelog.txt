@@ -10,6 +10,10 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 15-APR-2012  MPB
+Add second trigger option to timer1
+
+******************************************
 CHANGELOG: 14-APR-2012  MPB
 Fix signed/unsigned comp. add const(s) to allow gcc-avr 4.7.0 to work
 
