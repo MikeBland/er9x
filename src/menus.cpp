@@ -1841,7 +1841,7 @@ void menuDeleteDupModel(uint8_t event)
 
 void menuProcModel(uint8_t event)
 {
-    MENU("SETUP", menuTabModel, e_Model, 17, {0,sizeof(g_model.name)-1,1,0,0,0,0,0,0,6,2,0/*repeated...*/});
+    MENU("SETUP", menuTabModel, e_Model, 18, {0,sizeof(g_model.name)-1,1,0,0,0,0,0,0,0,6,2,0/*repeated...*/});
 
 int8_t  sub    = mstate2.m_posVert;
 uint8_t subSub = mstate2.m_posHorz;
@@ -1917,12 +1917,22 @@ if(t_pgOfs<subN) {
 if(t_pgOfs<subN) { //timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw, chx(value > or < than tmrChVal), ch%
     lcd_puts_Pleft(    y, PSTR("Trigger"));
     uint8_t attr = (sub==subN ?  INVERS : 0);
-    putsTmrMode(10*FW,y,attr);
+    putsTmrMode(10*FW,y,attr, 1 ) ;
 
     if(sub==subN)
         CHECK_INCDEC_H_MODELVAR( event,g_model.tmrMode ,-(13+2*MAX_DRSWITCH),(13+2*MAX_DRSWITCH));
     if((y+=FH)>7*FH) return;
 }subN++;
+
+  if(t_pgOfs<subN) { //timer trigger source -> none, sw/!sw
+    lcd_puts_Pleft(    y, PSTR("TriggerB"));
+    uint8_t attr = (sub==subN ?  INVERS : 0);
+    putsTmrMode(10*FW,y,attr, 2 ) ;
+
+    if(sub==subN)
+        CHECK_INCDEC_H_MODELVAR( event,g_model.tmrModeB ,(1-MAX_DRSWITCH),(-1+1*MAX_DRSWITCH));
+    if((y+=FH)>7*FH) return;
+  }subN++;
 
 if(t_pgOfs<subN) {
     lcd_puts_Pleft(    y, PSTR("Timer "));
@@ -3077,36 +3087,55 @@ void timer(uint8_t val)
     static uint16_t s_cnt;
     static uint16_t s_sum;
     static uint8_t sw_toggled;
+  	int8_t tmb ;
+		uint8_t switch_b ;
+
+    tmb = g_model.tmrModeB ;
 
     if(abs(tm)>=(TMR_VAROFS+MAX_DRSWITCH-1)){ //toggeled switch//abs(g_model.tmrMode)<(10+MAX_DRSWITCH-1)
         static uint8_t lastSwPos;
         if(!(sw_toggled | s_sum | s_cnt | s_time | lastSwPos)) lastSwPos = tm < 0;  // if initializing then init the lastSwPos
         uint8_t swPos = getSwitch(tm>0 ? tm-(TMR_VAROFS+MAX_DRSWITCH-1-1) : tm+(TMR_VAROFS+MAX_DRSWITCH-1-1) ,0);
-        if(swPos && !lastSwPos)  sw_toggled = !sw_toggled;  //if switcdh is flipped first time -> change counter state
+        if(swPos && !lastSwPos)  sw_toggled = !sw_toggled;  //if switch is flipped first time -> change counter state
         lastSwPos = swPos;
     }
+		
+   	switch_b = tmb ? getSwitch( tmb ,0) : 1 ; //normal switch
+		
+		if ( switch_b == 0 )
+		{
+			val = 0 ;		// Stop TH%
+		}
 
     s_cnt++;
     s_sum+=val;
     if(( get_tmr10ms()-s_time)<100) return; //1 sec
     s_time += 100;
-    val     = s_sum/s_cnt;
+    
+		val     = s_sum/s_cnt;
     s_sum  -= val*s_cnt; //rest
     s_cnt   = 0;
 
     if(abs(tm)<TMR_VAROFS) sw_toggled = false; // not switch - sw timer off
     else if(abs(tm)<(TMR_VAROFS+MAX_DRSWITCH-1)) sw_toggled = getSwitch((tm>0 ? tm-(TMR_VAROFS-1) : tm+(TMR_VAROFS-1)) ,0); //normal switch
 
+    uint8_t tmrM = abs(g_model.tmrMode);
+
     s_timeCumTot               += 1;
     s_timeCumAbs               += 1;
     if(val) s_timeCumThr       += 1;
-    if(sw_toggled) s_timeCumSw += 1;
+    if(tmrM==TMRMODE_ABS) sw_toggled = true ;
+
+    if(sw_toggled && switch_b) s_timeCumSw += 1;
     s_timeCum16ThrP            += val/2;
 
     s_timerVal = g_model.tmrVal;
-    uint8_t tmrM = abs(g_model.tmrMode);
     if(tmrM==TMRMODE_NONE) s_timerState = TMR_OFF;
-    else if(tmrM==TMRMODE_ABS) s_timerVal -= s_timeCumAbs;
+    else if(tmrM==TMRMODE_ABS)
+		{
+			if ( tmb == 0 ) s_timerVal -= s_timeCumAbs ;
+    	else s_timerVal -= s_timeCumSw ; //switch
+		}	
     else if(tmrM<TMR_VAROFS) s_timerVal -= (tmrM&1) ? s_timeCum16ThrP/16 : s_timeCumThr;// stick% : stick
     else s_timerVal -= s_timeCumSw; //switch
 
@@ -3526,7 +3555,7 @@ void menuProc0(uint8_t event)
         if(s_timerState != TMR_OFF){
             uint8_t att = DBLSIZE | (s_timerState==TMR_BEEPING ? BLINK : 0);
             putsTime(x+14*FW-2, FH*2, s_timerVal, att,att);
-            putsTmrMode(x+7*FW-FW/2,FH*3,0);
+            putsTmrMode(x+7*FW-FW/2,FH*3,0,0);
         }
 
         lcd_putsAttIdx(x+4*FW,     2*FH,PSTR("\003ExpExFFneMedCrs"),g_model.trimInc, 0);
