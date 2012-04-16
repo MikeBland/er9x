@@ -21,6 +21,8 @@
 #include "frsky.h"
 #endif
 
+const prog_char APM Str_EEPROM_Overflow[] =  "EEPROM overflow" ;
+
 EFile theFile;  //used for any file operation
 EFile theFile2; //sometimes we need two files
 EFile theWriteFile; //separate write file
@@ -257,7 +259,7 @@ void eeCheck(bool immediately)
     		}
 
       }else{
-        alert(PSTR("EEPROM overflow"));
+        alert(Str_EEPROM_Overflow);
       }
     }
     //first finish GENERAL, then MODEL !!avoid Toggle effect
@@ -283,7 +285,7 @@ void eeCheck(bool immediately)
       }else{
         if ( ( msk & EE_TRIM ) == 0 )		// Don't stop if trim adjust
         {
-          alert(PSTR("EEPROM overflow"));
+          alert(Str_EEPROM_Overflow);
         }
       }
     }

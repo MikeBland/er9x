@@ -184,8 +184,16 @@ typedef struct t_FrSkyChannelData {
     uint8_t   type:2;               // 0=volts, 1=raw, 2=volts*2, 3=Amps
 } __attribute__((packed)) FrSkyChannelData;
 
+typedef struct t_FrSkyalarms
+{
+	uint8_t frskyAlarmType ;
+	uint8_t frskyAlarmLimit ;
+	uint8_t frskyAlarmSound ;
+} __attribute__((packed)) FrSkyAlarmData;
+
 typedef struct t_FrSkyData {
     FrSkyChannelData channels[2];
+		FrSkyAlarmData alarmData[4] ;
 } __attribute__((packed)) FrSkyData;
 
 typedef struct t_ModelData {
@@ -202,8 +210,11 @@ typedef struct t_ModelData {
     uint16_t  tmrVal;
     uint8_t   protocol;
     int8_t    ppmNCH;
-    uint8_t   thrTrim:4;            // Enable Throttle Trim
-    uint8_t   thrExpo:4;            // Enable Throttle Expo
+    uint8_t   thrTrim:1;            // Enable Throttle Trim
+		uint8_t   numBlades:2;					// RPM scaling
+		uint8_t   spare10:1;
+    uint8_t   thrExpo:1;            // Enable Throttle Expo
+		uint8_t   spare11:3;
     int8_t    trimInc;              // Trim Increments
     int8_t    ppmDelay;
     int8_t    trimSw;

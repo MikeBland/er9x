@@ -16,6 +16,7 @@
 
 #include "er9x.h"
 
+uint8_t lcd_lastPos;
 
 uint8_t displayBuf[DISPLAY_W*DISPLAY_H/8];
 #define DISPLAY_END (displayBuf+sizeof(displayBuf))
@@ -51,9 +52,9 @@ void lcd_img(uint8_t i_x,uint8_t i_y,const prog_uchar * imgdat,uint8_t idx,uint8
   }
 }
 
-void lcd_putc(uint8_t x,uint8_t y,const char c)
+uint8_t lcd_putc(uint8_t x,uint8_t y,const char c)
 {
-  lcd_putcAtt(x,y,c,0);
+  return lcd_putcAtt(x,y,c,0);
 }
 
 /// invers: 0 no 1=yes 2=blink
@@ -171,6 +172,13 @@ void lcd_putsn_P(uint8_t x,uint8_t y,const prog_char * s,uint8_t len)
 {
   lcd_putsnAtt( x,y,s,len,0);
 }
+
+//uint8_t lcd_puts2Att(uint8_t x,uint8_t y,const prog_char * s,const prog_char * t ,uint8_t mode)
+//{
+//	x = lcd_putsAtt( x, y, s, mode ) ;
+//	return lcd_putsAtt( x, y, t, mode ) ;	
+//}
+
 uint8_t lcd_putsAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t mode)
 {
 	uint8_t source ;
@@ -219,7 +227,6 @@ void lcd_outdezAtt(uint8_t x,uint8_t y,int16_t val,uint8_t mode)
   lcd_outdezNAtt( x,y,val,mode,5);
 }
 
-uint8_t lcd_lastPos;
 #define PREC(n) ((n&0x20) ? ((n&0x10) ? 2 : 1) : 0)
 void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
 {

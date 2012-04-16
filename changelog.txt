@@ -10,6 +10,10 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 16-APR-2012  MPB
+RPM blades, set limit bug fix, Telemetry capacity alarm, flash saving
+
+******************************************
 CHANGELOG: 15-APR-2012  MPB
 Add second trigger option to timer1
 
