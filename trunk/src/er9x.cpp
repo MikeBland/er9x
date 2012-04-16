@@ -15,6 +15,7 @@
  */
 
 #include "er9x.h"
+
 #include "splashmarker.h"
 const
 #include "s9xsplash.lbm"
@@ -111,7 +112,7 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
         lcd_putsnAtt(x,y,&modi12x3[(pgm_read_byte(modn12x3+g_eeGeneral.stickMode*4+(idx-1))-1)*4],4,att);
 //        lcd_putsnAtt(x,y,modi12x3+g_eeGeneral.stickMode*16+4*(idx-1),4,att);
     else if(idx<=NUM_XCHNRAW)
-        lcd_putsnAtt(x,y,PSTR("P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"TELEMETRY_CHANNELS)+4*(idx-5),4,att);
+        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"TELEMETRY_CHANNELS),(idx-5),att);
 }
 void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 {
@@ -141,8 +142,8 @@ void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
 {
     switch(idx1){
     case  0:            lcd_putsAtt(x+FW,y,PSTR("---"),att);return;
-    case  MAX_DRSWITCH: lcd_putsAtt(x+FW,y,PSTR("ON "),att);return;
-    case -MAX_DRSWITCH: lcd_putsAtt(x+FW,y,PSTR("OFF"),att);return;
+    case  MAX_DRSWITCH: lcd_putsAtt(x+FW,y,Str_ON ,att);return;
+    case -MAX_DRSWITCH: lcd_putsAtt(x+FW,y,Str_OFF,att);return;
     }
     lcd_putcAtt(x,y, idx1<0 ? '!' : ' ',att);
     lcd_putsnAtt(x+FW,y,get_switches_string()+3*(abs(idx1)-1),3,att);
@@ -159,7 +160,7 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t type )
 	if ( type < 2 )		// 0 or 1
 	{
     if(abs(tm)<TMR_VAROFS) {
-        lcd_putsnAtt(  x, y, PSTR("OFFABSRUsRU%ELsEL%THsTH%ALsAL%P1 P1%P2 P2%P3 P3%")+3*abs(tm),3,attr);
+        lcd_putsAttIdx(  x, y, PSTR("\003OFFABSRUsRU%ELsEL%THsTH%ALsAL%P1 P1%P2 P2%P3 P3%"),abs(tm),attr);
         if(tm<(-TMRMODE_ABS)) lcd_putcAtt(x-1*FW,  y,'!',attr);
 //        return;
     }
@@ -1495,7 +1496,8 @@ void mainSequence()
         // up to debate if this is correct!
         //				bool AlarmRaisedAlready = false;
 
-        if (frskyStreaming){
+        if (frskyStreaming)
+				{
             enum AlarmLevel level[4] ;
             // RED ALERTS
             if( (level[0]=FRSKY_alarmRaised(0,0)) == alarm_red) FRSKY_alarmPlay(0,0);
@@ -1512,6 +1514,25 @@ void mainSequence()
             else if( level[1] == alarm_yellow) FRSKY_alarmPlay(0,1);
             else	if( level[2] == alarm_yellow) FRSKY_alarmPlay(1,0);
             else if( level[3] == alarm_yellow) FRSKY_alarmPlay(1,1);
+
+						// Check for current alarm
+        		for (int i=0; i<2; i++)
+						{
+							// To be enhanced by checking the type as well
+       		    if (g_model.frsky.channels[i].ratio)
+							{
+     		        if ( g_model.frsky.channels[i].type == 3 )		// Current (A)
+								{
+									if ( g_model.frsky.alarmData[0].frskyAlarmLimit )
+									{
+    		          	if ( ( Frsky_current[i].Amp_hours >> 6 ) >= g_model.frsky.alarmData[0].frskyAlarmLimit )
+										{
+											audio.event( g_model.frsky.alarmData[0].frskyAlarmSound ) ;
+										}
+									}
+								}
+       		    }
+        		}
         }
 
     }

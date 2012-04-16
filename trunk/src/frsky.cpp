@@ -122,14 +122,14 @@ void frsky_proc_user_byte( uint8_t byte )
 							
 							if ( Frsky_user_id == 17 )			// GPS Speed
 							{
-								if ( MaxGpsSpeed < FrskyHubData[Frsky_user_id] )
-								{	MaxGpsSpeed = FrskyHubData[Frsky_user_id] ;
+								if ( MaxGpsSpeed < FrskyHubData[17] )
+								{	MaxGpsSpeed = FrskyHubData[17] ;
 								}
 							}
 							if ( Frsky_user_id == 1 )			// GPS Alt
 							{
-                if ( FrskyHubData[Frsky_user_id] > MaxGpsAlt )
-                { MaxGpsAlt = FrskyHubData[Frsky_user_id] ;
+                if ( FrskyHubData[1] > MaxGpsAlt )
+                { MaxGpsAlt = FrskyHubData[1] ;
 								}	
 							}
 							if ( Frsky_user_id == 6 )			// Cell Voltage
@@ -149,6 +149,10 @@ void frsky_proc_user_byte( uint8_t byte )
   								}
   							}
   							FrskyVolts[battnumber] = ( ( ( Frsky_user_lobyte & 0x0F ) << 8 ) + byte ) / 10 ;
+							}
+							if ( Frsky_user_id == 3 )			// RPM
+							{
+								FrskyHubData[3] *= (g_model.numBlades == 2 ) ? 15 : ( (g_model.numBlades == 1 ) ? 20 : 30 ) ;
 							}
 						}	
 						Frsky_user_state = 0 ;
