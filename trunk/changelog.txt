@@ -10,6 +10,11 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 19-APR-2012  MPB
+Fix splash marker, changes towards custom telemetry screen, GPS speed in mph
+option (imperial units), switch inputs screen now L-R, flash saving
+
+******************************************
 CHANGELOG: 16-APR-2012  MPB
 RPM blades, set limit bug fix, Telemetry capacity alarm, flash saving
 

@@ -986,7 +986,8 @@ void perMain()
 
     g_menuStack[g_menuStackPtr](evt);
     refreshDiplay();
-    if(checkSlaveMode()) {
+    if( (checkSlaveMode()) && (!g_eeGeneral.enablePpmsim))
+		{
         PORTG &= ~(1<<OUT_G_SIM_CTL); // 0=ppm out
     }else{
         PORTG |=  (1<<OUT_G_SIM_CTL); // 1=ppm-in
