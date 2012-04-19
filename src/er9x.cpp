@@ -549,9 +549,9 @@ void checkWarnings()
     }
 }
 
-void putWarnSwitch( uint8_t x, const prog_char * s )
+void putWarnSwitch( uint8_t x, uint8_t idx )
 {
-  lcd_putsnAtt( x, 2*FH, s, 3, 0) ;
+  lcd_putsnAtt( x, 2*FH, get_switches_string() + idx, 3, 0) ;
 }
 
 void checkSwitches()
@@ -591,26 +591,26 @@ void checkSwitches()
         lcd_putsnAtt(0*FW, 2*FH, PSTR("                      "), 22, 0);
 
         if(x & SWP_THRB)
-            putWarnSwitch(2 + 0*FW, get_switches_string() );
+            putWarnSwitch(2 + 0*FW, 0 );
         if(x & SWP_RUDB)
-            putWarnSwitch(2 + 3*FW + FW/2, get_switches_string()+3 );
+            putWarnSwitch(2 + 3*FW + FW/2, 3 );
         if(x & SWP_ELEB)
-            putWarnSwitch(2 + 7*FW, get_switches_string()+6 );
+            putWarnSwitch(2 + 7*FW, 6 );
 
         if(x & SWP_IL5)
         {
             if(i & SWP_ID0B)
-                putWarnSwitch(2 + 10*FW + FW/2, get_switches_string()+9 );
+                putWarnSwitch(2 + 10*FW + FW/2, 9 );
             if(i & SWP_ID1B)
-                putWarnSwitch(2 + 10*FW + FW/2, get_switches_string()+12 );
+                putWarnSwitch(2 + 10*FW + FW/2, 12 );
             if(i & SWP_ID2B)
-                putWarnSwitch(2 + 10*FW + FW/2, get_switches_string()+15 );
+                putWarnSwitch(2 + 10*FW + FW/2, 15 );
         }
 
         if(x & SWP_AILB)
-            putWarnSwitch(2 + 14*FW, get_switches_string()+18 );
+            putWarnSwitch(2 + 14*FW, 18 );
         if(x & SWP_GEAB)
-            putWarnSwitch(2 + 17*FW + FW/2, get_switches_string()+21 );
+            putWarnSwitch(2 + 17*FW + FW/2, 21 );
 
 
         refreshDiplay();
@@ -976,7 +976,8 @@ void perMain()
 
     g_menuStack[g_menuStackPtr](evt);
     refreshDiplay();
-    if(checkSlaveMode()) {
+    if( (checkSlaveMode()) && (!g_eeGeneral.enablePpmsim))
+		{
         PORTG &= ~(1<<OUT_G_SIM_CTL); // 0=ppm out
     }else{
         PORTG |=  (1<<OUT_G_SIM_CTL); // 1=ppm-in
@@ -1473,7 +1474,7 @@ void mainSequence()
                 {
                     limit = 122 ;	//m
                 }
-                if ( ( FrskyHubData[16] + AltOffset ) > limit )
+                if ( ( FrskyHubData[FR_ALT_BARO] + AltOffset ) > limit )
                 {
                     audioDefevent(AU_WARNING2) ;
                 }
@@ -1525,7 +1526,7 @@ void mainSequence()
 								{
 									if ( g_model.frsky.alarmData[0].frskyAlarmLimit )
 									{
-    		          	if ( ( Frsky_current[i].Amp_hours >> 6 ) >= g_model.frsky.alarmData[0].frskyAlarmLimit )
+    		          	if ( (  FrskyHubData[FR_A1_MAH+i] >> 6 ) >= g_model.frsky.alarmData[0].frskyAlarmLimit )
 										{
 											audio.event( g_model.frsky.alarmData[0].frskyAlarmSound ) ;
 										}

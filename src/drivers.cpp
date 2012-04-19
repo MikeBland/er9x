@@ -102,7 +102,12 @@ Key keys[NUM_KEYS];
 void Key::input(bool val, EnumKeys enuk)
 {
   //  uint8_t old=m_vals;
-  m_vals <<= 1;  if(val) m_vals |= 1; //portbit einschieben
+	uint8_t t_vals ;
+//  m_vals <<= 1;  if(val) m_vals |= 1; //portbit einschieben
+	t_vals = m_vals ;
+	t_vals <<= 1 ;
+  if(val) t_vals |= 1; //portbit einschieben
+	m_vals = t_vals ;
   m_cnt++;
 
   if(m_state && m_vals==0){  //gerade eben sprung auf 0

@@ -33,6 +33,45 @@
 #define BYTESTUFF       0x7d
 #define STUFF_MASK      0x20
 
+// Translate hub data positions
+const prog_uint8_t APM Fr_indices[] = 
+{
+	HUBDATALENGTH-1,
+	FR_GPS_ALT,
+	FR_TEMP1,
+	FR_RPM,
+	FR_FUEL,
+	FR_TEMP2,
+	FR_CELL_V,
+	FR_GPS_ALTd,
+	HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,
+	HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,
+	FR_ALT_BARO,
+	FR_GPS_SPEED,
+	FR_GPS_LONG,
+	FR_GPS_LAT,
+	FR_COURSE,
+	FR_GPS_DATMON,
+	FR_GPS_YEAR,
+	FR_GPS_HRMIN,
+	FR_GPS_SEC,
+	FR_GPS_SPEEDd,
+	FR_GPS_LONGd,
+	FR_GPS_LATd,
+	FR_COURSEd,
+	HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,
+	FR_ALT_BAROd,
+	FR_LONG_E_W,
+	FR_LAT_N_S,
+	FR_ACCX,
+	FR_ACCY,
+	FR_ACCZ,
+	HUBDATALENGTH-1,
+	FR_CURRENT,
+	FR_V_AMP,
+	FR_V_AMPd
+} ;
+
 uint8_t frskyRxBuffer[19];   // Receive buffer. 9 bytes (full packet), worst case 18 bytes with byte-stuffing (+1)
 uint8_t frskyTxBuffer[19];   // Ditto for transmit buffer
 uint8_t frskyTxBufferCount = 0;
@@ -61,7 +100,6 @@ uint8_t Frsky_user_stuff ;
 uint8_t Frsky_user_id ;
 uint8_t Frsky_user_lobyte ;
 
-#define HUBDATALENGTH 41
 int16_t FrskyHubData[HUBDATALENGTH] ;  // All 38 words
 uint8_t MaxGpsSpeed ;
 int16_t MaxGpsAlt ;
@@ -102,7 +140,11 @@ void frsky_proc_user_byte( uint8_t byte )
 					}
   	      if ( Frsky_user_state == 1 )
 					{
-					  Frsky_user_id	= byte ;
+						if ( byte > 57 )
+						{
+							byte -= 17 ;		// Move voltage-amp sensors							
+						}
+					  Frsky_user_id	= pgm_read_byte( &Fr_indices[byte] ) ;
 						Frsky_user_state = 2 ;
 					}
   	      else if ( Frsky_user_state == 2 )
@@ -117,22 +159,22 @@ void frsky_proc_user_byte( uint8_t byte )
 						  FrskyHubData[Frsky_user_id] = ( byte << 8 ) + Frsky_user_lobyte ;
 							if ( g_model.FrSkyGpsAlt )
 							{
-					  		FrskyHubData[16] = FrskyHubData[1] ;		// Copy Gps Alt instead
+					  		FrskyHubData[FR_ALT_BARO] = FrskyHubData[FR_GPS_ALT] ;		// Copy Gps Alt instead
 							}
 							
-							if ( Frsky_user_id == 17 )			// GPS Speed
+							if ( Frsky_user_id == FR_GPS_SPEED )			// GPS Speed
 							{
-								if ( MaxGpsSpeed < FrskyHubData[17] )
-								{	MaxGpsSpeed = FrskyHubData[17] ;
+								if ( MaxGpsSpeed < FrskyHubData[FR_GPS_SPEED] )
+								{	MaxGpsSpeed = FrskyHubData[FR_GPS_SPEED] ;
 								}
 							}
-							if ( Frsky_user_id == 1 )			// GPS Alt
+							if ( Frsky_user_id == FR_GPS_ALT )			// GPS Alt
 							{
-                if ( FrskyHubData[1] > MaxGpsAlt )
-                { MaxGpsAlt = FrskyHubData[1] ;
+                if ( FrskyHubData[FR_GPS_ALT] > MaxGpsAlt )
+                { MaxGpsAlt = FrskyHubData[FR_GPS_ALT] ;
 								}	
 							}
-							if ( Frsky_user_id == 6 )			// Cell Voltage
+							if ( Frsky_user_id == FR_CELL_V )			// Cell Voltage
 							{
 								// It appears the cell voltage bytes are in the wrong order
 //  							uint8_t battnumber = ( FrskyHubData[6] >> 12 ) & 0x000F ;
@@ -150,9 +192,9 @@ void frsky_proc_user_byte( uint8_t byte )
   							}
   							FrskyVolts[battnumber] = ( ( ( Frsky_user_lobyte & 0x0F ) << 8 ) + byte ) / 10 ;
 							}
-							if ( Frsky_user_id == 3 )			// RPM
+							if ( Frsky_user_id == FR_RPM )			// RPM
 							{
-								FrskyHubData[3] *= (g_model.numBlades == 2 ) ? 15 : ( (g_model.numBlades == 1 ) ? 20 : 30 ) ;
+								FrskyHubData[FR_RPM] *= (g_model.numBlades == 2 ) ? 15 : ( (g_model.numBlades == 1 ) ? 20 : 30 ) ;
 							}
 						}	
 						Frsky_user_state = 0 ;
@@ -169,7 +211,7 @@ void frsky_proc_user_byte( uint8_t byte )
 		}
 		else
 		{
-			FrskyHubData[16] = ( byte << 8 ) + Frsky_user_lobyte ;  // Store altitude info
+			FrskyHubData[FR_ALT_BARO] = ( byte << 8 ) + Frsky_user_lobyte ;  // Store altitude info
 		}				
 	}
 }
@@ -656,19 +698,11 @@ void FrskyData::set(uint8_t value)
 void resetTelemetry()
 {
   memset(frskyTelemetry, 0, sizeof(frskyTelemetry));
-	Frsky_current[0].Amp_hours = 0 ;
-	Frsky_current[1].Amp_hours = 0 ;
+	FrskyHubData[FR_A1_MAH] = 0 ;
+	FrskyHubData[FR_A2_MAH] = 0 ;
 //  memset(frskyRSSI, 0, sizeof(frskyRSSI));
 }
 
-void Frsky_current_info::update(uint8_t value)
-{
-	if ( ( Amp_hour_prescale += value ) > Amp_hour_boundary )
-	{
-		Amp_hour_prescale -= Amp_hour_boundary ;
-		Amp_hours += 1 ;			
-	}
-}
 
 // Called every 10 mS in interrupt routine
 void check_frsky()
@@ -692,7 +726,11 @@ void check_frsky()
   	  // so subtract 3600 and add 1 to mAh total
   	  // alternatively, add up the raw value, and use 3600 * 100 / ratio for 1mAh
 			
-			Frsky_current[i].update(frskyTelemetry[i].value ) ;
+			if ( (  Frsky_current[i].Amp_hour_prescale += frskyTelemetry[i].value ) >  Frsky_current[i].Amp_hour_boundary )
+			{
+				 Frsky_current[i].Amp_hour_prescale -=  Frsky_current[i].Amp_hour_boundary ;
+				FrskyHubData[FR_A1_MAH+i] += 1 ;
+			}
   	}	
 	}
 

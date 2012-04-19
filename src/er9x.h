@@ -231,8 +231,8 @@ enum EnumKeys {
 #define CURV_STR "---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
 #define CURVE_BASE 7
 
-#define CSWITCH_STR  "----   v>ofs  v<ofs  |v|>ofs|v|<ofsAND    OR     XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""v1>=v2 ""v1<=v2 "
-#define CSW_LEN_FUNC 7
+#define CSWITCH_STR  "\007----   v>ofs  v<ofs  |v|>ofs|v|<ofsAND    OR     XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""v1>=v2 ""v1<=v2 "
+//#define CSW_LEN_FUNC 7
 
 #define CS_OFF       0
 #define CS_VPOS      1  //v>offset
@@ -729,6 +729,10 @@ extern const char stamp3[];
 extern const char stamp4[];
 extern const char stamp5[];
 #include "myeeprom.h"
+
+extern const prog_uchar APM s9xsplashMarker[] ;
+extern const prog_uchar APM s9xsplash[] ;
+
 
 #define FLASH_DURATION 50
 
