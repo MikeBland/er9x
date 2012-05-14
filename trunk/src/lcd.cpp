@@ -16,6 +16,11 @@
 
 #include "er9x.h"
 
+#ifdef SIMU
+bool lcd_refresh = true;
+uint8_t lcd_buf[DISPLAY_W*DISPLAY_H/8];
+#endif
+
 uint8_t lcd_lastPos;
 
 uint8_t displayBuf[DISPLAY_W*DISPLAY_H/8];
@@ -253,12 +258,12 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
   if (mode & DBLSIZE)
   {
     fw += FWNUM ;
-    xinc = 2*FW;
+    xinc = 2*FWNUM;
     lcd_lastPos = 2*FW;
   }
   else
   {
-    xinc = FW ;
+    xinc = FWNUM ;
     lcd_lastPos = FW;
   }
 
@@ -508,6 +513,11 @@ uint8_t LcdTrimSwapped ;
 
 void refreshDiplay()
 {
+#ifdef SIMU
+  memcpy(lcd_buf, displayBuf, sizeof(displayBuf));
+  lcd_refresh = true;
+#else
+
   uint8_t *p=displayBuf;
   for(uint8_t y=0; y < 8; y++) {
     lcdSendCtl(0x04);
@@ -537,4 +547,5 @@ void refreshDiplay()
     PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_A0);
     PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_CS1);
   }
+#endif
 }

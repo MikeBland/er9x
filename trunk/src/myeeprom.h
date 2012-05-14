@@ -18,6 +18,9 @@
 
 #include <inttypes.h>
 
+#ifndef PACK
+#define PACK( __Declaration__ ) __Declaration__ __attribute__((__packed__))
+#endif
 
 //eeprom data
 //#define EE_VERSION 2
@@ -60,19 +63,19 @@
 #define GENERAL_OWNER_NAME_LEN 10
 #define MODEL_NAME_LEN         10
 
-typedef struct t_TrainerMix {
+PACK(typedef struct t_TrainerMix {
     uint8_t srcChn:3; //0-7 = ch1-8
     int8_t  swtch:5;
     int8_t  studWeight:6;
     uint8_t mode:2;   //off,add-mode,subst-mode
-} __attribute__((packed)) TrainerMix; //
+})  TrainerMix; //
 
-typedef struct t_TrainerData {
+PACK(typedef struct t_TrainerData {
     int16_t        calib[4];
     TrainerMix     mix[4];
-} __attribute__((packed)) TrainerData;
+}) TrainerData;
 
-typedef struct t_EEGeneral {
+PACK(typedef struct t_EEGeneral {
     uint8_t   myVers;
     int16_t   calibMid[7];
     int16_t   calibSpanNeg[7];
@@ -118,7 +121,7 @@ typedef struct t_EEGeneral {
     char      ownerName[GENERAL_OWNER_NAME_LEN];
     uint8_t   switchWarningStates;
     uint8_t   res[4];
-} __attribute__((packed)) EEGeneral;
+}) EEGeneral;
 
 
 
@@ -127,25 +130,25 @@ typedef struct t_EEGeneral {
 //eeprom modelspec
 //expo[3][2][2] //[Norm/Dr][expo/weight][R/L]
 
-typedef struct t_ExpoData {
+PACK(typedef struct t_ExpoData {
     int8_t  expo[3][2][2];
     int8_t  drSw1;
     int8_t  drSw2;
-} __attribute__((packed)) ExpoData;
+}) ExpoData;
 
 
-typedef struct t_LimitData {
+PACK(typedef struct t_LimitData {
     int8_t  min;
     int8_t  max;
     bool    revert;
     int16_t  offset;
-} __attribute__((packed)) LimitData;
+}) LimitData;
 
 #define MLTPX_ADD  0
 #define MLTPX_MUL  1
 #define MLTPX_REP  2
 
-typedef struct t_MixData {
+PACK(typedef struct t_MixData {
     uint8_t destCh;            //        1..NUM_CHNOUT
     uint8_t srcRaw;            //
     int8_t  weight;
@@ -162,41 +165,42 @@ typedef struct t_MixData {
     uint8_t mixres:1;
     int8_t  sOffset;
     int8_t  res;
-} __attribute__((packed)) MixData;
+}) MixData;
 
 
-typedef struct t_CSwData { // Custom Switches data
+PACK(typedef struct t_CSwData { // Custom Switches data
     int8_t  v1; //input
     int8_t  v2; //offset
     uint8_t func;
-} __attribute__((packed)) CSwData;
+}) CSwData;
 
-typedef struct t_SafetySwData { // Custom Switches data
-    int8_t  swtch;
+PACK(typedef struct t_SafetySwData { // Custom Switches data
+    int8_t  swtch:6;
+		uint8_t mode:2;
     int8_t  val;
-} __attribute__((packed)) SafetySwData;
+}) SafetySwData;
 
-typedef struct t_FrSkyChannelData {
+PACK(typedef struct t_FrSkyChannelData {
     uint8_t   ratio;                // 0.0 means not used, 0.1V steps EG. 6.6 Volts = 66. 25.1V = 251, etc.
     uint8_t   alarms_value[2];      // 0.1V steps EG. 6.6 Volts = 66. 25.1V = 251, etc.
     uint8_t   alarms_level:4;
     uint8_t   alarms_greater:2;     // 0=LT(<), 1=GT(>)
     uint8_t   type:2;               // 0=volts, 1=raw, 2=volts*2, 3=Amps
-} __attribute__((packed)) FrSkyChannelData;
+}) FrSkyChannelData;
 
-typedef struct t_FrSkyalarms
+PACK(typedef struct t_FrSkyalarms
 {
 	uint8_t frskyAlarmType ;
 	uint8_t frskyAlarmLimit ;
 	uint8_t frskyAlarmSound ;
-} __attribute__((packed)) FrSkyAlarmData;
+}) FrSkyAlarmData;
 
-typedef struct t_FrSkyData {
+PACK(typedef struct t_FrSkyData {
     FrSkyChannelData channels[2];
 		FrSkyAlarmData alarmData[4] ;
-} __attribute__((packed)) FrSkyData;
+}) FrSkyData;
 
-typedef struct t_ModelData {
+PACK(typedef struct t_ModelData {
     char      name[MODEL_NAME_LEN];             // 10 must be first for eeLoadModelName
     uint8_t   reserved_spare;  //used to be MDVERS - now depreciated
     int8_t    tmrMode;              // timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
@@ -240,7 +244,7 @@ typedef struct t_ModelData {
     uint8_t   res3;
     SafetySwData  safetySw[NUM_CHNOUT];
     FrSkyData frsky;
-} __attribute__((packed)) ModelData;
+}) ModelData;
 
 #define TOTAL_EEPROM_USAGE (sizeof(ModelData)*MAX_MODELS + sizeof(EEGeneral))
 

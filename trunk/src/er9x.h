@@ -23,6 +23,9 @@
 
 ///opt/cross/avr/include/avr/pgmspace.h
 #include <stddef.h>
+
+#ifndef SIMU
+
 #include <avr/io.h>
 #define assert(x)
 //disable whole pgmspace functionality for all avr-gcc because
@@ -63,7 +66,13 @@ typedef uint32_t  prog_uint32_t __attribute__((__progmem__));//,deprecated("prog
 #undef PGM_P
 #define PGM_P const prog_char *
 
+#ifndef FORCEINLINE
+#define FORCEINLINE inline __attribute__ ((always_inline))
+#endif
 
+#ifndef NOINLINE
+#define NOINLINE __attribute__ ((noinline))
+#endif
 
 #ifdef __cplusplus
 #define APM __attribute__(( section(".progmem.data") ))
@@ -80,6 +89,8 @@ typedef uint32_t  prog_uint32_t __attribute__((__progmem__));//,deprecated("prog
 #include <avr/wdt.h>
 
 //#define eeprom_write_block eeWriteBlockCmp
+
+#endif
 
 #include "file.h"
 //
@@ -292,6 +303,11 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define SWP_IL4 (SWP_ID1B | SWP_ID2B)
 #define SWP_IL5 (SWP_ID0B | SWP_ID1B | SWP_ID2B)
 
+#define SWP_LEG1	(SWP_ID0B)
+#define SWP_LEG2	(SWP_ID1B)
+#define SWP_LEG3	(SWP_ID2B)
+
+
 #define SWASH_TYPE_STR   "\006---   ""120   ""120X  ""140   ""90    "
 
 #define SWASH_TYPE_120   1
@@ -467,7 +483,7 @@ extern uint8_t  s_timerState;
 void resetTimer();
 
 extern uint8_t Timer2_running ;
-extern uint16_t Timer2 ;
+extern int16_t s_timerVal[] ;
 void resetTimer2() ;
 
 const prog_char *get_switches_string() ;
@@ -546,7 +562,7 @@ template<class t> inline t limit(t mi, t x, t ma){ return min(max(mi,x),ma); }
 
 /// Markiert einen EEPROM-Bereich als dirty. der Bereich wird dann in
 /// eeCheck ins EEPROM zurueckgeschrieben.
-void eeWriteBlockCmp(const void *i_pointer_ram, void *i_pointer_eeprom, size_t size);
+void eeWriteBlockCmp(const void *i_pointer_ram, uint16_t i_pointer_eeprom, size_t size);
 void eeWaitComplete();
 void eeDirty(uint8_t msk);
 void eeCheck(bool immediately=false);
@@ -566,15 +582,8 @@ bool eeModelExists(uint8_t id);
 #define PPM_BASE    MIX_CYC3
 #define CHOUT_BASE  (PPM_BASE+NUM_PPM)
 
-#ifdef FRSKY
-#define NUM_TELEMETRY 2
-#define TELEMETRY_CHANNELS "AD1 AD2 "
-#else
-#define NUM_TELEMETRY 0
-#define TELEMETRY_CHANNELS ""
-#endif
 
-#define NUM_XCHNRAW (CHOUT_BASE+NUM_CHNOUT+NUM_TELEMETRY) // NUMCH + P1P2P3+ AIL/RUD/ELE/THR + MAX/FULL + CYC1/CYC2/CYC3
+#define NUM_XCHNRAW (CHOUT_BASE+NUM_CHNOUT) // NUMCH + P1P2P3+ AIL/RUD/ELE/THR + MAX/FULL + CYC1/CYC2/CYC3
 ///number of real output channels (CH1-CH8) plus virtual output channels X1-X4
 #define NUM_XCHNOUT (NUM_CHNOUT) //(NUM_CHNOUT)//+NUM_VIRT)
 
@@ -615,6 +624,7 @@ extern inline int16_t calc1000toRESX(int16_t x)  // improve calc time by Pat Mac
 }
 
 extern volatile uint16_t g_tmr10ms;
+extern volatile uint8_t g8_tmr10ms;
 
 extern inline uint16_t get_tmr10ms()
 {
@@ -705,7 +715,6 @@ extern uint16_t jeti_keys;
 //extern TrainerData g_trainer;
 //extern uint16_t           g_anaIns[8];
 extern uint8_t            g_vbat100mV;
-extern volatile uint16_t  g_tmr10ms;
 extern volatile uint8_t   g_blinkTmr10ms;
 extern uint8_t            g_beepCnt;
 //extern uint8_t            g_beepVal[5];
@@ -733,6 +742,15 @@ extern const char stamp5[];
 extern const prog_uchar APM s9xsplashMarker[] ;
 extern const prog_uchar APM s9xsplash[] ;
 
+extern const prog_char APM Str_telemItems[] ;
+extern const prog_int8_t APM TelemIndex[] ;
+extern int16_t convertTelemConstant( int8_t channel, int8_t value) ;
+
+#ifdef FRSKY
+#define NUM_TELEM_ITEMS 16
+#else
+#define NUM_TELEM_ITEMS 2
+#endif
 
 #define FLASH_DURATION 50
 
