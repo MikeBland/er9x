@@ -28,6 +28,7 @@ mode4 ail thr ele rud
 */
 
 
+extern int16_t AltOffset ;
 
 EEGeneral  g_eeGeneral;
 ModelData  g_model;
@@ -49,6 +50,9 @@ const prog_uint8_t APM bchout_ar[] = {
 audioQueue  audio;
 
 uint8_t sysFlags = 0;
+
+uint8_t AlarmTimer = 200 ;		// Units of 10 mS
+uint8_t AlarmCheckFlag = 0 ;
 
 const prog_char APM Str_OFF[] =  "OFF" ;
 const prog_char APM Str_ON[] = "ON " ;
@@ -90,8 +94,8 @@ void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
     }
 
     lcd_putcAtt(x, y, ':',att&att2);
-    lcd_outdezNAtt(x+ ((att&DBLSIZE) ? 2 : 0), y, tme/60, LEADING0|att,2);
-    x += (att&DBLSIZE) ? FWNUM*6-2 : FW*3-1;
+    lcd_outdezNAtt(x/*+ ((att&DBLSIZE) ? 2 : 0)*/, y, tme/60, LEADING0|att,2);
+    x += (att&DBLSIZE) ? FWNUM*6-4 : FW*3-3;
     lcd_outdezNAtt(x, y, tme%60, LEADING0|att2,2);
 }
 void putsVolts(uint8_t x,uint8_t y, uint8_t volts, uint8_t att)
@@ -112,8 +116,13 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
         lcd_putsnAtt(x,y,&modi12x3[(pgm_read_byte(modn12x3+g_eeGeneral.stickMode*4+(idx-1))-1)*4],4,att);
 //        lcd_putsnAtt(x,y,modi12x3+g_eeGeneral.stickMode*16+4*(idx-1),4,att);
     else if(idx<=NUM_XCHNRAW)
-        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"TELEMETRY_CHANNELS),(idx-5),att);
+        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"),(idx-5),att);
+#ifdef FRSKY
+    else
+        lcd_putsAttIdx(x,y,Str_telemItems,(idx-NUM_XCHNRAW-1),att);
+#endif
 }
+
 void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 {
 	if ( idx1 == 0 )
@@ -248,6 +257,10 @@ void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t 
     else
     {
         lcd_outdezAtt(x, y, value, att);
+		    if (g_model.frsky.channels[channel].type == 3/*A*/)
+				{
+        	if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, 'A', att);
+				}
     }
 }
 
@@ -256,12 +269,31 @@ void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t 
 
 inline int16_t getValue(uint8_t i)
 {
+#ifdef FRSKY
+	int8_t j ;
+	int16_t offset = 0 ;
+#endif
     if(i<PPM_BASE) return calibratedStick[i];//-512..512
     else if(i<PPM_BASE+4) return (g_ppmIns[i-PPM_BASE] - g_eeGeneral.trainer.calib[i-PPM_BASE])*2;
     else if(i<CHOUT_BASE) return g_ppmIns[i-PPM_BASE]*2;
     else if(i<CHOUT_BASE+NUM_CHNOUT) return ex_chans[i-CHOUT_BASE];
 #ifdef FRSKY
-    else if(i<CHOUT_BASE+NUM_CHNOUT+NUM_TELEMETRY) return frskyTelemetry[i-CHOUT_BASE-NUM_CHNOUT].value;
+    else if(i<CHOUT_BASE+NUM_CHNOUT+NUM_TELEM_ITEMS)
+		{
+			j = pgm_read_byte( &TelemIndex[i-CHOUT_BASE-NUM_CHNOUT] ) ;
+			if ( j >= 0 )
+			{
+	      if ( j == FR_ALT_BARO )
+				{
+          offset = AltOffset ;
+				}
+				return FrskyHubData[j] + offset ;
+			}
+			else
+			{
+				return s_timerVal[j+2] ;
+			}
+		}
 #endif
     else return 0;
 }
@@ -315,7 +347,7 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
         x = getValue(cs.v1-1);
 #ifdef FRSKY
         if (cs.v1 > CHOUT_BASE+NUM_CHNOUT)
-            y = 125+cs.v2;
+          y = convertTelemConstant( cs.v1-CHOUT_BASE-NUM_CHNOUT-1, cs.v2 ) ;
         else
 #endif
             y = calc100toRESX(cs.v2);
@@ -564,7 +596,8 @@ void checkSwitches()
 //    refreshDiplay();
 
     uint8_t x = g_eeGeneral.switchWarningStates & SWP_IL5;
-    if(x==SWP_IL1 || x==SWP_IL2 || x==SWP_IL3 || x==SWP_IL4 || x==SWP_IL5) //illegal states for ID0/1/2
+//    if(x==SWP_IL1 || x==SWP_IL2 || x==SWP_IL3 || x==SWP_IL4 || x==SWP_IL5) //illegal states for ID0/1/2
+    if(!(x==SWP_LEG1 || x==SWP_LEG2 || x==SWP_LEG3)) //legal states for ID0/1/2
     {
         g_eeGeneral.switchWarningStates &= ~SWP_IL5; // turn all off, make sure only one is on
         g_eeGeneral.switchWarningStates |=  SWP_ID0B;
@@ -657,23 +690,38 @@ uint8_t  g_menuStackPtr = 0;
 //uint8_t  g_beepCnt;
 //uint8_t  g_beepVal[5];
 
+#define	ALERT_TYPE	0
+#define MESS_TYPE		1
+
+void almess( const prog_char * s, uint8_t type )
+{
+	const prog_char *h ;
+  lcd_clear();
+  lcd_puts_Pleft(4*FW,s);
+	if ( type == ALERT_TYPE)
+	{
+    lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
+		h = PSTR("ALERT") ;
+	}
+	else
+	{
+		h = PSTR("MESSAGE") ;
+	}
+  lcd_putsAtt(64-5*FW,0*FH, h,DBLSIZE);
+  refreshDiplay();
+}
+
+
 void message(const prog_char * s)
 {
-    lcd_clear();
-    lcd_putsAtt(64-5*FW,0*FH,PSTR("MESSAGE"),DBLSIZE);
-    lcd_puts_Pleft(4*FW,s);
-    refreshDiplay();
-    lcdSetRefVolt(g_eeGeneral.contrast);
+	almess( s, MESS_TYPE ) ;
+  lcdSetRefVolt(g_eeGeneral.contrast);
 }
 
 void alert(const prog_char * s, bool defaults)
 {
-    lcd_clear();
-    lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
-    lcd_puts_Pleft(4*FW,s);
-    lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
-    refreshDiplay();
-    lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
+	almess( s, ALERT_TYPE ) ;
+  lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
 
     audioDefevent(AU_ERROR);
     clearKeyEvents();
@@ -826,7 +874,7 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
     return newval;
 }
 
-int8_t checkIncDec(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max, uint8_t i_flags)
+NOINLINE int8_t checkIncDec(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max, uint8_t i_flags)
 {
     return checkIncDec16(event,i_val,i_min,i_max,i_flags);
 }
@@ -909,12 +957,12 @@ inline bool checkSlaveMode()
 
 uint8_t Timer2_running = 0 ;
 uint8_t Timer2_pre = 0 ;
-uint16_t Timer2 = 0 ;
+//uint16_t Timer2 = 0 ;
 
 void resetTimer2()
 {
     Timer2_pre = 0 ;
-    Timer2 = 0 ;
+    s_timerVal[1] = 0 ;
     Timer2_running = 0 ;   // Stop and clear throttle started flag
 }
 
@@ -922,12 +970,15 @@ void doBackLight(uint8_t evt)
 {
     uint16_t a = 0;
     uint16_t b = 0;
-    if(g_LightOffCounter) g_LightOffCounter--;
+    uint16_t lightoffctr ;
+		lightoffctr = g_LightOffCounter ;
+
+    if(lightoffctr) lightoffctr--;
     if(evt) a = g_eeGeneral.lightAutoOff*500; // on keypress turn the light on 5*100
     if(stickMoved) b = g_eeGeneral.lightOnStickMove*500;
-    if(a>g_LightOffCounter) g_LightOffCounter = a;
-    if(b>g_LightOffCounter) g_LightOffCounter = b;
-
+    if(a>lightoffctr) lightoffctr = a;
+    if(b>lightoffctr) lightoffctr = b;
+		g_LightOffCounter = lightoffctr ;
     check_backlight();
 }
 
@@ -950,7 +1001,7 @@ void perMain()
         if ( (Timer2_pre += 1 ) >= 100 )
         {
             Timer2_pre -= 100 ;
-            Timer2 += 1 ;
+            s_timerVal[1] += 1 ;
         }
     }
 
@@ -1209,17 +1260,23 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 
         per10ms();
 #ifdef FRSKY
-	check_frsky() ;
+		check_frsky() ;
 #endif
         heartbeat |= HEART_TIMER10ms;
+	// See if time for alarm checking
+		if (--AlarmTimer == 0 )
+		{
+			AlarmTimer = 200 ;		// Restart timer
+			AlarmCheckFlag = 1 ;	// Flag time to check alarms
+		}
 
 
-    } // end 10ms event
+  } // end 10ms event
 
 
-    cli();
-    TIMSK |= (1<<OCIE0);
-    sei();
+  cli();
+  TIMSK |= (1<<OCIE0);
+  sei();
 }
 
 
@@ -1366,10 +1423,11 @@ int main(void)
 
     //we assume that startup is like pressing a switch and moving sticks.  Hence the lightcounter is set
     //if we have a switch on backlight it will be able to turn on the backlight.
+
+    g_LightOffCounter = g_eeGeneral.lightOnStickMove ;
     if(g_eeGeneral.lightAutoOff > g_eeGeneral.lightOnStickMove)
-        g_LightOffCounter = g_eeGeneral.lightAutoOff*500;
-    if(g_eeGeneral.lightAutoOff < g_eeGeneral.lightOnStickMove)
-        g_LightOffCounter = g_eeGeneral.lightOnStickMove*500;
+      g_LightOffCounter = g_eeGeneral.lightAutoOff ;
+    g_LightOffCounter *= 500 ;
     check_backlight();
 
     // moved here and logic added to only play statup tone if splash screen enabled.
@@ -1396,9 +1454,9 @@ int main(void)
     wdt_enable(WDTO_500MS);
     perOut(g_chans512, 0);
 
-    pushMenu(menuProcModelSelect);
-    popMenu(true);  // this is so the first instance of [MENU LONG] doesn't freak out!
-    //g_menuStack[g_menuStackPtr+1] =
+//    pushMenu(menuProcModelSelect);
+//    popMenu(true);  
+    g_menuStack[1] = menuProcModelSelect ;	// this is so the first instance of [MENU LONG] doesn't freak out!
 
     lcdSetRefVolt(g_eeGeneral.contrast);
 
@@ -1454,13 +1512,13 @@ void mainSequence()
     }
     t0 = getTmr16KHz() - t0;
     if ( t0 > g_timeMain ) g_timeMain = t0 ;
-#ifdef FRSKY
-    if ( FrskyAlarmCheckFlag )
+    if ( AlarmCheckFlag )
     {
-        FrskyAlarmCheckFlag = 0 ;
+        AlarmCheckFlag = 0 ;
         // Check for alarms here
         // Including Altitude limit
 
+#ifdef FRSKY
         if (frskyUsrStreaming)
         {
             int16_t limit = g_model.FrSkyAltAlarm ;
@@ -1535,9 +1593,24 @@ void mainSequence()
        		    }
         		}
         }
-
-    }
 #endif
+
+				// Now for the Safety/alarm switch alarms
+				{
+					uint8_t i ;
+					for ( i = 0 ; i < NUM_CSW ; i += 1 )
+					{
+    				SafetySwData *sd = &g_model.safetySw[i] ;
+						if (sd->mode == 1)
+						{
+							if(getSwitch( sd->swtch,0))
+							{
+								audio.event( (g_eeGeneral.speakerMode == 0) ? 1 : sd->val ) ;
+							}
+						}
+					}
+				}
+    }
 }
 
 

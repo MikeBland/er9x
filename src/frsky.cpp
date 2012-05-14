@@ -34,10 +34,14 @@
 #define STUFF_MASK      0x20
 
 // Translate hub data positions
+// Add a top bit, first word of two word value
+// When top bit found, just save index(with top bit) and value
+// When next value received, if saved value has top bit set, stoore the value and clear top bit
+//   then process latest values, saving them if necessary.
 const prog_uint8_t APM Fr_indices[] = 
 {
 	HUBDATALENGTH-1,
-	FR_GPS_ALT,
+	FR_GPS_ALT | 0x80,
 	FR_TEMP1,
 	FR_RPM,
 	FR_FUEL,
@@ -46,10 +50,10 @@ const prog_uint8_t APM Fr_indices[] =
 	FR_GPS_ALTd,
 	HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,
 	HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,
-	FR_ALT_BARO,
-	FR_GPS_SPEED,
-	FR_GPS_LONG,
-	FR_GPS_LAT,
+	FR_ALT_BARO | 0x80,
+	FR_GPS_SPEED | 0x80,
+	FR_GPS_LONG | 0x80,
+	FR_GPS_LAT | 0x80,
 	FR_COURSE,
 	FR_GPS_DATMON,
 	FR_GPS_YEAR,
@@ -68,7 +72,7 @@ const prog_uint8_t APM Fr_indices[] =
 	FR_ACCZ,
 	HUBDATALENGTH-1,
 	FR_CURRENT,
-	FR_V_AMP,
+	FR_V_AMP | 0x80,
 	FR_V_AMPd
 } ;
 
@@ -78,8 +82,6 @@ uint8_t frskyTxBufferCount = 0;
 uint8_t FrskyRxBufferReady = 0;
 uint8_t frskyStreaming = 0;
 uint8_t frskyUsrStreaming = 0;
-uint8_t FrskyAlarmTimer = 200 ;		// Units of 10 mS
-uint8_t FrskyAlarmCheckFlag = 0 ;
 
 FrskyData frskyTelemetry[4];
 //FrskyData frskyRSSI[2];
@@ -101,10 +103,64 @@ uint8_t Frsky_user_id ;
 uint8_t Frsky_user_lobyte ;
 
 int16_t FrskyHubData[HUBDATALENGTH] ;  // All 38 words
-uint8_t MaxGpsSpeed ;
-int16_t MaxGpsAlt ;
+int16_t FrskyHubMin[HUBMINMAXLEN] ;
+int16_t FrskyHubMax[HUBMINMAXLEN] ;
+
 uint8_t FrskyVolts[12];
 uint8_t FrskyBattCells=0;
+
+
+
+void store_hub_data( uint8_t index, uint16_t value )
+{
+	if ( index < HUBDATALENGTH )
+	{
+		FrskyHubData[index] = value ;
+		if ( g_model.FrSkyGpsAlt )
+		{
+			if ( index == FR_GPS_ALT )
+			{
+				FrskyHubData[FR_ALT_BARO] = FrskyHubData[FR_GPS_ALT] ;		// Copy Gps Alt instead
+				index = FR_ALT_BARO ;			// For max and min
+			}
+		}
+		if ( index < HUBMINMAXLEN )
+		{
+			if ( FrskyHubMax[index] < FrskyHubData[index] )
+			{	FrskyHubMax[index] = FrskyHubData[index] ;
+			}
+			if ( FrskyHubMin[index] > FrskyHubData[index] )
+			{	FrskyHubMin[index] = FrskyHubData[index] ;
+			}	
+		}
+		if ( index == FR_CELL_V )			// Cell Voltage
+		{
+			// It appears the cell voltage bytes are in the wrong order
+//  							uint8_t battnumber = ( FrskyHubData[6] >> 12 ) & 0x000F ;
+  		uint8_t battnumber = ((uint8_t)value >> 4 ) & 0x000F ;
+  		if (FrskyBattCells < battnumber+1)
+			{
+ 				if (battnumber+1>=6)
+				{
+  				FrskyBattCells=6;
+  			}
+				else
+				{
+  				FrskyBattCells=battnumber+1;
+  			}
+  		}
+  		FrskyVolts[battnumber] = ( ( ( value & 0x0F ) << 8 ) + (value >> 8) ) / 10 ;
+			if ( FrskyVolts[battnumber] < FrskyHubData[FR_CELL_MIN] )
+			{
+				FrskyHubData[FR_CELL_MIN] = FrskyVolts[battnumber] ;
+			}
+		}
+		if ( index == FR_RPM )			// RPM
+		{
+			FrskyHubData[FR_RPM] *= (g_model.numBlades == 2 ) ? 15 : ( (g_model.numBlades == 1 ) ? 20 : 30 ) ;
+		}
+	}	
+}
 
 
 void frsky_proc_user_byte( uint8_t byte )
@@ -154,49 +210,7 @@ void frsky_proc_user_byte( uint8_t byte )
 					}
 					else
 					{
-						if ( Frsky_user_id < HUBDATALENGTH )
-						{
-						  FrskyHubData[Frsky_user_id] = ( byte << 8 ) + Frsky_user_lobyte ;
-							if ( g_model.FrSkyGpsAlt )
-							{
-					  		FrskyHubData[FR_ALT_BARO] = FrskyHubData[FR_GPS_ALT] ;		// Copy Gps Alt instead
-							}
-							
-							if ( Frsky_user_id == FR_GPS_SPEED )			// GPS Speed
-							{
-								if ( MaxGpsSpeed < FrskyHubData[FR_GPS_SPEED] )
-								{	MaxGpsSpeed = FrskyHubData[FR_GPS_SPEED] ;
-								}
-							}
-							if ( Frsky_user_id == FR_GPS_ALT )			// GPS Alt
-							{
-                if ( FrskyHubData[FR_GPS_ALT] > MaxGpsAlt )
-                { MaxGpsAlt = FrskyHubData[FR_GPS_ALT] ;
-								}	
-							}
-							if ( Frsky_user_id == FR_CELL_V )			// Cell Voltage
-							{
-								// It appears the cell voltage bytes are in the wrong order
-//  							uint8_t battnumber = ( FrskyHubData[6] >> 12 ) & 0x000F ;
-  							uint8_t battnumber = ( Frsky_user_lobyte >> 4 ) & 0x000F ;
-  							if (FrskyBattCells < battnumber+1)
-								{
- 							  	if (battnumber+1>=6)
-									{
-  								  FrskyBattCells=6;
-  								}
-									else
-									{
-  								  FrskyBattCells=battnumber+1;
-  								}
-  							}
-  							FrskyVolts[battnumber] = ( ( ( Frsky_user_lobyte & 0x0F ) << 8 ) + byte ) / 10 ;
-							}
-							if ( Frsky_user_id == FR_RPM )			// RPM
-							{
-								FrskyHubData[FR_RPM] *= (g_model.numBlades == 2 ) ? 15 : ( (g_model.numBlades == 1 ) ? 20 : 30 ) ;
-							}
-						}	
+						store_hub_data( Frsky_user_id & 0x7F, ( byte << 8 ) + Frsky_user_lobyte ) ;
 						Frsky_user_state = 0 ;
 					}
 				}
@@ -211,7 +225,7 @@ void frsky_proc_user_byte( uint8_t byte )
 		}
 		else
 		{
-			FrskyHubData[FR_ALT_BARO] = ( byte << 8 ) + Frsky_user_lobyte ;  // Store altitude info
+			store_hub_data( FR_ALT_BARO, ( byte << 8 ) + Frsky_user_lobyte ) ;	 // Store altitude info
 		}				
 	}
 }
@@ -231,6 +245,8 @@ void frskyPushValue(uint8_t & i, uint8_t value);
     - User Data packets
 */
 
+uint8_t LinkAveCount ;
+
 void processFrskyPacket(uint8_t *packet)
 {
   // What type of packet?
@@ -249,10 +265,16 @@ void processFrskyPacket(uint8_t *packet)
       }
       break;
     case LINKPKT: // A1/A2/RSSI values
-      frskyTelemetry[0].set(packet[1]);
-      frskyTelemetry[1].set(packet[2]);
-      frskyTelemetry[2].set(packet[3]);
-      frskyTelemetry[3].set(packet[4] / 2);
+			// From a scope, this seems to be sent every about every 35mS
+			LinkAveCount += 1 ;
+      frskyTelemetry[0].set(packet[1]); FrskyHubData[FR_A1_COPY] =  frskyTelemetry[0].value ;
+      frskyTelemetry[1].set(packet[2]); FrskyHubData[FR_A2_COPY] =  frskyTelemetry[1].value ;
+      frskyTelemetry[2].set(packet[3]);	FrskyHubData[FR_RXRSI_COPY] =  frskyTelemetry[2].value ;
+      frskyTelemetry[3].set(packet[4] / 2); FrskyHubData[FR_TXRSI_COPY] =  frskyTelemetry[3].value ;
+			if ( LinkAveCount > 15 )
+			{
+				LinkAveCount = 0 ;
+			}
 //      frskyRSSI[0].set(packet[3]);
 //      frskyRSSI[1].set(packet[4] / 2);
       break;
@@ -674,32 +696,44 @@ void FrskyData::setoffset()
 {
 	uint8_t x ;
 	x = value + offset ;
-	offset = value ;
+	offset = x ;
 	value = 0 ;
 }
 
 void FrskyData::set(uint8_t value)
 {
-   if ( value > offset )
-	 {
-	   value -= offset ;
-	 }
-	 else
-	 {
-	 	 value = 0 ;
-	 }
-   this->value = value;
-   if (max < value)
-     max = value;
-   if (!min || min > value)
-     min = value;
- }
+  if ( value > offset )
+	{
+	  value -= offset ;
+	}
+	else
+	{
+		value = 0 ;
+	}
+	averaging_total += value ;
+	if ( LinkAveCount > 15 )
+	{
+		this->value = averaging_total >> 4 ;
+		averaging_total = 0 ;
+   	if (max < value)
+   	  max = value;
+   	if (!min || min > value)
+   	  min = value;
+	}
+}
 
 void resetTelemetry()
 {
-  memset(frskyTelemetry, 0, sizeof(frskyTelemetry));
+	uint8_t i ;
+	for ( i = 0 ; i < 4 ; i += 1 )
+	{
+		frskyTelemetry[i].min = 0 ;
+		frskyTelemetry[i].max = 0 ;
+	}
+//  memset(frskyTelemetry, 0, sizeof(frskyTelemetry));
 	FrskyHubData[FR_A1_MAH] = 0 ;
 	FrskyHubData[FR_A2_MAH] = 0 ;
+	FrskyHubData[FR_CELL_MIN] = 210 ;			// 4.2 volts
 //  memset(frskyRSSI, 0, sizeof(frskyRSSI));
 }
 
@@ -709,7 +743,13 @@ void check_frsky()
 {
   // Used to detect presence of valid FrSky telemetry packets inside the
   // last FRSKY_TIMEOUT10ms 10ms intervals
-  if (frskyStreaming > 0) frskyStreaming--;
+	if (frskyStreaming > 0)
+	{
+		if ( --frskyStreaming == 0 )
+		{
+ 			FrskyHubData[FR_TXRSI_COPY] = 0 ;
+		}
+	}
   if (frskyUsrStreaming > 0) frskyUsrStreaming--;
 	
   if ( FrskyAlarmSendState )
@@ -726,19 +766,12 @@ void check_frsky()
   	  // so subtract 3600 and add 1 to mAh total
   	  // alternatively, add up the raw value, and use 3600 * 100 / ratio for 1mAh
 			
-			if ( (  Frsky_current[i].Amp_hour_prescale += frskyTelemetry[i].value ) >  Frsky_current[i].Amp_hour_boundary )
+			if ( (  Frsky_current[i].Amp_hour_prescale += frskyTelemetry[i].value ) > Frsky_current[i].Amp_hour_boundary )
 			{
-				 Frsky_current[i].Amp_hour_prescale -=  Frsky_current[i].Amp_hour_boundary ;
+				 Frsky_current[i].Amp_hour_prescale -= Frsky_current[i].Amp_hour_boundary ;
 				FrskyHubData[FR_A1_MAH+i] += 1 ;
 			}
   	}	
-	}
-
-	// See if time for alarm checking
-	if (--FrskyAlarmTimer == 0 )
-	{
-		FrskyAlarmTimer = 200 ;		// Restart timer
-		FrskyAlarmCheckFlag = 1 ;	// Flag time to check alarms
 	}
 }
 
@@ -752,8 +785,67 @@ void FRSKY_setModelAlarms(void)
 	Frsky_current[1].Amp_hour_boundary = 360000L/ g_model.frsky.channels[1].ratio ;
 }
 
+struct FrSky_Q_t FrSky_Queue ;
+
+void put_frsky_q( uint8_t index, uint16_t value )
+{
+	volatile struct FrSky_Q_item_t *r ;	// volatile = Force compiler to use pointer
+
+	r = &FrSky_Queue.items[FrSky_Queue.in_index] ;
+	if ( FrSky_Queue.count < 7 )
+	{
+		r->index = index ;
+		r->value = value ;
+		++FrSky_Queue.in_index &= 7 ;
+		FrSky_Queue.count += 1 ;
+	}
+}
+
+// If index bit 7 is zero - process now
+// else wait until item further down q has bit 7 zero
+
+void process_frsky_q()
+{
+	volatile struct FrSky_Q_item_t *r ;	// volatile = Force compiler to use pointer
+	uint8_t x ;
+	uint8_t y ;
+	uint8_t z ;
+
+	// Find last item with zero in bit 7 of index
+	x = FrSky_Queue.count ;
+	z = FrSky_Queue.out_index ;
+	while ( x )
+	{
+		y = (z+x-1) & 0x07 ;
+		if ( ( FrSky_Queue.items[y].index & 0x80 ) == 0 )
+		{
+			break ;		
+		}
+		x -= 1 ;		
+	}
+	y = x ;
+	while ( x )
+	{
+		r = &FrSky_Queue.items[z] ;
+
+		store_hub_data( r->index & 0x7F, r->value ) ;
+		++z &= 0x07 ;
+	}
+	
+	FrSky_Queue.out_index = z ;	
+	cli() ;
+	FrSky_Queue.count -= y ;
+	sei() ;
+
+}
 
 
+//uint32_t GpsPosLat ;
+
+//void testgps()
+//{
+//  GpsPosLat = (((uint32_t)(uint16_t)FrskyHubData[FR_GPS_LAT] / 100) * 1000000) + (((uint32_t)((uint16_t)FrskyHubData[FR_GPS_LAT] % 100) * 10000 + (uint16_t)FrskyHubData[FR_GPS_LATd]) * 5) / 3;
+//}
 
 
 

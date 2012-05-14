@@ -19,6 +19,7 @@
 
 #include "avr/interrupt.h"
 
+#ifndef SIMU
 ///opt/cross/avr/include/avr/eeprom.h
 static inline void __attribute__ ((always_inline))
 eeprom_write_byte_cmp (uint8_t dat, uint16_t pointer_eeprom)
@@ -44,15 +45,16 @@ eeprom_write_byte_cmp (uint8_t dat, uint16_t pointer_eeprom)
   SREG = flags;
 }
 
-void eeWriteBlockCmp(const void *i_pointer_ram, void *i_pointer_eeprom, size_t size)
+void eeWriteBlockCmp(const void *i_pointer_ram, uint16_t i_pointer_eeprom, size_t size)
 {
   const char* pointer_ram = (const char*)i_pointer_ram;
-  uint16_t    pointer_eeprom = (uint16_t)i_pointer_eeprom;
+  uint16_t    pointer_eeprom = i_pointer_eeprom;
   while(size){
     eeprom_write_byte_cmp(*pointer_ram++,pointer_eeprom++);
     size--;
   }
 }
+#endif
 
 //inline uint16_t anaIn(uint8_t chan)
 //{
@@ -142,7 +144,7 @@ void Key::input(bool val, EnumKeys enuk)
       break;
 #ifdef KSTATE_RPTDELAY
     case KSTATE_RPTDELAY: // gruvin: longer delay before first key repeat
-      if(m_cnt == 24) putEvent(EVT_KEY_LONG(enuk)); // need to catch this inside RPTDELAY time
+      if(m_cnt == 32) putEvent(EVT_KEY_LONG(enuk)); // need to catch this inside RPTDELAY time
       if (m_cnt == 40) {
         m_state = 16;
         m_cnt = 0;
@@ -151,7 +153,7 @@ void Key::input(bool val, EnumKeys enuk)
 #endif
     case 16:
 #ifndef KSTATE_RPTDELAY
-      if(m_cnt == 24) putEvent(EVT_KEY_LONG(enuk));
+      if(m_cnt == 32) putEvent(EVT_KEY_LONG(enuk));
       //fallthrough
 #endif
     case 8:
@@ -256,12 +258,14 @@ void killEvents(uint8_t event)
 
 //uint16_t g_anaIns[8];
 volatile uint16_t g_tmr10ms;
+volatile uint8_t g8_tmr10ms ;
 volatile uint8_t  g_blinkTmr10ms;
 
 
 void per10ms()
 {
-  g_tmr10ms++;
+  g_tmr10ms++;				// 16 bit sized
+	g8_tmr10ms += 1 ;		// byte sized
   g_blinkTmr10ms++;
   uint8_t enuk = KEY_MENU;
   uint8_t    in = ~PINB;

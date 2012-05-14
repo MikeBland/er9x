@@ -107,7 +107,7 @@ void setSwitch(uint8_t idx, uint8_t func, int8_t v1, int8_t v2)
 
 #endif
 
-__attribute__((noinline)) uint8_t convert_mode_helper(uint8_t x)
+NOINLINE uint8_t convert_mode_helper(uint8_t x)
 {
     return pgm_read_byte(modn12x3 + g_eeGeneral.stickMode*4 + (x) - 1) ;
 }

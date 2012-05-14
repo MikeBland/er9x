@@ -39,19 +39,20 @@
 #define BLOCKS   (EESIZE/BS)
 
 #define EEFS_VERS 4
-struct DirEnt{
+PACK(struct DirEnt{
   uint8_t  startBlk;
   uint16_t size:12;
   uint16_t typ:4;
-}__attribute__((packed));
+});
+
 #define MAXFILES (1+MAX_MODELS+3)
-struct EeFs{
+PACK(struct EeFs{
   uint8_t  version;
   uint8_t  mySize;
   uint8_t  freeList;
   uint8_t  bs;
   DirEnt   files[MAXFILES];
-}__attribute__((packed)) eeFs;
+}) eeFs;
 
 
 static uint8_t EeFsRead(uint8_t blk,uint8_t ofs){
@@ -60,7 +61,7 @@ static uint8_t EeFsRead(uint8_t blk,uint8_t ofs){
   return ret;
 }
 static void EeFsWrite(uint8_t blk,uint8_t ofs,uint8_t val){
-  eeWriteBlockCmp(&val, (void*)(blk*BS+ofs), 1);
+  eeWriteBlockCmp(&val, (uint16_t)(blk*BS+ofs), 1);
 }
 
 static uint8_t EeFsGetLink(uint8_t blk){
@@ -74,11 +75,12 @@ static uint8_t EeFsGetDat(uint8_t blk,uint8_t ofs){
 }
 static void EeFsSetDat(uint8_t blk,uint8_t ofs,uint8_t*buf,uint8_t len){
   //EeFsWrite( blk,ofs+1,val);
-  eeWriteBlockCmp(buf, (void*)(blk*BS+ofs+1), len);
+  eeWriteBlockCmp(buf, (uint16_t)(blk*BS+ofs+1), len);
 }
 static void EeFsFlushFreelist()
 {
-  eeWriteBlockCmp(&eeFs.freeList,&((EeFs*)0)->freeList ,sizeof(eeFs.freeList));
+//  eeWriteBlockCmp(&eeFs.freeList,&((EeFs*)0)->freeList ,sizeof(eeFs.freeList));
+  eeWriteBlockCmp(&eeFs.freeList, offsetof(EeFs, freeList), sizeof(eeFs.freeList));
 }
 static void EeFsFlush()
 {
@@ -165,10 +167,10 @@ int8_t EeFsck()
 }
 void EeFsFormat()
 {
-  if(sizeof(eeFs) != RESV){
-    extern void eeprom_RESV_mismatch();
-    eeprom_RESV_mismatch();
-  }
+//  if(sizeof(eeFs) != RESV){
+//    extern void eeprom_RESV_mismatch();
+//    eeprom_RESV_mismatch();
+//  }
   memset(&eeFs,0, sizeof(eeFs));
   eeFs.version  = EEFS_VERS;
   eeFs.mySize   = sizeof(eeFs);

@@ -18,43 +18,49 @@
 #ifndef FRSKY_H
 #define FRSKY_H
 
-#define HUBDATALENGTH 34
 
 // Mapped indices for Hub Data
 #define FR_A1_COPY		0
 #define FR_A2_COPY		1
-#define FR_A1_MAH			2
-#define FR_A2_MAH			3
-#define FR_TEMP1			4
-#define FR_TEMP2			5
-#define FR_RPM				6
-#define FR_FUEL				7
-#define FR_ALT_BARO		8
-#define FR_ALT_BAROd	9
-#define FR_GPS_ALT		10
-#define FR_GPS_ALTd		11
-#define FR_GPS_SPEED	12
-#define FR_GPS_SPEEDd	13
-#define FR_CELL_V			14
-#define FR_COURSE			15
-#define FR_COURSEd		16
-#define FR_GPS_DATMON	17
-#define FR_GPS_YEAR		18
-#define FR_GPS_HRMIN	19
-#define FR_GPS_SEC		20
-#define FR_GPS_LONG		21
-#define FR_GPS_LONGd	22
-#define FR_LONG_E_W		23
-#define FR_GPS_LAT		24
-#define FR_GPS_LATd		25
-#define FR_LAT_N_S		26
-#define FR_ACCX				27
-#define FR_ACCY				28
-#define FR_ACCZ				29
-#define FR_CURRENT		30
+#define FR_RXRSI_COPY	2
+#define FR_TXRSI_COPY	3
+#define FR_ALT_BARO		4
+#define FR_ALT_BAROd	5
+#define FR_GPS_ALT		6
+#define FR_GPS_ALTd		7
+#define FR_GPS_SPEED	8 
+#define FR_GPS_SPEEDd	9 
+#define FR_TEMP1			10
+#define FR_TEMP2			11
+#define FR_RPM				12
+#define FR_FUEL				13
+#define FR_A1_MAH			14
+#define FR_A2_MAH			15
+#define FR_CELL_V			16
+#define FR_COURSE			17
+#define FR_COURSEd		18
+#define FR_GPS_DATMON	19
+#define FR_GPS_YEAR		20
+#define FR_GPS_HRMIN	21
+#define FR_GPS_SEC		22
+#define FR_GPS_LONG		23
+#define FR_GPS_LONGd	24
+#define FR_LONG_E_W		25
+#define FR_GPS_LAT		26
+#define FR_GPS_LATd		27
+#define FR_LAT_N_S		28
+#define FR_ACCX				29
+#define FR_ACCY				30
+#define FR_ACCZ				31
+#define FR_CURRENT		32
 // next 2 moved from 58 and 59
-#define FR_V_AMP			31
-#define FR_V_AMPd			32
+#define FR_V_AMP			33
+#define FR_V_AMPd			34
+#define FR_CELL_MIN		35
+
+#define HUBDATALENGTH 36
+#define HUBMINMAXLEN	9			// Items with a min and max field
+#define HUBOFFSETLEN	7			// Items with an offset field
 
 /*  FrSky Hub Info
 DataID Meaning       Unit   Range   Note
@@ -87,8 +93,6 @@ DataID Meaning       Unit   Range   Note
 0x28   Current       1A   0-100A
 0x3A   Voltage(amp sensor) 0.5v 0-48V Before “.”
 0x3B   Voltage(amp sensor)            After “.”
-
- 
 
 DataID Meaning       Unit   Range   Note
 0x01   GPS altitude  m              Before”.”
@@ -159,6 +163,7 @@ struct FrskyData {
   uint8_t min;
   uint8_t max;
 	uint8_t offset ;
+	uint16_t averaging_total ;
   void set(uint8_t value);
 	void setoffset();
 };
@@ -168,6 +173,23 @@ struct Frsky_current_info
 uint16_t Amp_hour_boundary ;
 uint16_t Amp_hour_prescale ;
 } ;
+
+struct FrSky_Q_item_t
+{
+	uint8_t index ;
+	uint16_t value ;	
+} ;
+
+struct FrSky_Q_t
+{
+	uint8_t in_index ;
+	uint8_t out_index ;
+	volatile uint8_t count ;
+	struct FrSky_Q_item_t items[8] ;
+} ;
+
+extern void put_frsky_q( uint8_t index, uint16_t value ) ;
+extern void process_frsky_q( void ) ;
  
 extern Frsky_current_info Frsky_current[2] ;
 
@@ -178,11 +200,13 @@ extern uint8_t FrskyAlarmSendState;
 extern FrskyData frskyTelemetry[4];
 //extern FrskyData frskyRSSI[2];
 extern int16_t FrskyHubData[] ;
+extern int16_t FrskyHubMin[] ;
+extern int16_t FrskyHubMax[] ;
 extern uint8_t FrskyVolts[];
 extern uint8_t FrskyBattCells;
 extern uint8_t FrskyAlarmCheckFlag ;
-extern uint8_t MaxGpsSpeed ;
-extern int16_t MaxGpsAlt ;
+//extern uint8_t MaxGpsSpeed ;
+//extern int16_t MaxGpsAlt ;
 
 void FRSKY_Init(void);
 // static void FRSKY10mspoll(void);
@@ -194,6 +218,9 @@ void FRSKY_setModelAlarms(void) ;
 enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm=2) ;
 void FRSKY_alarmPlay(uint8_t idx, uint8_t alarm) ;
 void resetTelemetry();
+
+
+
 
 #endif
 
