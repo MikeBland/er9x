@@ -10,6 +10,34 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 04-Jul-2012  MPB
+Add voice (requires hardware mod)
+Add custom telemetry screen (not saved yet)
+Some space saving
+FrSky current sensor (FAS100) added
+Compile with later compiler, saves 1500 flash bytes
+
+
+******************************************
+CHANGELOG: 15-MAR-2012  MPB
+New method of processing and storing Hub data
+New method of averaging analog (A1,A2,RSSI,TSSI) data
+Fix a bug or two with Current measurement offset and zeroing
+If no telemetry data, force TxRSSI to zero
+Change alarm checking scheduling
+Changes towards better operation in Companion9x
+New telemetry inputs to custom switches
+Changes towards a custom telemetry display
+Unused safety switches may now be used to trigger alarms
+Some changes to save some flash space (I've used up some for these changes)
+Change the timer code to allow timers as custom switch inputs
+Fix position of model name on main screen
+The model structure in the eeprom has changed slightly, but should be compatible
+The length of a LONG key press is a bit longer
+Fixed a bug in the mixers trim choice
+Height scaling for telemetry in custom switches changed
+
+******************************************
 CHANGELOG: 19-APR-2012  MPB
 Fix splash marker, changes towards custom telemetry screen, GPS speed in mph
 option (imperial units), switch inputs screen now L-R, flash saving

@@ -70,9 +70,9 @@ extern const prog_char *const n_Templates[] ;
 
 
 
-void clearMixes();
 void clearCurves();
 void applyTemplate(uint8_t idx);
+void clearMixes( void ) ;
 
 
 #endif //TEMPLATES_H

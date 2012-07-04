@@ -482,8 +482,27 @@ extern uint8_t  s_timerState;
 #define TMR_STOPPED 3
 void resetTimer();
 
-extern uint8_t Timer2_running ;
-extern int16_t s_timerVal[] ;
+struct t_timerg
+{
+	uint16_t s_timeCumTot;
+	uint16_t s_timeCumAbs;  //laufzeit in 1/16 sec
+	uint16_t s_timeCumSw;  //laufzeit in 1/16 sec
+	uint16_t s_timeCumThr;  //gewichtete laufzeit in 1/16 sec
+	uint16_t s_timeCum16ThrP; //gewichtete laufzeit in 1/16 sec
+	uint8_t  s_timerState;
+  // Statics
+	uint16_t s_time;
+  uint16_t s_cnt;
+  uint16_t s_sum;
+  uint8_t sw_toggled;
+	uint8_t lastSwPos;
+	int16_t s_timerVal[2];
+	uint8_t Timer2_running ;
+	uint8_t Timer2_pre ;
+	int16_t last_tmr;
+} ;
+
+extern struct t_timerg TimerG ;
 void resetTimer2() ;
 
 const prog_char *get_switches_string() ;
@@ -494,11 +513,6 @@ extern uint8_t heartbeat;
 uint8_t char2idx(char c);
 char idx2char(uint8_t idx);
 
-void checkMem();
-void checkTHR();
-///   Pr�ft beim Einschalten ob alle Switches 'off' sind.
-void checkSwitches();
-void checkQuickSelect(); // Quick model select on startup
 
 #define EE_GENERAL 1
 #define EE_MODEL   2
@@ -519,7 +533,7 @@ extern uint8_t s_editMode;     //global editmode
 int16_t checkIncDec16(uint8_t event, int16_t i_pval, int16_t i_min, int16_t i_max, uint8_t i_flags);
 int8_t checkIncDec(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max, uint8_t i_flags);
 int8_t checkIncDec_hm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
-int8_t checkIncDec_vm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
+//int8_t checkIncDec_vm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 
 #define CHECK_INCDEC_H_GENVAR( event, var, min, max)     \
@@ -531,8 +545,9 @@ int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 #define STORE_MODELVARS_TRIM   eeDirty(EE_MODEL|EE_TRIM)
 #define STORE_MODELVARS   eeDirty(EE_MODEL)
 #define STORE_GENERALVARS eeDirty(EE_GENERAL)
-#define BACKLIGHT_ON    PORTB |=  (1<<OUT_B_LIGHT)
-#define BACKLIGHT_OFF   PORTB &= ~(1<<OUT_B_LIGHT)
+
+//extern uint8_t Backlight ;
+extern volatile uint8_t LcdLock ;
 
 #define SPY_ON    //PORTB |=  (1<<OUT_B_LIGHT)
 #define SPY_OFF   //PORTB &= ~(1<<OUT_B_LIGHT)
@@ -601,7 +616,8 @@ void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2);
 
 #ifdef FRSKY
 void putsTelemetry(uint8_t x, uint8_t y, uint8_t val, uint8_t unit, uint8_t att);
-void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t att, uint8_t scale) ;
+uint8_t putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t att, uint8_t scale) ;
+uint16_t scale_telem_value( uint16_t val, uint8_t channel, uint8_t times2, uint8_t *p_att ) ;
 #endif
 
 extern inline int16_t calc100toRESX(int8_t x)
@@ -613,15 +629,15 @@ uint8_t getMixerCount();
 bool reachMixerCountLimit();
 void menuMixersLimit(uint8_t event);
 
-extern inline int16_t calc1000toRESX(int16_t x)  // improve calc time by Pat MacKenzie
-{
-    int16_t y = x>>5;
-    x+=y;
-    y=y>>2;
-    x-=y;
-    return x+(y>>2);
-    //  return x + x/32 - x/128 + x/512;
-}
+extern int16_t calc1000toRESX(int16_t x) ;  // improve calc time by Pat MacKenzie
+//{
+//    int16_t y = x>>5;
+//    x+=y;
+//    y=y>>2;
+//    x-=y;
+//    return x+(y>>2);
+//    //  return x + x/32 - x/128 + x/512;
+//}
 
 extern volatile uint16_t g_tmr10ms;
 extern volatile uint8_t g8_tmr10ms;
@@ -685,10 +701,9 @@ extern int16_t calibratedStick[7];
 extern int16_t ex_chans[NUM_CHNOUT];
 
 void getADC_single();
-void getADC_osmp();
 void getADC_filt();
 
-void checkTHR();
+//void checkTHR();
 
 
 #ifdef JETI
@@ -747,9 +762,9 @@ extern const prog_int8_t APM TelemIndex[] ;
 extern int16_t convertTelemConstant( int8_t channel, int8_t value) ;
 
 #ifdef FRSKY
-#define NUM_TELEM_ITEMS 16
+#define NUM_TELEM_ITEMS 19
 #else
-#define NUM_TELEM_ITEMS 2
+#define NUM_TELEM_ITEMS 3
 #endif
 
 #define FLASH_DURATION 50
@@ -763,6 +778,17 @@ extern uint8_t sysFlags;
 
 //audio settungs are external to keep out clutter!
 #include "audio.h"
+
+extern void putVoiceQueue( uint8_t value ) ;
+void voice_numeric( uint16_t value, uint8_t num_decimals, uint8_t units_index ) ;
+extern void voice_telem_item( int8_t index ) ;
+
+NOINLINE void resetTimer1(void) ;
+
+// Fiddle to force compiler to use a pointer
+#define FORCE_INDIRECT(ptr) __asm__ __volatile__ ("" : "=e" (ptr) : "0" (ptr))
+
+extern uint8_t telemItemValid( uint8_t index ) ;
 
 #endif // er9x_h
 /*eof*/

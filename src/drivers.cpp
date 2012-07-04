@@ -258,15 +258,19 @@ void killEvents(uint8_t event)
 
 //uint16_t g_anaIns[8];
 volatile uint16_t g_tmr10ms;
-volatile uint8_t g8_tmr10ms ;
+//volatile uint8_t g8_tmr10ms ;
 volatile uint8_t  g_blinkTmr10ms;
 
 
 void per10ms()
 {
-  g_tmr10ms++;				// 16 bit sized
-	g8_tmr10ms += 1 ;		// byte sized
-  g_blinkTmr10ms++;
+	uint16_t tmr ;
+//  g_tmr10ms++;				// 16 bit sized
+//	g8_tmr10ms += 1 ;		// byte sized
+//  g_blinkTmr10ms++;
+  tmr = g_tmr10ms + 1 ;
+	g_tmr10ms = tmr ;
+	g_blinkTmr10ms = tmr ;
   uint8_t enuk = KEY_MENU;
   uint8_t    in = ~PINB;
   for(int i=1; i<7; i++)
