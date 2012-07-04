@@ -73,7 +73,9 @@ const prog_uint8_t APM Fr_indices[] =
 	HUBDATALENGTH-1,
 	FR_CURRENT,
 	FR_V_AMP | 0x80,
-	FR_V_AMPd
+	FR_V_AMPd,
+	HUBDATALENGTH-1,
+	HUBDATALENGTH-1
 } ;
 
 uint8_t frskyRxBuffer[19];   // Receive buffer. 9 bytes (full packet), worst case 18 bytes with byte-stuffing (+1)
@@ -108,6 +110,7 @@ int16_t FrskyHubMax[HUBMINMAXLEN] ;
 
 uint8_t FrskyVolts[12];
 uint8_t FrskyBattCells=0;
+uint16_t Frsky_Amp_hour_prescale ;
 
 
 
@@ -267,10 +270,10 @@ void processFrskyPacket(uint8_t *packet)
     case LINKPKT: // A1/A2/RSSI values
 			// From a scope, this seems to be sent every about every 35mS
 			LinkAveCount += 1 ;
-      frskyTelemetry[0].set(packet[1]); FrskyHubData[FR_A1_COPY] =  frskyTelemetry[0].value ;
-      frskyTelemetry[1].set(packet[2]); FrskyHubData[FR_A2_COPY] =  frskyTelemetry[1].value ;
-      frskyTelemetry[2].set(packet[3]);	FrskyHubData[FR_RXRSI_COPY] =  frskyTelemetry[2].value ;
-      frskyTelemetry[3].set(packet[4] / 2); FrskyHubData[FR_TXRSI_COPY] =  frskyTelemetry[3].value ;
+      frskyTelemetry[0].set(packet[1], FR_A1_COPY ); //FrskyHubData[] =  frskyTelemetry[0].value ;
+      frskyTelemetry[1].set(packet[2], FR_A2_COPY ); //FrskyHubData[] =  frskyTelemetry[1].value ;
+      frskyTelemetry[2].set(packet[3], FR_RXRSI_COPY );	//FrskyHubData[] =  frskyTelemetry[2].value ;
+      frskyTelemetry[3].set(packet[4] / 2, FR_TXRSI_COPY ); //FrskyHubData[] =  frskyTelemetry[3].value ;
 			if ( LinkAveCount > 15 )
 			{
 				LinkAveCount = 0 ;
@@ -442,7 +445,7 @@ ISR(USART0_UDRE_vect)
 
 /******************************************/
 
-void frskyTransmitBuffer()
+static void frskyTransmitBuffer()
 {
   frskyTxISRIndex = 0;
   UCSR0B |= (1 << UDRIE0); // enable  UDRE0 interrupt
@@ -451,7 +454,7 @@ void frskyTransmitBuffer()
 
 uint8_t FrskyAlarmSendState = 0 ;
 uint8_t FrskyDelay = 0 ;
-uint8_t FrskyRSSIsend = 0 ;
+//uint8_t FrskyRSSIsend = 0 ;
 
 
 static void FRSKY10mspoll(void)
@@ -546,14 +549,14 @@ void FRSKY_setTxPacket( uint8_t type, uint8_t value, uint8_t p1, uint8_t p2 )
   {
     uint8_t *ptr ;
     ptr = &frskyTxBuffer[i] ;
-    *ptr++ = p1 ;
-    *ptr++ = p2 ;
-    *ptr++ = 0x00 ;
-    *ptr++ = 0x00 ;
-    *ptr++ = 0x00 ;
-    *ptr++ = 0x00 ;
-    *ptr++ = 0x00 ;
-    *ptr++ = START_STOP ;        // End of packet
+    *ptr = p1 ;
+    *(ptr+1) = p2 ;
+    *(ptr+2) = 0x00 ;
+    *(ptr+3) = 0x00 ;
+    *(ptr+4) = 0x00 ;
+    *(ptr+5) = 0x00 ;
+    *(ptr+6) = 0x00 ;
+    *(ptr+7) = START_STOP ;        // End of packet
 	}
 	frskyTxBufferCount = i + 8 ;
 }
@@ -586,7 +589,7 @@ enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm)
 void FRSKY_alarmPlay(uint8_t idx, uint8_t alarm){			
 			uint8_t alarmLevel = ALARM_LEVEL(idx, alarm);
 			
-			if((g_eeGeneral.speakerMode == 1 || g_eeGeneral.speakerMode == 2) && g_eeGeneral.frskyinternalalarm == 1){   // this check is done here so haptic still works even if frsky beeper used.
+			if(((g_eeGeneral.speakerMode & 1) == 1 /*|| g_eeGeneral.speakerMode == 2*/) && g_eeGeneral.frskyinternalalarm == 1){   // this check is done here so haptic still works even if frsky beeper used.
 					switch (alarmLevel){			
 								case alarm_off:
 														break;
@@ -694,26 +697,27 @@ void frskyPushValue(uint8_t & i, uint8_t value)
 
 void FrskyData::setoffset()
 {
-	uint8_t x ;
-	x = value + offset ;
-	offset = x ;
+	offset = raw ;
 	value = 0 ;
 }
 
-void FrskyData::set(uint8_t value)
+void FrskyData::set(uint8_t value, uint8_t copy)
 {
-  if ( value > offset )
-	{
-	  value -= offset ;
-	}
-	else
-	{
-		value = 0 ;
-	}
+	uint8_t x ;
 	averaging_total += value ;
 	if ( LinkAveCount > 15 )
 	{
-		this->value = averaging_total >> 4 ;
+		raw = averaging_total >> 4 ;
+  	if ( raw > offset )
+		{
+		  x = raw - offset ;
+		}
+		else
+		{
+			x = 0 ;
+		}
+		this->value = x ;
+		FrskyHubData[copy] = this->value ;
 		averaging_total = 0 ;
    	if (max < value)
    	  max = value;
@@ -734,6 +738,8 @@ void resetTelemetry()
 	FrskyHubData[FR_A1_MAH] = 0 ;
 	FrskyHubData[FR_A2_MAH] = 0 ;
 	FrskyHubData[FR_CELL_MIN] = 210 ;			// 4.2 volts
+	Frsky_Amp_hour_prescale = 0 ;
+	FrskyHubData[FR_AMP_MAH] = 0 ;
 //  memset(frskyRSSI, 0, sizeof(frskyRSSI));
 }
 
@@ -773,6 +779,16 @@ void check_frsky()
 			}
   	}	
 	}
+	
+	// FrSky Current sensor (in amps)
+	// add this every 10 ms, when over 360, we have 1 mAh
+	// 
+	if ( ( Frsky_Amp_hour_prescale += FrskyHubData[FR_CURRENT] ) > 360 )
+	{
+		Frsky_Amp_hour_prescale -= 360 ;
+		FrskyHubData[FR_AMP_MAH] += 1 ;
+	}
+
 }
 
 // New model loaded
@@ -785,59 +801,59 @@ void FRSKY_setModelAlarms(void)
 	Frsky_current[1].Amp_hour_boundary = 360000L/ g_model.frsky.channels[1].ratio ;
 }
 
-struct FrSky_Q_t FrSky_Queue ;
+//struct FrSky_Q_t FrSky_Queue ;
 
-void put_frsky_q( uint8_t index, uint16_t value )
-{
-	volatile struct FrSky_Q_item_t *r ;	// volatile = Force compiler to use pointer
+//void put_frsky_q( uint8_t index, uint16_t value )
+//{
+//	volatile struct FrSky_Q_item_t *r ;	// volatile = Force compiler to use pointer
 
-	r = &FrSky_Queue.items[FrSky_Queue.in_index] ;
-	if ( FrSky_Queue.count < 7 )
-	{
-		r->index = index ;
-		r->value = value ;
-		++FrSky_Queue.in_index &= 7 ;
-		FrSky_Queue.count += 1 ;
-	}
-}
+//	r = &FrSky_Queue.items[FrSky_Queue.in_index] ;
+//	if ( FrSky_Queue.count < 7 )
+//	{
+//		r->index = index ;
+//		r->value = value ;
+//		++FrSky_Queue.in_index &= 7 ;
+//		FrSky_Queue.count += 1 ;
+//	}
+//}
 
-// If index bit 7 is zero - process now
-// else wait until item further down q has bit 7 zero
+//// If index bit 7 is zero - process now
+//// else wait until item further down q has bit 7 zero
 
-void process_frsky_q()
-{
-	volatile struct FrSky_Q_item_t *r ;	// volatile = Force compiler to use pointer
-	uint8_t x ;
-	uint8_t y ;
-	uint8_t z ;
+//void process_frsky_q()
+//{
+//	volatile struct FrSky_Q_item_t *r ;	// volatile = Force compiler to use pointer
+//	uint8_t x ;
+//	uint8_t y ;
+//	uint8_t z ;
 
-	// Find last item with zero in bit 7 of index
-	x = FrSky_Queue.count ;
-	z = FrSky_Queue.out_index ;
-	while ( x )
-	{
-		y = (z+x-1) & 0x07 ;
-		if ( ( FrSky_Queue.items[y].index & 0x80 ) == 0 )
-		{
-			break ;		
-		}
-		x -= 1 ;		
-	}
-	y = x ;
-	while ( x )
-	{
-		r = &FrSky_Queue.items[z] ;
+//	// Find last item with zero in bit 7 of index
+//	x = FrSky_Queue.count ;
+//	z = FrSky_Queue.out_index ;
+//	while ( x )
+//	{
+//		y = (z+x-1) & 0x07 ;
+//		if ( ( FrSky_Queue.items[y].index & 0x80 ) == 0 )
+//		{
+//			break ;		
+//		}
+//		x -= 1 ;		
+//	}
+//	y = x ;
+//	while ( x )
+//	{
+//		r = &FrSky_Queue.items[z] ;
 
-		store_hub_data( r->index & 0x7F, r->value ) ;
-		++z &= 0x07 ;
-	}
+//		store_hub_data( r->index & 0x7F, r->value ) ;
+//		++z &= 0x07 ;
+//	}
 	
-	FrSky_Queue.out_index = z ;	
-	cli() ;
-	FrSky_Queue.count -= y ;
-	sei() ;
+//	FrSky_Queue.out_index = z ;	
+//	cli() ;
+//	FrSky_Queue.count -= y ;
+//	sei() ;
 
-}
+//}
 
 
 //uint32_t GpsPosLat ;

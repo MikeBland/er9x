@@ -55,7 +55,7 @@ void generalDefault()
   g_eeGeneral.chkSum = sum;
 }
 
-bool eeLoadGeneral()
+static bool eeLoadGeneral()
 {
   theFile.openRd(FILE_GENERAL);
   memset(&g_eeGeneral, 0, sizeof(EEGeneral));
@@ -136,6 +136,7 @@ void eeLoadModel(uint8_t id)
 
 //        g_model.mdVers = MDVERS; //update mdvers
 
+        resetTimer1();
         resetTimer2();
 
 #ifdef FRSKY

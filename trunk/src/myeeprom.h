@@ -120,7 +120,8 @@ PACK(typedef struct t_EEGeneral {
     uint8_t   lightOnStickMove;
     char      ownerName[GENERAL_OWNER_NAME_LEN];
     uint8_t   switchWarningStates;
-    uint8_t   res[4];
+		int8_t		volume ;
+    uint8_t   res[3];
 }) EEGeneral;
 
 

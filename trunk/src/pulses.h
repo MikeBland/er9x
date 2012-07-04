@@ -19,7 +19,7 @@ typedef struct t_PXXData {
 
 
 void setupPulsesPPM();
-void setupPulsesPXX();
+//void setupPulsesPXX();
 
 void sendByteDsm2(uint8_t b);
 void setupPulsesDsm2(uint8_t chns);

@@ -17,6 +17,8 @@
 #define SPEAKER_OFF  PORTE &= ~(1 << OUT_E_BUZZER) // speaker output 'low'
 
 
+struct t_voice Voice ;
+
 audioQueue::audioQueue()
 {
   aqinit();
@@ -298,3 +300,81 @@ void audioDefevent(uint8_t e)
 {
   audio.event(e, BEEP_DEFAULT_FREQ);
 }
+
+
+void audioVoiceDefevent( uint8_t e, uint8_t v)
+{
+	if ( g_eeGeneral.speakerMode & 2 )
+	{
+		putVoiceQueue( v ) ;
+	}
+	else
+	{
+    audioDefevent( e ) ;
+	}
+}
+
+#include <stdlib.h>
+
+// Announce a value using voice
+void voice_numeric( uint16_t value, uint8_t num_decimals, uint8_t units_index )
+{
+//	uint8_t unit_value ;
+//	uint8_t hundred_value ;
+	uint8_t decimals = 0 ;
+	div_t qr ;
+
+	if ( num_decimals == 1 )
+	{
+		qr = div( value, 10 ) ;
+		decimals = qr.rem ;
+		value = qr.quot ;
+	}
+
+	qr = div( value, 100 ) ;
+	if ( qr.quot )
+	{
+		putVoiceQueue( qr.quot ) ;
+		putVoiceQueue( V_HUNDRED ) ;
+		qr = div( qr.rem, 10 ) ;
+		if ( qr.quot )
+		{
+			putVoiceQueue( qr.quot ) ;
+		}
+	}
+	else
+	{
+		if ( value > 19 )
+		{
+			qr = div( value, 10 ) ;
+			putVoiceQueue( value-qr.rem ) ;
+			if ( qr.rem )
+			{
+				putVoiceQueue( qr.rem ) ;
+			}
+		}
+		else
+		{
+			putVoiceQueue( value ) ;
+		}
+	}
+
+	if ( num_decimals == 1 )
+	{
+		putVoiceQueue( V_POINT ) ;
+		putVoiceQueue( decimals ) ;
+	}
+		 
+	if ( units_index )
+	{
+		putVoiceQueue( units_index ) ;
+	}
+}
+
+struct t_voice *voiceaddress()
+{
+	return &Voice ;
+}
+
+
+

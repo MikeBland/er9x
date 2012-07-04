@@ -33,6 +33,8 @@ const
 #include "font_dblsize.lbm"
 #define font_10x16_x20_x7f (font_dblsize+3)
 
+static void lcd_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h ) ;
+
 void lcd_clear()
 {
   //for(unsigned i=0; i<sizeof(displayBuf); i++) displayBuf[i]=0;
@@ -243,6 +245,8 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
   char c;
   uint8_t xinc ;
 	uint8_t fullwidth = 0 ;
+
+	mode &= ~NO_UNIT ;
 	if ( len < 0 )
 	{
 		fullwidth = 1 ;
@@ -392,7 +396,7 @@ void lcd_hbar( uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t percent )
 	}
 }
 
-void lcd_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h )
+static void lcd_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h )
 {
   lcd_vline(x, y, h ) ;
 	if ( w > 1 )
@@ -470,7 +474,7 @@ void lcdSendCtl(uint8_t val)
 
 
 #define delay_1us() _delay_us(1)
-void delay_1_5us(int ms)
+static void delay_1_5us(int ms)
 {
   for(int i=0; i<ms; i++) delay_1us();
 }
@@ -481,6 +485,7 @@ void lcd_init()
   // /home/thus/txt/datasheets/lcd/KS0713.pdf
   // ~/txt/flieger/ST7565RV17.pdf  from http://www.glyn.de/content.asp?wdid=132&sid=
 
+	LcdLock = 1 ;						// Lock LCD data lines
   PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_RES);  //LCD_RES
   delay_1us();
   delay_1us();//    f520  call  0xf4ce  delay_1us() ; 0x0xf4ce
@@ -499,16 +504,20 @@ void lcd_init()
   lcdSendCtl(0x22); // 24 SV5 SV4 SV3 SV2 SV1 SV0 = 0x18
   lcdSendCtl(0xAF); //DON = 1: display ON
   g_eeGeneral.contrast = 0x22;
+	LcdLock = 0 ;						// Free LCD data lines
+
 }
 void lcdSetRefVolt(uint8_t val)
 {
+	LcdLock = 1 ;						// Lock LCD data lines
   lcdSendCtl(0x81);
   lcdSendCtl(val);
+	LcdLock = 0 ;						// Free LCD data lines
 }
 
 volatile uint8_t LcdLock ;
-volatile uint8_t LcdTrims ;
-uint8_t LcdTrimSwapped ;
+//volatile uint8_t LcdTrims ;
+//uint8_t LcdTrimSwapped ;
 
 
 void refreshDiplay()
@@ -518,6 +527,7 @@ void refreshDiplay()
   lcd_refresh = true;
 #else
 
+	LcdLock = 1 ;						// Lock LCD data lines
   uint8_t *p=displayBuf;
   for(uint8_t y=0; y < 8; y++) {
     lcdSendCtl(0x04);
@@ -547,5 +557,6 @@ void refreshDiplay()
     PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_A0);
     PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_CS1);
   }
+	LcdLock = 0 ;						// Free LCD data lines
 #endif
 }

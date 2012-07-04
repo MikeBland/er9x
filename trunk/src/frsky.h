@@ -57,8 +57,9 @@
 #define FR_V_AMP			33
 #define FR_V_AMPd			34
 #define FR_CELL_MIN		35
+#define FR_AMP_MAH		36
 
-#define HUBDATALENGTH 36
+#define HUBDATALENGTH 37
 #define HUBMINMAXLEN	9			// Items with a min and max field
 #define HUBOFFSETLEN	7			// Items with an offset field
 
@@ -160,11 +161,12 @@ enum AlarmLevel {
 
 struct FrskyData {
   uint8_t value;
+  uint8_t raw;
   uint8_t min;
   uint8_t max;
 	uint8_t offset ;
 	uint16_t averaging_total ;
-  void set(uint8_t value);
+  void set(uint8_t value, uint8_t copy);
 	void setoffset();
 };
 

@@ -33,6 +33,7 @@ uint8_t pxxFlag = 0;
 void set_timer3_capture( void ) ;
 void set_timer3_ppm( void ) ;
 void setupPulsesPPM16( uint8_t proto ) ;
+static void setupPulsesPXX( void ) ;
 
 //uint16_t PulseTotal ;
 
@@ -573,7 +574,7 @@ uint8_t *PcmPtr ;
 uint16_t PcmCrc ;
 uint8_t PcmOnesCount ;
 
-void crc( uint8_t data )
+static void crc( uint8_t data )
 {
     //	uint8_t i ;
 
@@ -593,7 +594,7 @@ void putPcmPart( uint8_t value )
 }
 
 
-void putPcmFlush()
+static void putPcmFlush()
 {
     while ( PcmBitCount != 0 )
     {
@@ -648,7 +649,7 @@ void putPcmHead()
 }
 
 //void setUpPulsesPCM()
-void setupPulsesPXX()
+static void setupPulsesPXX()
 {
     uint8_t i ;
     uint16_t chan ;

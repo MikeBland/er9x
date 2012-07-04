@@ -15,6 +15,7 @@
  */
 
 #include "er9x.h"
+#include <stdlib.h>
 
 #include "splashmarker.h"
 const
@@ -29,6 +30,13 @@ mode4 ail thr ele rud
 
 
 extern int16_t AltOffset ;
+
+static void checkMem( void );
+static void checkTHR( void );
+///   Pr�ft beim Einschalten ob alle Switches 'off' sind.
+static void checkSwitches( void );
+static void checkQuickSelect( void ); // Quick model select on startup
+static void getADC_osmp( void ) ;
 
 EEGeneral  g_eeGeneral;
 ModelData  g_model;
@@ -54,10 +62,18 @@ uint8_t sysFlags = 0;
 uint8_t AlarmTimer = 200 ;		// Units of 10 mS
 uint8_t AlarmCheckFlag = 0 ;
 
+
+
+
+#define BACKLIGHT_ON    (Voice.Backlight = 1)
+#define BACKLIGHT_OFF   (Voice.Backlight = 0)
+//#define BACKLIGHT_ON    {Backlight = 1 ; if ( (g_eeGeneral.speakerMode & 2) == 0 ) PORTB |=  (1<<OUT_B_LIGHT);}
+//#define BACKLIGHT_OFF   {Backlight = 0 ; if ( (g_eeGeneral.speakerMode & 2) == 0 ) PORTB &= ~(1<<OUT_B_LIGHT);}
+
 const prog_char APM Str_OFF[] =  "OFF" ;
 const prog_char APM Str_ON[] = "ON " ;
 
-const prog_char APM modi12x3[]=
+const prog_char APM modi12x3[]=                         
 "RUD ELE THR AIL ";
 //"RUD THR ELE AIL "
 //"AIL ELE THR RUD "
@@ -85,8 +101,11 @@ LimitData *limitaddress( uint8_t idx )
     return &g_model.limitData[idx];
 }
 
+
 void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
 {
+	div_t qr ;
+
     if ( tme<0 )
     {
         lcd_putcAtt( x - ((att&DBLSIZE) ? FWNUM*6-2 : FWNUM*3),    y, '-',att);
@@ -94,9 +113,10 @@ void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
     }
 
     lcd_putcAtt(x, y, ':',att&att2);
-    lcd_outdezNAtt(x/*+ ((att&DBLSIZE) ? 2 : 0)*/, y, tme/60, LEADING0|att,2);
+		qr = div( tme, 60 ) ;
+    lcd_outdezNAtt(x/*+ ((att&DBLSIZE) ? 2 : 0)*/, y, qr.quot, LEADING0|att,2);
     x += (att&DBLSIZE) ? FWNUM*6-4 : FW*3-3;
-    lcd_outdezNAtt(x, y, tme%60, LEADING0|att2,2);
+    lcd_outdezNAtt(x, y, qr.rem, LEADING0|att2,2);
 }
 void putsVolts(uint8_t x,uint8_t y, uint8_t volts, uint8_t att)
 {
@@ -192,12 +212,43 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t type )
 }
 
 #ifdef FRSKY
-void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t att, uint8_t scale)
+
+uint16_t scale_telem_value( uint16_t val, uint8_t channel, uint8_t times2, uint8_t *p_att )
+{
+  uint32_t value ;
+	uint16_t ratio ;
+	
+  value = val ;
+  ratio = g_model.frsky.channels[channel].ratio ;
+  if ( times2 )
+  {
+      ratio <<= 1 ;
+  }
+  value *= ratio ;
+	if (g_model.frsky.channels[channel].type == 3/*A*/)
+  {
+      value /= 100 ;
+      *p_att |= PREC1 ;
+  }
+  else if ( ratio < 100 )
+  {
+      value *= 2 ;
+      value /= 51 ;  // Same as *10 /255 but without overflow
+      *p_att |= PREC2 ;
+  }
+  else
+  {
+      value /= 255 ;
+  }
+	return value ;
+}
+
+uint8_t putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t att, uint8_t scale)
 {
     uint32_t value ;
     //  uint8_t ratio ;
-    uint16_t ratio ;
     uint8_t times2 ;
+    uint8_t unit = ' ' ;
 
     value = val ;
     if (g_model.frsky.channels[channel].type == 2/*V*/)
@@ -211,27 +262,7 @@ void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t 
 
     if ( scale )
     {
-        ratio = g_model.frsky.channels[channel].ratio ;
-        if ( times2 )
-        {
-            ratio <<= 1 ;
-        }
-        value *= ratio ;
-  	if (g_model.frsky.channels[channel].type == 3/*A*/)
-        {
-            value /= 100 ;
-            att |= PREC1 ;
-        }
-        else if ( ratio < 100 )
-        {
-            value *= 2 ;
-            value /= 51 ;  // Same as *10 /255 but without overflow
-            att |= PREC2 ;
-        }
-        else
-        {
-            value /= 255 ;
-        }
+			value = scale_telem_value( val, channel, times2, &att ) ;
     }
     else
     {
@@ -239,7 +270,7 @@ void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t 
         {
             value <<= 1 ;
         }
-  	if (g_model.frsky.channels[channel].type == 3/*A*/)
+		  	if (g_model.frsky.channels[channel].type == 3/*A*/)
         {
             value *= 255 ;
             value /= 100 ;
@@ -251,23 +282,26 @@ void putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t 
     //  if (g_model.frsky.channels[channel].type == 0/*v*/)
     if ( (g_model.frsky.channels[channel].type == 0/*v*/) || (g_model.frsky.channels[channel].type == 2/*v*/) )
     {
-        lcd_outdezNAtt(x, y, value, att|PREC1, 5) ;
-        if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, 'v', att);
+      lcd_outdezNAtt(x, y, value, att|PREC1, 5) ;
+			unit = 'v' ;
+      if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, unit, att);
     }
     else
     {
         lcd_outdezAtt(x, y, value, att);
 		    if (g_model.frsky.channels[channel].type == 3/*A*/)
 				{
-        	if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, 'A', att);
+					unit = 'A' ;
+        	if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, unit, att);
 				}
     }
+		return unit ;
 }
 
 
 #endif
 
-inline int16_t getValue(uint8_t i)
+int16_t getValue(uint8_t i)
 {
 #ifdef FRSKY
 	int8_t j ;
@@ -289,9 +323,13 @@ inline int16_t getValue(uint8_t i)
 				}
 				return FrskyHubData[j] + offset ;
 			}
+			else if ( j == -3 )		// Battery
+			{
+				return g_vbat100mV ;
+			}
 			else
 			{
-				return s_timerVal[j+2] ;
+				return TimerG.s_timerVal[j+2] ;
 			}
 		}
 #endif
@@ -312,6 +350,11 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
     case  MAX_DRSWITCH: return  true;
     case -MAX_DRSWITCH: return  false;
     }
+
+		if ( swtch > MAX_DRSWITCH )
+		{
+			return false ;
+		}
 
     uint8_t dir = swtch>0;
     if(abs(swtch)<(MAX_DRSWITCH-NUM_CSW)) {
@@ -338,6 +381,7 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
     int8_t b = cs.v2;
     int16_t x = 0;
     int16_t y = 0;
+		uint8_t valid = 1 ;
 
     // init values only if needed
     uint8_t s = CS_STATE(cs.func);
@@ -347,7 +391,10 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
         x = getValue(cs.v1-1);
 #ifdef FRSKY
         if (cs.v1 > CHOUT_BASE+NUM_CHNOUT)
+				{
           y = convertTelemConstant( cs.v1-CHOUT_BASE-NUM_CHNOUT-1, cs.v2 ) ;
+					valid = telemItemValid( cs.v1-CHOUT_BASE-NUM_CHNOUT-1 ) ;
+				}
         else
 #endif
             y = calc100toRESX(cs.v2);
@@ -430,6 +477,10 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
         ret_value = false;
         break;
     }
+		if ( valid == 0 )			// Catch telemetry values not present
+		{
+      ret_value = false;
+		}
     Last_switch[cs_index] = ret_value ;
     return swtch>0 ? ret_value : !ret_value ;
 
@@ -448,18 +499,19 @@ inline uint8_t keyDown()
     return (~PINB) & 0x7E;
 }
 
-void clearKeyEvents()
+static void clearKeyEvents()
 {
     while(keyDown());  // loop until all keys are up
     putEvent(0);
 }
 
-void check_backlight()
+void check_backlight_voice()
 {
     if(getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
-        BACKLIGHT_ON;
+        BACKLIGHT_ON ;
     else
-        BACKLIGHT_OFF;
+        BACKLIGHT_OFF ;
+		Voice.voice_process() ;
 }
 
 uint16_t stickMoveValue()
@@ -471,13 +523,13 @@ uint16_t stickMoveValue()
     return sum ;
 }
 
-void doSplash()
+static void doSplash()
 {
     if(!g_eeGeneral.disableSplashScreen)
     {
 
 
-        check_backlight() ;
+        check_backlight_voice() ;
 
         lcd_clear();
         lcd_img(0, 0, s9xsplash,0,0);
@@ -499,6 +551,7 @@ void doSplash()
         uint16_t tgtime = get_tmr10ms() + SPLASH_TIMEOUT;  
         while(tgtime != get_tmr10ms())
         {
+        	refreshDiplay();
             getADC_filt();
             uint16_t tsum = stickMoveValue();
             //            for(uint8_t i=0; i<4; i++)
@@ -506,12 +559,12 @@ void doSplash()
 
             if(keyDown() || (tsum!=inacSum))   return;  //wait for key release
 
-            check_backlight() ;
+            check_backlight_voice() ;
         }
     }
 }
 
-void checkMem()
+static void checkMem()
 {
     if(g_eeGeneral.disableMemoryWarning) return;
     if(EeFsGetFree() < 200)
@@ -534,7 +587,7 @@ void alertMessages( const prog_char * s, const prog_char * t )
     clearKeyEvents();
 }
 
-void checkTHR()
+static void checkTHR()
 {
     if(g_eeGeneral.disableThrottleWarning) return;
 
@@ -562,17 +615,17 @@ void checkTHR()
             return;
         }
 
-        check_backlight() ;
+        check_backlight_voice() ;
     }
 }
 
-void checkAlarm() // added by Gohst
+static void checkAlarm() // added by Gohst
 {
     if(g_eeGeneral.disableAlarmWarning) return;
     if(!g_eeGeneral.beeperVal) alert(PSTR("Alarms Disabled"));
 }
 
-void checkWarnings()
+static void checkWarnings()
 {
     if(sysFlags && sysFLAG_OLD_EEPROM)
     {
@@ -586,7 +639,7 @@ void putWarnSwitch( uint8_t x, uint8_t idx )
   lcd_putsnAtt( x, 2*FH, get_switches_string() + idx, 3, 0) ;
 }
 
-void checkSwitches()
+static void checkSwitches()
 {
     if(g_eeGeneral.disableSwitchWarning) return; // if warning is on
 
@@ -621,7 +674,7 @@ void checkSwitches()
         //first row - THR, GEA, AIL, ELE, ID0/1/2
         uint8_t x = i ^ g_eeGeneral.switchWarningStates;
 
-        lcd_putsnAtt(0*FW, 2*FH, PSTR("                      "), 22, 0);
+        lcd_puts_Pleft( 2*FH, PSTR("                      ") ) ;
 
         if(x & SWP_THRB)
             putWarnSwitch(2 + 0*FW, 0 );
@@ -654,11 +707,11 @@ void checkSwitches()
             return;  //wait for key release
         }
 
-        check_backlight() ;
+        check_backlight_voice() ;
     }
 }
 
-void checkQuickSelect()
+static void checkQuickSelect()
 {
     uint8_t i = keyDown(); //check for keystate
     uint8_t j;
@@ -723,7 +776,7 @@ void alert(const prog_char * s, bool defaults)
 	almess( s, ALERT_TYPE ) ;
   lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
 
-    audioDefevent(AU_ERROR);
+    audioVoiceDefevent(AU_ERROR, V_ERROR);
     clearKeyEvents();
     while(1)
     {
@@ -738,9 +791,9 @@ void alert(const prog_char * s, bool defaults)
         }
 
         if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff || defaults)
-            BACKLIGHT_ON;
-        else
-            BACKLIGHT_OFF;
+        	BACKLIGHT_ON ;
+		    else
+    	    BACKLIGHT_OFF ;
     }
 }
 
@@ -752,11 +805,23 @@ int8_t *TrimPtr[4] =
     &g_model.trim[3]
 } ;
 
-uint8_t checkTrim(uint8_t event)
+static uint8_t checkTrim(uint8_t event)
 {
     int8_t  k = (event & EVT_KEY_MASK) - TRM_BASE;
     int8_t  s = g_model.trimInc;
-    if (s>1) s = 1 << (s-1);  // 1=>1  2=>2  3=>4  4=>8
+//    if (s>1) s = 1 << (s-1);  // 1=>1  2=>2  3=>4  4=>8
+		if ( s == 4 )
+		{
+			s = 8 ;			  // 1=>1  2=>2  3=>4  4=>8
+		}
+		else
+		{
+			if ( s == 3 )
+			{
+				s = 4 ;			  // 1=>1  2=>2  3=>4  4=>8
+			}
+		}
+
 
     if((k>=0) && (k<8))// && (event & _MSK_KEY_REPT))
     {
@@ -955,18 +1020,20 @@ inline bool checkSlaveMode()
 }
 
 
-uint8_t Timer2_running = 0 ;
-uint8_t Timer2_pre = 0 ;
 //uint16_t Timer2 = 0 ;
 
 void resetTimer2()
 {
-    Timer2_pre = 0 ;
-    s_timerVal[1] = 0 ;
-    Timer2_running = 0 ;   // Stop and clear throttle started flag
+	struct t_timerg *tptr ;
+
+	tptr = &TimerG ;
+	FORCE_INDIRECT(tptr) ;
+  tptr->Timer2_pre = 0 ;
+  tptr->s_timerVal[1] = 0 ;
+  tptr->Timer2_running = 0 ;   // Stop and clear throttle started flag
 }
 
-void doBackLight(uint8_t evt)
+void doBackLightVoice(uint8_t evt)
 {
     uint16_t a = 0;
     uint16_t b = 0;
@@ -974,19 +1041,144 @@ void doBackLight(uint8_t evt)
 		lightoffctr = g_LightOffCounter ;
 
     if(lightoffctr) lightoffctr--;
-    if(evt) a = g_eeGeneral.lightAutoOff*500; // on keypress turn the light on 5*100
-    if(stickMoved) b = g_eeGeneral.lightOnStickMove*500;
+    if(evt) a = (g_eeGeneral.lightAutoOff*250) << 1; // on keypress turn the light on 5*100
+    if(stickMoved) b = (g_eeGeneral.lightOnStickMove*250)<<1;
     if(a>lightoffctr) lightoffctr = a;
     if(b>lightoffctr) lightoffctr = b;
 		g_LightOffCounter = lightoffctr ;
-    check_backlight();
+    check_backlight_voice();
+}
+
+//static uint8_t v_ctr ;
+//uint8_t v_first[8] ;
+
+void putVoiceQueue( uint8_t value )
+{
+	struct t_voice *vptr ;
+	vptr = voiceaddress() ;
+	
+	if ( vptr->VoiceQueueCount < VOICE_Q_LENGTH )
+	{
+		vptr->VoiceQueue[vptr->VoiceQueueInIndex++] = value ;
+		vptr->VoiceQueueInIndex &= ( VOICE_Q_LENGTH - 1 ) ;
+		vptr->VoiceQueueCount += 1 ;
+	}
+//	if ( v_ctr < 8 )
+//	{
+//		v_first[v_ctr] = value ;
+//		v_ctr += 1 ;		
+//	}
+}
+
+void t_voice::voice_process(void)
+{
+	if ( g_eeGeneral.speakerMode & 2 )
+	{
+		if ( Backlight )
+		{
+			VoiceLatch |= BACKLIGHT_BIT ;			
+		}
+		else
+		{
+			VoiceLatch &= ~BACKLIGHT_BIT ;			
+		}
+
+		if ( VoiceState == V_IDLE )
+		{
+			PORTB |= (1<<OUT_B_LIGHT) ;				// Latch clock high
+			if ( VoiceQueueCount )
+			{
+				VoiceLatch &= ~VOICE_CLOCK_BIT ;
+				PORTA_LCD_DAT = VoiceLatch ;			// Latch data set
+				PORTB &= ~(1<<OUT_B_LIGHT) ;			// Latch clock low
+				VoiceSerial = VoiceQueue[VoiceQueueOutIndex++] ;
+				VoiceQueueOutIndex &= ( VOICE_Q_LENGTH - 1 ) ;
+				VoiceQueueCount -= 1 ;
+				VoiceTimer = 16 ;
+				if ( VoiceSerial >= 0xF0 )
+				{
+					VoiceSerial |= 0xFF00 ;
+					VoiceTimer = 40 ;
+				}
+				VoiceCounter = 31 ;
+				VoiceState = V_CLOCKING ;
+			}
+			else
+			{
+				PORTA_LCD_DAT = VoiceLatch ;			// Latch data set
+				PORTB &= ~(1<<OUT_B_LIGHT) ;			// Latch clock low
+			}
+		}
+		else if ( VoiceState == V_STARTUP )
+		{
+			if ( g_blinkTmr10ms > 120 )		// Give module 1.2 secs to initialise
+			{
+				VoiceState = V_IDLE ;
+			}
+		}
+		else if ( VoiceState != V_CLOCKING )
+		{
+			uint8_t busy ;
+			PORTA_LCD_DAT = VoiceLatch ;			// Latch data set
+			PORTB |= (1<<OUT_B_LIGHT) ;				// Drive high,pullup enabled
+			DDRB &= ~(1<<OUT_B_LIGHT) ;				// Change to input
+			asm(" nop") ;
+			asm(" nop") ;											// delay to allow input to settle
+			busy = PINB & 0x80 ;
+			DDRB |= (1<<OUT_B_LIGHT) ;				// Change to output
+			// The next bit guarantees the backlight output gets clocked out
+			if ( VoiceState == V_WAIT_BUSY_ON )	// check for busy processing here
+			{
+				if ( busy == 0 )									// Busy is active
+				{
+					VoiceState = V_WAIT_BUSY_OFF ;
+				}
+				else
+				{
+					if ( --VoiceTimer == 0 )
+					{
+						VoiceState = V_WAIT_BUSY_OFF ;
+					}
+				}
+			}
+			else if (	VoiceState == V_WAIT_BUSY_OFF)	// check for busy processing here
+			{
+				if ( busy )									// Busy is inactive
+				{
+					VoiceTimer = 2 ;
+					VoiceState = V_WAIT_BUSY_DELAY ;
+				}
+			}
+			else if (	VoiceState == V_WAIT_BUSY_DELAY)
+			{
+				if ( --VoiceTimer == 0 )
+				{
+					VoiceState = V_IDLE ;
+				}
+			}
+			PORTB &= ~(1<<OUT_B_LIGHT) ;			// Latch clock low
+		}
+	}
+	else// no voice, put backlight control out
+	{
+		if ( Backlight )
+		{
+			PORTB |= (1<<OUT_B_LIGHT) ;				// Drive high,pullup enabled
+		}
+		else
+		{
+			PORTB &= ~(1<<OUT_B_LIGHT) ;			// Latch clock low
+		}
+	}
 }
 
 void perMain()
 {
     static uint16_t lastTMR;
-    tick10ms = (get_tmr10ms() != lastTMR);
-    lastTMR = get_tmr10ms();
+		uint16_t t10ms ;
+		t10ms = get_tmr10ms() ;
+    tick10ms = t10ms != lastTMR;
+    lastTMR = t10ms ;
     //    uint16_t time10ms ;
     //		time10ms = get_tmr10ms();
     //    tick10ms = (time10ms != lastTMR);
@@ -995,35 +1187,48 @@ void perMain()
     perOut(g_chans512, 0);
     if(!tick10ms) return; //make sure the rest happen only every 10ms.
 
-    //  if ( Timer2_running )
-    if ( Timer2_running & 1)  // ignore throttle started flag
-    {
-        if ( (Timer2_pre += 1 ) >= 100 )
-        {
-            Timer2_pre -= 100 ;
-            s_timerVal[1] += 1 ;
-        }
-    }
+		{
+			struct t_timerg *tptr ;
+
+			tptr = &TimerG ;
+			FORCE_INDIRECT(tptr) ;
+
+    	//  if ( Timer2_running )
+    	if ( tptr->Timer2_running & 1)  // ignore throttle started flag
+    	{
+    	  if ( (tptr->Timer2_pre += 1 ) >= 100 )
+    	  {
+    	      tptr->Timer2_pre -= 100 ;
+    	      tptr->s_timerVal[1] += 1 ;
+    	  }
+    	}
+		}
 
     eeCheck();
+
+		// Every 10mS update backlight output to external latch
+		// Note: LcdLock not needed here as at tasking level
 
     lcd_clear();
     uint8_t evt=getEvent();
     evt = checkTrim(evt);
 
-    doBackLight(evt);
+    doBackLightVoice(evt);
 
     static int16_t p1valprev;
-    p1valdiff = (p1val-calibratedStick[6])/32;
-    if(p1valdiff) {
-        p1valdiff = (p1valprev-calibratedStick[6])/2;
+		int16_t p1d ;
+
+    p1d = (p1val-calibratedStick[6])/32;
+    if(p1d) {
+        p1d = (p1valprev-calibratedStick[6])/2;
         p1val = calibratedStick[6];
     }
     p1valprev = calibratedStick[6];
     if ( g_eeGeneral.disablePotScroll )
     {
-        p1valdiff = 0 ;
+        p1d = 0 ;
     }
+		p1valdiff = p1d ;
 
     g_menuStack[g_menuStackPtr](evt);
     refreshDiplay();
@@ -1034,7 +1239,7 @@ void perMain()
         PORTG |=  (1<<OUT_G_SIM_CTL); // 1=ppm-in
     }
 
-    switch( get_tmr10ms() & 0x1f ) { //alle 10ms*32
+    switch( g_blinkTmr10ms & 0x1f ) { //alle 10ms*32
 
     case 2:
     {
@@ -1055,7 +1260,7 @@ void perMain()
         s_batCheck+=32;
         if((s_batCheck==0) && (g_vbat100mV<g_eeGeneral.vBatWarn) && (g_vbat100mV>49)){
 
-            audioDefevent(AU_TX_BATTERY_LOW);
+            audioVoiceDefevent(AU_TX_BATTERY_LOW, V_BATTERY_LOW);
             if (g_eeGeneral.flashBeep) g_LightOffCounter = FLASH_DURATION;
         }
     }
@@ -1148,7 +1353,7 @@ void getADC_filt()
   s_ana[chan] = (ADC + s_ana[chan]) >> 1;
   */
 
-void getADC_osmp()
+static void getADC_osmp()
 {
     //  uint16_t temp_ana[8] = {0};
     uint16_t temp_ana ;
@@ -1198,7 +1403,7 @@ void getADC_single()
     }
 }
 
-void getADC_bandgap()
+static void getADC_bandgap()
 {
     ADMUX=0x1E|ADC_VREF_TYPE;
     // Start the AD conversion
@@ -1239,6 +1444,7 @@ static uint16_t getTmr16KHz()
 }
 
 
+// Clocks every 64 uS
 ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 { 
     cli();
@@ -1246,10 +1452,49 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
     sei();
 
 
-    OCR0 += 2;
+    OCR0 += 2;			// Interrupt every 128 uS
 
   
   AUDIO_DRIVER();  // the tone generator
+	// Now handle the Voice output
+	// Check for LcdLocked (in interrupt), and voice_enabled
+	if ( g_eeGeneral.speakerMode & 2 )
+	{
+		if ( LcdLock == 0 )		// LCD not in use
+		{
+			struct t_voice *vptr ;
+			vptr = voiceaddress() ;
+			if ( vptr->VoiceState == V_CLOCKING )
+			{
+				if ( vptr->VoiceTimer )
+				{
+					vptr->VoiceTimer -= 1 ;					
+				}
+				else
+				{
+					PORTB |= (1<<OUT_B_LIGHT) ;				// Latch clock high
+					if ( vptr->VoiceCounter & 1 )
+					{
+						vptr->VoiceLatch &= ~VOICE_DATA_BIT ;
+						if ( vptr->VoiceSerial & 0x8000 )
+						{
+							vptr->VoiceLatch |= VOICE_DATA_BIT ;
+						}
+						vptr->VoiceSerial <<= 1 ;
+					}
+					vptr->VoiceLatch ^= VOICE_CLOCK_BIT ;
+					PORTA_LCD_DAT = vptr->VoiceLatch ;			// Latch data set
+					PORTB &= ~(1<<OUT_B_LIGHT) ;			// Latch clock low
+					if ( --vptr->VoiceCounter == 0 )
+					{
+						vptr->VoiceState = V_WAIT_BUSY_ON ;
+						vptr->VoiceTimer = 5 ;		// 50 mS
+					}
+				}
+			}
+		}
+	}
+
 
   static uint8_t cnt10ms = 77; // execute 10ms code once every 78 ISRs
   if (cnt10ms-- == 0) { // BEGIN { ... every 10ms ... }
@@ -1270,9 +1515,7 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 			AlarmCheckFlag = 1 ;	// Flag time to check alarms
 		}
 
-
   } // end 10ms event
-
 
   cli();
   TIMSK |= (1<<OCIE0);
@@ -1340,6 +1583,9 @@ unsigned int stack_free()
 }
 
 
+#ifdef FRSKY
+extern uint8_t CustomDisplayIndex[6] ;
+#endif
 
 int main(void)
 {
@@ -1370,7 +1616,14 @@ int main(void)
     NMEA_Init();
 #endif
 
-
+#ifdef FRSKY
+	CustomDisplayIndex[0] = 5 ;
+//	CustomDisplayIndex[1] = 0 ;
+//	CustomDisplayIndex[2] = 0 ;
+//	CustomDisplayIndex[3] = 0 ;
+	CustomDisplayIndex[4] = 1 ;
+	CustomDisplayIndex[5] = 2 ;
+#endif
 
     ADMUX=ADC_VREF_TYPE;
     ADCSRA=0x85;
@@ -1424,19 +1677,23 @@ int main(void)
     //we assume that startup is like pressing a switch and moving sticks.  Hence the lightcounter is set
     //if we have a switch on backlight it will be able to turn on the backlight.
 
-    g_LightOffCounter = g_eeGeneral.lightOnStickMove ;
+		uint16_t loc ;
+    loc = g_eeGeneral.lightOnStickMove ;
     if(g_eeGeneral.lightAutoOff > g_eeGeneral.lightOnStickMove)
-      g_LightOffCounter = g_eeGeneral.lightAutoOff ;
-    g_LightOffCounter *= 500 ;
-    check_backlight();
+      loc = g_eeGeneral.lightAutoOff ;
+    g_LightOffCounter = loc * 500 ;
+
+    check_backlight_voice();
 
     // moved here and logic added to only play statup tone if splash screen enabled.
     // that way we save a bit, but keep the option for end users!
-    if(g_eeGeneral.speakerMode == 1){
-        if(!g_eeGeneral.disableSplashScreen)
-        {
-            audioDefevent(AU_TADA);
-        }
+		putVoiceQueue( g_eeGeneral.volume + 0xF7 ) ;
+    if((g_eeGeneral.speakerMode & 1) == 1)
+		{
+      if(!g_eeGeneral.disableSplashScreen)
+      {
+				audioVoiceDefevent( AU_TADA, V_HELLO ) ;
+      }
     }
     doSplash();
     checkMem();
@@ -1586,7 +1843,14 @@ void mainSequence()
 									{
     		          	if ( (  FrskyHubData[FR_A1_MAH+i] >> 6 ) >= g_model.frsky.alarmData[0].frskyAlarmLimit )
 										{
-											audio.event( g_model.frsky.alarmData[0].frskyAlarmSound ) ;
+											if ( g_eeGeneral.speakerMode & 2 )
+											{
+												putVoiceQueue( V_CAPACITY ) ;
+											}
+											else
+											{
+												audio.event( g_model.frsky.alarmData[0].frskyAlarmSound ) ;
+											}
 										}
 									}
 								}
@@ -1598,14 +1862,56 @@ void mainSequence()
 				// Now for the Safety/alarm switch alarms
 				{
 					uint8_t i ;
-					for ( i = 0 ; i < NUM_CSW ; i += 1 )
+					static uint8_t periodCounter ;
+					
+					periodCounter += 0x11 ;
+					periodCounter &= 0xF7 ;
+					if ( periodCounter > 0x5F )
+					{
+						periodCounter &= 0x0F ;
+					}
+					for ( i = 0 ; i < NUM_CHNOUT ; i += 1 )
 					{
     				SafetySwData *sd = &g_model.safetySw[i] ;
 						if (sd->mode == 1)
 						{
 							if(getSwitch( sd->swtch,0))
 							{
-								audio.event( (g_eeGeneral.speakerMode == 0) ? 1 : sd->val ) ;
+								audio.event( ((g_eeGeneral.speakerMode & 1) == 0) ? 1 : sd->val ) ;
+							}
+						}
+						if (sd->mode == 2)
+						{
+							if ( sd->swtch > MAX_DRSWITCH )
+							{
+								switch ( sd->swtch - MAX_DRSWITCH -1 )
+								{
+									case 0 :
+										if ( ( periodCounter & 3 ) == 0 )
+										{
+											voice_telem_item( sd->val ) ;
+										}
+									break ;
+									case 1 :
+										if ( ( periodCounter & 0xF0 ) == 0 )
+										{
+											voice_telem_item( sd->val ) ;
+										}
+									break ;
+									case 2 :
+										if ( ( periodCounter & 7 ) == 2 )
+										{
+											voice_telem_item( sd->val ) ;
+										}
+									break ;
+								}
+							}
+							else if ( ( periodCounter & 1 ) == 0 )		// Every 4 seconds
+							{
+								if(getSwitch( sd->swtch,0))
+								{
+									putVoiceQueue( sd->val + 128 ) ;
+								}
 							}
 						}
 					}
@@ -1613,4 +1919,14 @@ void mainSequence()
     }
 }
 
+
+int16_t calc1000toRESX(int16_t x)  // improve calc time by Pat MacKenzie
+{
+    int16_t y = x>>5;
+    x+=y;
+    y=y>>2;
+    x-=y;
+    return x+(y>>2);
+    //  return x + x/32 - x/128 + x/512;
+}
 
