@@ -78,6 +78,7 @@ extern void lcd_clear();
 extern void refreshDiplay();
 extern void lcdSetRefVolt(unsigned char val);
 #define BLINK_ON_PHASE (g_blinkTmr10ms & (1<<6))
-#define BLINK_SYNC      g_blinkTmr10ms = (3<<5)
+//#define BLINK_SYNC      g_blinkTmr10ms = (3<<5)
+#define BLINK_SYNC
 #endif
 /*eof*/
