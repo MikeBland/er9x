@@ -1,10 +1,10 @@
 ===== Starting build =====
 Timestamp
-Sun Jul  8 00:48:30 UTC 2012
+Sun Jul  8 13:36:12 UTC 2012
 ==========================
 
 ===== Updating from SVN =====
-At revision 764.
+At revision 765.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -28,18 +28,18 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.5.3
-Copyright (C) 2010 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.7.1
+Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "07.07.2012"
-#define TIME_STR "20:48:31"
-#define SUB_VERS 5656-erez
-#define SVN_VERS "er9x-r765"
+#define DATE_STR "08.07.2012"
+#define TIME_STR "09:36:13"
+#define SUB_VERS 5685-erez
+#define SVN_VERS "er9x-r766"
 #define MOD_VERS "JETI   "
 
 Compiling C++: er9x.cpp
@@ -65,7 +65,6 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wa
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
-templates.cpp:54:39: warning: only initialized variables can be placed into program memory area
 
 Compiling C++: pulses.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
@@ -94,17 +93,21 @@ Creating Symbol Table: er9x.sym
 avr-nm -n er9x.elf > er9x.sym
 
 Size after:
-AVR Memory Usage
-----------------
-Device: atmega64
+avr-size: unrecognized option '--mcu=atmega64'
+Usage: avr-size [option(s)] [file(s)]
+ Displays the sizes of sections inside binary files
+ If no input file(s) are specified, a.out is assumed
+ The options are:
+  -A|-B     --format={sysv|berkeley}  Select output style (default is berkeley)
+  -o|-d|-x  --radix={8|10|16}         Display numbers in octal, decimal or hex
+  -t        --totals                  Display the total sizes (Berkeley only)
+            --common                  Display total size for *COM* syms
+            --target=<bfdname>        Set the binary file format
+            @<file>                   Read options from <file>
+  -h        --help                    Display this information
+  -v        --version                 Display the program's version
 
-Program:   58450 bytes (89.2% Full)
-(.text + .data + .bootloader)
-
-Data:       3517 bytes (85.9% Full)
-(.data + .bss + .noinit)
-
-
+avr-size: supported targets: elf32-avr elf32-little elf32-big srec symbolsrec verilog tekhex binary ihex
 
 -------- end --------
 
@@ -132,18 +135,18 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.5.3
-Copyright (C) 2010 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.7.1
+Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "07.07.2012"
-#define TIME_STR "20:48:36"
-#define SUB_VERS 5657-erez
-#define SVN_VERS "er9x-r765"
+#define DATE_STR "08.07.2012"
+#define TIME_STR "09:36:17"
+#define SUB_VERS 5686-erez
+#define SVN_VERS "er9x-r766"
 #define MOD_VERS "FRSKY NT  "
 
 Compiling C++: er9x.cpp
@@ -197,17 +200,21 @@ Creating Symbol Table: er9x.sym
 avr-nm -n er9x.elf > er9x.sym
 
 Size after:
-AVR Memory Usage
-----------------
-Device: atmega64
+avr-size: unrecognized option '--mcu=atmega64'
+Usage: avr-size [option(s)] [file(s)]
+ Displays the sizes of sections inside binary files
+ If no input file(s) are specified, a.out is assumed
+ The options are:
+  -A|-B     --format={sysv|berkeley}  Select output style (default is berkeley)
+  -o|-d|-x  --radix={8|10|16}         Display numbers in octal, decimal or hex
+  -t        --totals                  Display the total sizes (Berkeley only)
+            --common                  Display total size for *COM* syms
+            --target=<bfdname>        Set the binary file format
+            @<file>                   Read options from <file>
+  -h        --help                    Display this information
+  -v        --version                 Display the program's version
 
-Program:   64738 bytes (98.8% Full)
-(.text + .data + .bootloader)
-
-Data:       3700 bytes (90.3% Full)
-(.data + .bss + .noinit)
-
-
+avr-size: supported targets: elf32-avr elf32-little elf32-big srec symbolsrec verilog tekhex binary ihex
 
 -------- end --------
 
@@ -235,18 +242,18 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.5.3
-Copyright (C) 2010 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.7.1
+Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "07.07.2012"
-#define TIME_STR "20:48:40"
-#define SUB_VERS 5658-erez
-#define SVN_VERS "er9x-r765"
+#define DATE_STR "08.07.2012"
+#define TIME_STR "09:36:22"
+#define SUB_VERS 5687-erez
+#define SVN_VERS "er9x-r766"
 #define MOD_VERS "FRSKY NHT  "
 
 Compiling C++: er9x.cpp
@@ -300,17 +307,21 @@ Creating Symbol Table: er9x.sym
 avr-nm -n er9x.elf > er9x.sym
 
 Size after:
-AVR Memory Usage
-----------------
-Device: atmega64
+avr-size: unrecognized option '--mcu=atmega64'
+Usage: avr-size [option(s)] [file(s)]
+ Displays the sizes of sections inside binary files
+ If no input file(s) are specified, a.out is assumed
+ The options are:
+  -A|-B     --format={sysv|berkeley}  Select output style (default is berkeley)
+  -o|-d|-x  --radix={8|10|16}         Display numbers in octal, decimal or hex
+  -t        --totals                  Display the total sizes (Berkeley only)
+            --common                  Display total size for *COM* syms
+            --target=<bfdname>        Set the binary file format
+            @<file>                   Read options from <file>
+  -h        --help                    Display this information
+  -v        --version                 Display the program's version
 
-Program:   64072 bytes (97.8% Full)
-(.text + .data + .bootloader)
-
-Data:       3698 bytes (90.3% Full)
-(.data + .bss + .noinit)
-
-
+avr-size: supported targets: elf32-avr elf32-little elf32-big srec symbolsrec verilog tekhex binary ihex
 
 -------- end --------
 
@@ -338,18 +349,18 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.5.3
-Copyright (C) 2010 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.7.1
+Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "07.07.2012"
-#define TIME_STR "20:48:44"
-#define SUB_VERS 5659-erez
-#define SVN_VERS "er9x-r765"
+#define DATE_STR "08.07.2012"
+#define TIME_STR "09:36:26"
+#define SUB_VERS 5688-erez
+#define SVN_VERS "er9x-r766"
 #define MOD_VERS "ARDU   "
 
 Compiling C++: er9x.cpp
@@ -375,7 +386,6 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -O
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
-templates.cpp:54:39: warning: only initialized variables can be placed into program memory area
 
 Compiling C++: pulses.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
@@ -404,17 +414,21 @@ Creating Symbol Table: er9x.sym
 avr-nm -n er9x.elf > er9x.sym
 
 Size after:
-AVR Memory Usage
-----------------
-Device: atmega64
+avr-size: unrecognized option '--mcu=atmega64'
+Usage: avr-size [option(s)] [file(s)]
+ Displays the sizes of sections inside binary files
+ If no input file(s) are specified, a.out is assumed
+ The options are:
+  -A|-B     --format={sysv|berkeley}  Select output style (default is berkeley)
+  -o|-d|-x  --radix={8|10|16}         Display numbers in octal, decimal or hex
+  -t        --totals                  Display the total sizes (Berkeley only)
+            --common                  Display total size for *COM* syms
+            --target=<bfdname>        Set the binary file format
+            @<file>                   Read options from <file>
+  -h        --help                    Display this information
+  -v        --version                 Display the program's version
 
-Program:   60294 bytes (92.0% Full)
-(.text + .data + .bootloader)
-
-Data:       3515 bytes (85.8% Full)
-(.data + .bss + .noinit)
-
-
+avr-size: supported targets: elf32-avr elf32-little elf32-big srec symbolsrec verilog tekhex binary ihex
 
 -------- end --------
 
@@ -442,18 +456,18 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.5.3
-Copyright (C) 2010 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.7.1
+Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "07.07.2012"
-#define TIME_STR "20:48:48"
-#define SUB_VERS 5660-erez
-#define SVN_VERS "er9x-r765"
+#define DATE_STR "08.07.2012"
+#define TIME_STR "09:36:30"
+#define SUB_VERS 5689-erez
+#define SVN_VERS "er9x-r766"
 #define MOD_VERS "NMEA   "
 
 Compiling C++: er9x.cpp
@@ -479,7 +493,6 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wa
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
-templates.cpp:54:39: warning: only initialized variables can be placed into program memory area
 
 Compiling C++: pulses.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
@@ -508,17 +521,21 @@ Creating Symbol Table: er9x.sym
 avr-nm -n er9x.elf > er9x.sym
 
 Size after:
-AVR Memory Usage
-----------------
-Device: atmega64
+avr-size: unrecognized option '--mcu=atmega64'
+Usage: avr-size [option(s)] [file(s)]
+ Displays the sizes of sections inside binary files
+ If no input file(s) are specified, a.out is assumed
+ The options are:
+  -A|-B     --format={sysv|berkeley}  Select output style (default is berkeley)
+  -o|-d|-x  --radix={8|10|16}         Display numbers in octal, decimal or hex
+  -t        --totals                  Display the total sizes (Berkeley only)
+            --common                  Display total size for *COM* syms
+            --target=<bfdname>        Set the binary file format
+            @<file>                   Read options from <file>
+  -h        --help                    Display this information
+  -v        --version                 Display the program's version
 
-Program:   61404 bytes (93.7% Full)
-(.text + .data + .bootloader)
-
-Data:       3587 bytes (87.6% Full)
-(.data + .bss + .noinit)
-
-
+avr-size: supported targets: elf32-avr elf32-little elf32-big srec symbolsrec verilog tekhex binary ihex
 
 -------- end --------
 
@@ -546,18 +563,18 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.5.3
-Copyright (C) 2010 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.7.1
+Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "07.07.2012"
-#define TIME_STR "20:48:52"
-#define SUB_VERS 5661-erez
-#define SVN_VERS "er9x-r765"
+#define DATE_STR "08.07.2012"
+#define TIME_STR "09:36:34"
+#define SUB_VERS 5690-erez
+#define SVN_VERS "er9x-r766"
 #define MOD_VERS " NHT  "
 
 Compiling C++: er9x.cpp
@@ -608,17 +625,21 @@ Creating Symbol Table: er9x.sym
 avr-nm -n er9x.elf > er9x.sym
 
 Size after:
-AVR Memory Usage
-----------------
-Device: atmega64
+avr-size: unrecognized option '--mcu=atmega64'
+Usage: avr-size [option(s)] [file(s)]
+ Displays the sizes of sections inside binary files
+ If no input file(s) are specified, a.out is assumed
+ The options are:
+  -A|-B     --format={sysv|berkeley}  Select output style (default is berkeley)
+  -o|-d|-x  --radix={8|10|16}         Display numbers in octal, decimal or hex
+  -t        --totals                  Display the total sizes (Berkeley only)
+            --common                  Display total size for *COM* syms
+            --target=<bfdname>        Set the binary file format
+            @<file>                   Read options from <file>
+  -h        --help                    Display this information
+  -v        --version                 Display the program's version
 
-Program:   55336 bytes (84.4% Full)
-(.text + .data + .bootloader)
-
-Data:       3453 bytes (84.3% Full)
-(.data + .bss + .noinit)
-
-
+avr-size: supported targets: elf32-avr elf32-little elf32-big srec symbolsrec verilog tekhex binary ihex
 
 -------- end --------
 
@@ -646,18 +667,18 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.5.3
-Copyright (C) 2010 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.7.1
+Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "07.07.2012"
-#define TIME_STR "20:48:56"
-#define SUB_VERS 5662-erez
-#define SVN_VERS "er9x-r765"
+#define DATE_STR "08.07.2012"
+#define TIME_STR "09:36:37"
+#define SUB_VERS 5691-erez
+#define SVN_VERS "er9x-r766"
 #define MOD_VERS "   "
 
 Compiling C++: er9x.cpp
@@ -683,7 +704,6 @@ avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD
 
 Compiling C++: templates.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
-templates.cpp:54:39: warning: only initialized variables can be placed into program memory area
 
 Compiling C++: pulses.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
@@ -709,17 +729,21 @@ Creating Symbol Table: er9x.sym
 avr-nm -n er9x.elf > er9x.sym
 
 Size after:
-AVR Memory Usage
-----------------
-Device: atmega64
+avr-size: unrecognized option '--mcu=atmega64'
+Usage: avr-size [option(s)] [file(s)]
+ Displays the sizes of sections inside binary files
+ If no input file(s) are specified, a.out is assumed
+ The options are:
+  -A|-B     --format={sysv|berkeley}  Select output style (default is berkeley)
+  -o|-d|-x  --radix={8|10|16}         Display numbers in octal, decimal or hex
+  -t        --totals                  Display the total sizes (Berkeley only)
+            --common                  Display total size for *COM* syms
+            --target=<bfdname>        Set the binary file format
+            @<file>                   Read options from <file>
+  -h        --help                    Display this information
+  -v        --version                 Display the program's version
 
-Program:   57894 bytes (88.3% Full)
-(.text + .data + .bootloader)
-
-Data:       3481 bytes (85.0% Full)
-(.data + .bss + .noinit)
-
-
+avr-size: supported targets: elf32-avr elf32-little elf32-big srec symbolsrec verilog tekhex binary ihex
 
 -------- end --------
 
