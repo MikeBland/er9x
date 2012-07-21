@@ -242,7 +242,7 @@ enum EnumKeys {
 #define CURV_STR "---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
 #define CURVE_BASE 7
 
-#define CSWITCH_STR  "\007----   v>ofs  v<ofs  |v|>ofs|v|<ofsAND    OR     XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""v1>=v2 ""v1<=v2 "
+#define CSWITCH_STR  "\007----   v>ofs  v<ofs  |v|>ofs|v|<ofsAND    OR     XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""v1>=v2 ""v1<=v2 TimeOff"
 //#define CSW_LEN_FUNC 7
 
 #define CS_OFF       0
@@ -259,12 +259,14 @@ enum EnumKeys {
 #define CS_LESS      11
 #define CS_EGREATER  12
 #define CS_ELESS     13
-#define CS_MAXF      13  //max function
+#define CS_TIME	     14
+#define CS_MAXF      14  //max function
 
 #define CS_VOFS       0
 #define CS_VBOOL      1
 #define CS_VCOMP      2
-#define CS_STATE(x)   ((x)<CS_AND ? CS_VOFS : ((x)<CS_EQUAL ? CS_VBOOL : CS_VCOMP))
+#define CS_TIMER			3
+#define CS_STATE(x)   ((x)<CS_AND ? CS_VOFS : ((x)<CS_EQUAL ? CS_VBOOL : ((x)<CS_TIME ? CS_VCOMP : CS_TIMER)))
 
 
 const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.";
@@ -613,6 +615,7 @@ void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att);
 void putsVolts(uint8_t x,uint8_t y, uint8_t volts, uint8_t att);
 void putsVBat(uint8_t x,uint8_t y,uint8_t att);
 void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2);
+void putsDblSizeName( uint8_t y ) ;
 
 #ifdef FRSKY
 void putsTelemetry(uint8_t x, uint8_t y, uint8_t val, uint8_t unit, uint8_t att);
@@ -780,8 +783,10 @@ extern uint8_t sysFlags;
 #include "audio.h"
 
 extern void putVoiceQueue( uint8_t value ) ;
+extern void	putVoiceQueueUpper( uint8_t value ) ;
 void voice_numeric( uint16_t value, uint8_t num_decimals, uint8_t units_index ) ;
 extern void voice_telem_item( int8_t index ) ;
+extern uint8_t VoiceCheckFlag ;
 
 NOINLINE void resetTimer1(void) ;
 
@@ -789,6 +794,9 @@ NOINLINE void resetTimer1(void) ;
 #define FORCE_INDIRECT(ptr) __asm__ __volatile__ ("" : "=e" (ptr) : "0" (ptr))
 
 extern uint8_t telemItemValid( uint8_t index ) ;
+extern uint8_t Main_running ;
+extern const prog_char *AlertMessage ;
+extern int16_t m_to_ft( int16_t metres ) ;
 
 #endif // er9x_h
 /*eof*/

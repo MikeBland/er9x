@@ -113,7 +113,8 @@ PACK(typedef struct t_EEGeneral {
     uint8_t   FRSkyRed:4;
     uint8_t   hideNameOnSplash:1;
     uint8_t   enablePpmsim:1;
-    uint8_t   spare:2;
+    uint8_t   blightinv:1;
+    uint8_t   spare:1;
     uint8_t   speakerPitch;
     uint8_t   hapticStrength;
     uint8_t   speakerMode;
@@ -176,9 +177,21 @@ PACK(typedef struct t_CSwData { // Custom Switches data
 }) CSwData;
 
 PACK(typedef struct t_SafetySwData { // Custom Switches data
-    int8_t  swtch:6;
-		uint8_t mode:2;
-    int8_t  val;
+	union opt
+	{
+		struct ss
+		{	
+	    int8_t  swtch:6;
+			uint8_t mode:2;
+    	int8_t  val;
+		} ss ;
+		struct vs
+		{
+  		uint8_t vswtch:5 ;
+			uint8_t vmode:3 ; // ON, OFF, BOTH, 15Secs, 30Secs, 60Secs, Varibl
+    	uint8_t vval;
+		} vs ;
+	} opt ;
 }) SafetySwData;
 
 PACK(typedef struct t_FrSkyChannelData {
@@ -201,9 +214,16 @@ PACK(typedef struct t_FrSkyData {
 		FrSkyAlarmData alarmData[4] ;
 }) FrSkyData;
 
+PACK(typedef struct t_swVoice {
+  uint8_t  vswtch:5 ;
+	uint8_t vmode:3 ; // ON, OFF, BOTH, 15Secs, 30Secs, 60Secs, Varibl
+  uint8_t  val ;
+}) voiceSwData ;
+
 PACK(typedef struct t_ModelData {
     char      name[MODEL_NAME_LEN];             // 10 must be first for eeLoadModelName
-    uint8_t   reserved_spare;  //used to be MDVERS - now depreciated
+//    uint8_t   reserved_spare;  //used to be MDVERS - now depreciated
+    uint8_t   modelVoice ;		// Index to model name voice (261+value)
     int8_t    tmrMode;              // timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
     uint8_t   tmrDir:1;    //0=>Count Down, 1=>Count Up
     uint8_t   traineron:1;  // 0 disable trainer, 1 allow trainer
@@ -242,7 +262,7 @@ PACK(typedef struct t_ModelData {
     CSwData   customSw[NUM_CSW];
     uint8_t   frSkyVoltThreshold ;
     int8_t		tmrModeB;
-    uint8_t   res3;
+    uint8_t   numVoice;		// 0-16, rest are Safety switches
     SafetySwData  safetySw[NUM_CHNOUT];
     FrSkyData frsky;
 }) ModelData;
@@ -253,7 +273,7 @@ PACK(typedef struct t_ModelData {
 extern EEGeneral g_eeGeneral;
 extern ModelData g_model;
 
-
+//extern voiceSwData VoiceSwData[] ;
 
 
 

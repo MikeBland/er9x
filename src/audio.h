@@ -197,7 +197,7 @@ void audioVoiceDefevent(uint8_t e, uint8_t v) ;
 #define BACKLIGHT_BIT			0x04
 #define SPARE_BIT					0x08
 
-#define VOICE_Q_LENGTH		8
+#define VOICE_Q_LENGTH		16
 
 // Voice states
 #define V_STARTUP					0
@@ -216,6 +216,7 @@ struct t_voice
 	uint8_t VoiceTimer ;
 	uint16_t VoiceSerial ;
 	uint8_t VoiceState ;
+	uint8_t VoiceShift ;
 	uint8_t VoiceQueueCount ;
 	uint8_t VoiceQueueInIndex ;
 	uint8_t VoiceQueueOutIndex ;
