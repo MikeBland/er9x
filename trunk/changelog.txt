@@ -10,6 +10,21 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 21-Jul-2012  MPB
+Fix voice 'tens' bug
+Various space savings
+Option to use safety switches as voice switches
+Add TIMED option to custom switches
+Add model name voice output
+Add backlight polarity for version 2.2 SmartieParts board
+Compile with -mstrict-X option, saves 600 bytes
+Handle EEPROM overflow alert differently
+Improve PPM in (trainer) input
+Fix altitude offset for alarm and voice output
+Fix altitude alarm metric/imperial bug
+
+
+******************************************
 CHANGELOG: 04-Jul-2012  MPB
 Add voice (requires hardware mod)
 Add custom telemetry screen (not saved yet)

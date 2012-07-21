@@ -662,6 +662,9 @@ void FRSKY_Init(void)
   // These should be running right from power up on a FrSky enabled '9X.
   FRSKY_EnableTXD(); // enable FrSky-Telemetry reception
   FRSKY_EnableRXD(); // enable FrSky-Telemetry reception
+
+//	FrskyHubData[FR_ALT_BARO] = 48 ;
+
 }
 
 #if 0

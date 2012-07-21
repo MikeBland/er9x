@@ -72,10 +72,10 @@ uint8_t lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
 		if ( c < 22 )		// Move to specific x position (c)*FW
 		{
 			x = c * FW ;
-  		if(mode&DBLSIZE)
-			{
-				x += x ;
-			}
+//  		if(mode&DBLSIZE)
+//			{
+//				x += x ;
+//			}
 			return x ;
 		}
 		x += FW ;
