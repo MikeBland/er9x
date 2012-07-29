@@ -17,9 +17,10 @@
 #include "er9x.h"
 #include <stdlib.h>
 
-#include "splashmarker.h"
+// Next two lines swapped as new complier/linker reverses them in memory!
 const
 #include "s9xsplash.lbm"
+#include "splashmarker.h"
 
 /*
 mode1 rud ele thr ail
@@ -40,12 +41,14 @@ static void getADC_osmp( void ) ;
 
 EEGeneral  g_eeGeneral;
 ModelData  g_model;
-//voiceSwData VoiceSwData[NUM_VS_SWITCHES] ;		// In Ram for testing
+#ifdef FRSKY
+uint8_t CustomDisplayIndex[6] ;
+#endif
 
 const prog_char *AlertMessage ;
 uint8_t Main_running ;
 uint8_t SlaveMode ;
-uint8_t Vs_state[16] ;
+uint8_t Vs_state[NUM_CHNOUT] ;
 
 //const prog_uint8_t APM chout_ar[] = { //First number is 0..23 -> template setup,  Second is relevant channel out
 //                                      1,2,3,4 , 1,2,4,3 , 1,3,2,4 , 1,3,4,2 , 1,4,2,3 , 1,4,3,2,
@@ -96,6 +99,12 @@ const prog_uint8_t APM modn12x3[]= {
 //E=2
 //T=3
 //A=4
+
+
+uint8_t CS_STATE( uint8_t x)
+{
+	return ((x)<CS_AND ? CS_VOFS : ((x)<CS_EQUAL ? CS_VBOOL : ((x)<CS_TIME ? CS_VCOMP : CS_TIMER))) ;
+}
 
 MixData *mixaddress( uint8_t idx )
 {
@@ -421,7 +430,7 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
         y = getValue(cs.v2-1);
     }
 
-    switch (cs.func) {
+    switch ((uint8_t)cs.func) {
     case (CS_VPOS):
         ret_value = (x>y);
         break;
@@ -500,6 +509,13 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 		{
       ret_value = false;
 		}
+		if ( ret_value )
+		{
+			if ( cs.andsw )
+			{
+        ret_value = getSwitch( cs.andsw + 9, 0, level+1) ;
+			}
+		}
     Last_switch[cs_index] = ret_value ;
     return swtch>0 ? ret_value : !ret_value ;
 
@@ -526,11 +542,17 @@ static void clearKeyEvents()
 
 void check_backlight_voice()
 {
+	static uint8_t tmr10ms ;
     if(getSwitch(g_eeGeneral.lightSw,0) || g_LightOffCounter)
         BACKLIGHT_ON ;
     else
         BACKLIGHT_OFF ;
+	
+	if ( tmr10ms != g_blinkTmr10ms )
+	{
+		tmr10ms = g_blinkTmr10ms ;
 		Voice.voice_process() ;
+	}
 }
 
 uint16_t stickMoveValue()
@@ -1187,6 +1209,7 @@ void t_voice::voice_process(void)
 			PORTB |= (1<<OUT_B_LIGHT) ;				// Drive high,pullup enabled
 			DDRB &= ~(1<<OUT_B_LIGHT) ;				// Change to input
 			asm(" nop") ;
+			asm(" nop") ;
 			asm(" nop") ;											// delay to allow input to settle
 			busy = PINB & 0x80 ;
 			DDRB |= (1<<OUT_B_LIGHT) ;				// Change to output
@@ -1311,12 +1334,17 @@ void perMain()
     	g_menuStack[g_menuStackPtr](evt);
 		}
     refreshDiplay();
-    if( (checkSlaveMode()) && (!g_eeGeneral.enablePpmsim))
 		{
-        PORTG &= ~(1<<OUT_G_SIM_CTL); // 0=ppm out
-    }else{
-        PORTG |=  (1<<OUT_G_SIM_CTL); // 1=ppm-in
-    }
+			uint8_t pg ;
+			pg = PORTG ;
+    	if( (checkSlaveMode()) && (!g_eeGeneral.enablePpmsim))
+			{
+    	    pg &= ~(1<<OUT_G_SIM_CTL); // 0=ppm out
+    	}else{
+    	    pg |=  (1<<OUT_G_SIM_CTL); // 1=ppm-in
+    	}
+			PORTG = pg ;
+		}
 
     switch( g_blinkTmr10ms & 0x1f ) { //alle 10ms*32
 
@@ -1671,9 +1699,6 @@ unsigned int stack_free()
 }
 
 
-#ifdef FRSKY
-extern uint8_t CustomDisplayIndex[6] ;
-#endif
 
 
 
@@ -1898,15 +1923,22 @@ void mainSequence()
                     audioDefevent(AU_WARNING2) ;
                 }
             }
+						uint16_t total_volts = 0 ;
+						uint8_t audio_sounded = 0 ;
 				    for (uint8_t k=0; k<FrskyBattCells; k++)
 						{
-	        		if ( FrskyVolts[k] < g_model.frSkyVoltThreshold )
+							total_volts += FrskyVolts[k] ;
+							if ( audio_sounded == 0 )
 							{
-	            	audioDefevent(AU_WARNING3);
-	            	break;
-			        }
+	        			if ( FrskyVolts[k] < g_model.frSkyVoltThreshold )
+								{
+	            		audioDefevent(AU_WARNING3);
+									audio_sounded = 1 ;
+			        	}
+							}
 	  			  }
-
+						// Now we have total volts available
+						FrskyHubData[FR_CELLS_TOT] = total_volts / 5 ;
         }
 
 

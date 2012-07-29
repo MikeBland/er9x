@@ -10,6 +10,15 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 29-Jul-2012  MPB
+FAS100 voltage added
+Splash marker moved
+Custom switch extra AND facility added
+Voice welcome message bug fixed
+Individual cell voltages summed for total battery voltage
+
+
+******************************************
 CHANGELOG: 21-Jul-2012  MPB
 Fix voice 'tens' bug
 Various space savings

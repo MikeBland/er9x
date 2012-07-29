@@ -173,7 +173,8 @@ PACK(typedef struct t_MixData {
 PACK(typedef struct t_CSwData { // Custom Switches data
     int8_t  v1; //input
     int8_t  v2; //offset
-    uint8_t func;
+    uint8_t func:4;
+    uint8_t andsw:4;
 }) CSwData;
 
 PACK(typedef struct t_SafetySwData { // Custom Switches data
@@ -214,16 +215,16 @@ PACK(typedef struct t_FrSkyData {
 		FrSkyAlarmData alarmData[4] ;
 }) FrSkyData;
 
-PACK(typedef struct t_swVoice {
-  uint8_t  vswtch:5 ;
-	uint8_t vmode:3 ; // ON, OFF, BOTH, 15Secs, 30Secs, 60Secs, Varibl
-  uint8_t  val ;
-}) voiceSwData ;
+//PACK(typedef struct t_swVoice {
+//  uint8_t  vswtch:5 ;
+//	uint8_t vmode:3 ; // ON, OFF, BOTH, 15Secs, 30Secs, 60Secs, Varibl
+//  uint8_t  val ;
+//}) voiceSwData ;
 
 PACK(typedef struct t_ModelData {
     char      name[MODEL_NAME_LEN];             // 10 must be first for eeLoadModelName
 //    uint8_t   reserved_spare;  //used to be MDVERS - now depreciated
-    uint8_t   modelVoice ;		// Index to model name voice (261+value)
+    uint8_t   modelVoice ;		// Index to model name voice (260+value)
     int8_t    tmrMode;              // timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
     uint8_t   tmrDir:1;    //0=>Count Down, 1=>Count Up
     uint8_t   traineron:1;  // 0 disable trainer, 1 allow trainer
@@ -273,7 +274,9 @@ PACK(typedef struct t_ModelData {
 extern EEGeneral g_eeGeneral;
 extern ModelData g_model;
 
-//extern voiceSwData VoiceSwData[] ;
+#ifdef FRSKY
+extern uint8_t CustomDisplayIndex[6] ;
+#endif
 
 
 

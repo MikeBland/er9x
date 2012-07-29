@@ -245,28 +245,29 @@ enum EnumKeys {
 #define CSWITCH_STR  "\007----   v>ofs  v<ofs  |v|>ofs|v|<ofsAND    OR     XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""v1>=v2 ""v1<=v2 TimeOff"
 //#define CSW_LEN_FUNC 7
 
-#define CS_OFF       0
-#define CS_VPOS      1  //v>offset
-#define CS_VNEG      2  //v<offset
-#define CS_APOS      3  //|v|>offset
-#define CS_ANEG      4  //|v|<offset
-#define CS_AND       5
-#define CS_OR        6
-#define CS_XOR       7
-#define CS_EQUAL     8
-#define CS_NEQUAL    9
-#define CS_GREATER   10
-#define CS_LESS      11
-#define CS_EGREATER  12
-#define CS_ELESS     13
-#define CS_TIME	     14
-#define CS_MAXF      14  //max function
+#define CS_OFF       (uint8_t)0
+#define CS_VPOS      (uint8_t)1  //v>offset
+#define CS_VNEG      (uint8_t)2  //v<offset
+#define CS_APOS      (uint8_t)3  //|v|>offset
+#define CS_ANEG      (uint8_t)4  //|v|<offset
+#define CS_AND       (uint8_t)5
+#define CS_OR        (uint8_t)6
+#define CS_XOR       (uint8_t)7
+#define CS_EQUAL     (uint8_t)8
+#define CS_NEQUAL    (uint8_t)9
+#define CS_GREATER   (uint8_t)10
+#define CS_LESS      (uint8_t)11
+#define CS_EGREATER  (uint8_t)12
+#define CS_ELESS     (uint8_t)13
+#define CS_TIME	     (uint8_t)14
+#define CS_MAXF      (uint8_t)14  //max function
 
-#define CS_VOFS       0
-#define CS_VBOOL      1
-#define CS_VCOMP      2
-#define CS_TIMER			3
-#define CS_STATE(x)   ((x)<CS_AND ? CS_VOFS : ((x)<CS_EQUAL ? CS_VBOOL : ((x)<CS_TIME ? CS_VCOMP : CS_TIMER)))
+#define CS_VOFS       (uint8_t)0
+#define CS_VBOOL      (uint8_t)1
+#define CS_VCOMP      (uint8_t)2
+#define CS_TIMER			(uint8_t)3
+uint8_t CS_STATE( uint8_t x) ;
+//#define CS_STATE(x)   (((uint8_t)x)<CS_AND ? CS_VOFS : (((uint8_t)x)<CS_EQUAL ? CS_VBOOL : (((uint8_t)x)<CS_TIME ? CS_VCOMP : CS_TIMER)))
 
 
 const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.";
@@ -765,7 +766,7 @@ extern const prog_int8_t APM TelemIndex[] ;
 extern int16_t convertTelemConstant( int8_t channel, int8_t value) ;
 
 #ifdef FRSKY
-#define NUM_TELEM_ITEMS 19
+#define NUM_TELEM_ITEMS 21
 #else
 #define NUM_TELEM_ITEMS 3
 #endif
