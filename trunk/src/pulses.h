@@ -18,7 +18,7 @@ typedef struct t_PXXData {
 } __attribute__((packed)) PXXData;
 
 
-void setupPulsesPPM();
+void setupPulsesPPM( uint8_t proto ) ;
 //void setupPulsesPXX();
 
 void sendByteDsm2(uint8_t b);

@@ -415,6 +415,8 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 extern uint8_t pxxFlag;
 extern uint8_t stickMoved;
 
+uint16_t stickMoveValue( void ) ;
+
 typedef void (*MenuFuncP)(uint8_t event);
 typedef void (*getADCp)();
 
@@ -775,6 +777,7 @@ extern int16_t convertTelemConstant( int8_t channel, int8_t value) ;
 
 //extern uint8_t  beepAgain;
 extern uint16_t g_LightOffCounter;
+extern uint16_t inacCounter ;
 
 
 #define sysFLAG_OLD_EEPROM (0x01)

@@ -75,7 +75,7 @@ public:
   ///read from opened file and decode rlc-coded data
   uint16_t readRlc(uint8_t*buf,uint16_t i_len);
   ///deliver current errno, this is reset in open
-  uint8_t errno(){return m_err;}
+  uint8_t write_errno(){return m_err;}
 };
 
 #endif

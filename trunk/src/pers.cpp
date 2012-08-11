@@ -162,7 +162,7 @@ bool eeDuplicateModel(uint8_t id)
   while((l=theFile.read(buf,15)))
   {
     theFile2.write(buf,l);
-//    if(theFile.errno()==ERR_TMO)
+//    if(theFile.write_errno()==ERR_TMO)
 //    {
 //        //wait for 10ms and try again
 //        uint16_t tgtime = get_tmr10ms() + 100;
@@ -250,7 +250,7 @@ void eeCheck(bool immediately)
     {
       EFile::swap(FILE_GENERAL,FILE_TMP);
     }else{
-      if(theWriteFile.errno()==ERR_TMO){
+      if(theWriteFile.write_errno()==ERR_TMO){
         s_eeDirtyMsk |= EE_GENERAL; //try again
         s_eeDirtyTime10ms = get_tmr10ms() - WRITE_DELAY_10MS;
     		if(heartbeat == 0x3)
@@ -271,7 +271,7 @@ void eeCheck(bool immediately)
     {
       EFile::swap(FILE_MODEL(g_eeGeneral.currModel),FILE_TMP);
     }else{
-      if(theWriteFile.errno()==ERR_TMO){
+      if(theWriteFile.write_errno()==ERR_TMO){
         s_eeDirtyMsk |= EE_MODEL; //try again
         if ( msk & EE_TRIM )
         {

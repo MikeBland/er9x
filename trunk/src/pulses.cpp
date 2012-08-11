@@ -32,7 +32,8 @@ uint8_t pxxFlag = 0;
 
 void set_timer3_capture( void ) ;
 void set_timer3_ppm( void ) ;
-void setupPulsesPPM16( uint8_t proto ) ;
+//void setupPulsesPPM16( uint8_t proto ) ;
+void setupPulsesPPM( uint8_t proto ) ;
 static void setupPulsesPXX( void ) ;
 
 //uint16_t PulseTotal ;
@@ -181,7 +182,7 @@ void setupPulses()
             TIMSK |= 0x10 ;		// Enable COMPA
             TCCR1A = (0<<WGM10) ;
             TCCR1B = (1 << WGM12) | (2<<CS10) ; // CTC OCRA, 16MHz / 8
-            setupPulsesPPM16(PROTO_PPM16);
+            setupPulsesPPM(PROTO_PPM16);
 						OCR3A = 50000 ;
             OCR3B = 5000 ;
             set_timer3_ppm() ;
@@ -194,17 +195,18 @@ void setupPulses()
             ETIMSK &= ~(1<<OCIE1C) ;		// COMPC1 off
             TIFR = 0x3C ;			// Clear all pending interrupts
             ETIFR = 0x3F ;			// Clear all pending interrupts
-            setupPulsesPPM16(PROTO_PPMSIM);
+            setupPulsesPPM(PROTO_PPMSIM);
 						OCR3A = 50000 ;
             OCR3B = 5000 ;
             set_timer3_ppm() ;
+		        PORTB &= ~(1<<OUT_B_PPM);			// Hold PPM output low
             break ;
 				}
     }
     switch(required_protocol)
     {
     case PROTO_PPM:
-        setupPulsesPPM();		// Don't enable interrupts through here
+        setupPulsesPPM( PROTO_PPM );		// Don't enable interrupts through here
         break;
     case PROTO_PXX:
         sei() ;							// Interrupts allowed here
@@ -215,7 +217,7 @@ void setupPulses()
         setupPulsesDsm2(6); 
         break;
     case PROTO_PPM16 :
-        setupPulsesPPM();		// Don't enable interrupts through here
+        setupPulsesPPM( PROTO_PPM );		// Don't enable interrupts through here
         // PPM16 pulses are set up automatically within the interrupts
         break ;
     }
@@ -230,35 +232,56 @@ void setupPulses()
 //uint16_t PPM_gap = 300 * 2; //Stoplen *2
 //uint16_t PPM_frame ;
 
-void setupPulsesPPM() // changed 10/05/2010 by dino Issue 128
+uint16_t B3_comp_value ;
+
+void setupPulsesPPM( uint8_t proto )
 {
 #define PPM_CENTER 1500*2
-    int16_t PPM_range = g_model.extendedLimits ? 640*2 : 512*2;   //range of 0.7..1.7msec
-
-    //Total frame length = 22.5msec
-    //each pulse is 0.7..1.7ms long with a 0.3ms stop tail
-    //The pulse ISR is 2mhz that's why everything is multiplied by 2
-    uint16_t *ptr ;
-    ptr = pulses2MHz.pword ;
-    uint8_t p=8+g_model.ppmNCH*2; //Channels *2
-    uint16_t q=(g_model.ppmDelay*50+300)*2; //Stoplen *2
-    uint16_t rest=22500u*2-q; //Minimum Framelen=22.5 ms
-    rest += (int16_t(g_model.ppmFrameLength))*1000;
-    //    if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
-    for(uint8_t i=0;i<p;i++){ //NUM_CHNOUT
-        int16_t v = max(min(g_chans512[i],PPM_range),-PPM_range) + PPM_CENTER;
- 	      rest -= v ; // (*ptr + q);
-				*ptr++ = v - q ; /* as Pat MacKenzie suggests */
-				*ptr++ = q;      //to here
-    }
-    //    *ptr=q;       //reverse these two assignments
-    //    *(ptr+1)=rest;
-    *ptr = rest;
-    *(ptr+1) = q;
-    *(ptr+2)=0;
-    //    pulses2MHz[j++]=q;
-    //    pulses2MHz[j++]=rest;
-    //    pulses2MHz[j++]=0;
+  int16_t PPM_range = g_model.extendedLimits ? 640*2 : 512*2;   //range of 0.7..1.7msec
+    
+	//Total frame length = 22.5msec
+  //each pulse is 0.7..1.7ms long with a 0.3ms stop tail
+  //The pulse ISR is 2mhz that's why everything is multiplied by 2
+  uint16_t *ptr ;
+  ptr = (proto == PROTO_PPM) ? pulses2MHz.pword : &pulses2MHz.pword[PULSES_WORD_SIZE/2] ;
+  uint8_t p= ( ( proto == PROTO_PPM16) ? 16 : 8 ) +g_model.ppmNCH*2 ; //Channels *2
+  uint16_t q=(g_model.ppmDelay*50+300)*2; //Stoplen *2
+  uint16_t rest=22500u*2-q; //Minimum Framelen=22.5 ms
+  rest += (int16_t(g_model.ppmFrameLength))*1000;
+  //    if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
+	if ( proto != PROTO_PPM )
+	{
+		*ptr++ = q ;
+	}
+	for( uint8_t i = (proto == PROTO_PPM16) ? p-8 : 0 ;i<p ; i++ )
+  { //NUM_CHNOUT
+//    int16_t v = max(min(g_chans512[i],PPM_range),-PPM_range) + PPM_CENTER;
+    int16_t v = g_chans512[i] ;
+		if ( v > PPM_range )
+		{
+			v = PPM_range ;			
+		}
+		if ( v < -PPM_range )
+		{
+			v = -PPM_range ;			
+		}
+    v += PPM_CENTER ;
+		
+		rest -= v ; // (*ptr + q);
+		*ptr++ = v - q ; /* as Pat MacKenzie suggests */
+		*ptr++ = q;      //to here
+	}
+	if ( proto != PROTO_PPM )
+	{
+		B3_comp_value = rest - 1000 ;		// 500uS before end of sync pulse
+	}
+	else
+	{
+  	*ptr++ = q;
+	}
+  *(ptr) = rest;
+    
+	*(ptr+1)=0;
 }
 
 
@@ -322,29 +345,35 @@ void setupPulsesDsm2(uint8_t chns)
 {
     static uint8_t dsmDat[2+6*2]={0xFF,0x00,  0x00,0xAA,  0x05,0xFF,  0x09,0xFF,  0x0D,0xFF,  0x13,0x54,  0x14,0xAA};
     uint8_t counter ;
+    uint8_t dsmdat0copy ;
     //	CSwData &cs = g_model.customSw[NUM_CSW-1];
 
     pulses2MHzptr = pulses2MHz.pbyte ;
     
     // If more channels needed make sure the pulses union/array is large enough
-    if (dsmDat[0]&BadData)  //first time through, setup header
+
+		dsmdat0copy = dsmDat[0] ;		// Fetch byte once, saves flash
+    if (dsmdat0copy&BadData)  //first time through, setup header
     {
-        switch(g_model.ppmNCH)
-        {
-        case LPXDSM2:
-            dsmDat[0]= 0x80;
-            break;
-        case DSM2only:
-            dsmDat[0]=0x90;
-            break;
-        default:
-            dsmDat[0]=0x98;  //dsmx, bind mode
-            break;
-        }
+			if ( g_model.ppmNCH == LPXDSM2 )
+			{
+        dsmdat0copy= 0x80;
+			}
+			else if ( g_model.ppmNCH == DSM2only )
+			{
+        dsmdat0copy= 0x90;
+			}
+			else
+			{
+        dsmdat0copy=0x98;  //dsmx, bind mode
+			}
     }
-    if((dsmDat[0]&BindBit)&&(!keyState(SW_Trainer)))  dsmDat[0]&=~BindBit;		//clear bind bit if trainer not pulled
-    if ((!(dsmDat[0]&BindBit))&&getSwitch(MAX_DRSWITCH-1,0,0)) dsmDat[0]|=RangeCheckBit;   //range check function
-    else dsmDat[0]&=~RangeCheckBit;
+    if((dsmdat0copy&BindBit)&&(!keyState(SW_Trainer)))  dsmdat0copy&=~BindBit;		//clear bind bit if trainer not pulled
+    if ((!(dsmdat0copy&BindBit))&&getSwitch(MAX_DRSWITCH-1,0,0)) dsmdat0copy|=RangeCheckBit;   //range check function
+    else dsmdat0copy&=~RangeCheckBit;
+
+		dsmDat[0] = dsmdat0copy ;		// Put byte back
+
     dsmDat[1]=g_eeGeneral.currModel+1;  //DSM2 Header second byte for model match
     for(uint8_t i=0; i<chns; i++)
     {
@@ -454,12 +483,12 @@ void set_timer3_ppm()
 }
 
 
-uint16_t B3_comp_value ;
 
 ISR(TIMER3_COMPA_vect) //2MHz pulse generation
 {
     static uint8_t   pulsePol;
     static uint16_t *pulsePtr = &pulses2MHz.pword[PULSES_WORD_SIZE/2];
+    uint16_t *xpulsePtr ;
 
     if(pulsePol)
     {
@@ -470,14 +499,17 @@ ISR(TIMER3_COMPA_vect) //2MHz pulse generation
         pulsePol = 1;
     }
 
-    OCR3A  = *pulsePtr++;
+		xpulsePtr = pulsePtr ;	// read memory once
+
+    OCR3A  = *xpulsePtr++;
     OCR3B = B3_comp_value ;
     
-    if( *pulsePtr == 0)
+    if( *xpulsePtr == 0)
     {
-        pulsePtr = &pulses2MHz.pword[PULSES_WORD_SIZE/2];
+        xpulsePtr = &pulses2MHz.pword[PULSES_WORD_SIZE/2];
         pulsePol = g_model.pulsePol;//0;     // changed polarity
     }
+		pulsePtr = xpulsePtr ;	// write memory back
     heartbeat |= HEART_TIMER2Mhz;
 }
 
@@ -493,38 +525,10 @@ ISR(TIMER3_COMPB_vect) //2MHz pulse generation
 		}
 		else
 		{
-    	setupPulsesPPM16(g_model.protocol) ;
+    	setupPulsesPPM(g_model.protocol) ;
 		}
 }
 
-
-void setupPulsesPPM16( uint8_t proto )
-{
-    int16_t PPM_range = g_model.extendedLimits ? 640*2 : 512*2;   //range of 0.7..1.7msec
-
-    //Total frame length = 22.5msec
-    //each pulse is 0.7..1.7ms long with a 0.3ms stop tail
-    //The pulse ISR is 2mhz that's why everything is multiplied by 2
-    uint16_t *ptr ;
-    ptr = &pulses2MHz.pword[PULSES_WORD_SIZE/2] ;
-    uint8_t p= ( ( proto == PROTO_PPM16) ? 16 : 8 ) +g_model.ppmNCH*2 ; //Channels *2
-    uint16_t q=(g_model.ppmDelay*50+300)*2; //Stoplen *2
-    uint16_t rest=22500u*2-q; //Minimum Framelen=22.5 ms
-    rest += (int16_t(g_model.ppmFrameLength))*1000;
-    //    if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
-		for( uint8_t i = (proto == PROTO_PPM16) ? p-8 : 0 ;i<p ; i++ )
-    { //NUM_CHNOUT
-        int16_t v = max(min(g_chans512[i],PPM_range),-PPM_range) + PPM_CENTER;
- 	      rest -= v ; // (*ptr + q);
-        *ptr++ = q;
-				*ptr++ = v - q ; /* as Pat MacKenzie suggests */
-    }
-    *ptr=q;       //reverse these two assignments
-    *(ptr+1)=rest;
-    B3_comp_value = rest - 1000 ;		// 500uS before end of sync pulse
-    *(ptr+2)=0;
-
-}
 
 
 const prog_uint16_t APM CRCTable[]=
