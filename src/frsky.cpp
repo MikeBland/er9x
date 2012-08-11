@@ -32,6 +32,8 @@
 #define START_STOP      0x7e
 #define BYTESTUFF       0x7d
 #define STUFF_MASK      0x20
+#define PRIVATE					0x1B
+
 
 // Translate hub data positions
 // Add a top bit, first word of two word value
@@ -164,7 +166,7 @@ void store_hub_data( uint8_t index, uint16_t value )
 		}
 		if ( index == FR_V_AMPd )			// RPM
 		{
-			FrskyHubData[FR_VOLTS] = FrskyHubData[FR_V_AMP] * 10 + value ;
+			FrskyHubData[FR_VOLTS] = (FrskyHubData[FR_V_AMP] * 10 + value) * 21 / 10 ;
 		}
 	}	
 }
@@ -320,6 +322,9 @@ void processFrskyPacket(uint8_t *packet)
 #define frskyDataStart   1
 #define frskyDataInFrame 2
 #define frskyDataXOR     3
+
+#define PRIVATE_COUNT			4
+#define PRIVATE_VALUE			5
 /*
    Receive serial (RS-232) characters, detecting and storing each Fr-Sky 
    0x7e-framed packet as it arrives.  When a complete packet has been 
@@ -334,6 +339,10 @@ void processFrskyPacket(uint8_t *packet)
    a second buffer to receive data while one buffer is being processed (slowly).
 */
 
+uint8_t Private_count ;
+uint8_t Private_position ;
+
+#ifndef SIMU
 ISR(USART0_RX_vect)
 {
   uint8_t stat;
@@ -423,7 +432,29 @@ ISR(USART0_RX_vect)
             numPktBytes = 0;
             dataState = frskyDataStart;
           }
-          break;
+          if (data == PRIVATE)
+					{
+						dataState = PRIVATE_COUNT ;
+					}
+        break;
+        case PRIVATE_COUNT :
+					dataState = PRIVATE_VALUE ;
+          Private_count = data ;		// Count of bytes to receive
+					Private_position = 0 ;
+        break;
+        case PRIVATE_VALUE :
+					if ( Private_position++ == 0 )
+					{
+						// Process first private data byte
+						// PC6, PC7
+						DDRC |= 0xC0 ;		// Set as outputs
+						PORTC = ( PORTC & 0x3F ) | ( data & 0xC0 ) ;		// update outputs						
+					}
+					if ( Private_position == Private_count )
+					{
+          	dataState = frskyDataIdle;
+					}
+        break;
 
       } // switch
     } // if (FrskyRxBufferReady == 0)
@@ -431,12 +462,15 @@ ISR(USART0_RX_vect)
 	cli() ;
   UCSR0B |= (1 << RXCIE0); // enable Interrupt
 }
+#endif
 
 /*
    USART0 (transmit) Data Register Emtpy ISR
    Usef to transmit FrSky data packets, which are buffered in frskyTXBuffer. 
 */
 uint8_t frskyTxISRIndex = 0;
+
+#ifndef SIMU
 ISR(USART0_UDRE_vect)
 {
   if (frskyTxBufferCount > 0) 
@@ -446,6 +480,7 @@ ISR(USART0_UDRE_vect)
   } else
     UCSR0B &= ~(1 << UDRIE0); // disable UDRE0 interrupt
 }
+#endif
 
 /******************************************/
 
@@ -553,14 +588,15 @@ void FRSKY_setTxPacket( uint8_t type, uint8_t value, uint8_t p1, uint8_t p2 )
   {
     uint8_t *ptr ;
     ptr = &frskyTxBuffer[i] ;
-    *ptr = p1 ;
-    *(ptr+1) = p2 ;
-    *(ptr+2) = 0x00 ;
-    *(ptr+3) = 0x00 ;
-    *(ptr+4) = 0x00 ;
-    *(ptr+5) = 0x00 ;
-    *(ptr+6) = 0x00 ;
-    *(ptr+7) = START_STOP ;        // End of packet
+		FORCE_INDIRECT(ptr) ;
+    *ptr++ = p1 ;
+    *ptr++ = p2 ;
+    *ptr++ = 0x00 ;
+    *ptr++ = 0x00 ;
+    *ptr++ = 0x00 ;
+    *ptr++ = 0x00 ;
+    *ptr++ = 0x00 ;
+    *ptr = START_STOP ;        // End of packet
 	}
 	frskyTxBufferCount = i + 8 ;
 }
@@ -650,6 +686,9 @@ void FRSKY_Init(void)
 
 #undef BAUD
 #define BAUD 9600
+
+#ifndef SIMU
+
 #include <util/setbaud.h>
 
   UBRR0H = UBRRH_VALUE;
@@ -662,6 +701,8 @@ void FRSKY_Init(void)
 
   
   while (UCSR0A & (1 << RXC0)) UDR0; // flush receive buffer
+
+#endif
 
   // These should be running right from power up on a FrSky enabled '9X.
   FRSKY_EnableTXD(); // enable FrSky-Telemetry reception
@@ -756,6 +797,7 @@ void check_frsky()
 {
   // Used to detect presence of valid FrSky telemetry packets inside the
   // last FRSKY_TIMEOUT10ms 10ms intervals
+#ifndef SIMU
 	if (frskyStreaming > 0)
 	{
 		if ( --frskyStreaming == 0 )
@@ -764,6 +806,7 @@ void check_frsky()
 		}
 	}
   if (frskyUsrStreaming > 0) frskyUsrStreaming--;
+#endif
 	
   if ( FrskyAlarmSendState )
   {
@@ -790,9 +833,9 @@ void check_frsky()
 	// FrSky Current sensor (in amps)
 	// add this every 10 ms, when over 360, we have 1 mAh
 	// 
-	if ( ( Frsky_Amp_hour_prescale += FrskyHubData[FR_CURRENT] ) > 360 )
+	if ( ( Frsky_Amp_hour_prescale += FrskyHubData[FR_CURRENT] ) > 3600 )
 	{
-		Frsky_Amp_hour_prescale -= 360 ;
+		Frsky_Amp_hour_prescale -= 3600 ;
 		FrskyHubData[FR_AMP_MAH] += 1 ;
 	}
 
@@ -804,8 +847,10 @@ void FRSKY_setModelAlarms(void)
 	FrskyBattCells = 0 ;
   FrskyAlarmSendState |= 0x0F ;
 	
+#ifndef SIMU
   Frsky_current[0].Amp_hour_boundary = 360000L/ g_model.frsky.channels[0].ratio ;
 	Frsky_current[1].Amp_hour_boundary = 360000L/ g_model.frsky.channels[1].ratio ;
+#endif
 }
 
 //struct FrSky_Q_t FrSky_Queue ;

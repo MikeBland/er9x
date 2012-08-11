@@ -235,7 +235,7 @@ void lcd_outdezAtt(uint8_t x,uint8_t y,int16_t val,uint8_t mode)
 }
 
 #define PREC(n) ((n&0x20) ? ((n&0x10) ? 2 : 1) : 0)
-void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
+uint8_t lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
 {
   uint8_t fw = FWNUM;
   uint8_t prec = PREC(mode);
@@ -371,6 +371,7 @@ void lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
     lcd_hline(xn, y+2*FH-3, ln);
   }
   if(negative) lcd_putcAtt(x-fw,y,'-',mode);
+	return 0 ;		// Stops compiler creating two sets of POPS, saves flash
 }
 
 void lcd_hbar( uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint8_t percent )

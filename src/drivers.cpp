@@ -17,9 +17,9 @@
 
 #include "er9x.h"
 
+#ifndef SIMU
 #include "avr/interrupt.h"
 
-#ifndef SIMU
 ///opt/cross/avr/include/avr/eeprom.h
 static inline void __attribute__ ((always_inline))
 eeprom_write_byte_cmp (uint8_t dat, uint16_t pointer_eeprom)
@@ -96,7 +96,7 @@ public:
   bool state()       { return m_vals==FFVAL;                }
   void pauseEvents() { m_state = KSTATE_PAUSE;  m_cnt   = 0;}
   void killEvents()  { m_state = KSTATE_KILLED; m_dblcnt=0; }
-  uint8_t getDbl()   { return m_dblcnt;                     }
+//  uint8_t getDbl()   { return m_dblcnt;                     }
 };
 
 
@@ -115,9 +115,9 @@ void Key::input(bool val, EnumKeys enuk)
   if(m_state && m_vals==0){  //gerade eben sprung auf 0
     if(m_state!=KSTATE_KILLED) {
       putEvent(EVT_KEY_BREAK(enuk));
-      if(!( m_state == 16 && m_cnt<16)){
-        m_dblcnt=0;
-      }
+//      if(!( m_state == 16 && m_cnt<16)){
+//        m_dblcnt=0;
+//      }
         //      }
     }
     m_cnt   = 0;
@@ -127,14 +127,15 @@ void Key::input(bool val, EnumKeys enuk)
     case KSTATE_OFF:
       if(m_vals==FFVAL){ //gerade eben sprung auf ff
         m_state = KSTATE_START;
-        if(m_cnt>16) m_dblcnt=0; //pause zu lang fuer double
+//        if(m_cnt>16) m_dblcnt=0; //pause zu lang fuer double
         m_cnt   = 0;
       }
       break;
       //fallthrough
     case KSTATE_START:
       putEvent(EVT_KEY_FIRST(enuk));
-      m_dblcnt++;
+      inacCounter = 0;
+//      m_dblcnt++;
 #ifdef KSTATE_RPTDELAY
       m_state   = KSTATE_RPTDELAY;
 #else

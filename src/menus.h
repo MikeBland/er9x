@@ -77,10 +77,10 @@ typedef PROGMEM void (*MenuFuncP_PROGMEM)(uint8_t event);
 //#define TITLEP(pstr) lcd_putsAtt(0,0,pstr,INVERS)
 #define TITLE(str)   TITLEP(PSTR(str))
 
-#define MENU(title, tab, menu, lines_count, lines...) \
+#define MENU(title, tab, menu, lines_count, ...) \
 TITLE(title); \
 static MState2 mstate2; \
-const static prog_uint8_t APM mstate_tab[] = lines; \
+const static prog_uint8_t APM mstate_tab[] = __VA_ARGS__; \
 mstate2.check(event,menu,tab,DIM(tab),mstate_tab,DIM(mstate_tab)-1,lines_count-1)
 
 #define SIMPLE_MENU(title, tab, menu, lines_count) \
@@ -88,10 +88,10 @@ TITLE(title); \
 static MState2 mstate2; \
 mstate2.check_simple(event,menu,tab,DIM(tab),lines_count-1)
 
-#define SUBMENU(title, lines_count, lines...) \
+#define SUBMENU(title, lines_count, ...) \
 TITLE(title); \
 static MState2 mstate2; \
-const static prog_uint8_t APM mstate_tab[] = lines; \
+const static prog_uint8_t APM mstate_tab[] = __VA_ARGS__; \
 mstate2.check(event,0,NULL,0,mstate_tab,DIM(mstate_tab)-1,lines_count-1)
 
 #define SIMPLE_SUBMENU_NOTITLE(lines_count) \

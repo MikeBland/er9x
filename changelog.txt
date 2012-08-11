@@ -10,6 +10,17 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 11-Aug-2012  MPB
+TelemetrEZ serial input processing
+FAS100 current scaling
+FAS100 voltage scaling
+No voice units for A1/A2 if raw
+Inactivity alarm detection improved
+C9x patches added in
+Over 500 bytes flash saved
+
+
+******************************************
 CHANGELOG: 29-Jul-2012  MPB
 FAS100 voltage added
 Splash marker moved

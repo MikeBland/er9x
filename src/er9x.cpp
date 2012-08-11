@@ -154,7 +154,7 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
         lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"),(idx-5),att);
 #ifdef FRSKY
     else
-        lcd_putsAttIdx(x,y,Str_telemItems,(idx-NUM_XCHNRAW-1),att);
+        lcd_putsAttIdx(x,y,Str_telemItems,(idx-NUM_XCHNRAW),att);
 #endif
 }
 
@@ -536,7 +536,11 @@ inline uint8_t keyDown()
 
 static void clearKeyEvents()
 {
-    while(keyDown());  // loop until all keys are up
+#ifdef SIMU
+    while (keyDown() && main_thread_running) sleep(1/*ms*/);
+#else
+    while (keyDown());  // loop until all keys are up
+#endif
     putEvent(0);
 }
 
@@ -569,6 +573,10 @@ static void doSplash()
     if(!g_eeGeneral.disableSplashScreen)
     {
 
+#ifdef SIMU
+	    if (!main_thread_running) return;
+  	  sleep(1/*ms*/);
+#endif
 
         check_backlight_voice() ;
 
@@ -582,8 +590,10 @@ static void doSplash()
 
         clearKeyEvents();
 
+#ifndef SIMU
         for(uint8_t i=0; i<32; i++)
             getADC_filt(); // init ADC array
+#endif
 
         uint16_t inacSum = stickMoveValue();
         //        for(uint8_t i=0; i<4; i++)
@@ -593,7 +603,12 @@ static void doSplash()
         while(tgtime != get_tmr10ms())
         {
         	refreshDiplay();
+#ifdef SIMU
+            if (!main_thread_running) return;
+            sleep(1/*ms*/);
+#else
             getADC_filt();
+#endif
             uint16_t tsum = stickMoveValue();
             //            for(uint8_t i=0; i<4; i++)
             //               tsum += anaIn(i)/INAC_DEVISOR;
@@ -636,7 +651,10 @@ static void checkTHR()
 
     int16_t lowLim = THRCHK_DEADBAND + g_eeGeneral.calibMid[thrchn] - g_eeGeneral.calibSpanNeg[thrchn];// + g_eeGeneral.calibSpanNeg[thrchn]/8;
 
+#ifndef SIMU
     getADC_single();   // if thr is down - do not display warning at all
+#endif
+
     int16_t v      = anaIn(thrchn);
     if((v<=lowLim) || (keyDown()))
     {
@@ -649,7 +667,12 @@ static void checkTHR()
     //loop until all switches are reset
     while (1)
     {
+#ifdef SIMU
+      if (!main_thread_running) return;
+      sleep(1/*ms*/);
+#else
         getADC_single();
+#endif
         int16_t v      = anaIn(thrchn);
         if((v<=lowLim) || (keyDown()))
         {
@@ -835,6 +858,10 @@ void alert(const prog_char * s, bool defaults)
     clearKeyEvents();
     while(1)
     {
+#ifdef SIMU
+    if (!main_thread_running) return;
+    sleep(1/*ms*/);
+#endif
         if(keyDown())
         {
             return;  //wait for key release
@@ -1176,7 +1203,8 @@ void t_voice::voice_process(void)
 					VoiceSerial += 260 ;
 				}
 				VoiceTimer = 16 ;
-				if ( ( VoiceSerial & 0x00FF ) >= 0xF0 )
+//				if ( ( VoiceSerial & 0x00FF ) >= 0xF0 )
+				if ( ( VoiceSerial & 0x01F0 ) == 0xF0 )	// Looking for F0-F7 or FF
 				{
 					if ( VoiceSerial == 0xFF )
 					{
@@ -1398,7 +1426,10 @@ void perMain()
 int16_t g_ppmIns[8];
 uint8_t ppmInState = 0; //0=unsync 1..8= wait for value i-1
 
+#ifndef SIMU
 #include <avr/interrupt.h>
+#endif
+
 //#include <avr/wdt.h>
 
 //class AutoLock
@@ -1418,6 +1449,7 @@ uint8_t ppmInState = 0; //0=unsync 1..8= wait for value i-1
 //#define STARTADCONV (ADCSRA  = (1<<ADEN) | (1<<ADPS0) | (1<<ADPS1) | (1<<ADPS2) | (1<<ADSC) | (1 << ADIE))
 int16_t BandGap = 240 ;
 
+#ifndef SIMU
 static uint16_t s_anaFilt[8];
 uint16_t anaIn(uint8_t chan)
 {
@@ -1533,13 +1565,16 @@ static void getADC_bandgap()
 //  getADC_osmp,
 //  getADC_filt
 //  };
+#endif
 
 volatile uint8_t g_tmr16KHz;
 
+#ifndef SIMU
 ISR(TIMER0_OVF_vect, ISR_NOBLOCK) //continuous timer 16ms (16MHz/1024)
 {
     g_tmr16KHz++;
 }
+#endif
 
 static uint16_t getTmr16KHz()
 {
