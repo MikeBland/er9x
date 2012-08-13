@@ -447,8 +447,11 @@ ISR(USART0_RX_vect)
 					{
 						// Process first private data byte
 						// PC6, PC7
-						DDRC |= 0xC0 ;		// Set as outputs
-						PORTC = ( PORTC & 0x3F ) | ( data & 0xC0 ) ;		// update outputs						
+						if ( ( data & 0x3F ) == 0 )		// Check byte is valid
+						{
+							DDRC |= 0xC0 ;		// Set as outputs
+							PORTC = ( PORTC & 0x3F ) | ( data & 0xC0 ) ;		// update outputs						
+						}
 					}
 					if ( Private_position == Private_count )
 					{
