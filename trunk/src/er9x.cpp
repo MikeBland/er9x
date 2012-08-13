@@ -600,8 +600,8 @@ static void doSplash()
         //           inacSum += anaIn(i)/INAC_DEVISOR;
 
         uint16_t tgtime = get_tmr10ms() + SPLASH_TIMEOUT;  
-        while(tgtime != get_tmr10ms())
-        {
+        do
+				{
         	refreshDiplay();
 #ifdef SIMU
             if (!main_thread_running) return;
@@ -616,7 +616,7 @@ static void doSplash()
             if(keyDown() || (tsum!=inacSum))   return;  //wait for key release
 
             check_backlight_voice() ;
-        }
+        } while(tgtime != get_tmr10ms()) ;
     }
 }
 
@@ -643,23 +643,31 @@ void alertMessages( const prog_char * s, const prog_char * t )
     clearKeyEvents();
 }
 
+
+int16_t tanaIn( uint8_t chan )
+{
+ 	int16_t v = anaIn(chan) ;
+	return  (g_eeGeneral.throttleReversed) ? -v : v ;
+}
+
 static void checkTHR()
 {
     if(g_eeGeneral.disableThrottleWarning) return;
 
-    int thrchn=(2-(g_eeGeneral.stickMode&1));//stickMode=0123 -> thr=2121
-
-    int16_t lowLim = THRCHK_DEADBAND + g_eeGeneral.calibMid[thrchn] - g_eeGeneral.calibSpanNeg[thrchn];// + g_eeGeneral.calibSpanNeg[thrchn]/8;
-
+    uint8_t thrchn=(2-(g_eeGeneral.stickMode&1));//stickMode=0123 -> thr=2121
+ 	  
 #ifndef SIMU
-    getADC_single();   // if thr is down - do not display warning at all
+		getADC_single();   // if thr is down - do not display warning at all
 #endif
+ 	  
+		int16_t lowLim = g_eeGeneral.calibMid[thrchn] ;
 
-    int16_t v      = anaIn(thrchn);
-    if((v<=lowLim) || (keyDown()))
-    {
-        return;
-    }
+		lowLim = (g_eeGeneral.throttleReversed ? (- lowLim) - g_eeGeneral.calibSpanPos[thrchn] : lowLim - g_eeGeneral.calibSpanNeg[thrchn]);
+		lowLim += THRCHK_DEADBAND ;
+ 
+ 	  int16_t v = tanaIn(thrchn);
+ 
+ 	  if(v<=lowLim) return;
 
     // first - display warning
     alertMessages( PSTR("Throttle not idle"), PSTR("Reset throttle") ) ;
@@ -673,13 +681,14 @@ static void checkTHR()
 #else
         getADC_single();
 #endif
-        int16_t v      = anaIn(thrchn);
-        if((v<=lowLim) || (keyDown()))
+        check_backlight_voice() ;
+        
+				v = tanaIn(thrchn);
+        
+				if((v<=lowLim) || (keyDown()))
         {
             return;
         }
-
-        check_backlight_voice() ;
     }
 }
 
