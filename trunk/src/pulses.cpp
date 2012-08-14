@@ -271,17 +271,17 @@ void setupPulsesPPM( uint8_t proto )
 		*ptr++ = v - q ; /* as Pat MacKenzie suggests */
 		*ptr++ = q;      //to here
 	}
+  *ptr++ = rest;
 	if ( proto != PROTO_PPM )
 	{
 		B3_comp_value = rest - 1000 ;		// 500uS before end of sync pulse
 	}
-	else
+	if ( proto == PROTO_PPM )
 	{
-  	*ptr++ = q;
+		*ptr++ = q ;
 	}
-  *(ptr) = rest;
     
-	*(ptr+1)=0;
+	*ptr=0;
 }
 
 
@@ -515,18 +515,24 @@ ISR(TIMER3_COMPA_vect) //2MHz pulse generation
 
 ISR(TIMER3_COMPB_vect) //2MHz pulse generation
 {
+	uint8_t proto = g_model.protocol ;
     sei() ;
-    if ( Current_protocol != g_model.protocol )
+    if ( Current_protocol != proto )
 		{
     	if ( Current_protocol == PROTO_PPMSIM )
 			{
-        setupPulses();
+				if ( !SlaveMode )
+				{
+        	setupPulses();
+					return ;
+				}
+				else
+				{
+					proto = PROTO_PPMSIM ;
+				}
 			}
 		}
-		else
-		{
-    	setupPulsesPPM(g_model.protocol) ;
-		}
+    setupPulsesPPM(proto) ;
 }
 
 
