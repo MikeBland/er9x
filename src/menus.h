@@ -102,4 +102,11 @@ mstate2.check_submenu_simple(event,lines_count-1)
 TITLE(title); \
 SIMPLE_SUBMENU_NOTITLE(lines_count-1)
 
+struct t_latency
+{
+	uint8_t g_tmr1Latency_min ;
+	uint8_t g_tmr1Latency_max ;
+} ;
+
+
 #endif

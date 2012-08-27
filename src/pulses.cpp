@@ -1,8 +1,8 @@
 #include "er9x.h"
 #include "pulses.h"
+#include "menus.h"
 
-extern uint16_t g_tmr1Latency_max;
-extern uint16_t g_tmr1Latency_min;
+extern struct t_latency g_latency ;
 
 #define PULSES_WORD_SIZE	72
 #define PULSES_BYTE_SIZE	(PULSES_WORD_SIZE * 2)
@@ -78,9 +78,13 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
     //  PulseTotal += (OCR1A  = *pulsePtr++);
     OCR1A  = *pulsePtr++;
     
-    if ( dt > g_tmr1Latency_max) g_tmr1Latency_max = dt ;    // max has leap, therefore vary in length
-    if ( dt < g_tmr1Latency_min) g_tmr1Latency_min = dt ;    // max has leap, therefore vary in length
-
+		{
+			struct t_latency *ptrLat = &g_latency ;
+			
+			FORCE_INDIRECT(ptrLat) ;
+  	  if ( (uint8_t)dt > ptrLat->g_tmr1Latency_max) ptrLat->g_tmr1Latency_max = dt ;    // max has leap, therefore vary in length
+	    if ( (uint8_t)dt < ptrLat->g_tmr1Latency_min) ptrLat->g_tmr1Latency_min = dt ;    // max has leap, therefore vary in length
+		}
     if( *pulsePtr == 0) {
         //currpulse=0;
         pulsePtr = pulses2MHz.pword;
@@ -521,7 +525,7 @@ ISR(TIMER3_COMPB_vect) //2MHz pulse generation
 		{
     	if ( Current_protocol == PROTO_PPMSIM )
 			{
-				if ( !SlaveMode )
+				if ( ( !SlaveMode ) || ( g_eeGeneral.enablePpmsim == 0 ) )
 				{
         	setupPulses();
 					return ;
@@ -577,55 +581,63 @@ const prog_uint16_t APM CRCTable[]=
 
 
 
+struct t_pcm_control
+{
+	uint8_t PcmByte ;
+	uint8_t PcmBitCount ;
+	uint8_t *PcmPtr ;
+	uint16_t PcmCrc ;
+	uint8_t PcmOnesCount ;
+} PcmControl ;
 
-uint8_t PcmByte ;
-uint8_t PcmBitCount ;
-uint8_t *PcmPtr ;
-uint16_t PcmCrc ;
-uint8_t PcmOnesCount ;
 
 static void crc( uint8_t data )
 {
     //	uint8_t i ;
 
-    PcmCrc=(PcmCrc>>8)^pgm_read_word(&CRCTable[(PcmCrc^data) & 0xFF]);
+    PcmControl.PcmCrc=(PcmControl.PcmCrc>>8)^pgm_read_word(&CRCTable[((uint8_t)PcmControl.PcmCrc^data) & 0xFF]);
 }
 
 
 void putPcmPart( uint8_t value )
 {
-    PcmByte >>= 2 ;
-    PcmByte |= value ;
-    if ( ++PcmBitCount >= 4 )
+		struct t_pcm_control *ptrControl ;
+
+		ptrControl = &PcmControl ;
+		FORCE_INDIRECT(ptrControl) ;
+    
+		ptrControl->PcmByte >>= 2 ;
+    ptrControl->PcmByte |= value ;
+    if ( ++ptrControl->PcmBitCount >= 4 )
     {
-        *PcmPtr++ = PcmByte ;
-        PcmBitCount = PcmByte = 0 ;
+        *ptrControl->PcmPtr++ = ptrControl->PcmByte ;
+        ptrControl->PcmBitCount = ptrControl->PcmByte = 0 ;
     }
 }
 
 
 static void putPcmFlush()
 {
-    while ( PcmBitCount != 0 )
+    while ( PcmControl.PcmBitCount != 0 )
     {
   	putPcmPart( 0 ) ; // Empty
     }
-    *PcmPtr = 0 ;				// Mark end
+    *PcmControl.PcmPtr = 0 ;				// Mark end
 }
 
 void putPcmBit( uint8_t bit )
 {
     if ( bit )
     {
-        PcmOnesCount += 1 ;
+        PcmControl.PcmOnesCount += 1 ;
         putPcmPart( 0x80 ) ;
     }
     else
     {
-        PcmOnesCount = 0 ;
+        PcmControl.PcmOnesCount = 0 ;
         putPcmPart( 0xC0 ) ;
     }
-    if ( PcmOnesCount >= 5 )
+    if ( PcmControl.PcmOnesCount >= 5 )
     {
         putPcmBit( 0 ) ;				// Stuff a 0 bit in
     }
@@ -646,15 +658,19 @@ void putPcmByte( uint8_t byte )
 
 void putPcmHead()
 {
+	uint8_t i ;
     // send 7E, do not CRC
     // 01111110
     putPcmPart( 0xC0 ) ;
-    putPcmPart( 0x80 ) ;
-    putPcmPart( 0x80 ) ;
-    putPcmPart( 0x80 ) ;
-    putPcmPart( 0x80 ) ;
-    putPcmPart( 0x80 ) ;
-    putPcmPart( 0x80 ) ;
+		for ( i = 0 ; i < 6 ; i += 1 )
+		{
+    	putPcmPart( 0x80 ) ;
+		}
+//    putPcmPart( 0x80 ) ;
+//    putPcmPart( 0x80 ) ;
+//    putPcmPart( 0x80 ) ;
+//    putPcmPart( 0x80 ) ;
+//    putPcmPart( 0x80 ) ;
     putPcmPart( 0xC0 ) ;
 }
 
@@ -665,11 +681,18 @@ static void setupPulsesPXX()
     uint16_t chan ;
     uint16_t chan_1 ;
 
-    pulses2MHzptr = pulses2MHz.pbyte ;
-    PcmPtr = pulses2MHz.pbyte ;
-    PcmCrc = 0 ;
-    PcmBitCount = PcmByte = 0 ;
-    PcmOnesCount = 0 ;
+		{
+			struct t_pcm_control *ptrControl ;
+
+			ptrControl = &PcmControl ;
+			FORCE_INDIRECT(ptrControl) ;
+    
+			pulses2MHzptr = pulses2MHz.pbyte ;
+    	ptrControl->PcmPtr = pulses2MHz.pbyte ;
+    	ptrControl->PcmCrc = 0 ;
+    	ptrControl->PcmBitCount = ptrControl->PcmByte = 0 ;
+    	ptrControl->PcmOnesCount = 0 ;
+		}
     putPcmHead(  ) ;  // sync byte
     putPcmByte( g_model.ppmNCH ) ;     // putPcmByte( g_model.rxnum ) ;  //
     putPcmByte( pxxFlag ) ;     // First byte of flags
@@ -691,13 +714,13 @@ static void setupPulsesPXX()
         putPcmByte( ( ( chan >> 8 ) & 0x0F ) | ( chan_1 << 4) ) ;  // 4 bits each from 2 channels
         putPcmByte( chan_1 >> 4 ) ;  // High byte of channel
     }
-    chan = PcmCrc ;		        // get the crc
+    chan = PcmControl.PcmCrc ;		        // get the crc
     putPcmByte( chan ) ; 			// Checksum lo
     putPcmByte( chan >> 8 ) ; // Checksum hi
     putPcmHead(  ) ;      // sync byte
     putPcmFlush() ;
     OCR1C += 40000 ;		// 20mS on
-    PORTB |= (1<<OUT_B_PPM);
+    PORTB |= (1<<OUT_B_PPM);		// Idle is line high
 }
 
 

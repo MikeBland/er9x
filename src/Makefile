@@ -74,6 +74,7 @@ HELI = YES
 
 TEMPLATES = YES
 
+NOPOTSCROLL =
 
 # BEEPER. Values = BUZZER or BUZZER_MOD  or SPEAKER
 # (without a mod, BUZZER can make PPM jack output switch from output to input at random)
@@ -134,7 +135,9 @@ else
 	endif
 endif
 
-
+ifeq ($(NOPOTSCROLL),YES)
+	NOPOTSCROLL = YES
+endif
 
 #--------------------------------------------------------------------------------
 
@@ -224,6 +227,10 @@ endif
 # If buzzer modified (no interference with PPM jack)
 ifeq ($(BEEPER), BUZZER_MOD)
  CPPDEFS += -DBUZZER_MOD
+endif
+
+ifeq ($(NOPOTSCROLL),YES)
+ CPPDEFS += -DNOPOTSCROLL
 endif
 
 #---------------- Compiler Options C ----------------

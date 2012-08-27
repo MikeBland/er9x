@@ -192,6 +192,7 @@ extern uint8_t SlaveMode ;
 extern const prog_uint8_t APM modn12x3[] ;
 extern const prog_char APM Str_OFF[] ;
 extern const prog_char APM Str_ON[] ;
+extern const prog_char APM Str_Switch_warn[] ;
 
 //extern const prog_uint8_t APM chout_ar[] ;
 extern const prog_uint8_t APM bchout_ar[] ;
@@ -238,6 +239,7 @@ enum EnumKeys {
 
 #define SWITCHES_STR "THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN""SW1""SW2""SW3""SW4""SW5""SW6""SW7""SW8""SW9""SWA""SWB""SWC"
 #define NUM_CSW  12 //number of custom switches
+#define SWITCH_WARN_STR	"Switch Warning"
 
 #define CURV_STR "---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
 #define CURVE_BASE 7
@@ -374,7 +376,7 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 //#define _MSK_KEY_FIRST (_MSK_KEY_REPT|0x20)
 //#define EVT_KEY_GEN_BREAK(key) ((key)|0x20)
 #define _MSK_KEY_REPT    0x40
-#define _MSK_KEY_DBL     0x10
+//#define _MSK_KEY_DBL     0x10
 #define IS_KEY_BREAK(key)  (((key)&0xf0)        ==  0x20)
 #define EVT_KEY_BREAK(key) ((key)|                  0x20)
 #define EVT_KEY_FIRST(key) ((key)|    _MSK_KEY_REPT|0x20)
