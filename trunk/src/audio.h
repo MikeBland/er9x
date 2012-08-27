@@ -102,13 +102,13 @@ class audioQueue
 
 inline void driver() {
   if (toneTimeLeft > 0) {	
-					switch ((g_eeGeneral.speakerMode & 1)){					
+					switch ((g_eeGeneral.speakerMode & 1)){					 
 								case 0:
 						        	//stock beeper. simply turn port on for x time!
 							        if (toneTimeLeft > 0){
 							            PORTE |=  (1<<OUT_E_BUZZER); // speaker output 'high'
-							        } 	
-							        break;	
+							        } 	 
+							        break;	 
 							  case 1:
 									    static uint8_t toneCounter;
 									    toneCounter += toneFreq;
@@ -116,13 +116,13 @@ inline void driver() {
 									      PORTE |= (1 << OUT_E_BUZZER);
 									    } else {
 									      PORTE &= ~(1 << OUT_E_BUZZER);
-									    }							  	
-											break;						  	
-					}		
+									    }							  	 
+											break;						  	 
+					}		 
 	} else {
 			PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
 	}								  	     
-}	
+}	 
 
     // heartbeat is responsibile for issueing the audio tones and general square waves
     // it is essentially the life of the class.
@@ -274,6 +274,10 @@ extern struct t_voice Voice ;
 
 #define V_HUNDRED			 100
 
+#if defined NMEA
+  #define V_ALTITUDE				170
+  #define V_DISTANCE				171
+#endif
 
 
 

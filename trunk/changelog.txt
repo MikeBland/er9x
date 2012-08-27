@@ -10,6 +10,17 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 27-Aug-2012  MPB
+Flash savings
+Use Voice files 400-499
+Voice output of timers added
+Pot Scroll conditionally compile option added (not used yet)
+RAM saving by merging three static arrays
+Two files converted to UNIX format
+Rotary encoder driver conditionallly compiled in
+
+
+******************************************
 CHANGELOG: 13-Aug-2012  MPB
 Fix PPM problem
 

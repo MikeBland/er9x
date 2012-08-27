@@ -152,14 +152,14 @@ DataID Meaning       Unit   Range   Note
 #define FRSKY_TIMEOUT10ms 20
 
 enum AlarmLevel {
-  alarm_off = 0,
-  alarm_yellow = 1,
-  alarm_orange = 2,
-  alarm_red = 3
+  alarm_off = (uint8_t) 0,
+  alarm_yellow = (uint8_t)1,
+  alarm_orange = (uint8_t)2,
+  alarm_red = (uint8_t)3
 };
 
-#define ALARM_GREATER(channel, alarm) ((g_model.frsky.channels[channel].alarms_greater >> alarm) & 1)
-#define ALARM_LEVEL(channel, alarm) ((g_model.frsky.channels[channel].alarms_level >> (2*alarm)) & 3)
+#define ALARM_GREATER(channel, alarm) (((uint8_t)g_model.frsky.channels[channel].alarms_greater >> (uint8_t)alarm) & (uint8_t)1)
+#define ALARM_LEVEL(channel, alarm) (((uint8_t)g_model.frsky.channels[channel].alarms_level >> (uint8_t)(2*alarm)) & (uint8_t)3)
 
 struct FrskyData {
   uint8_t value;

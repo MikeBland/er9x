@@ -70,12 +70,13 @@ extern void lcd_hline(unsigned char x,unsigned char y, signed char w);
 extern void lcd_hlineStip(unsigned char x,unsigned char y, signed char w,uint8_t pat);
 extern void lcd_vline(unsigned char x,unsigned char y, signed char h);
 
-extern void lcd_img_f(unsigned char x,unsigned char y);
-extern void lcd_img(uint8_t i_x,uint8_t i_y,const prog_uchar * imgdat,uint8_t idx,uint8_t mode);
+//extern void lcd_img_f(unsigned char x,unsigned char y);
+extern void lcd_img(uint8_t i_x,uint8_t i_y,const prog_uchar * imgdat,uint8_t idx /*,uint8_t mode*/);
 
 extern void lcd_init();
 extern void lcd_clear();
 extern void refreshDiplay();
+void lcdSetContrast( void ) ;
 extern void lcdSetRefVolt(unsigned char val);
 #define BLINK_ON_PHASE (g_blinkTmr10ms & (1<<6))
 //#define BLINK_SYNC      g_blinkTmr10ms = (3<<5)

@@ -29,6 +29,7 @@ mode3 ail ele thr rud
 mode4 ail thr ele rud
 */
 
+#define ROTARY	0
 
 extern int16_t AltOffset ;
 
@@ -49,6 +50,12 @@ const prog_char *AlertMessage ;
 uint8_t Main_running ;
 uint8_t SlaveMode ;
 uint8_t Vs_state[NUM_CHNOUT] ;
+
+#if ROTARY		
+uint8_t RotPosition ;
+uint8_t RotCount ;
+uint8_t RotEncoder ;
+#endif
 
 //const prog_uint8_t APM chout_ar[] = { //First number is 0..23 -> template setup,  Second is relevant channel out
 //                                      1,2,3,4 , 1,2,4,3 , 1,3,2,4 , 1,3,4,2 , 1,4,2,3 , 1,4,3,2,
@@ -570,7 +577,6 @@ uint16_t stickMoveValue()
 
 static void doSplash()
 {
-    if(!g_eeGeneral.disableSplashScreen)
     {
 
 #ifdef SIMU
@@ -581,12 +587,12 @@ static void doSplash()
         check_backlight_voice() ;
 
         lcd_clear();
-        lcd_img(0, 0, s9xsplash,0,0);
+        lcd_img(0, 0, s9xsplash,0);
         if(!g_eeGeneral.hideNameOnSplash)
             lcd_putsnAtt(0*FW, 7*FH, g_eeGeneral.ownerName ,sizeof(g_eeGeneral.ownerName),BSS);
 
         refreshDiplay();
-        lcdSetRefVolt(g_eeGeneral.contrast);
+				lcdSetContrast() ;
 
         clearKeyEvents();
 
@@ -638,7 +644,7 @@ void alertMessages( const prog_char * s, const prog_char * t )
     lcd_puts_Pleft(5*FH,t);
     lcd_puts_Pleft(6*FH,  PSTR("Press any key to skip") ) ;
     refreshDiplay();
-    lcdSetRefVolt(g_eeGeneral.contrast);
+		lcdSetContrast() ;
 
     clearKeyEvents();
 }
@@ -717,7 +723,7 @@ static void checkSwitches()
     if(g_eeGeneral.disableSwitchWarning) return; // if warning is on
 
     // first - display warning
-    alertMessages( PSTR("Switch Warning"), PSTR("Please Reset Switches") ) ;
+    alertMessages( Str_Switch_warn, PSTR("Please Reset Switches") ) ;
 //    for(uint8_t i=0;i<8;i++) lcd_putsnAtt((5+i)*FW, 3*FH, PSTR("TRE012AG")+i,1,  ((g_eeGeneral.switchWarningStates & (1<<i)) ? INVERS : 0 ) );
 //    refreshDiplay();
 
@@ -760,9 +766,9 @@ static void checkSwitches()
         {
             if(i & SWP_ID0B)
                 putWarnSwitch(2 + 10*FW + FW/2, 9 );
-            if(i & SWP_ID1B)
+            else if(i & SWP_ID1B)
                 putWarnSwitch(2 + 10*FW + FW/2, 12 );
-            if(i & SWP_ID2B)
+            else if(i & SWP_ID2B)
                 putWarnSwitch(2 + 10*FW + FW/2, 15 );
         }
 
@@ -794,9 +800,16 @@ static void checkQuickSelect()
 {
     uint8_t i = keyDown(); //check for keystate
     uint8_t j;
-    for(j=1; j<8; j++)
-        if(i & (1<<j)) break;
-    j--;
+
+    for(j=0; j<7; j++)
+		{
+			if ( i & 0x02 ) break ;
+			i >>= 1 ;
+		}
+
+//    for(j=1; j<8; j++)
+//        if(i & ((uint8_t)(1<<j))) break;
+//    j--;
 
     if(j<6) {
         if(!eeModelExists(j)) return;
@@ -848,7 +861,7 @@ void almess( const prog_char * s, uint8_t type )
 void message(const prog_char * s)
 {
 	almess( s, MESS_TYPE ) ;
-  lcdSetRefVolt(g_eeGeneral.contrast);
+	lcdSetContrast() ;
 }
 
 void alert(const prog_char * s, bool defaults)
@@ -963,12 +976,12 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
     int16_t newval = val;
     uint8_t kpl=KEY_RIGHT, kmi=KEY_LEFT, kother = -1;
 
-    if(event & _MSK_KEY_DBL){
-        uint8_t hlp=kpl;
-        kpl=kmi;
-        kmi=hlp;
-        event=EVT_KEY_FIRST(EVT_KEY_MASK & event);
-    }
+//    if(event & _MSK_KEY_DBL){
+//        uint8_t hlp=kpl;
+//        kpl=kmi;
+//        kmi=hlp;
+//        event=EVT_KEY_FIRST(EVT_KEY_MASK & event);
+//    }
     if(event==EVT_KEY_FIRST(kpl) || event== EVT_KEY_REPT(kpl) || (s_editMode && (event==EVT_KEY_FIRST(KEY_UP) || event== EVT_KEY_REPT(KEY_UP))) ) {
         newval++;
 
@@ -1154,7 +1167,8 @@ uint8_t v_first[8] ;
 void putVoiceQueueUpper( uint8_t value )
 {
 	struct t_voice *vptr ;
-	vptr = voiceaddress() ;
+	vptr = &Voice ;
+	FORCE_INDIRECT(vptr) ;
 	
 	if ( vptr->VoiceQueueCount < VOICE_Q_LENGTH-1 )
 	{
@@ -1167,7 +1181,8 @@ void putVoiceQueueUpper( uint8_t value )
 void putVoiceQueue( uint8_t value )
 {
 	struct t_voice *vptr ;
-	vptr = voiceaddress() ;
+	vptr = &Voice ;
+	FORCE_INDIRECT(vptr) ;
 	
 	if ( vptr->VoiceQueueCount < VOICE_Q_LENGTH )
 	{
@@ -1234,7 +1249,10 @@ void t_voice::voice_process(void)
 		}
 		else if ( VoiceState == V_STARTUP )
 		{
-			if ( g_blinkTmr10ms > 120 )		// Give module 1.2 secs to initialise
+//			VoiceLatch |= VOICE_CLOCK_BIT | VOICE_DATA_BIT ;
+//			PORTA_LCD_DAT = VoiceLatch ;			// Latch data set
+//			PORTB &= ~(1<<OUT_B_LIGHT) ;			// Latch clock low
+			if ( g_blinkTmr10ms > 120 )					// Give module 1.2 secs to initialise
 			{
 				VoiceState = V_IDLE ;
 			}
@@ -1328,6 +1346,35 @@ void perMain()
     	}
 		}
 
+#if ROTARY		
+		// Rotary Encoder polling
+		DDRA = 0x1F ;		// Top 3 bits input
+		asm(" nop") ;
+		asm(" nop") ;
+		uint8_t rotary ;
+		rotary = PINA ;
+		DDRA = 0xFF ;		// Back to all outputs
+		rotary &= 0xE0 ;
+		RotEncoder = rotary ;
+		rotary &= 0xDF ;
+		if ( rotary != RotPosition )
+		{
+			uint8_t x ;
+			x = RotPosition & 0x40 ;
+			x <<= 1 ;
+			x ^= rotary & 0x80 ;
+			if ( x )
+			{
+				RotCount -= 1 ;
+			}
+			else
+			{
+				RotCount += 1 ;
+			}
+			RotPosition = rotary ;
+		}
+#endif
+
     eeCheck();
 
 		// Every 10mS update backlight output to external latch
@@ -1339,6 +1386,7 @@ void perMain()
 
     doBackLightVoice(evt);
 
+#ifndef NOPOTSCROLL
     static int16_t p1valprev;
 		int16_t p1d ;
 
@@ -1353,6 +1401,7 @@ void perMain()
         p1d = 0 ;
     }
 		p1valdiff = p1d ;
+#endif
 
 		if ( AlertMessage )
 		{
@@ -1614,7 +1663,8 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 		if ( LcdLock == 0 )		// LCD not in use
 		{
 			struct t_voice *vptr ;
-			vptr = voiceaddress() ;
+			vptr = &Voice ;
+			FORCE_INDIRECT(vptr) ;
 			if ( vptr->VoiceState == V_CLOCKING )
 			{
 				if ( vptr->VoiceTimer )
@@ -1827,7 +1877,7 @@ int main(void)
     uint8_t cModel = g_eeGeneral.currModel;
     checkQuickSelect();
 
-    lcdSetRefVolt(g_eeGeneral.contrast);
+		lcdSetContrast() ;
 //    if(g_eeGeneral.lightSw || g_eeGeneral.lightAutoOff || g_eeGeneral.lightOnStickMove) // if lightswitch is defined or auto off
 //        BACKLIGHT_ON;
 //    else
@@ -1847,15 +1897,17 @@ int main(void)
 
     // moved here and logic added to only play statup tone if splash screen enabled.
     // that way we save a bit, but keep the option for end users!
+		putVoiceQueue( 0xF2 ) ;
+		putVoiceQueue( 0xF2 ) ;
 		putVoiceQueue( g_eeGeneral.volume + 0xF7 ) ;
-    if((g_eeGeneral.speakerMode & 1) == 1)
-		{
-      if(!g_eeGeneral.disableSplashScreen)
-      {
+    if(!g_eeGeneral.disableSplashScreen)
+    {
+	    if((g_eeGeneral.speakerMode & 1) == 1)
+			{
 				audioVoiceDefevent( AU_TADA, V_HELLO ) ;
       }
+  	  doSplash();
     }
-    doSplash();
     checkMem();
     //setupAdc(); //before checkTHR
     getADC_single();
@@ -1875,7 +1927,7 @@ int main(void)
 //    popMenu(true);  
     g_menuStack[1] = menuProcModelSelect ;	// this is so the first instance of [MENU LONG] doesn't freak out!
 
-    lcdSetRefVolt(g_eeGeneral.contrast);
+		lcdSetContrast() ;
 
     if(cModel!=g_eeGeneral.currModel)
     {

@@ -42,19 +42,20 @@ void lcd_clear()
 }
 
 
-void lcd_img(uint8_t i_x,uint8_t i_y,const prog_uchar * imgdat,uint8_t idx,uint8_t mode)
+void lcd_img(uint8_t i_x,uint8_t i_y,const prog_uchar * imgdat,uint8_t idx/*,uint8_t mode*/)
 {
   const prog_uchar  *q = imgdat;
   uint8_t w    = pgm_read_byte(q++);
   uint8_t hb   = (pgm_read_byte(q++)+7)/8;
   uint8_t sze1 = pgm_read_byte(q++);
   q += idx*sze1;
-  bool    inv  = (mode & INVERS) ? true : (mode & BLINK ? BLINK_ON_PHASE : false);
+//  bool    inv  = (mode & INVERS) ? true : (mode & BLINK ? BLINK_ON_PHASE : false);
   for(uint8_t yb = 0; yb < hb; yb++){
     uint8_t   *p = &displayBuf[ (i_y / 8 + yb) * DISPLAY_W + i_x ];
     for(uint8_t x=0; x < w; x++){
       uint8_t b = pgm_read_byte(q++);
-      *p++ = inv ? ~b : b;
+      *p++ = b;
+      //*p++ = inv ? ~b : b;
     }
   }
 }
@@ -446,8 +447,10 @@ void lcd_hline(uint8_t x,uint8_t y, int8_t w)
 void lcd_vline(uint8_t x,uint8_t y, int8_t h)
 {
 //    while ((y+h)>=DISPLAY_H) h--;
+		uint8_t y1 ;
     uint8_t *p  = &displayBuf[ y / 8 * DISPLAY_W + x ];
-    uint8_t *q  = &displayBuf[ (y+h) / 8 * DISPLAY_W + x ];
+		y1 = y + h ;
+    uint8_t *q  = &displayBuf[ y1 / 8 * DISPLAY_W + x ];
     *p ^= ~(BITMASK(y%8)-1);
     while(p<q){
         p  += DISPLAY_W;
@@ -508,6 +511,13 @@ void lcd_init()
 	LcdLock = 0 ;						// Free LCD data lines
 
 }
+
+
+void lcdSetContrast()
+{
+	lcdSetRefVolt(g_eeGeneral.contrast);
+}
+
 void lcdSetRefVolt(uint8_t val)
 {
 	LcdLock = 1 ;						// Lock LCD data lines

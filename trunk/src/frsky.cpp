@@ -162,7 +162,10 @@ void store_hub_data( uint8_t index, uint16_t value )
 		}
 		if ( index == FR_RPM )			// RPM
 		{
-			FrskyHubData[FR_RPM] *= (g_model.numBlades == 2 ) ? 15 : ( (g_model.numBlades == 1 ) ? 20 : 30 ) ;
+			uint8_t x ;
+
+			x = (g_model.numBlades == 2 ) ? 15 : ( (g_model.numBlades == 1 ) ? 20 : 30 ) ;
+			FrskyHubData[FR_RPM] *= x ;
 		}
 		if ( index == FR_V_AMPd )			// RPM
 		{
@@ -239,7 +242,7 @@ void frsky_proc_user_byte( uint8_t byte )
 	}
 }
 
-void frskyPushValue(uint8_t & i, uint8_t value);
+uint8_t frskyPushValue( uint8_t i, uint8_t value);
 
 /*
    Called from somewhere in the main loop or a low prioirty interrupt
@@ -400,9 +403,9 @@ ISR(USART0_RX_vect)
         case frskyDataStart:
           if (data == START_STOP) break; // Remain in userDataStart if possible 0x7e,0x7e doublet found.
 
+          dataState = frskyDataInFrame;
           if (numPktBytes < 19)
             frskyRxBuffer[numPktBytes++] = data;
-          dataState = frskyDataInFrame;
           break;
 
         case frskyDataInFrame:
@@ -421,9 +424,9 @@ ISR(USART0_RX_vect)
           break;
 
         case frskyDataXOR:
+          dataState = frskyDataInFrame;
           if (numPktBytes < 19)
             frskyRxBuffer[numPktBytes++] = data ^ STUFF_MASK;
-          dataState = frskyDataInFrame;
           break;
 
         case frskyDataIdle:
@@ -587,7 +590,7 @@ void FRSKY_setTxPacket( uint8_t type, uint8_t value, uint8_t p1, uint8_t p2 )
 	uint8_t i = 0;
   frskyTxBuffer[i++] = START_STOP;        // Start of packet
   frskyTxBuffer[i++] = type ;
-  frskyPushValue(i, value) ;
+  i = frskyPushValue( i, value) ;
   {
     uint8_t *ptr ;
     ptr = &frskyTxBuffer[i] ;
@@ -606,27 +609,54 @@ void FRSKY_setTxPacket( uint8_t type, uint8_t value, uint8_t p1, uint8_t p2 )
 
 enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm)
 {
-    uint8_t value ;
-    uint8_t alarm_value ;
-		enum AlarmLevel level = alarm_off ;
-  for (int i=0; i<2; i++) {
-        if ( ( alarm == i ) || ( alarm > 1 ) )
-        {
-        if ( ( level = (enum AlarmLevel)ALARM_LEVEL(idx, i) ) != alarm_off) {
-                value = frskyTelemetry[idx].value ;
-                alarm_value = g_model.frsky.channels[idx].alarms_value[i] ;
-          if (ALARM_GREATER(idx, i)) {
-            if (value > alarm_value)
-              return level;
-          }
-          else {
-            if (value < alarm_value)
-              return level;
-          }
-        }
-        }
+	FrSkyChannelData *ptr_fdata ;
+
+	ptr_fdata = &g_model.frsky.channels[idx] ;
+
+  uint8_t value ;
+  uint8_t alarm_value ;
+	uint8_t level = ptr_fdata->alarms_level ;
+	uint8_t greater = ptr_fdata->alarms_greater ;
+  value = frskyTelemetry[idx].value ;
+	
+	if ( alarm != 1 )		// 0 or 2
+	{
+		level &= 3 ;
+		if ( level != (uint8_t)alarm_off)
+		{
+      alarm_value = ptr_fdata->alarms_value[0] ;
+      if ( greater & 1)
+			{
+    	  if (value > alarm_value)
+  				return (enum AlarmLevel) level ;
+      }
+      else
+			{
+        if (value < alarm_value)
+  				return (enum AlarmLevel) level ;
+      }
+		}
   }
-  return alarm_off;
+	if ( alarm )		// 1 or 2
+	{
+		level = ptr_fdata->alarms_level >> 2 ;
+		level &= 3 ;
+		if ( level != (uint8_t)alarm_off)
+		{
+      alarm_value = ptr_fdata->alarms_value[1] ;
+      if ( greater & 2)
+			{
+    	  if (value > alarm_value)
+  				return (enum AlarmLevel) level ;
+      }
+      else
+			{
+        if (value < alarm_value)
+  				return (enum AlarmLevel) level ;
+      }
+		}
+  }
+  return alarm_off ;
 }
 
 void FRSKY_alarmPlay(uint8_t idx, uint8_t alarm){			
@@ -726,24 +756,29 @@ void frskyAlarmsRefresh()
 }
 #endif
 
-void frskyPushValue(uint8_t & i, uint8_t value)
+uint8_t frskyPushValue( uint8_t i, uint8_t value)
 {
 	uint8_t j ;
+  uint8_t *ptr ;
+  ptr = &frskyTxBuffer[i] ;
+	FORCE_INDIRECT(ptr) ;
 	j = 0 ;
   // byte stuff the only byte than might need it
   if (value == START_STOP) {
     j = 1 ;
-    value = 0x5e;
   }
   else if (value == BYTESTUFF) {
     j = 1 ;
-    value = 0x5d;
   }
 	if ( j )
 	{
-		frskyTxBuffer[i++] = BYTESTUFF;
+    value -= 0x20;
+		*ptr++ = BYTESTUFF;
+		i += 1 ;
 	}
-  frskyTxBuffer[i++] = value;
+  *ptr = value;
+	i += 1 ;
+	return i ;
 }
 
 void FrskyData::setoffset()
@@ -779,13 +814,18 @@ void FrskyData::set(uint8_t value, uint8_t copy)
 
 void resetTelemetry()
 {
-	uint8_t i ;
-	for ( i = 0 ; i < 4 ; i += 1 )
-	{
-		frskyTelemetry[i].min = 0 ;
-		frskyTelemetry[i].max = 0 ;
-	}
-//  memset(frskyTelemetry, 0, sizeof(frskyTelemetry));
+	FrskyData *ptr_data = &frskyTelemetry[0] ;
+	FORCE_INDIRECT(ptr_data) ;
+
+	ptr_data[0].min = 0 ;
+	ptr_data[0].max = 0 ;
+	ptr_data[1].min = 0 ;
+	ptr_data[1].max = 0 ;
+	ptr_data[2].min = 0 ;
+	ptr_data[2].max = 0 ;
+	ptr_data[3].min = 0 ;
+	ptr_data[3].max = 0 ;
+	
 	FrskyHubData[FR_A1_MAH] = 0 ;
 	FrskyHubData[FR_A2_MAH] = 0 ;
 	FrskyHubData[FR_CELL_MIN] = 210 ;			// 4.2 volts
@@ -794,6 +834,26 @@ void resetTelemetry()
 //  memset(frskyRSSI, 0, sizeof(frskyRSSI));
 }
 
+void current_check( uint8_t i )
+{
+	Frsky_current_info *ptr_current ;
+
+	ptr_current = &Frsky_current[i] ;
+	FORCE_INDIRECT(ptr_current) ;
+  // value * ratio / 100 gives 10ths of amps
+  // add this every 10 ms, when over 3600, we have 1 mAh
+  // so subtract 3600 and add 1 to mAh total
+  // alternatively, add up the raw value, and use 3600 * 100 / ratio for 1mAh
+			
+	if ( (  ptr_current->Amp_hour_prescale += frskyTelemetry[i].value ) > ptr_current->Amp_hour_boundary )
+	{
+		 ptr_current->Amp_hour_prescale -= ptr_current->Amp_hour_boundary ;
+		int16_t *ptr_hub = &FrskyHubData[FR_A1_MAH+i] ;
+		FORCE_INDIRECT(ptr_hub) ;
+
+		*ptr_hub += 1 ;
+	}
+}
 
 // Called every 10 mS in interrupt routine
 void check_frsky()
@@ -816,22 +876,10 @@ void check_frsky()
     FRSKY10mspoll() ;
   }
 
-	for( uint8_t i = 0 ; i < 2 ; i += 1 )
-	{
-  	if ( g_model.frsky.channels[i].type == 3 )		// Current (A)
-  	{
-  	  // value * ratio / 100 gives 10ths of amps
-  	  // add this every 10 ms, when over 3600, we have 1 mAh
-  	  // so subtract 3600 and add 1 to mAh total
-  	  // alternatively, add up the raw value, and use 3600 * 100 / ratio for 1mAh
-			
-			if ( (  Frsky_current[i].Amp_hour_prescale += frskyTelemetry[i].value ) > Frsky_current[i].Amp_hour_boundary )
-			{
-				 Frsky_current[i].Amp_hour_prescale -= Frsky_current[i].Amp_hour_boundary ;
-				FrskyHubData[FR_A1_MAH+i] += 1 ;
-			}
-  	}	
-	}
+  if ( g_model.frsky.channels[0].type == 3 )		// Current (A)
+		current_check( 0 ) ;
+  if ( g_model.frsky.channels[1].type == 3 )		// Current (A)
+		current_check( 1 ) ;
 	
 	// FrSky Current sensor (in amps)
 	// add this every 10 ms, when over 360, we have 1 mAh
@@ -839,7 +887,10 @@ void check_frsky()
 	if ( ( Frsky_Amp_hour_prescale += FrskyHubData[FR_CURRENT] ) > 3600 )
 	{
 		Frsky_Amp_hour_prescale -= 3600 ;
-		FrskyHubData[FR_AMP_MAH] += 1 ;
+		int16_t *ptr_hub = &FrskyHubData[FR_AMP_MAH] ;
+		FORCE_INDIRECT(ptr_hub) ;
+
+		*ptr_hub += 1 ;
 	}
 
 }
