@@ -10,6 +10,17 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 31-Aug-2012  MPB
+NMEA integration
+Voice numerics - thousands and 2 decimals - need more voice files
+WSHH - voice metres if metric set
+Rotary encoder additions
+Companion 9x patches added
+Voice - no telemetry message added
+Voice startup changed
+
+
+******************************************
 CHANGELOG: 27-Aug-2012  MPB
 Flash savings
 Use Voice files 400-499

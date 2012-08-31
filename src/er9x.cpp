@@ -29,7 +29,7 @@ mode3 ail ele thr rud
 mode4 ail thr ele rud
 */
 
-#define ROTARY	0
+#define ROTARY	1
 
 extern int16_t AltOffset ;
 
@@ -55,6 +55,8 @@ uint8_t Vs_state[NUM_CHNOUT] ;
 uint8_t RotPosition ;
 uint8_t RotCount ;
 uint8_t RotEncoder ;
+int8_t LastRotaryValue ;
+int8_t Rotary_diff ;
 #endif
 
 //const prog_uint8_t APM chout_ar[] = { //First number is 0..23 -> template setup,  Second is relevant channel out
@@ -1000,7 +1002,7 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
         killEvents(kmi);
         killEvents(kpl);
     }
-    if(i_min==0 && i_max==1 && event==EVT_KEY_FIRST(KEY_MENU))
+    if(i_min==0 && i_max==1 && (event==EVT_KEY_FIRST(KEY_MENU) || event==EVT_KEY_FIRST(BTN_RE)) )
     {
         s_editMode = false;
         newval=!val;
@@ -1009,7 +1011,7 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
 
     //change values based on P1
     newval -= p1valdiff;
-
+		newval += Rotary_diff ;
     if(newval>i_max)
     {
         newval = i_max;
@@ -1160,8 +1162,8 @@ void doBackLightVoice(uint8_t evt)
     check_backlight_voice();
 }
 
-static uint8_t v_ctr ;
-uint8_t v_first[8] ;
+//static uint8_t v_ctr ;
+//uint8_t v_first[8] ;
 
 
 void putVoiceQueueUpper( uint8_t value )
@@ -1190,11 +1192,11 @@ void putVoiceQueue( uint8_t value )
 		vptr->VoiceQueueInIndex &= ( VOICE_Q_LENGTH - 1 ) ;
 		vptr->VoiceQueueCount += 1 ;
 	}
-	if ( v_ctr < 8 )
-	{
-		v_first[v_ctr] = value ;
-		v_ctr += 1 ;		
-	}
+//	if ( v_ctr < 8 )
+//	{
+//		v_first[v_ctr] = value ;
+//		v_ctr += 1 ;		
+//	}
 }
 
 void t_voice::voice_process(void)
@@ -1402,6 +1404,17 @@ void perMain()
     }
 		p1valdiff = p1d ;
 #endif
+
+		{
+			int8_t x ;
+			x = RotCount - LastRotaryValue ;
+			if ( x == -1 )
+			{
+				x = 0 ;
+			}
+			Rotary_diff = ( x ) / 2 ;
+			LastRotaryValue += Rotary_diff * 2 ;
+		}
 
 		if ( AlertMessage )
 		{
@@ -1897,9 +1910,12 @@ int main(void)
 
     // moved here and logic added to only play statup tone if splash screen enabled.
     // that way we save a bit, but keep the option for end users!
-		putVoiceQueue( 0xF2 ) ;
-		putVoiceQueue( 0xF2 ) ;
-		putVoiceQueue( g_eeGeneral.volume + 0xF7 ) ;
+		{
+			uint8_t x = g_eeGeneral.volume + 0xF7 ;
+			putVoiceQueue( x ) ;
+			putVoiceQueue( x ) ;
+			putVoiceQueue( x ) ;
+		}
     if(!g_eeGeneral.disableSplashScreen)
     {
 	    if((g_eeGeneral.speakerMode & 1) == 1)

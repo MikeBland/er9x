@@ -76,6 +76,8 @@ TEMPLATES = YES
 
 NOPOTSCROLL =
 
+N2F = NO
+
 # BEEPER. Values = BUZZER or BUZZER_MOD  or SPEAKER
 # (without a mod, BUZZER can make PPM jack output switch from output to input at random)
 # (SPEAKER is used if you have modified your radio gruvin style for the variable sound)
@@ -89,6 +91,8 @@ BEEPER = BUZZER
 #	HELI = YES
 #	TEMPLATES = YES
 #	BUZZER = BUZZER
+#     HUB = NO
+#     N2F = NO
 
 #   If the variables differ from the above default settings, it will be displayed in the 
 #   fifth line of the version screen
@@ -100,6 +104,14 @@ BEEPER = BUZZER
 #	NH	HELI = NO
 #	NT	TEMPLATES = NO
 #	NHT	HELI = NO and TEMPLATES = NO
+
+#  if The FrSky Version supports native FrSky Sensor Hub protocol it will show
+#     N2F		NEMEA to FrSky protocol conversion with FrSky Sensor Hub 
+
+#   Support for the NMEA Arduino HUB simulator is activated with HUB = YES
+#   This allows to add a private datastream, coded like a normal NMEA record.
+#   This record $GPLCL contains analog and digital data, similar to the FrSky HUB 
+#	HUB = YES|NO
 
 #	possible values for BUZZER are
 #	BZM	BUZZER = BUZZER_MOD
@@ -132,6 +144,12 @@ ifeq ($(BEEPER), BUZZER_MOD)
 else
 	ifeq ($(BEEPER), SPEAKER)
 		BEEPER_MOD = SPK
+	endif
+endif
+
+ifeq ($(EXT), FRSKY)
+	ifeq ($(N2F), YES)
+	  N2F_MOD=N2F
 	endif
 endif
 
@@ -221,8 +239,18 @@ endif
 # If NMEA-Support is enabled
 ifeq ($(EXT), NMEA)
  CPPDEFS += -DNMEA
+# If NMEA and HUB-Support is enabled
+  ifeq ($(HUB), YES)
+    CPPDEFS += -DHUB
+  endif
 endif
 
+#if FrSky Sensor Hub native protocol is enabled
+ifeq ($(EXT), FRSKY)
+	ifeq ($(N2F), YES)
+		CPPDEFS += -DN2F
+	endif
+endif
 
 # If buzzer modified (no interference with PPM jack)
 ifeq ($(BEEPER), BUZZER_MOD)

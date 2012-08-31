@@ -24,6 +24,14 @@
 ///opt/cross/avr/include/avr/pgmspace.h
 #include <stddef.h>
 
+#ifndef FORCEINLINE
+#define FORCEINLINE inline __attribute__ ((always_inline))
+#endif
+
+#ifndef NOINLINE
+#define NOINLINE __attribute__ ((noinline))
+#endif
+
 #ifndef SIMU
 
 #include <avr/io.h>
@@ -65,14 +73,6 @@ typedef uint32_t  prog_uint32_t __attribute__((__progmem__));//,deprecated("prog
 
 #undef PGM_P
 #define PGM_P const prog_char *
-
-#ifndef FORCEINLINE
-#define FORCEINLINE inline __attribute__ ((always_inline))
-#endif
-
-#ifndef NOINLINE
-#define NOINLINE __attribute__ ((noinline))
-#endif
 
 #ifdef __cplusplus
 #define APM __attribute__(( section(".progmem.data") ))
@@ -224,6 +224,7 @@ enum EnumKeys {
     TRM_RV_UP   ,
     TRM_RH_DWN  ,
     TRM_RH_UP   ,
+	  BTN_RE,
     //SW_NC     ,
     //SW_ON     ,
     SW_ThrCt  ,
@@ -370,7 +371,7 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define IS_THROTTLE(x)  (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4))
 
 
-#define NUM_KEYS TRM_RH_UP+1
+#define NUM_KEYS BTN_RE+1
 #define TRM_BASE TRM_LH_DWN
 
 //#define _MSK_KEY_FIRST (_MSK_KEY_REPT|0x20)
