@@ -23,6 +23,7 @@
 #endif
 
 extern void putVoiceQueue( uint8_t value ) ;
+extern int8_t Rotary_diff ;
 extern int16_t AltOffset ;
 NOINLINE void resetTimer1(void) ;
 
@@ -142,6 +143,11 @@ void voice_telem_item( int8_t index )
 #endif
 
 	value = get_telemetry_value( index ) ;
+	if (telemItemValid( index ) == 0 )
+	{
+		putVoiceQueue( V_NOTELEM ) ;
+		spoken = 1 ;
+	}
 	index = pgm_read_byte( &TelemIndex[index] ) ;
 
   switch (index)
@@ -155,6 +161,13 @@ void voice_telem_item( int8_t index )
 			num_decimals = 1 ;
 		break ;
 
+#ifdef FRSKY
+		case FR_CELL_MIN:
+			unit = V_VOLTS ;			
+			num_decimals = 2 ;
+		break ;
+#endif
+			
 		case TIMER1 :
 		case TIMER2 :
 		{	
@@ -191,7 +204,8 @@ void voice_telem_item( int8_t index )
       unit = V_METRES ;
 			if (g_model.FrSkyUsrProto == 1)  // WS How High
 			{
-        unit = V_FEET ;  // and ignore met/imp option
+      	if ( g_model.FrSkyImperial )
+        	unit = V_FEET ;
 			}
       else if ( g_model.FrSkyImperial )
       {
@@ -381,9 +395,11 @@ uint8_t putsTelemetryChannel(uint8_t x, uint8_t y, int8_t channel, int16_t val, 
     break;
     
 		case FR_ALT_BARO:
+      unit = 'm' ;
 			if (g_model.FrSkyUsrProto == 1)  // WS How High
 			{
-        unit = 'f' ;  // and ignore met/imp option
+      	if ( g_model.FrSkyImperial )
+        	unit = 'f' ;
 				x -= FW ;
 				break ;
 			}
@@ -526,7 +542,7 @@ enum MainViews {
  //   e_inputs2,
  //   e_inputs3,
     e_timer2,
-#ifdef FRSKY
+#if (defined(FRSKY) | defined(HUB))
     e_telemetry,
 //    e_telemetry2,
 #endif
@@ -654,6 +670,14 @@ void DisplayScreenIndex(uint8_t index, uint8_t count, uint8_t attr)
     lcd_outdezAtt(x-1,0,index+1,attr);
 }
 
+// Rotary encoder movement states
+#define	ROTARY_MENU_LR		0
+#define	ROTARY_MENU_UD		1
+#define	ROTARY_SUBMENU_LR	2
+#define	ROTARY_VALUE			3
+
+uint8_t RotaryState ;
+
 #define MAXCOL(row) (horTab ? pgm_read_byte(horTab+min(row, horTabMax)) : (const uint8_t)0)
 #define INC(val,max) if(val<max) {val++;} else {val=0;}
 #define DEC(val,max) if(val>0  ) {val--;} else {val=max;}
@@ -689,9 +713,20 @@ void MState2::check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8
     if (menuTab) {
         uint8_t attr = m_posVert==0 ? INVERS : 0;
 
-
         if(m_posVert==0)
         {
+					if ( s_editMode == 0 )
+					{
+						if ( Rotary_diff > 0 )
+						{
+   					  scrollLR = -1;
+						}
+						else if ( Rotary_diff < 0 )
+						{
+   					  scrollLR = 1;
+						}
+						Rotary_diff = 0 ;
+					}
 #ifndef NOPOTSCROLL
             if(scrollLR && !s_editMode)
             {
@@ -777,6 +812,7 @@ void MState2::check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8
         s_editMode = false;
         //init();BLINK_SYNC;
         break;
+    case EVT_KEY_BREAK(BTN_RE):
     case EVT_KEY_FIRST(KEY_MENU):
         if (maxcol > 0)
             s_editMode = !s_editMode;
@@ -787,6 +823,7 @@ void MState2::check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8
         popMenu(false);
         break;
         //fallthrough
+    case EVT_KEY_LONG(BTN_RE):
     case EVT_KEY_BREAK(KEY_EXIT):
         if(s_editMode) {
             s_editMode = false;
@@ -1487,7 +1524,11 @@ void menuProcTemplates(uint8_t event)  //Issue 73
 
         //write mix names here
         lcd_outdezNAtt(3*FW, y, k+1, (sub==k ? INVERS : 0) + LEADING0,2);
+#ifndef SIMU
         lcd_putsAtt(  4*FW, y, (const prog_char*)pgm_read_word(&n_Templates[k]), (s_noHi ? 0 : (sub==k ? INVERS  : 0)));
+#else
+				lcd_putsAtt(  4*FW, y, n_Templates[k], (s_noHi ? 0 : (sub==k ? INVERS  : 0)));
+#endif
         y+=FH;
     }
 
@@ -3783,7 +3824,7 @@ if((g_eeGeneral.speakerMode & 1) == 1 /*|| g_eeGeneral.speakerMode == 2 */){
 #endif
             lcd_putsnAtt((11+subSub)*FW, y, Str_TRE012AG+subSub,1,  BLINK );
 
-            if((event==EVT_KEY_FIRST(KEY_MENU))
+            if((event==EVT_KEY_FIRST(KEY_MENU)) || (event==EVT_KEY_FIRST(BTN_RE))
 #ifndef NOPOTSCROLL
 							  || p1valdiff
 #endif							
@@ -4366,6 +4407,13 @@ void displayTemp( uint8_t sensor, uint8_t x, uint8_t y, uint8_t size )
 
 
 static int8_t inputs_subview = 0 ;
+#ifdef NMEA_EXTRA
+#if (defined(FRSKY) | defined(HUB))
+int16_t AltMax, AltMaxValue, HomeSave = 0 ;
+int8_t longpress = 0 ;
+int8_t unit ;
+#endif
+#endif
 
 void menuProc0(uint8_t event)
 {
@@ -4383,12 +4431,35 @@ void menuProc0(uint8_t event)
             TimerG.Timer2_running ^= 1 ;
             audioDefevent(AU_MENUS);
         }
+#ifdef NMEA_EXTRA
+#if (defined(FRSKY) | defined(HUB))                                    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+	  if (longpress == 1) {
+		 longpress=0;
+		 break;
+	  }
+	  if (( view == e_telemetry) && (( tview & 0x30) == 0x20) ) 	
+	  {
+		if (AltOffset == 0)
+			AltOffset = -HomeSave ;
+		else
+		{
+			HomeSave = -AltOffset ;
+			AltOffset = 0 ;
+		}
+	  }
+#endif
+#endif
         break;
     case  EVT_KEY_LONG(KEY_MENU):// go to last menu
 #ifdef FRSKY
         if( (view == e_telemetry) && ((tview & 0x30) == 0x20 ) )
         {
             AltOffset = -FrskyHubData[FR_ALT_BARO] ;
+#ifdef NMEA_EXTRA
+#if (defined(FRSKY) | defined(HUB))								//!!!!!!!!!!!!!!!!!
+		HomeSave = AltMax = FrskyHubData[FR_GPS_ALT] ;				//!!!!!!!!!!!!!!!!!!
+#endif
+#endif
         }
         else if( (view == e_telemetry) && ((tview & 0x30) == 0 ) )
         {
@@ -4410,6 +4481,7 @@ void menuProc0(uint8_t event)
         {
 #endif
 #ifndef NOPOTSCROLL
+    case  EVT_KEY_LONG(BTN_RE):// go to last menu
 		        scroll_disabled = 1;
 #endif            
 						pushMenu(lastPopMenu());
@@ -4522,6 +4594,11 @@ void menuProc0(uint8_t event)
 #ifdef FRSKY
         else if (view == e_telemetry) {
             resetTelemetry();
+#ifdef NMEA_EXTRA
+#if (defined(FRSKY) | defined(HUB))							//!!!!!!!!!!!!!!!!
+		AltMax = 0 ;								//!!!!!!!!!!!!!!!!
+#endif
+#endif
             audioDefevent(AU_MENUS);
         }
 #endif
@@ -4531,6 +4608,11 @@ void menuProc0(uint8_t event)
         resetTimer2();
 #ifdef FRSKY
         resetTelemetry();
+#ifdef NMEA_EXTRA
+#if (defined(FRSKY) | defined(HUB))							//!!!!!!!!!!!!!!!!
+  	  AltOffset = AltMax = HomeSave = 0 ;					//!!!!!!!!!!!!!!!!
+#endif
+#endif
 #endif
         audioDefevent(AU_MENUS);
         break;
@@ -4750,6 +4832,21 @@ void menuProc0(uint8_t event)
 //                    lcd_putc( 3*FW, 3*FH, unit ) ;
 //                    lcd_outdezAtt(4*FW, 3*FH, value, DBLSIZE|LEFT);
 									putsTelemetryChannel( 0, 4*FH, TEL_ITEM_BALT, value, DBLSIZE | LEFT, (TELEM_LABEL | TELEM_UNIT_LEFT)) ;
+#ifdef NMEA_EXTRA
+#if (defined(FRSKY) | defined(HUB))												//!!!!!!!!!!!!
+		   	  if (AltMax < FrskyHubData[FR_GPS_ALT]) AltMax = FrskyHubData[FR_GPS_ALT] ;		//!!!!!!!!!!!
+			  if (( HomeSave != 0) | ( AltOffset != 0)) 
+			  {
+				lcd_puts_P(11*FW, 3*FH, PSTR("Amax="));
+				lcd_puts_P(11*FW, 4*FH, PSTR("Home="));
+				value = -AltOffset ;
+				AltMaxValue = AltMax - value ;
+				lcd_putc( 15*FW, 3*FH,unit) ;
+				lcd_outdezAtt(16*FW, 3*FH, m_to_ft(AltMaxValue), LEFT) ;		// Max Altitude
+				lcd_outdezAtt(16*FW, 4*FH,m_to_ft(value), LEFT) ;			// Home Altitude
+			  }												//!!!!!!!!!!!
+#endif
+#endif
 
 
                 }	
@@ -4801,6 +4898,12 @@ void menuProc0(uint8_t event)
 //                lcd_outdezAtt(20*FW, 5*FH, MaxGpsSpeed, blink );
               if (frskyUsrStreaming)
 							{
+#ifdef NMEA_EXTRA
+#if (defined(FRSKY) | defined(HUB))												//!!!!!!!!!!!!!!
+			if (AltMax < FrskyHubData[FR_GPS_ALT]) AltMax = FrskyHubData[FR_GPS_ALT] ;		//!!!!!!!!!!!!!!
+			lcd_outdezAtt(20*FW, 4*FH, AltMax, 0) ;								//!!!!!!!!!!!!!!
+#endif
+#endif
 								lcd_outdez(8 * FW, 4*FH, FrskyHubData[FR_GPS_ALT] ) ;
 								mspeed = FrskyHubData[FR_GPS_SPEED] ;
                 if ( g_model.FrSkyImperial )

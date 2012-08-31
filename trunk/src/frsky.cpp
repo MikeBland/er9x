@@ -34,6 +34,11 @@
 #define STUFF_MASK      0x20
 #define PRIVATE					0x1B
 
+#ifdef N2F
+	#define HUB_START_STOP      0x5e
+	#define FRSKYHUB		0x5e			//???
+	#define BYTECANCEL 		0x18
+#endif
 
 // Translate hub data positions
 // Add a top bit, first word of two word value
@@ -309,11 +314,30 @@ void processFrskyPacket(uint8_t *packet)
 			while ( j < i )
 			{
 				frsky_proc_user_byte( packet[j] ) ;
-        frskyUsrStreaming = FRSKY_TIMEOUT10ms*3; // reset counter only if valid frsky packets are being detected
+        frskyUsrStreaming = FRSKY_USR_TIMEOUT10ms; // reset counter only if valid frsky packets are being detected
 				j += 1 ;
 			}
     }	
     break;
+
+// Support native FrSky Sensor Hub protocol
+#if defined(N2F)
+   case FRSKYHUB:				//!!!!!!!!!!!!!!!!!!!!!! Found Start of Packet= 0x5E
+    {
+		uint8_t i, j ;
+		i = 4 ;		  // User bytes end
+		j = 0 ;              // Index to user bytes
+		while ( j < i )
+		{
+			frsky_proc_user_byte( packet[j] ) ;
+			// reset counter only if valid frsky packets are being detected
+			frskyUsrStreaming = FRSKY_USR_TIMEOUT10ms; 
+			j += 1 ;
+		}
+    }	
+    break;					//!!!!!!!!!!!!!!!!!!
+#endif
+
   }
 
   FrskyRxBufferReady = 0;
@@ -326,8 +350,15 @@ void processFrskyPacket(uint8_t *packet)
 #define frskyDataInFrame 2
 #define frskyDataXOR     3
 
-#define PRIVATE_COUNT			4
-#define PRIVATE_VALUE			5
+#ifndef N2F
+	#define PRIVATE_COUNT	4
+	#define PRIVATE_VALUE	5
+#else
+	#define frskyDataIgnore 4
+	#define PRIVATE_COUNT	5
+	#define PRIVATE_VALUE	6
+#endif
+
 /*
    Receive serial (RS-232) characters, detecting and storing each Fr-Sky 
    0x7e-framed packet as it arrives.  When a complete packet has been 
@@ -401,6 +432,68 @@ ISR(USART0_RX_vect)
       switch (dataState) 
       {
         case frskyDataStart:
+//-------------------------------------------------------------------------------------
+#ifdef N2F			// This code supports the native FrySky Sensor Hub protocol
+          if (data == HUB_START_STOP) break; 	// Remain in userDataStart if possible 0x5e,0x5e doublet found.
+
+          frskyRxBuffer[numPktBytes++] = data;	//ID of field. 
+          dataState = frskyDataInFrame;
+          break;
+
+        case frskyDataInFrame:
+	    if (numPktBytes > 4)			// failure, restart
+	    {
+		  numPktBytes = 0;
+                  dataState = frskyDataIdle;
+		  break;
+	    }
+		//---------------
+          if (data == BYTESTUFF)
+          { 
+              dataState = frskyDataXOR; // XOR next byte
+              break; 
+          }
+		//---------------
+	    //following BYTECANCEL = 0x18 the next byte is sent twice. Ignore the next byte
+	    if (data == BYTECANCEL)			
+	    {
+		  dataState = frskyDataIgnore;		// ignore next byte
+		  break;
+	    }
+		//----------------
+          if (data == HUB_START_STOP) // end of field 0x5e detected, is used as start of next field
+          {
+		  processFrskyPacket(frskyRxBuffer); // FrskyRxBufferReady = 1; packet is "5E ID Byte Byte "
+              numPktBytes = 0;
+              dataState = frskyDataStart;	
+              frskyRxBuffer[numPktBytes++] = data;	// put starting 5E into buffer
+              break;
+          }
+		//----------------
+          frskyRxBuffer[numPktBytes++] = data;
+          break;
+
+        case frskyDataXOR:
+          if (numPktBytes < 19)
+            frskyRxBuffer[numPktBytes++] = data ^ STUFF_MASK;
+          dataState = frskyDataInFrame;
+          break;
+
+	  case frskyDataIgnore:
+	    dataState = frskyDataInFrame;	
+	    break;				// ignore this byyte
+
+        case frskyDataIdle:
+          if (data == HUB_START_STOP)  // 0x5E
+          {
+            numPktBytes = 0;
+            frskyRxBuffer[numPktBytes++] = data;	// put 5E into buffer 
+            dataState = frskyDataStart;
+          }
+          break;
+
+//---------------------------------------------------------------------------------
+#else					// This is the original FrySky decoding
           if (data == START_STOP) break; // Remain in userDataStart if possible 0x7e,0x7e doublet found.
 
           dataState = frskyDataInFrame;
@@ -461,6 +554,8 @@ ISR(USART0_RX_vect)
           	dataState = frskyDataIdle;
 					}
         break;
+//---------------------------------------------------------------------------------
+#endif
 
       } // switch
     } // if (FrskyRxBufferReady == 0)
@@ -790,10 +885,14 @@ void FrskyData::setoffset()
 void FrskyData::set(uint8_t value, uint8_t copy)
 {
 	uint8_t x ;
+#ifdef NMEA
+	raw = value;
+#else
 	averaging_total += value ;
 	if ( LinkAveCount > 15 )
 	{
 		raw = averaging_total >> 4 ;
+#endif
   	if ( raw > offset )
 		{
 		  x = raw - offset ;
@@ -804,12 +903,14 @@ void FrskyData::set(uint8_t value, uint8_t copy)
 		}
 		this->value = x ;
 		FrskyHubData[copy] = this->value ;
-		averaging_total = 0 ;
    	if (max < value)
    	  max = value;
    	if (!min || min > value)
    	  min = value;
+#ifndef NMEA
+		averaging_total = 0 ;
 	}
+#endif
 }
 
 void resetTelemetry()

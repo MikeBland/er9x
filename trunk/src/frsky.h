@@ -148,8 +148,14 @@ DataID Meaning       Unit   Range   Note
 
 
 
+#ifdef N2F
+#define FRSKY_TIMEOUT10ms 			200
+#define FRSKY_USR_TIMEOUT10ms 	250
+#else
 // .20 seconds
-#define FRSKY_TIMEOUT10ms 20
+#define FRSKY_TIMEOUT10ms 			20
+#define FRSKY_USR_TIMEOUT10ms		60
+#endif
 
 enum AlarmLevel {
   alarm_off = (uint8_t) 0,

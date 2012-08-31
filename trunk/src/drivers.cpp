@@ -298,6 +298,10 @@ void per10ms()
     keys[enuk].input(in & pgm_read_byte(crossTrim+i),(EnumKeys)enuk);
     ++enuk;
   }
+
+extern uint8_t RotEncoder ;
+	keys[enuk].input( RotEncoder & 0x20,(EnumKeys)enuk); // Rotary Enc. Switch
+
 }
 
 

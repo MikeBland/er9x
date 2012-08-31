@@ -270,6 +270,7 @@ extern struct t_voice Voice ;
 #define	V_DB						55
 #define	V_METRES				56
 #define	V_METRE					57
+#define	V_NOTELEM				58
 
 
 #define V_HUNDRED			 100
