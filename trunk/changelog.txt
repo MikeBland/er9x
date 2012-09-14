@@ -10,6 +10,18 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 14-Sep-2012  MPB
+Improve setup and hold time for voice module
+Change cell voltage monitoring
+Correct FAS100 voltage scaling
+Correct voice for thousands
+Correct custom switch test for FAS100 mAh
+Store custom telemetry setup in EEPROM
+Various changes to save around 500 bytes of flash
+Poll rotary encoder more often
+Custom switch timers held off if AND switch is off
+
+******************************************
 CHANGELOG: 31-Aug-2012  MPB
 NMEA integration
 Voice numerics - thousands and 2 decimals - need more voice files

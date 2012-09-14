@@ -42,9 +42,6 @@ static void getADC_osmp( void ) ;
 
 EEGeneral  g_eeGeneral;
 ModelData  g_model;
-#ifdef FRSKY
-uint8_t CustomDisplayIndex[6] ;
-#endif
 
 const prog_char *AlertMessage ;
 uint8_t Main_running ;
@@ -58,6 +55,8 @@ uint8_t RotEncoder ;
 int8_t LastRotaryValue ;
 int8_t Rotary_diff ;
 #endif
+
+uint8_t Tevent ;
 
 //const prog_uint8_t APM chout_ar[] = { //First number is 0..23 -> template setup,  Second is relevant channel out
 //                                      1,2,3,4 , 1,2,4,3 , 1,3,2,4 , 1,3,4,2 , 1,4,2,3 , 1,4,3,2,
@@ -138,9 +137,9 @@ void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
 
     lcd_putcAtt(x, y, ':',att&att2);
 		qr = div( tme, 60 ) ;
-    lcd_outdezNAtt(x/*+ ((att&DBLSIZE) ? 2 : 0)*/, y, qr.quot, LEADING0|att,2);
+    lcd_outdezNAtt(x/*+ ((att&DBLSIZE) ? 2 : 0)*/, y, (uint16_t)qr.quot, LEADING0|att,2);
     x += (att&DBLSIZE) ? FWNUM*6-4 : FW*3-3;
-    lcd_outdezNAtt(x, y, qr.rem, LEADING0|att2,2);
+    lcd_outdezNAtt(x, y, (uint16_t)qr.rem, LEADING0|att2,2);
 }
 void putsVolts(uint8_t x,uint8_t y, uint8_t volts, uint8_t att)
 {
@@ -214,7 +213,7 @@ const prog_char *get_switches_string()
 }	
 
 void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t type )
-{
+{ // Valid values of type are 0, 1 or 2 only
   int8_t tm = g_model.tmrMode;
 	if ( type < 2 )		// 0 or 1
 	{
@@ -722,6 +721,10 @@ void putWarnSwitch( uint8_t x, uint8_t idx )
 
 static void checkSwitches()
 {
+	uint8_t warningStates ;
+	
+	warningStates = g_eeGeneral.switchWarningStates ;
+
     if(g_eeGeneral.disableSwitchWarning) return; // if warning is on
 
     // first - display warning
@@ -729,12 +732,13 @@ static void checkSwitches()
 //    for(uint8_t i=0;i<8;i++) lcd_putsnAtt((5+i)*FW, 3*FH, PSTR("TRE012AG")+i,1,  ((g_eeGeneral.switchWarningStates & (1<<i)) ? INVERS : 0 ) );
 //    refreshDiplay();
 
-    uint8_t x = g_eeGeneral.switchWarningStates & SWP_IL5;
+    uint8_t x = warningStates & SWP_IL5;
 //    if(x==SWP_IL1 || x==SWP_IL2 || x==SWP_IL3 || x==SWP_IL4 || x==SWP_IL5) //illegal states for ID0/1/2
     if(!(x==SWP_LEG1 || x==SWP_LEG2 || x==SWP_LEG3)) //legal states for ID0/1/2
     {
-        g_eeGeneral.switchWarningStates &= ~SWP_IL5; // turn all off, make sure only one is on
-        g_eeGeneral.switchWarningStates |=  SWP_ID0B;
+        warningStates &= ~SWP_IL5; // turn all off, make sure only one is on
+        warningStates |=  SWP_ID0B;
+				g_eeGeneral.switchWarningStates = warningStates ;
     }
 
     //loop until all switches are reset
@@ -753,7 +757,7 @@ static void checkSwitches()
         //show the difference between i and switch?
         //show just the offending switches.
         //first row - THR, GEA, AIL, ELE, ID0/1/2
-        uint8_t x = i ^ g_eeGeneral.switchWarningStates;
+        uint8_t x = i ^ warningStates ;
 
         lcd_puts_Pleft( 2*FH, PSTR("                      ") ) ;
 
@@ -783,7 +787,7 @@ static void checkSwitches()
         refreshDiplay();
 
 
-        if((i==g_eeGeneral.switchWarningStates) || (keyDown())) // check state against settings
+        if((i==warningStates) || (keyDown())) // check state against settings
         {
             return;  //wait for key release
         }
@@ -973,11 +977,12 @@ bool    checkIncDec_Ret;
 int16_t p1val;
 int16_t p1valdiff;
 
-int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flags)
+int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flags)
 {
     int16_t newval = val;
     uint8_t kpl=KEY_RIGHT, kmi=KEY_LEFT, kother = -1;
 
+		uint8_t event = Tevent ;
 //    if(event & _MSK_KEY_DBL){
 //        uint8_t hlp=kpl;
 //        kpl=kmi;
@@ -1045,19 +1050,19 @@ int16_t checkIncDec16(uint8_t event, int16_t val, int16_t i_min, int16_t i_max, 
     return newval;
 }
 
-NOINLINE int8_t checkIncDec(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max, uint8_t i_flags)
+NOINLINE int8_t checkIncDec( int8_t i_val, int8_t i_min, int8_t i_max, uint8_t i_flags)
 {
-    return checkIncDec16(event,i_val,i_min,i_max,i_flags);
+    return checkIncDec16( i_val,i_min,i_max,i_flags);
 }
 
-int8_t checkIncDec_hm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max)
+int8_t checkIncDec_hm( int8_t i_val, int8_t i_min, int8_t i_max)
 {
-    return checkIncDec(event,i_val,i_min,i_max,EE_MODEL);
+    return checkIncDec( i_val,i_min,i_max,EE_MODEL);
 }
 
-int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max)
+int8_t checkIncDec_hg( int8_t i_val, int8_t i_min, int8_t i_max)
 {
-    return checkIncDec(event,i_val,i_min,i_max,EE_GENERAL);
+    return checkIncDec( i_val,i_min,i_max,EE_GENERAL);
 }
 
 MenuFuncP lastPopMenu()
@@ -1217,9 +1222,6 @@ void t_voice::voice_process(void)
 			PORTB |= (1<<OUT_B_LIGHT) ;				// Latch clock high
 			if ( VoiceQueueCount )
 			{
-				VoiceLatch &= ~VOICE_CLOCK_BIT ;
-				PORTA_LCD_DAT = VoiceLatch ;			// Latch data set
-				PORTB &= ~(1<<OUT_B_LIGHT) ;			// Latch clock low
 				VoiceSerial = VoiceQueue[VoiceQueueOutIndex++] ;
 				VoiceQueueOutIndex &= ( VOICE_Q_LENGTH - 1 ) ;
 				VoiceQueueCount -= 1 ;
@@ -1240,6 +1242,13 @@ void t_voice::voice_process(void)
 					VoiceSerial |= 0xFF00 ;
 					VoiceTimer = 40 ;
 				}
+				VoiceLatch &= ~VOICE_CLOCK_BIT & ~VOICE_DATA_BIT ;
+				if ( VoiceSerial & 0x8000 )
+				{
+					VoiceLatch |= VOICE_DATA_BIT ;
+				}
+				PORTA_LCD_DAT = VoiceLatch ;			// Latch data set
+				PORTB &= ~(1<<OUT_B_LIGHT) ;			// Latch clock low
 				VoiceCounter = 31 ;
 				VoiceState = V_CLOCKING ;
 			}
@@ -1316,6 +1325,40 @@ void t_voice::voice_process(void)
 	}
 }
 
+#if ROTARY		
+void pollRotary()
+{
+	// Rotary Encoder polling
+	PORTA = 0 ;			// No pullups
+	DDRA = 0x1F ;		// Top 3 bits input
+	asm(" nop") ;
+	asm(" nop") ;
+	uint8_t rotary ;
+	rotary = PINA ;
+	DDRA = 0xFF ;		// Back to all outputs
+	rotary &= 0xE0 ;
+	RotEncoder = rotary ;
+	rotary &= 0xDF ;
+	if ( rotary != RotPosition )
+	{
+		uint8_t x ;
+		x = RotPosition & 0x40 ;
+		x <<= 1 ;
+		x ^= rotary & 0x80 ;
+		if ( x )
+		{
+			RotCount -= 1 ;
+		}
+		else
+		{
+			RotCount += 1 ;
+		}
+		RotPosition = rotary ;
+	}
+}
+#endif
+
+
 void perMain()
 {
     static uint16_t lastTMR;
@@ -1348,34 +1391,6 @@ void perMain()
     	}
 		}
 
-#if ROTARY		
-		// Rotary Encoder polling
-		DDRA = 0x1F ;		// Top 3 bits input
-		asm(" nop") ;
-		asm(" nop") ;
-		uint8_t rotary ;
-		rotary = PINA ;
-		DDRA = 0xFF ;		// Back to all outputs
-		rotary &= 0xE0 ;
-		RotEncoder = rotary ;
-		rotary &= 0xDF ;
-		if ( rotary != RotPosition )
-		{
-			uint8_t x ;
-			x = RotPosition & 0x40 ;
-			x <<= 1 ;
-			x ^= rotary & 0x80 ;
-			if ( x )
-			{
-				RotCount -= 1 ;
-			}
-			else
-			{
-				RotCount += 1 ;
-			}
-			RotPosition = rotary ;
-		}
-#endif
 
     eeCheck();
 
@@ -1430,6 +1445,7 @@ void perMain()
 		}
 		else
 		{
+			Tevent = evt ;
     	g_menuStack[g_menuStackPtr](evt);
 		}
     refreshDiplay();
@@ -1687,10 +1703,10 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 				else
 				{
 					PORTB |= (1<<OUT_B_LIGHT) ;				// Latch clock high
-					if ( vptr->VoiceCounter & 1 )
+					if ( ( vptr->VoiceCounter & 1 ) == 0 )
 					{
 						vptr->VoiceLatch &= ~VOICE_DATA_BIT ;
-						if ( vptr->VoiceSerial & 0x8000 )
+						if ( vptr->VoiceSerial & 0x4000 )
 						{
 							vptr->VoiceLatch |= VOICE_DATA_BIT ;
 						}
@@ -1838,14 +1854,6 @@ int main(void)
     NMEA_Init();
 #endif
 
-#ifdef FRSKY
-	CustomDisplayIndex[0] = 5 ;
-//	CustomDisplayIndex[1] = 0 ;
-//	CustomDisplayIndex[2] = 0 ;
-//	CustomDisplayIndex[3] = 0 ;
-	CustomDisplayIndex[4] = 1 ;
-	CustomDisplayIndex[5] = 2 ;
-#endif
 
     ADMUX=ADC_VREF_TYPE;
     ADCSRA=0x85;
@@ -1990,6 +1998,7 @@ void mainSequence()
         getADC_single() ;
     }
     ADMUX=0x1E|ADC_VREF_TYPE;   // Select bandgap
+		pollRotary() ;
     perMain();      // Give bandgap plenty of time to settle
     getADC_bandgap() ;
     //while(get_tmr10ms()==old10ms) sleep_mode();
@@ -2037,9 +2046,15 @@ void mainSequence()
             }
 						uint16_t total_volts = 0 ;
 						uint8_t audio_sounded = 0 ;
+						uint8_t low_cell = 220 ;		// 4.4V
 				    for (uint8_t k=0; k<FrskyBattCells; k++)
 						{
 							total_volts += FrskyVolts[k] ;
+							if ( FrskyVolts[k] < low_cell )
+							{
+								low_cell = FrskyVolts[k] ;
+							}
+
 							if ( audio_sounded == 0 )
 							{
 	        			if ( FrskyVolts[k] < g_model.frSkyVoltThreshold )
@@ -2051,6 +2066,11 @@ void mainSequence()
 	  			  }
 						// Now we have total volts available
 						FrskyHubData[FR_CELLS_TOT] = total_volts / 5 ;
+						if ( low_cell < 220 )
+						{
+							FrskyHubData[FR_CELL_MIN] = low_cell ;
+						}
+
         }
 
 
@@ -2260,6 +2280,13 @@ void mainSequence()
 				else  // if ( CsTimer[i] > 0 )
 				{
 					CsTimer[i] -= 1 ;
+				}
+				if ( cs.andsw )
+				{
+	        if (getSwitch( cs.andsw + 9, 0, 0) == 0 )
+				  {
+						CsTimer[i] = -1 ;
+					}	
 				}
 			}
 		}

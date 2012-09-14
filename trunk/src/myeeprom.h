@@ -266,6 +266,7 @@ PACK(typedef struct t_ModelData {
     uint8_t   numVoice;		// 0-16, rest are Safety switches
     SafetySwData  safetySw[NUM_CHNOUT];
     FrSkyData frsky;
+		uint8_t CustomDisplayIndex[6] ;
 }) ModelData;
 
 #define TOTAL_EEPROM_USAGE (sizeof(ModelData)*MAX_MODELS + sizeof(EEGeneral))
@@ -274,9 +275,6 @@ PACK(typedef struct t_ModelData {
 extern EEGeneral g_eeGeneral;
 extern ModelData g_model;
 
-#ifdef FRSKY
-extern uint8_t CustomDisplayIndex[6] ;
-#endif
 
 
 

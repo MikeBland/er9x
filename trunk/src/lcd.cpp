@@ -15,6 +15,7 @@
  */
 
 #include "er9x.h"
+#include <stdlib.h>
 
 #ifdef SIMU
 bool lcd_refresh = true;
@@ -311,14 +312,17 @@ uint8_t lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
     mode -= LEADING0;  // Can't have PREC2 and LEADING0
   }
 
-  for (uint8_t i=1; i<=len; i++) {
-    c = (val % 10) + '0';
+  for (uint8_t i=1; i<=len; i++)
+	{
+		div_t qr ;
+		qr = div( val, 10 ) ;
+    c = (qr.rem) + '0';
     lcd_putcAtt(x, y, c, mode);
     if (prec==i) {
       if (mode & DBLSIZE) {
         xn = x;
-        if(c=='2' || c=='3' || c=='1') ln++;
-        uint8_t tn = (val/10) % 10;
+        if( c<='3' && c>='1') ln++;
+        uint8_t tn = (qr.quot) % 10;
         if(tn==2 || tn==4) {
           if (c=='4') {
             xn++;
@@ -335,10 +339,10 @@ uint8_t lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
         else
           lcd_plot(x+1, y+6);
       }
-      if (val >= 10)
+      if (qr.quot)
         prec = 0;
     }
-    val /= 10;
+    val = qr.quot ;
     if (!val)
     {
       if (prec)

@@ -538,17 +538,17 @@ extern uint8_t s_editMode;     //global editmode
 /// falls EE_GENERAL oder EE_MODEL in i_flags gesetzt ist wird bei Aenderung
 /// der Variablen zusaetzlich eeDirty() aufgerufen.
 /// Als Bestaetigung wird beep() aufgerufen bzw. audio.warn() wenn die Stellgrenze erreicht wird.
-int16_t checkIncDec16(uint8_t event, int16_t i_pval, int16_t i_min, int16_t i_max, uint8_t i_flags);
-int8_t checkIncDec(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max, uint8_t i_flags);
-int8_t checkIncDec_hm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
+int16_t checkIncDec16( int16_t i_pval, int16_t i_min, int16_t i_max, uint8_t i_flags);
+int8_t checkIncDec( int8_t i_val, int8_t i_min, int8_t i_max, uint8_t i_flags);
+int8_t checkIncDec_hm( int8_t i_val, int8_t i_min, int8_t i_max);
 //int8_t checkIncDec_vm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
-int8_t checkIncDec_hg(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
+int8_t checkIncDec_hg( int8_t i_val, int8_t i_min, int8_t i_max);
 
-#define CHECK_INCDEC_H_GENVAR( event, var, min, max)     \
-    var = checkIncDec_hg(event,var,min,max)
+#define CHECK_INCDEC_H_GENVAR( var, min, max)     \
+    var = checkIncDec_hg(var,min,max)
 
-#define CHECK_INCDEC_H_MODELVAR( event, var, min, max)     \
-    var = checkIncDec_hm(event,var,min,max)
+#define CHECK_INCDEC_H_MODELVAR( var, min, max)     \
+    var = checkIncDec_hm(var,min,max)
 
 #define STORE_MODELVARS_TRIM   eeDirty(EE_MODEL|EE_TRIM)
 #define STORE_MODELVARS   eeDirty(EE_MODEL)
