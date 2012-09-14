@@ -335,7 +335,7 @@ void voice_numeric( uint16_t value, uint8_t num_decimals, uint8_t units_index )
 		if ( qr.quot > 9 )		// Thousands
 		{
 			qr = div( qr.quot, 10 ) ;
-			putVoiceQueue( qr.quot + 111 ) ;
+			putVoiceQueue( qr.quot + 110 ) ;
 			qr.quot = qr.rem ;			
 		}
 		putVoiceQueue( qr.quot + 100 ) ;

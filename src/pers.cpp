@@ -15,6 +15,7 @@
  */
 
 #include "er9x.h"
+#include <stdlib.h>
 #include "templates.h"
 
 #ifdef FRSKY
@@ -81,8 +82,10 @@ void modelDefault(uint8_t id)
 {
   memset(&g_model, 0, sizeof(ModelData));
   strncpy_P(g_model.name,PSTR("MODEL     "), 10);
-  g_model.name[5]='0'+(id+1)/10;
-  g_model.name[6]='0'+(id+1)%10;
+	div_t qr ;
+	qr = div( id+1, 10 ) ;
+  g_model.name[5]='0'+qr.quot;
+  g_model.name[6]='0'+qr.rem;
 //  g_model.mdVers = MDVERS;
 
   applyTemplate(0); //default 4 channel template
@@ -99,7 +102,14 @@ void eeLoadModelName(uint8_t id,char*buf,uint8_t len)
     {
       uint16_t sz=theFile.size();
       buf+=len;
-      while(sz){ --buf; *buf='0'+sz%10; sz/=10;}
+      while(sz)
+			{
+				div_t qr ;
+				qr = div( sz, 10 ) ;
+				--buf;
+				*buf='0'+qr.rem;
+				sz = qr.quot;
+			}
     }
   }
 }
