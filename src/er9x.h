@@ -607,8 +607,11 @@ bool eeModelExists(uint8_t id);
 
 
 #define NUM_XCHNRAW (CHOUT_BASE+NUM_CHNOUT) // NUMCH + P1P2P3+ AIL/RUD/ELE/THR + MAX/FULL + CYC1/CYC2/CYC3
+//#define NUM_XCHNRAW (CHOUT_BASE+NUM_CHNOUT+1) // NUMCH + P1P2P3+ AIL/RUD/ELE/THR + MAX/FULL + CYC1/CYC2/CYC3 +3POS
 ///number of real output channels (CH1-CH8) plus virtual output channels X1-X4
 #define NUM_XCHNOUT (NUM_CHNOUT) //(NUM_CHNOUT)//+NUM_VIRT)
+
+#define MIX_3POS	(NUM_XCHNRAW+1)
 
 //#define MAX_CHNRAW 8
 /// Schreibt [RUD ELE THR AIL P1 P2 P3 MAX] aufs lcd

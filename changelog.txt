@@ -10,6 +10,12 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 15-Sep-2012  MPB
+Add 3POS as mixer input
+Extra AND switches on custom switches changed
+Fix Condensed bug on LCD
+
+******************************************
 CHANGELOG: 14-Sep-2012  MPB
 Improve setup and hold time for voice module
 Change cell voltage monitoring

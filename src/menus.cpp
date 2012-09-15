@@ -1796,9 +1796,17 @@ for(uint8_t i=0; i<7; i++){
       lcd_outdezAtt( 14*FW-3, y, cs.v1+1  ,subSub==1 ? attr : 0);
       lcd_outdezAtt( 19*FW-3, y, cs.v2+1  ,subSub==2 ? attr : 0);
 		}
-    lcd_putc( 19*FW+3, y, cs.andsw ? 'S' : '-') ;
-    lcd_putcAtt( 20*FW+2, y, cs.andsw ? (cs.andsw + ((cs.andsw>9) ? 'A'-10 : '0') ) : '-', subSub==3 ? attr : 0) ;
-
+//    lcd_putc( 19*FW+3, y, cs.andsw ? 'S' : '-') ;
+		{
+			int8_t as ;
+			as = cs.andsw ;
+			if ( as > 8 )
+			{
+				as += 1 ;				
+			}
+			putsDrSwitches( 18*FW-1, y, as,(subSub==3 ? attr : 0)|CONDENSED) ;
+//    lcd_putcAtt( 20*FW+2, y, cs.andsw ? (cs.andsw + ((cs.andsw>9) ? 'A'-10 : '0') ) : '-', subSub==3 ? attr : 0) ;
+		}
     if((s_editMode
 #ifndef NOPOTSCROLL
 				 || p1valdiff
@@ -1863,7 +1871,7 @@ for(uint8_t i=0; i<7; i++){
             }
             break;
         case 3:
-          CHECK_INCDEC_H_MODELVAR( cs.andsw, 0, NUM_CSW ) ;
+          CHECK_INCDEC_H_MODELVAR( cs.andsw, 0, 15 ) ;
 				break;
         }
 }
@@ -1919,8 +1927,8 @@ void menuProcMixOne(uint8_t event)
         switch(i){
         case 0:
             lcd_puts_Pleft(  y,PSTR("\002Source"));
-            putsChnRaw(   FW*14,y,md2->srcRaw,attr);
-            if(attr) CHECK_INCDEC_H_MODELVAR( md2->srcRaw, 1,NUM_XCHNRAW);
+            putsChnRaw(   FW*14,y,md2->srcRaw, attr| MIX_SOURCE);
+            if(attr) CHECK_INCDEC_H_MODELVAR( md2->srcRaw, 1,NUM_XCHNRAW+1);
             break;
         case 1:
             lcd_puts_Pleft(  y,PSTR("\002Weight"));
@@ -2297,7 +2305,7 @@ void menuProcMix(uint8_t event)
             		lcd_putsAttIdx( 3*FW, y, PSTR("\001+*R"),md2->mltpx,tattr);
             lcd_outdezAtt(  7*FW+FW/2, y, md2->weight,attr);
             lcd_putcAtt(    7*FW+FW/2, y, '%',tattr);
-            putsChnRaw(     9*FW, y, md2->srcRaw,tattr);
+            putsChnRaw(     9*FW, y, md2->srcRaw,tattr | MIX_SOURCE);
             if(md2->swtch)putsDrSwitches( 13*FW, y, md2->swtch,tattr);
             if(md2->curve)lcd_putsnAtt(   17*FW, y, get_curve_string()+md2->curve*3,3,tattr);
 
@@ -4987,7 +4995,7 @@ struct t_output
 	uint16_t sDelay[MAX_MIXERS] ;
 	int32_t  act   [MAX_MIXERS] ;
 	uint8_t  swOn  [MAX_MIXERS] ;
-	int16_t  anas [NUM_XCHNRAW] ;
+	int16_t  anas [NUM_XCHNRAW+1] ;		// To allow for 3POS
 } Output ;
 
 void perOut(int16_t *chanOut, uint8_t att)
@@ -5122,6 +5130,8 @@ void perOut(int16_t *chanOut, uint8_t att)
 
         Output.anas[MIX_MAX-1]  = RESX;     // MAX
         Output.anas[MIX_FULL-1] = RESX;     // FULL
+        Output.anas[MIX_3POS-1] = keyState(SW_ID0) ? -1024 : (keyState(SW_ID1) ? 0 : 1024) ;
+
         for(uint8_t i=0;i<4;i++) Output.anas[i+PPM_BASE] = (g_ppmIns[i] - g_eeGeneral.trainer.calib[i])*2; //add ppm channels
         for(uint8_t i=4;i<NUM_PPM;i++)    Output.anas[i+PPM_BASE]   = g_ppmIns[i]*2; //add ppm channels
         for(uint8_t i=0;i<NUM_CHNOUT;i++) Output.anas[i+CHOUT_BASE] = chans[i]; //other mixes previous outputs
