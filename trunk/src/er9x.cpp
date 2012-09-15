@@ -153,13 +153,20 @@ void putsVBat(uint8_t x,uint8_t y,uint8_t att)
 }
 void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
 {
+	uint8_t chanLimit = NUM_XCHNRAW ;
+	if ( att & MIX_SOURCE )
+	{
+		chanLimit += 1 ;
+		att &= ~MIX_SOURCE ;		
+	}
     if(idx==0)
         lcd_putsnAtt(x,y,PSTR("----"),4,att);
     else if(idx<=4)
         lcd_putsnAtt(x,y,&modi12x3[(pgm_read_byte(modn12x3+g_eeGeneral.stickMode*4+(idx-1))-1)*4],4,att);
 //        lcd_putsnAtt(x,y,modi12x3+g_eeGeneral.stickMode*16+4*(idx-1),4,att);
-    else if(idx<=NUM_XCHNRAW)
-        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"),(idx-5),att);
+    else if(idx<=chanLimit)
+        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POS"),(idx-5),att);
+//        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POS"),(idx-5),att);
 #ifdef FRSKY
     else
         lcd_putsAttIdx(x,y,Str_telemItems,(idx-NUM_XCHNRAW),att);
@@ -197,7 +204,10 @@ void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
     case  MAX_DRSWITCH: lcd_putsAtt(x+FW,y,Str_ON ,att);return;
     case -MAX_DRSWITCH: lcd_putsAtt(x+FW,y,Str_OFF,att);return;
     }
-    lcd_putcAtt(x,y, idx1<0 ? '!' : ' ',att);
+		if ( idx1 < 0 )
+		{
+  		lcd_putcAtt(x,y, '!',att);
+		}
 		int8_t z ;
 		z = idx1 ;
 		if ( z < 0 )
@@ -521,7 +531,13 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 		{
 			if ( cs.andsw )
 			{
-        ret_value = getSwitch( cs.andsw + 9, 0, level+1) ;
+				int8_t x ;
+				x = cs.andsw ;
+				if ( x > 8 )
+				{
+					x += 1 ;
+				}
+      	ret_value = getSwitch( x, 0, level+1) ;
 			}
 		}
     Last_switch[cs_index] = ret_value ;
@@ -2283,7 +2299,13 @@ void mainSequence()
 				}
 				if ( cs.andsw )
 				{
-	        if (getSwitch( cs.andsw + 9, 0, 0) == 0 )
+					int8_t x ;
+					x = cs.andsw ;
+					if ( x > 8 )
+					{
+						x += 1 ;
+					}
+	        if (getSwitch( x, 0, 0) == 0 )
 				  {
 						CsTimer[i] = -1 ;
 					}	

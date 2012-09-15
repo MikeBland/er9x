@@ -33,6 +33,8 @@
 
 /* lcd puts flags */
 #define BSS           0x10
+// putsChnRaw flags
+#define MIX_SOURCE    0x10
 
 /* lcd outdez flags */
 #define LEADING0      0x10
