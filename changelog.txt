@@ -10,6 +10,10 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 21-Sep-2012  MPB
+Rotary encoder improvements
+
+******************************************
 CHANGELOG: 15-Sep-2012  MPB
 Add 3POS as mixer input
 Extra AND switches on custom switches changed

@@ -29,6 +29,8 @@ NOINLINE void resetTimer1(void) ;
 
 struct t_timerg TimerG ;
 
+uint8_t RotaryState ;		// Defaults to ROTARY_MENU_LR
+
 const prog_char APM Str_Switch_warn[] =  "Switch Warning" ;
 
 const prog_char APM Str_ALTeq[] =  "Alt=" ;
@@ -224,6 +226,10 @@ void voice_telem_item( int8_t index )
 		case FR_TEMP2:
 			unit = V_DEGREES ;			
 		break ;
+
+//		case FR_A1_MAH:
+//		break ;
+
 #endif
 
 	}
@@ -686,15 +692,8 @@ void DisplayScreenIndex(uint8_t index, uint8_t count, uint8_t attr)
 		x = 1+128-FW*(count>9 ? 3 : 2) ;
     lcd_putcAtt(x,0,'/',attr);
     lcd_outdezAtt(x-1,0,index+1,attr);
+//		lcd_putc( x-12, 0, RotaryState + '0' ) ;
 }
-
-// Rotary encoder movement states
-#define	ROTARY_MENU_LR		0
-#define	ROTARY_MENU_UD		1
-#define	ROTARY_SUBMENU_LR	2
-#define	ROTARY_VALUE			3
-
-uint8_t RotaryState ;
 
 #define MAXCOL(row) (horTab ? pgm_read_byte(horTab+min(row, horTabMax)) : (const uint8_t)0)
 #define INC(val,max) if(val<max) {val++;} else {val=0;}
@@ -733,18 +732,34 @@ void MState2::check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8
 
         if(m_posVert==0)
         {
-					if ( s_editMode == 0 )
-					{
-						if ( Rotary_diff > 0 )
+//					if ( s_editMode == 0 )
+//					{
+						if ( RotaryState == ROTARY_MENU_LR )
 						{
-   					  scrollLR = -1;
+							if ( Rotary_diff > 0 )
+							{
+   						  scrollLR = -1;
+							}
+							else if ( Rotary_diff < 0 )
+							{
+   						  scrollLR = 1;
+							}
+							Rotary_diff = 0 ;
+            	if(event==EVT_KEY_BREAK(BTN_RE))
+							{
+								RotaryState = ROTARY_MENU_UD ;
+		            event = 0 ;
+							}
 						}
-						else if ( Rotary_diff < 0 )
+						else if ( RotaryState == ROTARY_MENU_UD )
 						{
-   					  scrollLR = 1;
+            	if(event==EVT_KEY_BREAK(BTN_RE))
+							{
+								RotaryState = ROTARY_MENU_LR ;
+		            event = 0 ;
+							}
 						}
-						Rotary_diff = 0 ;
-					}
+//					}
 #ifndef NOPOTSCROLL
             if(scrollLR && !s_editMode)
             {
@@ -789,10 +804,33 @@ void MState2::check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8
             }
         }
 
-
-        //        scrollLR = 0;
         DisplayScreenIndex(curr, menuTabSize, attr);
     }
+		if ( RotaryState == ROTARY_MENU_UD )
+		{
+			if ( Rotary_diff > 0 )
+			{
+				scrollUD = -1;
+			}
+			else if ( Rotary_diff < 0 )
+			{
+				scrollUD = 1;
+			}
+			Rotary_diff = 0 ;
+      if(event==EVT_KEY_BREAK(BTN_RE))
+			{
+				RotaryState = ROTARY_VALUE ;
+			}
+		}
+		else if ( RotaryState == ROTARY_VALUE )
+		{
+      if(event==EVT_KEY_BREAK(BTN_RE))
+			{
+				RotaryState = ROTARY_MENU_UD ;
+			}
+		}
+
+    //        scrollLR = 0;
 
     uint8_t maxcol = MAXCOL(m_posVert);
 
@@ -851,6 +889,7 @@ void MState2::check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8
             break;
         }
         if(m_posVert==0 || !menuTab) {
+						RotaryState = ROTARY_MENU_LR ;
             popMenu();  //beeps itself
         } else {
             audioDefevent(AU_MENUS);
@@ -3090,10 +3129,37 @@ subN++;
 }
 #endif
 
+
+uint8_t qloadModel( uint8_t event, uint8_t index )
+{
+
+// For popup	 
+//  eeLoadModelName(k,Xmem.buf,sizeof(Xmem.buf));
+//  lcd_putsnAtt( 4*FW, y, Xmem.buf,sizeof(Xmem.buf),BSS);
+	
+	
+	killEvents(event);
+  eeWaitComplete();    // Wait to load model if writing something
+  eeLoadModel(g_eeGeneral.currModel = index);
+	putVoiceQueueUpper( g_model.modelVoice ) ;
+	VoiceCheckFlag = 2 ;
+  STORE_GENERALVARS;
+  eeWaitComplete();
+	return 1 ;
+}
+
+
 void menuProcModelSelect(uint8_t event)
 {
     static MState2 mstate2;
+//		static loadIndex = 0 ;
     TITLE("MODELSEL");
+
+//		if ( loadIndex )
+//		{
+//			qloadModel( event, uint8_t loadIndex-1 )
+//			return ;
+//		}
 
 #ifndef NOPOTSCROLL
     if(!s_editMode)
@@ -3134,16 +3200,11 @@ void menuProcModelSelect(uint8_t event)
         if(sel_editMode){
             sel_editMode = false;
             audioDefevent(AU_MENUS);
-            killEvents(event);
-            eeWaitComplete();    // Wait to load model if writing something
-            eeLoadModel(g_eeGeneral.currModel = mstate2.m_posVert);
-						putVoiceQueueUpper( g_model.modelVoice ) ;
-						VoiceCheckFlag = 2 ;
-//            resetTimer1();
-            STORE_GENERALVARS;
-            eeWaitComplete();
-            STORE_MODELVARS;
-            eeWaitComplete();
+            
+						qloadModel( event, mstate2.m_posVert ) ;
+
+//            STORE_MODELVARS;
+//            eeWaitComplete();
             break;
         }
         //fallthrough
@@ -3151,15 +3212,8 @@ void menuProcModelSelect(uint8_t event)
     case  EVT_KEY_FIRST(KEY_RIGHT):
         if(g_eeGeneral.currModel != mstate2.m_posVert)
         {
-            killEvents(event);
-            g_eeGeneral.currModel = mstate2.m_posVert;
-            eeWaitComplete();    // Wait to load model if writing something
-            eeLoadModel(g_eeGeneral.currModel);
-						putVoiceQueueUpper( g_model.modelVoice ) ;
-						VoiceCheckFlag = 2 ;
-//            resetTimer1();
-            STORE_GENERALVARS;
-            eeWaitComplete();
+						qloadModel( event, mstate2.m_posVert ) ;
+
             audioDefevent(AU_WARNING2);
         }
 #ifndef NO_TEMPLATES

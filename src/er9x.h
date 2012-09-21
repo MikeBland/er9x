@@ -808,6 +808,14 @@ extern uint8_t Main_running ;
 extern const prog_char *AlertMessage ;
 extern int16_t m_to_ft( int16_t metres ) ;
 
+// Rotary encoder movement states
+#define	ROTARY_MENU_LR		0
+#define	ROTARY_MENU_UD		1
+#define	ROTARY_SUBMENU_LR	2
+#define	ROTARY_VALUE			3
+
+extern uint8_t RotaryState ;		// Defaults to ROTARY_MENU_LR
+
 #endif // er9x_h
 /*eof*/
 
