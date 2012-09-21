@@ -997,6 +997,7 @@ int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flag
 {
     int16_t newval = val;
     uint8_t kpl=KEY_RIGHT, kmi=KEY_LEFT, kother = -1;
+		uint8_t skipPause = 0 ;
 
 		uint8_t event = Tevent ;
 //    if(event & _MSK_KEY_DBL){
@@ -1023,16 +1024,24 @@ int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flag
         killEvents(kmi);
         killEvents(kpl);
     }
-    if(i_min==0 && i_max==1 && (event==EVT_KEY_FIRST(KEY_MENU) || event==EVT_KEY_FIRST(BTN_RE)) )
+    if(i_min==0 && i_max==1 && (event==EVT_KEY_FIRST(KEY_MENU) || event==EVT_KEY_BREAK(BTN_RE)) )
     {
         s_editMode = false;
         newval=!val;
         killEvents(event);
+				skipPause = 1 ;
+				if ( event==EVT_KEY_BREAK(BTN_RE) )
+				{
+					RotaryState = ROTARY_MENU_UD ;
+				}
     }
 
     //change values based on P1
     newval -= p1valdiff;
-		newval += Rotary_diff ;
+		if ( RotaryState == ROTARY_VALUE )
+		{
+			newval += Rotary_diff ;
+		}
     if(newval>i_max)
     {
         newval = i_max;
@@ -1048,7 +1057,10 @@ int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flag
     }
     if(newval != val) {
         if(newval==0) {
-            pauseEvents(event);
+						if ( !skipPause )
+						{
+          	  pauseEvents(event);
+						}
 
             if (newval>val){
                 audioDefevent(AU_KEYPAD_UP);
