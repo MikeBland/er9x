@@ -22,7 +22,7 @@
 #include "frsky.h"
 #endif
 
-extern void putVoiceQueue( uint8_t value ) ;
+//extern void putVoiceQueue( uint8_t value ) ;
 extern int8_t Rotary_diff ;
 extern int16_t AltOffset ;
 NOINLINE void resetTimer1(void) ;
@@ -68,19 +68,23 @@ const prog_char APM Str_Sounds[] = "\006Warn1 ""Warn2 ""Cheap ""Ring  ""SciFi ""
 #define TEL_ITEM_MAHC		18
 #define TEL_ITEM_CTOT		19
 #define TEL_ITEM_FASV		20
+#define TEL_ITEM_ACCX		21
+#define TEL_ITEM_ACCY		22
+#define TEL_ITEM_ACCZ		23
 
 
 #ifdef FRSKY
 
 
-const prog_char APM Str_telemItems[] = "\004----A1= A2= RSSITSSITim1Tim2Alt GaltGspdT1= T2= RPM FUELMah1Mah2CvltBattAmpsMah CtotFasV" ; 
+const prog_char APM Str_telemItems[] = "\004----A1= A2= RSSITSSITim1Tim2Alt GaltGspdT1= T2= RPM FUELMah1Mah2CvltBattAmpsMah CtotFasVAccXAccYAccZ" ; 
 const prog_int8_t APM TelemIndex[] = {FR_A1_COPY, FR_A2_COPY,
 															FR_RXRSI_COPY, FR_TXRSI_COPY,
 															TIMER1, TIMER2,
 															FR_ALT_BARO, FR_GPS_ALT,
 															FR_GPS_SPEED, FR_TEMP1, FR_TEMP2, FR_RPM,
 														  FR_FUEL, FR_A1_MAH, FR_A2_MAH, FR_CELL_MIN,
-															BATTERY, FR_CURRENT, FR_AMP_MAH, FR_CELLS_TOT, FR_VOLTS } ;
+															BATTERY, FR_CURRENT, FR_AMP_MAH, FR_CELLS_TOT, FR_VOLTS,
+															FR_ACCX, FR_ACCY,	FR_ACCZ } ;
 
 // TXRSSI is always considered valid as it is forced to zero on loss of telemetry
 // Values are 0 - always valid, 1 - need telemetry, 2 - need hub
@@ -516,6 +520,43 @@ uint8_t putsTelemetryChannel(uint8_t x, uint8_t y, int8_t channel, int16_t val, 
     DR_MID : DR_LOW);
 	*/
 
+#if GVARS
+int8_t gvarMenuItem(uint8_t x, uint8_t y, int8_t value, int8_t min, int8_t max, uint8_t attr )
+{
+  bool invers = attr&(INVERS|BLINK);
+  if (invers && Tevent == EVT_KEY_LONG(KEY_MENU))
+	{
+    value = ((value >= 126 || value <= -126) ? g_model.gvars[(uint8_t)value-126].gvar : 126);
+    eeDirty(EE_MODEL);
+  }
+  if (value >= 126 || value <= -126)
+	{
+		lcd_putsAtt( x-3*FW, y, PSTR("GV"), attr ) ;
+		lcd_putcAtt( x-FW, y, (uint8_t)value - 125+'0', attr ) ;
+    if (invers) value = checkIncDec16((uint8_t)value, 126, 130, EE_MODEL);
+  }
+  else
+	{
+    lcd_outdezAtt(x, y, value, attr ) ;
+    if (invers) CHECK_INCDEC_H_MODELVAR(value, min, max);
+  }
+  return value;
+}
+
+//void displayGVar(uint8_t x, uint8_t y, int8_t value)
+//{
+//  if (value >= 126 || value <= -126)
+//	{
+//		lcd_puts_P( x-3*FW, y, PSTR("GV") ) ;
+//		lcd_putc( x-FW, y, (uint8_t)value - 125+'0') ;
+//  }
+//  else
+//	{
+//    lcd_outdez(x, y, value ) ;
+//  }
+//}
+#endif
+
 uint8_t get_dr_state(uint8_t x)
 {
  	return (!getSwitch(g_model.expoData[x].drSw1,0) ? DR_HIGH :
@@ -615,7 +656,10 @@ enum EnumTabModel {
     e_Telemetry2,
 #endif
 #ifndef NO_TEMPLATES
-    e_Templates
+    e_Templates,
+#endif
+#if GVARS
+		e_Globals
 #endif
 };
 
@@ -636,8 +680,11 @@ const MenuFuncP_PROGMEM APM menuTabModel[] = {
     menuProcTelemetry2,
     #endif
     #ifndef NO_TEMPLATES
-    menuProcTemplates
+    menuProcTemplates,
     #endif
+#if GVARS
+    menuProcGlobals
+#endif
 };
 
 enum EnumTabDiag {
@@ -688,6 +735,10 @@ void MState2::check_submenu_simple(uint8_t event, uint8_t maxrow)
 void DisplayScreenIndex(uint8_t index, uint8_t count, uint8_t attr)
 {
 		uint8_t x ;
+		if ( RotaryState == ROTARY_MENU_LR )
+		{
+			attr = BLINK ;
+		}
     lcd_outdezAtt(127,0,count,attr);
 		x = 1+128-FW*(count>9 ? 3 : 2) ;
     lcd_putcAtt(x,0,'/',attr);
@@ -803,18 +854,36 @@ void MState2::check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8
 								return ;
             }
         }
+				else
+				{
+					if ( s_editMode == 0 ) RotaryState = ROTARY_MENU_UD ;
+				}
 
         DisplayScreenIndex(curr, menuTabSize, attr);
     }
+    uint8_t maxcol = MAXCOL(m_posVert);
+		
 		if ( RotaryState == ROTARY_MENU_UD )
 		{
 			if ( Rotary_diff > 0 )
 			{
-				scrollUD = -1;
+        INC(m_posHorz,maxcol) ;
+				if ( m_posHorz == 0 )
+				{
+	        INC(m_posVert,maxrow);
+				}
 			}
 			else if ( Rotary_diff < 0 )
 			{
-				scrollUD = 1;
+				if ( m_posHorz == 0 )
+				{
+      	  DEC(m_posVert,maxrow);
+					m_posHorz = MAXCOL(m_posVert);
+				}
+				else
+				{
+      	  DEC(m_posHorz,maxcol) ;
+				}
 			}
 			Rotary_diff = 0 ;
       if(event==EVT_KEY_BREAK(BTN_RE))
@@ -832,7 +901,7 @@ void MState2::check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8
 
     //        scrollLR = 0;
 
-    uint8_t maxcol = MAXCOL(m_posVert);
+    maxcol = MAXCOL(m_posVert);
 
 #ifndef NOPOTSCROLL
     if(!s_editMode)
@@ -1255,6 +1324,36 @@ if(k==NUM_CHNOUT){
 }
 }
 
+
+#if defined(GVARS) && defined(PCBSKY9X)
+void menuModelRegisterOne(uint8_t event)
+{
+  model_gvar_t *reg = &g_model.gvars[s_curveChan];
+
+  putsStrIdx(11*FW, 0, STR_GV, s_curveChan+1);
+
+  // TODO Translation
+  SUBMENU(PSTR("GLOBAL VAR"), 2, {ZCHAR|(sizeof(reg->name)-1), 0});
+
+  int8_t sub = m_posVert;
+
+  for (uint8_t i=0, k=0, y=2*FH; i<2; i++, k++, y+=FH) {
+    uint8_t attr = (sub==k ? (s_editMode>0 ? BLINK|INVERS : INVERS) : 0);
+    switch(i) {
+      case 0:
+        editName(MIXES_2ND_COLUMN, y, reg->name, sizeof(reg->name), event, attr, m_posHorz);
+        break;
+      case 1:
+        lcd_putsLeft(y, PSTR("Value"));
+        lcd_outdezAtt(MIXES_2ND_COLUMN, y, reg->value, attr|LEFT);
+        if (attr) CHECK_INCDEC_MODELVAR(event, reg->value, -125, 125);
+        break;
+    }
+  }
+}
+#endif
+
+
 #define PARAM_OFS   17*FW
 
 uint8_t onoffMenuItem( uint8_t value, uint8_t y, const prog_char *s, uint8_t condition, uint8_t event )
@@ -1545,6 +1644,49 @@ blink = s_editMode ? BLINK : INVERS ;
 	  	if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_MODELVAR(  g_model.CustomDisplayIndex[j], 0, NUM_TELEM_ITEMS ) ;}
 			lcd_putsAttIdx( 0, j*FH + 2*FH, Str_telemItems, g_model.CustomDisplayIndex[j], attr ) ;
 			subN++;
+		}
+	}
+}
+
+#endif
+
+
+#if GVARS
+void menuProcGlobals(uint8_t event)
+{
+  MENU("GLOBAL VARS", menuTabModel, e_Globals, MAX_GVARS + 1, {0, 1} ) ;
+
+	uint8_t subN = mstate2.m_posVert ;
+	int8_t subSub = mstate2.m_posHorz;
+	
+//	lcd_outhex4( 0, 7*FH, ( (convert_mode_helper(g_model.gvars[1].gvsource) - 1) << 8 )+ (g_model.gvars[1].gvsource - 1) ) ;
+
+	for (uint8_t i=0; i<MAX_GVARS; i++ )
+	{
+		uint8_t y = (i+1)*FH ;
+		for(uint8_t j=0; j<3;j++)
+		{
+      lcd_puts_Pleft(y, PSTR("GV"));
+			lcd_putc( 2*FW, y, i+'1') ;
+      uint8_t attr = ((subN==i+1 && subSub==j) ? (s_editMode ? BLINK : INVERS) : 0);
+			uint8_t active = (attr && (s_editMode) ) ;
+      switch(j)
+			{
+//				case 0 :
+//        	putsDrSwitches( 6*FW, y, g_model.gvars[i].gvswitch ,attr );
+//	  			if(active) CHECK_INCDEC_H_MODELVAR( g_model.gvars[i].gvswitch, -MAX_DRSWITCH, MAX_DRSWITCH ) ;
+//				break ;
+
+				case 0 :
+					lcd_putsAttIdx( 12*FW, y, PSTR("\003---RtmEtmTtmAtmREN"), g_model.gvars[i].gvsource, attr ) ;
+	  			if(active) CHECK_INCDEC_H_MODELVAR( g_model.gvars[i].gvsource, 0, 5 ) ;
+				break ;
+
+				case 1 :
+					lcd_outdezAtt( 18*FW, y, g_model.gvars[i].gvar, attr) ;
+	  			if(active) CHECK_INCDEC_H_MODELVAR( g_model.gvars[i].gvar, -125, 125 ) ;
+				break ;
+			}
 		}
 	}
 }
@@ -1967,17 +2109,29 @@ void menuProcMixOne(uint8_t event)
         case 0:
             lcd_puts_Pleft(  y,PSTR("\002Source"));
             putsChnRaw(   FW*14,y,md2->srcRaw, attr| MIX_SOURCE);
+#if GVARS
+            if(attr) CHECK_INCDEC_H_MODELVAR( md2->srcRaw, 1,NUM_XCHNRAW+1+MAX_GVARS );
+#else
             if(attr) CHECK_INCDEC_H_MODELVAR( md2->srcRaw, 1,NUM_XCHNRAW+1);
+#endif
             break;
         case 1:
             lcd_puts_Pleft(  y,PSTR("\002Weight"));
+#if GVARS
+						md2->weight = gvarMenuItem( FW*16, y, md2->weight, -125, 125, attr ) ;
+#else
             lcd_outdezAtt(FW*14,y,md2->weight,attr|LEFT);
             if(attr) CHECK_INCDEC_H_MODELVAR( md2->weight, -125,125);
+#endif
             break;
         case 2:
             lcd_puts_P(  2*FW,y,md2->enableFmTrim ? PSTR("FmTrimVal") : PSTR("Offset"));
-            lcd_outdezAtt(FW*14,y,md2->sOffset,attr|LEFT);
+#if GVARS
+						md2->sOffset = gvarMenuItem( FW*16, y, md2->sOffset, -125, 125, attr ) ;
+#else
+						lcd_outdezAtt(FW*14,y,md2->sOffset,attr|LEFT);
             if(attr) CHECK_INCDEC_H_MODELVAR( md2->sOffset, -125,125);
+#endif
             break;
         case 3:
     				b = md2->enableFmTrim ;
@@ -2303,6 +2457,8 @@ void menuProcMix(uint8_t event)
         }
         break;
     case EVT_KEY_LONG(KEY_MENU):
+      	killEvents(event);
+				Tevent = 0 ;			// Prevent changing weight to/from Gvar
         if(sub<1) break;
         if (s_currMixInsMode && !reachMixerCountLimit())
         {
@@ -2342,7 +2498,6 @@ void menuProcMix(uint8_t event)
 						uint8_t tattr = s_moveMode ? attr : 0 ;
             if(!mixtabptr->showCh) //show prefix only if not first mix
             		lcd_putsAttIdx( 3*FW, y, PSTR("\001+*R"),md2->mltpx,tattr);
-            lcd_outdezAtt(  7*FW+FW/2, y, md2->weight,attr);
             lcd_putcAtt(    7*FW+FW/2, y, '%',tattr);
             putsChnRaw(     9*FW, y, md2->srcRaw,tattr | MIX_SOURCE);
             if(md2->swtch)putsDrSwitches( 13*FW, y, md2->swtch,tattr);
@@ -2353,8 +2508,15 @@ void menuProcMix(uint8_t event)
             char cs = (bs && bd) ? '*' : (bs ? 'S' : 'D');
             if(bs || bd) lcd_putcAtt(20*FW+1, y, cs,s_editMode ? attr : 0);
 
+#if GVARS
+						md2->weight = gvarMenuItem( 7*FW+FW/2, y, md2->weight, -125, 125, attr ) ;
+#else
+            lcd_outdezAtt(  7*FW+FW/2, y, md2->weight,attr);
+#endif
             if(attr == INVERS){ //handle dat is selected
+#if GVARS == 0
                 CHECK_INCDEC_H_MODELVAR( md2->weight, -125,125);
+#endif
                 s_currMixIdx     = mixtabptr->editIdx;
                 s_currDestCh     = mixtabptr->chId;
                 s_currMixInsMode = false;
@@ -3557,10 +3719,10 @@ void menuProcSetup(uint8_t event)
        //                                         vCountItems = DEFAULT_COUNT_ITEMS + 2;
 				//		break;	  	
 		}		
-		if(((g_eeGeneral.speakerMode & 1) == 1 /*|| g_eeGeneral.speakerMode == 2*/) && g_eeGeneral.frskyinternalalarm == 1){ // add in alert red/org/yel
-				vCountItems = vCountItems + 3;
-				sw_offset -= 3 ;
-		}		
+//		if(((g_eeGeneral.speakerMode & 1) == 1 /*|| g_eeGeneral.speakerMode == 2*/) && g_eeGeneral.frskyinternalalarm == 1){ // add in alert red/org/yel
+//				vCountItems = vCountItems + 3;
+//				sw_offset -= 3 ;
+//		}		
 		
 #else 
     int8_t sw_offset = -6 ;
@@ -3690,7 +3852,7 @@ void menuProcSetup(uint8_t event)
 				if ( g_eeGeneral.volume != (int8_t)b-7 )
 				{
 					g_eeGeneral.volume = (int8_t)b-7 ;
-					putVoiceQueue( b | 0xF0 ) ;
+					putVoiceQueueLong( b | 0xFFF0 ) ;
 				}
         if((y+=FH)>7*FH) return;
     }subN++;
@@ -3971,62 +4133,62 @@ if((g_eeGeneral.speakerMode & 1) == 1 /*|| g_eeGeneral.speakerMode == 2 */){
 				    }subN++;
 		}		    
 				    
-    if(((g_eeGeneral.speakerMode & 1) == 1 /*|| g_eeGeneral.speakerMode == 2*/) && g_eeGeneral.frskyinternalalarm == 1){ 
+//    if(((g_eeGeneral.speakerMode & 1) == 1 /*|| g_eeGeneral.speakerMode == 2*/) && g_eeGeneral.frskyinternalalarm == 1){ 
     
 
 					  
 						
-						for ( uint8_t i = 0 ; i < 3 ; i += 1 )
-					  {
-					    uint8_t b ;
+//						for ( uint8_t i = 0 ; i < 3 ; i += 1 )
+//					  {
+//					    uint8_t b ;
 					
-					    b = g_eeGeneral.FRSkyYellow ;    // Done here to stop a compiler warning
-					    if(t_pgOfs<subN)
-							{
+//					    b = g_eeGeneral.FRSkyYellow ;    // Done here to stop a compiler warning
+//					    if(t_pgOfs<subN)
+//							{
 								
-								if ( i == 0 )
-								{
-					        lcd_puts_Pleft( y,PSTR("Alert [Yel]"));
-								}
-								else if ( i == 1 )
-								{
-					        b = g_eeGeneral.FRSkyOrange ;
-					        lcd_puts_Pleft( y,PSTR("Alert [Org]"));
-								}
-								else if ( i == 2 )
-								{
-					        b = g_eeGeneral.FRSkyRed ;
-					        lcd_puts_Pleft( y,PSTR("Alert [Red]"));
-								}
+//								if ( i == 0 )
+//								{
+//					        lcd_puts_Pleft( y,PSTR("Alert [Yel]"));
+//								}
+//								else if ( i == 1 )
+//								{
+//					        b = g_eeGeneral.FRSkyOrange ;
+//					        lcd_puts_Pleft( y,PSTR("Alert [Org]"));
+//								}
+//								else if ( i == 2 )
+//								{
+//					        b = g_eeGeneral.FRSkyRed ;
+//					        lcd_puts_Pleft( y,PSTR("Alert [Red]"));
+//								}
 		
 					      
-					      //audio menu
-								lcd_putsAttIdx(PARAM_OFS - FW - 4, y, Str_Sounds,b,(sub==subN ? INVERS:0));
+//					      //audio menu
+//								lcd_putsAttIdx(PARAM_OFS - FW - 4, y, Str_Sounds,b,(sub==subN ? INVERS:0));
 						
-					      if(sub==subN)
-								{
-									CHECK_INCDEC_H_GENVAR( b, 0, 15);
-									if ( i == 0 )
-									{
-							      g_eeGeneral.FRSkyYellow = b ;
-									}
-									else if ( i == 1 )
-									{
-							      g_eeGeneral.FRSkyOrange = b ;
-									}
-									else if ( i == 2 )
-									{
-							      g_eeGeneral.FRSkyRed = b ;
-									}
+//					      if(sub==subN)
+//								{
+//									CHECK_INCDEC_H_GENVAR( b, 0, 15);
+//									if ( i == 0 )
+//									{
+//							      g_eeGeneral.FRSkyYellow = b ;
+//									}
+//									else if ( i == 1 )
+//									{
+//							      g_eeGeneral.FRSkyOrange = b ;
+//									}
+//									else if ( i == 2 )
+//									{
+//							      g_eeGeneral.FRSkyRed = b ;
+//									}
 									
-								   if (checkIncDec_Ret) {
-											audio.event(b);
-									 }
-								}
-								if((y+=FH)>7*FH) return;
-					    }subN++;
-					  }
-		}			  
+//								   if (checkIncDec_Ret) {
+//											audio.event(b);
+//									 }
+//								}
+//								if((y+=FH)>7*FH) return;
+//					    }subN++;
+//					  }
+//		}			  
 #endif
 
     if(t_pgOfs<subN) {
@@ -4938,7 +5100,7 @@ void menuProc0(uint8_t event)
 										{
 										  blink = BLINK | PREC2 ;
 										}
-  									lcd_outdezNAtt( x, y, (uint8_t)(FrskyVolts[k] * 2) , blink, 4 ) ;
+  									lcd_outdezNAtt( x, y, FrskyVolts[k] * 2 , blink, 4 ) ;
 										x += 7*FW ;
 										if ( k == 5 )		// Max 6 cells displayable
 										{
@@ -5049,7 +5211,11 @@ struct t_output
 	uint16_t sDelay[MAX_MIXERS] ;
 	int32_t  act   [MAX_MIXERS] ;
 	uint8_t  swOn  [MAX_MIXERS] ;
+#if GVARS
+	int16_t  anas [NUM_XCHNRAW+1+MAX_GVARS] ;		// To allow for 3POS
+#else
 	int16_t  anas [NUM_XCHNRAW+1] ;		// To allow for 3POS
+#endif
 } Output ;
 
 void perOut(int16_t *chanOut, uint8_t att)
@@ -5189,6 +5355,9 @@ void perOut(int16_t *chanOut, uint8_t att)
         for(uint8_t i=0;i<4;i++) Output.anas[i+PPM_BASE] = (g_ppmIns[i] - g_eeGeneral.trainer.calib[i])*2; //add ppm channels
         for(uint8_t i=4;i<NUM_PPM;i++)    Output.anas[i+PPM_BASE]   = g_ppmIns[i]*2; //add ppm channels
         for(uint8_t i=0;i<NUM_CHNOUT;i++) Output.anas[i+CHOUT_BASE] = chans[i]; //other mixes previous outputs
+#if GVARS
+        for(uint8_t i=0;i<MAX_GVARS;i++) Output.anas[i+MIX_3POS] = g_model.gvars[i].gvar * 8 ;
+#endif
 
         //===========Swash Ring================
         if(g_model.swashRingValue)
@@ -5209,13 +5378,20 @@ void perOut(int16_t *chanOut, uint8_t att)
 
         if(g_model.swashType)
         {
-            int16_t vp = Output.anas[ele_stick]+trimA[ele_stick];
-            int16_t vr = Output.anas[ail_stick]+trimA[ail_stick];
+            int16_t vp = 0 ;
+            int16_t vr = 0 ;
 
-            if(att&NO_INPUT)  //zero input for setStickCenter()
-            {
-                vp = vr = 0;
-            }
+            if( !(att & (NO_INPUT | NO_STICKS) ) )  //zero input for setStickCenter()
+						{
+            	vp += Output.anas[ele_stick] ;
+            	vr += Output.anas[ail_stick] ;
+						}
+            
+						if( !(att & (NO_INPUT | NO_TRIMS) ) )  //zero input for setStickCenter()
+						{
+            	vp += trimA[ele_stick] ;
+            	vr += trimA[ail_stick] ;
+						}
 
             int16_t vc = 0;
             if(g_model.swashCollectiveSource)
@@ -5265,10 +5441,12 @@ void perOut(int16_t *chanOut, uint8_t att)
 
     memset(chans,0,sizeof(chans));        // All outputs to 0
 
-    if(att&NO_INPUT) { //zero input for setStickCenter()
+    if(att&(NO_INPUT|NO_STICKS|NO_TRIMS) ) { //zero input for setStickCenter()
         for(uint8_t i=0;i<4;i++) {
             if(!IS_THROTTLE(i)) {
+    					if(att&(NO_INPUT|NO_STICKS) )
                 Output.anas[i]  = 0;
+    					if(att&(NO_INPUT|NO_TRIMS) )
                 trimA[i] = 0;
             }
         }
@@ -5324,7 +5502,11 @@ void perOut(int16_t *chanOut, uint8_t att)
         //========== INPUT OFFSET ===============
         if ( md->enableFmTrim == 0 )
         {
+#if GVARS
+            if(md->sOffset) v += calc100toRESX( REG( md->sOffset, -125, 125 )	) ;
+#else
             if(md->sOffset) v += calc100toRESX(md->sOffset);
+#endif
         }
 
         //========== DELAY and PAUSE ===============

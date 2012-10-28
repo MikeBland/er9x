@@ -1,18 +1,10 @@
 ===== Starting build =====
 Timestamp
-Fri Sep 21 18:21:28 UTC 2012
+Sun Oct 28 20:55:43 UTC 2012
 ==========================
 
 ===== Updating from SVN =====
-Error validating server certificate for 'https://er9x.googlecode.com:443':
- - The certificate is not issued by a trusted authority. Use the
-   fingerprint to validate the certificate manually!
-Certificate information:
- - Hostname: *.googlecode.com
- - Valid: from Thu, 13 Sep 2012 11:55:23 GMT until Fri, 07 Jun 2013 19:43:27 GMT
- - Issuer: Google Inc, US
- - Fingerprint: af:26:ef:84:56:0d:c7:67:a8:86:8b:58:38:44:51:96:e4:90:bd:b2
-(R)eject, accept (t)emporarily or accept (p)ermanently? At revision 775.
+At revision 776.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -36,7 +28,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.0 20120217 - by SRMeister
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -44,10 +36,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "21.09.2012"
-#define TIME_STR "18:21:37"
-#define SUB_VERS 6229-Mike
-#define SVN_VERS "er9x-r776"
+#define DATE_STR "28.10.2012"
+#define TIME_STR "20:55:53"
+#define SUB_VERS 6366-Mike
+#define SVN_VERS "er9x-r777"
 #define MOD_VERS "JETI   "
 
 Compiling C++: er9x.cpp
@@ -105,10 +97,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   56254 bytes (85.8% Full)
+Program:   56412 bytes (86.1% Full)
 (.text + .data + .bootloader)
 
-Data:       3520 bytes (85.9% Full)
+Data:       3534 bytes (86.3% Full)
 (.data + .bss + .noinit)
 
 
@@ -139,7 +131,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.0 20120217 - by SRMeister
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -147,10 +139,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "21.09.2012"
-#define TIME_STR "18:21:56"
-#define SUB_VERS 6230-Mike
-#define SVN_VERS "er9x-r776"
+#define DATE_STR "28.10.2012"
+#define TIME_STR "20:56:09"
+#define SUB_VERS 6367-Mike
+#define SVN_VERS "er9x-r777"
 #define MOD_VERS "FRSKY NT  "
 
 Compiling C++: er9x.cpp
@@ -208,10 +200,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   62240 bytes (95.0% Full)
+Program:   61916 bytes (94.5% Full)
 (.text + .data + .bootloader)
 
-Data:       3703 bytes (90.4% Full)
+Data:       3717 bytes (90.7% Full)
 (.data + .bss + .noinit)
 
 
@@ -242,7 +234,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.0 20120217 - by SRMeister
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -250,10 +242,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "21.09.2012"
-#define TIME_STR "18:22:10"
-#define SUB_VERS 6231-Mike
-#define SVN_VERS "er9x-r776"
+#define DATE_STR "28.10.2012"
+#define TIME_STR "20:56:23"
+#define SUB_VERS 6368-Mike
+#define SVN_VERS "er9x-r777"
 #define MOD_VERS "FRSKY NHT  "
 
 Compiling C++: er9x.cpp
@@ -311,10 +303,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   61662 bytes (94.1% Full)
+Program:   61338 bytes (93.6% Full)
 (.text + .data + .bootloader)
 
-Data:       3701 bytes (90.4% Full)
+Data:       3715 bytes (90.7% Full)
 (.data + .bss + .noinit)
 
 
@@ -345,7 +337,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.0 20120217 - by SRMeister
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -353,10 +345,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "21.09.2012"
-#define TIME_STR "18:22:24"
-#define SUB_VERS 6232-Mike
-#define SVN_VERS "er9x-r776"
+#define DATE_STR "28.10.2012"
+#define TIME_STR "20:56:38"
+#define SUB_VERS 6369-Mike
+#define SVN_VERS "er9x-r777"
 #define MOD_VERS "ARDU   "
 
 Compiling C++: er9x.cpp
@@ -414,10 +406,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   58014 bytes (88.5% Full)
+Program:   58172 bytes (88.8% Full)
 (.text + .data + .bootloader)
 
-Data:       3518 bytes (85.9% Full)
+Data:       3532 bytes (86.2% Full)
 (.data + .bss + .noinit)
 
 
@@ -448,7 +440,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.0 20120217 - by SRMeister
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -456,10 +448,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "21.09.2012"
-#define TIME_STR "18:22:39"
-#define SUB_VERS 6233-Mike
-#define SVN_VERS "er9x-r776"
+#define DATE_STR "28.10.2012"
+#define TIME_STR "20:56:53"
+#define SUB_VERS 6370-Mike
+#define SVN_VERS "er9x-r777"
 #define MOD_VERS "NMEA   "
 
 Compiling C++: er9x.cpp
@@ -517,10 +509,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   62240 bytes (95.0% Full)
+Program:   62388 bytes (95.2% Full)
 (.text + .data + .bootloader)
 
-Data:       3675 bytes (89.7% Full)
+Data:       3689 bytes (90.1% Full)
 (.data + .bss + .noinit)
 
 
@@ -551,7 +543,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.0 20120217 - by SRMeister
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -559,10 +551,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "21.09.2012"
-#define TIME_STR "18:22:54"
-#define SUB_VERS 6234-Mike
-#define SVN_VERS "er9x-r776"
+#define DATE_STR "28.10.2012"
+#define TIME_STR "20:57:07"
+#define SUB_VERS 6371-Mike
+#define SVN_VERS "er9x-r777"
 #define MOD_VERS " NHT  "
 
 Compiling C++: er9x.cpp
@@ -617,10 +609,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   53186 bytes (81.2% Full)
+Program:   53344 bytes (81.4% Full)
 (.text + .data + .bootloader)
 
-Data:       3456 bytes (84.4% Full)
+Data:       3470 bytes (84.7% Full)
 (.data + .bss + .noinit)
 
 
@@ -651,7 +643,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.0 20120217 - by SRMeister
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -659,10 +651,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "21.09.2012"
-#define TIME_STR "18:23:07"
-#define SUB_VERS 6235-Mike
-#define SVN_VERS "er9x-r776"
+#define DATE_STR "28.10.2012"
+#define TIME_STR "20:57:21"
+#define SUB_VERS 6372-Mike
+#define SVN_VERS "er9x-r777"
 #define MOD_VERS "   "
 
 Compiling C++: er9x.cpp
@@ -717,10 +709,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   55686 bytes (85.0% Full)
+Program:   55844 bytes (85.2% Full)
 (.text + .data + .bootloader)
 
-Data:       3484 bytes (85.1% Full)
+Data:       3498 bytes (85.4% Full)
 (.data + .bss + .noinit)
 
 

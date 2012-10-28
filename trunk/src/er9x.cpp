@@ -54,6 +54,7 @@ uint8_t RotCount ;
 uint8_t RotEncoder ;
 int8_t LastRotaryValue ;
 int8_t Rotary_diff ;
+int8_t RotaryControl ;
 #endif
 
 uint8_t Tevent ;
@@ -156,7 +157,11 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
 	uint8_t chanLimit = NUM_XCHNRAW ;
 	if ( att & MIX_SOURCE )
 	{
+#if GVARS
+		chanLimit += 6 ;
+#else
 		chanLimit += 1 ;
+#endif
 		att &= ~MIX_SOURCE ;		
 	}
     if(idx==0)
@@ -165,7 +170,11 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
         lcd_putsnAtt(x,y,&modi12x3[(pgm_read_byte(modn12x3+g_eeGeneral.stickMode*4+(idx-1))-1)*4],4,att);
 //        lcd_putsnAtt(x,y,modi12x3+g_eeGeneral.stickMode*16+4*(idx-1),4,att);
     else if(idx<=chanLimit)
+#if GVARS
+        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POSGV1 GV2 GV3 GV4 GV5 "),(idx-5),att);
+#else
         lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POS"),(idx-5),att);
+#endif
 //        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POS"),(idx-5),att);
 #ifdef FRSKY
     else
@@ -626,6 +635,7 @@ static void doSplash()
         do
 				{
         	refreshDiplay();
+          check_backlight_voice() ;
 #ifdef SIMU
             if (!main_thread_running) return;
             sleep(1/*ms*/);
@@ -638,7 +648,6 @@ static void doSplash()
 
             if(keyDown() || (tsum!=inacSum))   return;  //wait for key release
 
-            check_backlight_voice() ;
         } while(tgtime != get_tmr10ms()) ;
     }
 }
@@ -888,7 +897,7 @@ void message(const prog_char * s)
 
 void alert(const prog_char * s, bool defaults)
 {
-	if ( Main_running == 1 )
+	if ( Main_running )
 	{
 		AlertMessage = s ;
 		return ;
@@ -897,7 +906,7 @@ void alert(const prog_char * s, bool defaults)
 	almess( s, ALERT_TYPE ) ;
   
 	lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
-  audioVoiceDefevent(AU_ERROR, V_ERROR);
+  audioVoiceDefevent(AU_ERROR, V_ALERT);
 
     clearKeyEvents();
     while(1)
@@ -920,6 +929,7 @@ void alert(const prog_char * s, bool defaults)
         	BACKLIGHT_ON ;
 		    else
     	    BACKLIGHT_OFF ;
+        check_backlight_voice() ;
     }
 }
 
@@ -1201,19 +1211,16 @@ void doBackLightVoice(uint8_t evt)
 
 void putVoiceQueueUpper( uint8_t value )
 {
-	struct t_voice *vptr ;
-	vptr = &Voice ;
-	FORCE_INDIRECT(vptr) ;
-	
-	if ( vptr->VoiceQueueCount < VOICE_Q_LENGTH-1 )
-	{
-		putVoiceQueue( 0xFF ) ;
-		putVoiceQueue( value ) ;
-	}
+	putVoiceQueueLong( value + 260 ) ;
 }
 
 
 void putVoiceQueue( uint8_t value )
+{
+	putVoiceQueueLong( value ) ;
+}
+
+void putVoiceQueueLong( uint16_t value )
 {
 	struct t_voice *vptr ;
 	vptr = &Voice ;
@@ -1222,14 +1229,12 @@ void putVoiceQueue( uint8_t value )
 	if ( vptr->VoiceQueueCount < VOICE_Q_LENGTH )
 	{
 		vptr->VoiceQueue[vptr->VoiceQueueInIndex++] = value ;
-		vptr->VoiceQueueInIndex &= ( VOICE_Q_LENGTH - 1 ) ;
+		if (vptr->VoiceQueueInIndex > ( VOICE_Q_LENGTH - 1 ) )
+		{
+			vptr->VoiceQueueInIndex = 0 ;			
+		}
 		vptr->VoiceQueueCount += 1 ;
 	}
-//	if ( v_ctr < 8 )
-//	{
-//		v_first[v_ctr] = value ;
-//		v_ctr += 1 ;		
-//	}
 }
 
 void t_voice::voice_process(void)
@@ -1251,23 +1256,26 @@ void t_voice::voice_process(void)
 			if ( VoiceQueueCount )
 			{
 				VoiceSerial = VoiceQueue[VoiceQueueOutIndex++] ;
-				VoiceQueueOutIndex &= ( VOICE_Q_LENGTH - 1 ) ;
-				VoiceQueueCount -= 1 ;
-				if ( VoiceShift )
+				if (VoiceQueueOutIndex > ( VOICE_Q_LENGTH - 1 ) )
 				{
-					VoiceShift = 0 ;
-					VoiceSerial += 260 ;
+					VoiceQueueOutIndex = 0 ;			
 				}
-				VoiceTimer = 16 ;
+				VoiceQueueCount -= 1 ;
+//				if ( VoiceShift )
+//				{
+//					VoiceShift = 0 ;
+//					VoiceSerial += 260 ;
+//				}
+				VoiceTimer = 17 ;
 //				if ( ( VoiceSerial & 0x00FF ) >= 0xF0 )
-				if ( ( VoiceSerial & 0x01F0 ) == 0xF0 )	// Looking for F0-F7 or FF
+				if ( VoiceSerial & 0x8000 )	// Looking for Volume setting
 				{
-					if ( VoiceSerial == 0xFF )
-					{
-						VoiceShift = 1 ;
-						return ;
-					}
-					VoiceSerial |= 0xFF00 ;
+//					if ( VoiceSerial == 0xFF )
+//					{
+//						VoiceShift = 1 ;
+//						return ;
+//					}
+//					VoiceSerial |= 0xFF00 ;
 					VoiceTimer = 40 ;
 				}
 				VoiceLatch &= ~VOICE_CLOCK_BIT & ~VOICE_DATA_BIT ;
@@ -1288,13 +1296,14 @@ void t_voice::voice_process(void)
 		}
 		else if ( VoiceState == V_STARTUP )
 		{
-//			VoiceLatch |= VOICE_CLOCK_BIT | VOICE_DATA_BIT ;
-//			PORTA_LCD_DAT = VoiceLatch ;			// Latch data set
-//			PORTB &= ~(1<<OUT_B_LIGHT) ;			// Latch clock low
-			if ( g_blinkTmr10ms > 120 )					// Give module 1.2 secs to initialise
+			PORTB |= (1<<OUT_B_LIGHT) ;				// Latch clock high
+			VoiceLatch |= VOICE_CLOCK_BIT | VOICE_DATA_BIT ;
+			PORTA_LCD_DAT = VoiceLatch ;			// Latch data set
+			if ( g_blinkTmr10ms > 60 )					// Give module 1.4 secs to initialise
 			{
-				VoiceState = V_IDLE ;
+				VoiceState = V_WAIT_START_BUSY_OFF ;
 			}
+			PORTB &= ~(1<<OUT_B_LIGHT) ;			// Latch clock low
 		}
 		else if ( VoiceState != V_CLOCKING )
 		{
@@ -1326,7 +1335,7 @@ void t_voice::voice_process(void)
 			{
 				if ( busy )									// Busy is inactive
 				{
-					VoiceTimer = 2 ;
+					VoiceTimer = 3 ;
 					VoiceState = V_WAIT_BUSY_DELAY ;
 				}
 			}
@@ -1335,6 +1344,14 @@ void t_voice::voice_process(void)
 				if ( --VoiceTimer == 0 )
 				{
 					VoiceState = V_IDLE ;
+				}
+			}
+			else if (	VoiceState == V_WAIT_START_BUSY_OFF)	// check for busy processing here
+			{
+				if ( busy )									// Busy is inactive
+				{
+					VoiceTimer = 20 ;
+					VoiceState = V_WAIT_BUSY_DELAY ;
 				}
 			}
 			PORTB &= ~(1<<OUT_B_LIGHT) ;			// Latch clock low
@@ -1458,6 +1475,44 @@ void perMain()
 			Rotary_diff = ( x ) / 2 ;
 			LastRotaryValue += Rotary_diff * 2 ;
 		}
+
+		if ( g_menuStack[g_menuStackPtr] == menuProc0)
+		{
+			if ( Rotary_diff )
+			{
+				int16_t x = RotaryControl ;
+				x += Rotary_diff ;
+				if ( x > 125 )
+				{
+					RotaryControl = 125 ;
+				}
+				else if ( x < -125 )
+				{
+					RotaryControl = -125 ;
+				}
+				else
+				{
+					RotaryControl = x ;					
+				}
+				Rotary_diff = 0 ;
+			}
+		}
+
+#if GVARS
+		for( uint8_t i = 0 ; i < MAX_GVARS ; i += 1 )
+		{
+			// ToDo, test for trim inputs here
+			if ( ( g_model.gvars[i].gvsource >= 1 )	&& ( g_model.gvars[i].gvsource <= 4 ) )
+			{
+				g_model.gvars[i].gvar = *TrimPtr[ convert_mode_helper(g_model.gvars[i].gvsource) - 1 ] ;
+			}
+			
+			if ( g_model.gvars[i].gvsource == 5 )	// REN
+			{
+				g_model.gvars[i].gvar = RotaryControl ;
+			}
+		}
+#endif
 
 		if ( AlertMessage )
 		{
@@ -1726,7 +1781,7 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 			{
 				if ( vptr->VoiceTimer )
 				{
-					vptr->VoiceTimer -= 1 ;					
+					vptr->VoiceTimer -= 1 ;
 				}
 				else
 				{
@@ -1866,6 +1921,11 @@ int main(void)
     DDRG = 0x14; PORTG = 0xfB; //pullups + SIM_CTL=1 = phonejack = ppm_in, Haptic output and off (0)
     lcd_init();
 
+//		PORTB |= (1<<OUT_B_LIGHT) ;				// Latch clock high
+//		PORTA_LCD_DAT = 0 ; // VOICE_CLOCK_BIT ;			// Latch data set
+//		Voice.VoiceLatch = 0 ; // VOICE_CLOCK_BIT ;
+//		PORTB &= ~(1<<OUT_B_LIGHT) ;			// Latch clock low
+
 #ifdef JETI
     JETI_Init();
 #endif
@@ -1946,12 +2006,7 @@ int main(void)
 
     // moved here and logic added to only play statup tone if splash screen enabled.
     // that way we save a bit, but keep the option for end users!
-		{
-			uint8_t x = g_eeGeneral.volume + 0xF7 ;
-			putVoiceQueue( x ) ;
-			putVoiceQueue( x ) ;
-			putVoiceQueue( x ) ;
-		}
+		putVoiceQueueLong( g_eeGeneral.volume + 0xFFF7 ) ;
     if(!g_eeGeneral.disableSplashScreen)
     {
 	    if((g_eeGeneral.speakerMode & 1) == 1)
@@ -2110,22 +2165,22 @@ void mainSequence()
 
         if (frskyStreaming)
 				{
-            enum AlarmLevel level[4] ;
-            // RED ALERTS
-            if( (level[0]=FRSKY_alarmRaised(0,0)) == alarm_red) FRSKY_alarmPlay(0,0);
-            else if( (level[1]=FRSKY_alarmRaised(0,1)) == alarm_red) FRSKY_alarmPlay(0,1);
-            else	if( (level[2]=FRSKY_alarmRaised(1,0)) == alarm_red) FRSKY_alarmPlay(1,0);
-            else if( (level[3]=FRSKY_alarmRaised(1,1)) == alarm_red) FRSKY_alarmPlay(1,1);
-            // ORANGE ALERTS
-            else	if( level[0] == alarm_orange) FRSKY_alarmPlay(0,0);
-            else if( level[1] == alarm_orange) FRSKY_alarmPlay(0,1);
-            else	if( level[2] == alarm_orange) FRSKY_alarmPlay(1,0);
-            else if( level[3] == alarm_orange) FRSKY_alarmPlay(1,1);
-            // YELLOW ALERTS
-            else	if( level[0] == alarm_yellow) FRSKY_alarmPlay(0,0);
-            else if( level[1] == alarm_yellow) FRSKY_alarmPlay(0,1);
-            else	if( level[2] == alarm_yellow) FRSKY_alarmPlay(1,0);
-            else if( level[3] == alarm_yellow) FRSKY_alarmPlay(1,1);
+//            enum AlarmLevel level[4] ;
+//            // RED ALERTS
+//            if( (level[0]=FRSKY_alarmRaised(0,0)) == alarm_red) FRSKY_alarmPlay(0,0);
+//            else if( (level[1]=FRSKY_alarmRaised(0,1)) == alarm_red) FRSKY_alarmPlay(0,1);
+//            else	if( (level[2]=FRSKY_alarmRaised(1,0)) == alarm_red) FRSKY_alarmPlay(1,0);
+//            else if( (level[3]=FRSKY_alarmRaised(1,1)) == alarm_red) FRSKY_alarmPlay(1,1);
+//            // ORANGE ALERTS
+//            else	if( level[0] == alarm_orange) FRSKY_alarmPlay(0,0);
+//            else if( level[1] == alarm_orange) FRSKY_alarmPlay(0,1);
+//            else	if( level[2] == alarm_orange) FRSKY_alarmPlay(1,0);
+//            else if( level[3] == alarm_orange) FRSKY_alarmPlay(1,1);
+//            // YELLOW ALERTS
+//            else	if( level[0] == alarm_yellow) FRSKY_alarmPlay(0,0);
+//            else if( level[1] == alarm_yellow) FRSKY_alarmPlay(0,1);
+//            else	if( level[2] == alarm_yellow) FRSKY_alarmPlay(1,0);
+//            else if( level[3] == alarm_yellow) FRSKY_alarmPlay(1,1);
 
 						// Check for current alarm
         		for (int i=0; i<2; i++)
@@ -2337,4 +2392,24 @@ int16_t calc1000toRESX(int16_t x)  // improve calc time by Pat MacKenzie
     return x+(y>>2);
     //  return x + x/32 - x/128 + x/512;
 }
+
+#if GVARS
+int8_t REG(int8_t x, int8_t min, int8_t max)
+{
+  int8_t result = x;
+  if (x >= 126 || x <= -126) {
+    x = (uint8_t)x - 126;
+    result = g_model.gvars[x].gvar ;
+    if (result < min) {
+      g_model.gvars[x].gvar = result = min;
+//      eeDirty( EE_MODEL | EE_TRIM ) ;
+    }
+    if (result > max) {
+      g_model.gvars[x].gvar = result = max;
+//      eeDirty( EE_MODEL | EE_TRIM ) ;
+    }
+  }
+  return result;
+}
+#endif
 

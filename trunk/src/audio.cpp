@@ -321,6 +321,12 @@ void voice_numeric( uint16_t value, uint8_t num_decimals, uint8_t units_index )
 {
 	uint8_t decimals ;
 	div_t qr ;
+	uint8_t flag = 0 ;
+
+	if ( units_index > 127 )
+	{
+		putVoiceQueue( units_index ) ;
+	}
 
 	if ( num_decimals )
 	{
@@ -334,12 +340,24 @@ void voice_numeric( uint16_t value, uint8_t num_decimals, uint8_t units_index )
 	{
 		if ( qr.quot > 9 )		// Thousands
 		{
+			flag = 1 ;
 			qr = div( qr.quot, 10 ) ;
-			putVoiceQueue( qr.quot + 110 ) ;
+			if ( qr.quot < 21 )
+			{
+				putVoiceQueue( qr.quot + 110 ) ;
+			}
+			else
+			{
+				putVoiceQueueUpper( qr.quot + 140 ) ;
+				putVoiceQueue( V_THOUSAND ) ;
+			}
 			qr.quot = qr.rem ;			
 		}
 		putVoiceQueue( qr.quot + 100 ) ;
-		putVoiceQueueUpper( qr.rem + 140 ) ;
+		if ( flag == 0 )
+		{
+			putVoiceQueueUpper( qr.rem + 140 ) ;
+		}
 	}
 	else
 	{
@@ -360,7 +378,7 @@ void voice_numeric( uint16_t value, uint8_t num_decimals, uint8_t units_index )
 		}
 	}
 		 
-	if ( units_index )
+	if ( units_index && ( units_index < 128 ) )
 	{
 		putVoiceQueue( units_index ) ;
 	}
