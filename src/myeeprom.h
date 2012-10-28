@@ -63,6 +63,8 @@
 #define GENERAL_OWNER_NAME_LEN 10
 #define MODEL_NAME_LEN         10
 
+#define MAX_GVARS 5
+
 PACK(typedef struct t_TrainerMix {
     uint8_t srcChn:3; //0-7 = ch1-8
     int8_t  swtch:5;
@@ -108,9 +110,8 @@ PACK(typedef struct t_EEGeneral {
     uint8_t   lightAutoOff;
     uint8_t   templateSetup;  //RETA order according to chout_ar array
     int8_t    PPM_Multiplier;
-    uint8_t   FRSkyYellow:4;
-    uint8_t   FRSkyOrange:4;
-    uint8_t   FRSkyRed:4;
+    uint8_t   unused1;
+    uint8_t   unused2:4;
     uint8_t   hideNameOnSplash:1;
     uint8_t   enablePpmsim:1;
     uint8_t   blightinv:1;
@@ -215,6 +216,13 @@ PACK(typedef struct t_FrSkyData {
 		FrSkyAlarmData alarmData[4] ;
 }) FrSkyData;
 
+PACK(typedef struct t_gvar {
+	int8_t gvar ;
+	uint8_t gvsource ;
+//	int8_t gvswitch ;
+}) GvarData ;
+	
+
 //PACK(typedef struct t_swVoice {
 //  uint8_t  vswtch:5 ;
 //	uint8_t vmode:3 ; // ON, OFF, BOTH, 15Secs, 30Secs, 60Secs, Varibl
@@ -267,6 +275,7 @@ PACK(typedef struct t_ModelData {
     SafetySwData  safetySw[NUM_CHNOUT];
     FrSkyData frsky;
 		uint8_t CustomDisplayIndex[6] ;
+		GvarData gvars[MAX_GVARS] ;
 }) ModelData;
 
 #define TOTAL_EEPROM_USAGE (sizeof(ModelData)*MAX_MODELS + sizeof(EEGeneral))

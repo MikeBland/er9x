@@ -102,6 +102,12 @@ mstate2.check_submenu_simple(event,lines_count-1)
 TITLE(title); \
 SIMPLE_SUBMENU_NOTITLE(lines_count-1)
 
+//#if defined(GVARS)
+//void displayGVar(uint8_t x, uint8_t y, int8_t value);
+//#else
+//#define displayGVar(x, y, v) lcd_outdez8(x, y, v)
+//#endif
+
 struct t_latency
 {
 	uint8_t g_tmr1Latency_min ;

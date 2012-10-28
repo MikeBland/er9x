@@ -18,6 +18,8 @@
 
 #define VERS 1
 
+#define GVARS	0
+
 #include <inttypes.h>
 #include <string.h>
 
@@ -462,6 +464,9 @@ void mainSequence() ;
 
 #define NO_TRAINER 0x01
 #define NO_INPUT   0x02
+#define NO_TRIMS   0x04
+#define NO_STICKS  0x08
+
 void perOut(int16_t *chanOut, uint8_t att);
 ///   Liefert den Zustand des Switches 'swtch'. Die Numerierung erfolgt ab 1
 ///   (1=SW_ON, 2=SW_ThrCt, 10=SW_Trainer). 0 Bedeutet not conected.
@@ -700,6 +705,7 @@ void menuProcTelemetry2(uint8_t event);
 void menuProcStatistic2(uint8_t event);
 void menuProcStatistic(uint8_t event);
 void menuProc0(uint8_t event);
+void menuProcGlobals(uint8_t event) ;
 
 extern void setupPulses();
 
@@ -774,7 +780,7 @@ extern const prog_int8_t APM TelemIndex[] ;
 extern int16_t convertTelemConstant( int8_t channel, int8_t value) ;
 
 #ifdef FRSKY
-#define NUM_TELEM_ITEMS 21
+#define NUM_TELEM_ITEMS 24
 #else
 #define NUM_TELEM_ITEMS 3
 #endif
@@ -793,6 +799,7 @@ extern uint8_t sysFlags;
 #include "audio.h"
 
 extern void putVoiceQueue( uint8_t value ) ;
+extern void putVoiceQueueLong( uint16_t value ) ;
 extern void	putVoiceQueueUpper( uint8_t value ) ;
 void voice_numeric( uint16_t value, uint8_t num_decimals, uint8_t units_index ) ;
 extern void voice_telem_item( int8_t index ) ;
@@ -815,6 +822,12 @@ extern int16_t m_to_ft( int16_t metres ) ;
 #define	ROTARY_VALUE			3
 
 extern uint8_t RotaryState ;		// Defaults to ROTARY_MENU_LR
+
+extern uint8_t Tevent ;
+
+#if GVARS
+extern int8_t REG(int8_t x, int8_t min, int8_t max) ;
+#endif
 
 #endif // er9x_h
 /*eof*/

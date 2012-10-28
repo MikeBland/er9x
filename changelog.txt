@@ -10,6 +10,14 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 28-Oct-2012  MPB
+Rotary encoder now steps through all fields
+Remove internal FrSky alarms
+Voice driver code updates
+Voice queue now 16 bits wide
+
+
+******************************************
 CHANGELOG: 21-Sep-2012  MPB
 Rotary encoder improvements
 
