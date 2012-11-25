@@ -972,6 +972,10 @@ void MState2::check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8
         if(!horTab || s_editMode)break;
         INC(m_posHorz,maxcol);
         BLINK_SYNC;
+				if ( maxcol )
+				{
+					Tevent = 0 ;
+				}
         break;
 
     case EVT_KEY_REPT(KEY_LEFT):  //dec
@@ -980,6 +984,10 @@ void MState2::check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8
         if(!horTab || s_editMode)break;
         DEC(m_posHorz,maxcol);
         BLINK_SYNC;
+				if ( maxcol )
+				{
+					Tevent = 0 ;
+				}
         break;
 
     case EVT_KEY_REPT(KEY_DOWN):  //inc
@@ -1678,8 +1686,8 @@ void menuProcGlobals(uint8_t event)
 //				break ;
 
 				case 0 :
-					lcd_putsAttIdx( 12*FW, y, PSTR("\003---RtmEtmTtmAtmREN"), g_model.gvars[i].gvsource, attr ) ;
-	  			if(active) CHECK_INCDEC_H_MODELVAR( g_model.gvars[i].gvsource, 0, 5 ) ;
+					lcd_putsAttIdx( 12*FW, y, PSTR("\003---RtmEtmTtmAtmRENRUDELETHRAILP1 P2 P3"), g_model.gvars[i].gvsource, attr ) ;
+	  			if(active) CHECK_INCDEC_H_MODELVAR( g_model.gvars[i].gvsource, 0, 12 ) ;
 				break ;
 
 				case 1 :
@@ -2617,11 +2625,11 @@ void editExpoVals( uint8_t stopBlink,uint8_t editMode, uint8_t edit,uint8_t x, u
 		uint8_t doedit ;
 		volatile int8_t *ptr ;			// volatile forces compiler to produce 'better' code
 
-		doedit = (edit && (editMode
 #ifndef NOPOTSCROLL
-											  || p1valdiff
+		doedit = (edit && (editMode || p1valdiff )) ;
+#else
+		doedit = (edit && editMode ) ;
 #endif											
-											)) ;
     if(edit && stopBlink) invBlk = INVERS;
 
     if(which==DR_DRSW1) {
@@ -2639,13 +2647,21 @@ void editExpoVals( uint8_t stopBlink,uint8_t editMode, uint8_t edit,uint8_t x, u
 				ptr = &g_model.expoData[chn].expo[which][exWt][stkRL] ;
         if(exWt==DR_EXPO)
 				{
+#if GVARS
+					*ptr = gvarMenuItem( x, y, *ptr, -100, 100, invBlk ) ;
+#else
             lcd_outdezAtt(x, y, *ptr, invBlk);
             if(doedit) CHECK_INCDEC_H_MODELVAR(*ptr,-100, 100);
+#endif
         }
         else
 				{
+#if GVARS
+					*ptr = gvarMenuItem( x, y, *ptr+100, 0, 100, invBlk ) - 100 ;
+#else
             lcd_outdezAtt(x, y, *ptr+100, invBlk);
             if(doedit) CHECK_INCDEC_H_MODELVAR(*ptr,-100, 0);
+#endif
         }
 		}
 }
@@ -2691,10 +2707,17 @@ switch (expoDrOn) {
 y+=FH;
 
 
+#if GVARS
+int8_t   kViewR  = REG(g_model.expoData[s_expoChan].expo[expoDrOn][DR_EXPO][DR_RIGHT], -100, 100);  //NormR;
+int8_t   kViewL  = REG(g_model.expoData[s_expoChan].expo[expoDrOn][DR_EXPO][DR_LEFT], -100, 100);  //NormL;
+int8_t   wViewR  = REG(g_model.expoData[s_expoChan].expo[expoDrOn][DR_WEIGHT][DR_RIGHT]+100, 0, 100);  //NormWeightR+100;
+int8_t   wViewL  = REG(g_model.expoData[s_expoChan].expo[expoDrOn][DR_WEIGHT][DR_LEFT]+100, 0, 100);  //NormWeightL+100;
+#else
 int8_t   kViewR  = g_model.expoData[s_expoChan].expo[expoDrOn][DR_EXPO][DR_RIGHT];  //NormR;
 int8_t   kViewL  = g_model.expoData[s_expoChan].expo[expoDrOn][DR_EXPO][DR_LEFT];  //NormL;
 int8_t   wViewR  = g_model.expoData[s_expoChan].expo[expoDrOn][DR_WEIGHT][DR_RIGHT]+100;  //NormWeightR+100;
 int8_t   wViewL  = g_model.expoData[s_expoChan].expo[expoDrOn][DR_WEIGHT][DR_LEFT]+100;  //NormWeightL+100;
+#endif
 
 #define WE_CHART	(WCHART-1)
 #define WE_CHARTl	(WCHARTl-1)
@@ -2765,11 +2788,13 @@ int8_t  subHor = mstate2.m_posHorz;
 switch(event)
 {
     case EVT_KEY_LONG(KEY_MENU):
+      	killEvents(event);
+				Tevent = 0 ;
         if(sub>=0){
             s_expoChan = sub;
             pushMenu(menuProcExpoOne);
         }
-        break;
+    return ;
 }
 
 lcd_puts_P( 4*FW-FW/2, 1*FH,PSTR("exp  %  sw1 sw2"));
@@ -2779,33 +2804,46 @@ for(uint8_t i=0; i<4; i++)
     uint8_t valsEqual = (g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][DR_LEFT]==g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][DR_RIGHT]) &&
             (g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_LEFT]==g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_RIGHT]);
     uint8_t stickCentred = (abs(calibratedStick[i])<=25) && valsEqual;
-    if(calibratedStick[i]> 25) stkVal[i] = DR_RIGHT;
-    if(calibratedStick[i]<-25) stkVal[i] = DR_LEFT;
+		uint8_t stkThis = stkVal[i] ;
+    if(calibratedStick[i]> 25) stkThis = DR_RIGHT;
+    if(calibratedStick[i]<-25) stkThis = DR_LEFT;
     if(IS_THROTTLE(i) && g_model.thrExpo) {
-        stkVal[i] = DR_RIGHT;
+        stkThis = DR_RIGHT;
         stickCentred = true;
     }
+		stkVal[i] = stkThis ;
 
     uint8_t y=(i+2)*FH;
     putsChnRaw( 0, y,i+1,0);
-    uint8_t stkOp = (stkVal[i] == DR_RIGHT) ? DR_LEFT : DR_RIGHT;
+    uint8_t stkOp = (stkThis == DR_RIGHT) ? DR_LEFT : DR_RIGHT;
 
     uint8_t edtm = (s_editMode
 #ifndef NOPOTSCROLL
 										 || p1valdiff
 #endif									 
 									 );
-    editExpoVals(false,edtm,sub==i && subHor==0, 7*FW-FW/2, y,i,expoDrOn,DR_EXPO,stkVal[i]);
-    if(sub==i && subHor==0 && edtm && stickCentred)
-        CHECK_INCDEC_H_MODELVAR(g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkOp],-100, 100);
+		uint8_t subandhor = sub==i && subHor==0 ;
+    editExpoVals(false,edtm,subandhor, 7*FW-FW/2, y,i,expoDrOn,DR_EXPO,stkVal[i]);
+		int8_t *ptr ;
+    if( subandhor && edtm && stickCentred)
+		{
+			ptr = g_model.expoData[i].expo[expoDrOn][DR_EXPO] ;
+			ptr[stkOp] = ptr[stkThis] ;
+    }
+//		    CHECK_INCDEC_H_MODELVAR(g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkOp],-100, 100);
 
-    editExpoVals(false,edtm,sub==i && subHor==1, 9*FW+FW/2, y,i,expoDrOn,DR_WEIGHT,stkVal[i]);
-    if(sub==i && subHor==1 && edtm && stickCentred)
-        CHECK_INCDEC_H_MODELVAR(g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][stkOp],-100, 0);
+		subandhor = sub==i && subHor==1 ;
+    editExpoVals(false,edtm,subandhor, 9*FW+FW/2, y,i,expoDrOn,DR_WEIGHT,stkVal[i]);
+    if(subandhor && edtm && stickCentred)
+		{
+			ptr = g_model.expoData[i].expo[expoDrOn][DR_WEIGHT] ;
+			ptr[stkOp] = ptr[stkThis] ;
+		}	
+//        CHECK_INCDEC_H_MODELVAR(g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][stkOp],-100, 0);
 
     editExpoVals(false,edtm,sub==i && subHor==2,10*FW+FW/2, y,i,DR_DRSW1,0,0);
     editExpoVals(false,edtm,sub==i && subHor==3,14*FW+FW/2, y,i,DR_DRSW2,0,0);
-    lcd_putc(9*FW+FW/2 + ((!stkVal[i] && !stickCentred) ? 2 : 1 ), y, stickCentred ? '-' : (stkVal[i] ? 127 : 126));//'|' : (stkVal[i] ? '<' : '>'),0);
+    lcd_putc(9*FW+FW/2 + ((!stkThis && !stickCentred) ? 2 : 1 ), y, stickCentred ? '-' : (stkThis ? 127 : 126));//'|' : (stkVal[i] ? '<' : '>'),0);
 
     lcd_putc(19*FW+FW/2,y,(expoDrOn == DR_MID) ? 'M' : (expoDrOn == DR_LOW) ? 'L' : 'H' ) ;
 //    switch (expoDrOn) {
@@ -3378,12 +3416,16 @@ void menuProcModelSelect(uint8_t event)
 
             audioDefevent(AU_WARNING2);
         }
-#ifndef NO_TEMPLATES
+#if GVARS
+      if(event==EVT_KEY_FIRST(KEY_LEFT))  chainMenu(menuProcGlobals);//{killEvents(event);popMenu(true);}
+#else
+ #ifndef NO_TEMPLATES
         if(event==EVT_KEY_FIRST(KEY_LEFT)) { chainMenu(menuProcTemplates); return ; }//{killEvents(event);popMenu(true);}
-#elif defined(FRSKY)
+ #elif defined(FRSKY)
         if(event==EVT_KEY_FIRST(KEY_LEFT)) { chainMenu(menuProcTelemetry2); return ; }//{killEvents(event);popMenu(true);}
 #else
         if(event==EVT_KEY_FIRST(KEY_LEFT)) { chainMenu(menuProcSafetySwitches); return ; }//{killEvents(event);popMenu(true);}
+ #endif
 #endif
         if(event==EVT_KEY_FIRST(KEY_RIGHT)) { chainMenu(menuProcModel); return ; }
         //      if(event==EVT_KEY_FIRST(KEY_EXIT))  chainMenu(menuProcModelSelect);
@@ -5313,13 +5355,25 @@ void perOut(int16_t *chanOut, uint8_t att)
                 uint8_t stkDir = v>0 ? DR_RIGHT : DR_LEFT;
 
                 if(IS_THROTTLE(i) && g_model.thrExpo){
+#if GVARS
+                    v  = 2*expo((v+RESX)/2,REG(g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_RIGHT], -100, 100));
+#else
                     v  = 2*expo((v+RESX)/2,g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_RIGHT]);
-                    stkDir = DR_RIGHT;
+#endif                    
+										stkDir = DR_RIGHT;
                 }
                 else
+#if GVARS
+                    v  = expo(v,REG(g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkDir], -100, 100));
+#else
                     v  = expo(v,g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkDir]);
+#endif                    
 
+#if GVARS
+                int32_t x = (int32_t)v * (REG(g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][stkDir]+100, 0, 100))/100;
+#else
                 int32_t x = (int32_t)v * (g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][stkDir]+100)/100;
+#endif                    
                 v = (int16_t)x;
                 if (IS_THROTTLE(i) && g_model.thrExpo) v -= RESX;
 
@@ -5464,6 +5518,9 @@ void perOut(int16_t *chanOut, uint8_t att)
 
     for(uint8_t i=0;i<MAX_MIXERS;i++){
         MixData *md = mixaddress( i ) ;
+#if GVARS
+				int8_t mixweight = REG( md->weight, -100, 100 ) ;
+#endif
 
         if((md->destCh==0) || (md->destCh>NUM_CHNOUT)) break;
 
@@ -5528,7 +5585,11 @@ void perOut(int16_t *chanOut, uint8_t att)
                 {
                     Output.act[i] = (int32_t)Output.anas[md->destCh-1+CHOUT_BASE]*DEL_MULT;
                     Output.act[i] *=100;
+#if GVARS
+                    if(mixweight) Output.act[i] /= mixweight ;
+#else
                     if(md->weight) Output.act[i] /= md->weight;
+#endif
                 }
                 diff = v-Output.act[i]/DEL_MULT;
                 if(diff) Output.sDelay[i] = (diff<0 ? md->delayUp :  md->delayDown) * 100;
@@ -5552,7 +5613,11 @@ void perOut(int16_t *chanOut, uint8_t att)
                 //-100..100 => 32768 ->  100*83886/256 = 32768,   For MAX we divide by 2 sincde it's asymmetrical
                 if(tick10ms) {
                     int32_t rate = (int32_t)DEL_MULT*2048*100;
+#if GVARS
+                    if(mixweight) rate /= abs(mixweight);
+#else
                     if(md->weight) rate /= abs(md->weight);
+#endif
 
 // The next few lines could replace the long line act[i] = etc. - needs testing
 //										int16_t speed ;
@@ -5625,7 +5690,11 @@ void perOut(int16_t *chanOut, uint8_t att)
         if((md->carryTrim==0) && (md->srcRaw>0) && (md->srcRaw<=4)) v += trimA[md->srcRaw-1];  //  0 = Trim ON  =  Default
 
         //========== MULTIPLEX ===============
+#if GVARS
+        int32_t dv = (int32_t)v*mixweight ;
+#else
         int32_t dv = (int32_t)v*md->weight;
+#endif
 				int32_t *ptr ;			// Save calculating address several times
 				ptr = &chans[md->destCh-1] ;
         switch((uint8_t)md->mltpx){

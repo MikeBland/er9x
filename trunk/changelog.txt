@@ -10,6 +10,12 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 25-Nov-2012  MPB
+r778 Add Global Vars (GVARS)
+Small Flash savings (GVARS add a lot)
+Increase delay while reading BUSY from voice module
+
+******************************************
 CHANGELOG: 28-Oct-2012  MPB
 Rotary encoder now steps through all fields
 Remove internal FrSky alarms

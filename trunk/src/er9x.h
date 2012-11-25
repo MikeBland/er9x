@@ -18,7 +18,7 @@
 
 #define VERS 1
 
-#define GVARS	0
+#define GVARS	1
 
 #include <inttypes.h>
 #include <string.h>
@@ -370,8 +370,9 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define THRCHK_DEADBAND 16
 #define SPLASH_TIMEOUT  (4*100)  //400 msec - 4 seconds
 
-#define IS_THROTTLE(x)  (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4))
+//#define IS_THROTTLE(x)  (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4))
 
+uint8_t IS_THROTTLE( uint8_t x ) ;
 
 #define NUM_KEYS BTN_RE+1
 #define TRM_BASE TRM_LH_DWN

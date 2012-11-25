@@ -1311,9 +1311,11 @@ void t_voice::voice_process(void)
 			PORTA_LCD_DAT = VoiceLatch ;			// Latch data set
 			PORTB |= (1<<OUT_B_LIGHT) ;				// Drive high,pullup enabled
 			DDRB &= ~(1<<OUT_B_LIGHT) ;				// Change to input
-			asm(" nop") ;
-			asm(" nop") ;
+			asm(" rjmp 1f") ;
+			asm("1:") ;
 			asm(" nop") ;											// delay to allow input to settle
+			asm(" rjmp 1f") ;
+			asm("1:") ;
 			busy = PINB & 0x80 ;
 			DDRB |= (1<<OUT_B_LIGHT) ;				// Change to output
 			// The next bit guarantees the backlight output gets clocked out
@@ -1501,15 +1503,24 @@ void perMain()
 #if GVARS
 		for( uint8_t i = 0 ; i < MAX_GVARS ; i += 1 )
 		{
-			// ToDo, test for trim inputs here
-			if ( ( g_model.gvars[i].gvsource >= 1 )	&& ( g_model.gvars[i].gvsource <= 4 ) )
+			if ( g_model.gvars[i].gvsource )
 			{
-				g_model.gvars[i].gvar = *TrimPtr[ convert_mode_helper(g_model.gvars[i].gvsource) - 1 ] ;
-			}
-			
-			if ( g_model.gvars[i].gvsource == 5 )	// REN
-			{
-				g_model.gvars[i].gvar = RotaryControl ;
+				if ( g_model.gvars[i].gvsource <= 4 )
+				{
+					g_model.gvars[i].gvar = *TrimPtr[ convert_mode_helper(g_model.gvars[i].gvsource) - 1 ] ;
+				}
+			  else if ( g_model.gvars[i].gvsource == 5 )	// REN
+				{
+					g_model.gvars[i].gvar = RotaryControl ;
+				}
+				else if ( g_model.gvars[i].gvsource <= 9 )	// Stick
+				{
+					g_model.gvars[i].gvar = limit( -125, calibratedStick[ convert_mode_helper(g_model.gvars[i].gvsource-5) - 1 ] / 8, 125 ) ;
+				}
+				else if ( g_model.gvars[i].gvsource <= 12 )	// Pot
+				{
+					g_model.gvars[i].gvar = limit( -125, calibratedStick[ (g_model.gvars[i].gvsource-6)] / 8, 125 ) ;
+				}
 			}
 		}
 #endif
@@ -2009,7 +2020,7 @@ int main(void)
 		putVoiceQueueLong( g_eeGeneral.volume + 0xFFF7 ) ;
     if(!g_eeGeneral.disableSplashScreen)
     {
-	    if((g_eeGeneral.speakerMode & 1) == 1)
+	    if( g_eeGeneral.speakerMode )		// Not just beeper
 			{
 				audioVoiceDefevent( AU_TADA, V_HELLO ) ;
       }
@@ -2412,4 +2423,12 @@ int8_t REG(int8_t x, int8_t min, int8_t max)
   return result;
 }
 #endif
+
+
+uint8_t IS_THROTTLE( uint8_t x )
+{
+	return (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4)) ;
+}
+
+
 
