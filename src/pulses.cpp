@@ -132,30 +132,27 @@ void setupPulses()
     {
         Current_protocol = required_protocol ;
         // switch mode here
+        TCCR1B = 0 ;			// Stop counter
+        TCNT1 = 0 ;
+        TIMSK &= ~0x3C ;	// All interrupts off
+        ETIMSK &= ~(1<<OCIE1C) ;		// COMPC1 off
+        TIFR = 0x3C ;			// Clear all pending interrupts
+        ETIFR = 0x3F ;			// Clear all pending interrupts
+
         switch(required_protocol)
         {
+				default:
         case PROTO_PPM:
             set_timer3_capture() ;
-            TCCR1B = 0 ;			// Stop counter
             OCR1A = 40000 ;		// Next frame starts in 20 mS
-            TCNT1 = 0 ;
-            TIMSK &= ~0x3C ;	// All interrupts off
-            //				ETIMSK &= ~(1<<OCIE1C) ;		// COMPC1 off
-            TIFR = 0x3C ;			// Clear all pending interrupts
-            ETIFR = 0x3F ;			// Clear all pending interrupts
             TIMSK |= 0x10 ;		// Enable COMPA
             TCCR1A = (0<<WGM10) ;
             TCCR1B = (1 << WGM12) | (2<<CS10) ; // CTC OCRA, 16MHz / 8
             break;
         case PROTO_PXX:
             set_timer3_capture() ;
-            TCCR1B = 0 ;			// Stop counter
-            TCNT1 = 0 ;
             OCR1B = 6000 ;		// Next frame starts in 3 mS
             OCR1C = 4000 ;		// Next frame setup in 2 mS
-            TIMSK &= ~0x3C ;	// All interrupts off
-            TIFR = 0x3C ;			// Clear all pending interrupts
-            ETIFR = 0x3F ;			// Clear all pending interrupts
             TIMSK |= (1<<OCIE1B) ;	// Enable COMPB
             ETIMSK |= (1<<OCIE1C);	// Enable COMPC
             TCCR1A  = 0;
@@ -163,26 +160,16 @@ void setupPulses()
             break;
         case PROTO_DSM2:
             set_timer3_capture() ;
-            TCCR1B = 0 ;			// Stop counter
             OCR1C = 200 ;			// 100 uS
             TCNT1 = 300 ;			// Past the OCR1C value
             ICR1 = 44000 ;		// Next frame starts in 22 mS
-            TIMSK &= ~0x3C ;	// All interrupts off
-            TIFR = 0x3C ;			// Clear all pending interrupts
-            ETIFR = 0x3F ;			// Clear all pending interrupts
             TIMSK |= 0x20 ;		// Enable CAPT
             ETIMSK |= (1<<OCIE1C);	// Enable COMPC
             TCCR1A = (0<<WGM10) ;
             TCCR1B = (3 << WGM12) | (2<<CS10) ; // CTC ICR, 16MHz / 8
             break;
         case PROTO_PPM16 :
-            TCCR1B = 0 ;			// Stop counter
             OCR1A = 40000 ;		// Next frame starts in 20 mS
-            TCNT1 = 0 ;
-            TIMSK &= ~0x3C ;	// All interrupts off
-            ETIMSK &= ~(1<<OCIE1C) ;		// COMPC1 off
-            TIFR = 0x3C ;			// Clear all pending interrupts
-            ETIFR = 0x3F ;			// Clear all pending interrupts
             TIMSK |= 0x10 ;		// Enable COMPA
             TCCR1A = (0<<WGM10) ;
             TCCR1B = (1 << WGM12) | (2<<CS10) ; // CTC OCRA, 16MHz / 8
@@ -191,14 +178,7 @@ void setupPulses()
             OCR3B = 5000 ;
             set_timer3_ppm() ;
             break ;
-        
         case PROTO_PPMSIM :
-            TCCR1B = 0 ;			// Stop counter
-            TCNT1 = 0 ;
-            TIMSK &= ~0x3C ;	// All interrupts off
-            ETIMSK &= ~(1<<OCIE1C) ;		// COMPC1 off
-            TIFR = 0x3C ;			// Clear all pending interrupts
-            ETIFR = 0x3F ;			// Clear all pending interrupts
             setupPulsesPPM(PROTO_PPMSIM);
 						OCR3A = 50000 ;
             OCR3B = 5000 ;

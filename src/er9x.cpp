@@ -1098,6 +1098,11 @@ int8_t checkIncDec_hm( int8_t i_val, int8_t i_min, int8_t i_max)
     return checkIncDec( i_val,i_min,i_max,EE_MODEL);
 }
 
+int8_t checkIncDec_hm0( int8_t i_val, int8_t i_max)
+{
+    return checkIncDec( i_val,0,i_max,EE_MODEL);
+}
+
 int8_t checkIncDec_hg( int8_t i_val, int8_t i_min, int8_t i_max)
 {
     return checkIncDec( i_val,i_min,i_max,EE_GENERAL);
@@ -1378,8 +1383,10 @@ void pollRotary()
 	// Rotary Encoder polling
 	PORTA = 0 ;			// No pullups
 	DDRA = 0x1F ;		// Top 3 bits input
-	asm(" nop") ;
-	asm(" nop") ;
+	asm(" rjmp 1f") ;
+	asm("1:") ;
+//	asm(" nop") ;
+//	asm(" nop") ;
 	uint8_t rotary ;
 	rotary = PINA ;
 	DDRA = 0xFF ;		// Back to all outputs
@@ -1901,6 +1908,7 @@ ISR(TIMER3_CAPT_vect, ISR_NOBLOCK) //capture ppm in 16MHz / 8 = 2MHz
 extern uint16_t g_timeMain;
 //void main(void) __attribute__((noreturn));
 
+#if STACK_TRACE
 extern unsigned char __bss_end ;
 
 unsigned int stack_free()
@@ -1914,6 +1922,7 @@ unsigned int stack_free()
     }
     return p - &__bss_end ;
 }
+#endif
 
 
 
@@ -1973,6 +1982,7 @@ int main(void)
     ETIMSK |= (1<<TICIE3);
 
 
+#if STACK_TRACE
     // Init Stack while interrupts are disabled
 #define STACKPTR     _SFR_IO16(0x3D)
     {
@@ -1988,6 +1998,7 @@ int main(void)
             *p-- = 0x55 ;
         }
     }
+#endif
 
     sei(); //damit alert in eeReadGeneral() nicht haengt
     g_menuStack[0] =  menuProc0;
@@ -2405,6 +2416,11 @@ int16_t calc1000toRESX(int16_t x)  // improve calc time by Pat MacKenzie
 }
 
 #if GVARS
+int8_t REG100_100(int8_t x)
+{
+	return REG( x, -100, 100 ) ;
+}
+
 int8_t REG(int8_t x, int8_t min, int8_t max)
 {
   int8_t result = x;

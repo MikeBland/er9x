@@ -22,6 +22,8 @@
 #include "frsky.h"
 #endif
 
+#define THROTTLE_TRACE		1
+
 //extern void putVoiceQueue( uint8_t value ) ;
 extern int8_t Rotary_diff ;
 extern int16_t AltOffset ;
@@ -188,8 +190,12 @@ void voice_telem_item( int8_t index )
 #ifdef FRSKY
 		case FR_A1_COPY:
     case FR_A2_COPY:
-		{	
-			uint8_t ltype = g_model.frsky.channels[index-FR_A1_COPY].type ;
+		{
+			FrSkyChannelData *fd ;
+	
+			fd = &g_model.frsky.channels[index-FR_A1_COPY] ;	
+			uint8_t ltype = fd->type ;
+			uint8_t lratio = fd->ratio ;
 			value = scale_telem_value( value, index-FR_A1_COPY, (ltype == 2/*V*/), &att ) ;
 			unit = V_VOLTS ;
 			num_decimals = 1 ;
@@ -197,10 +203,17 @@ void voice_telem_item( int8_t index )
 			{
 				unit = V_AMPS ;
 			}
-			if (ltype == 1)
+			else if (ltype == 1)
 			{
 				unit = 0 ;
 				num_decimals = 0 ;
+			}
+			else
+			{
+				if ( lratio < 100 )
+				{
+					num_decimals = 2 ;
+				}
 			}
 		}
 		break ;
@@ -523,7 +536,7 @@ uint8_t putsTelemetryChannel(uint8_t x, uint8_t y, int8_t channel, int16_t val, 
 #if GVARS
 int8_t gvarMenuItem(uint8_t x, uint8_t y, int8_t value, int8_t min, int8_t max, uint8_t attr )
 {
-  bool invers = attr&(INVERS|BLINK);
+  uint8_t invers = attr&(INVERS|BLINK);
   if (invers && Tevent == EVT_KEY_LONG(KEY_MENU))
 	{
     value = ((value >= 126 || value <= -126) ? g_model.gvars[(uint8_t)value-126].gvar : 126);
@@ -647,6 +660,7 @@ enum EnumTabModel {
 #endif
     e_ExpoAll,
     e_Mix,
+//    e_nMix,
     e_Limits,
     e_Curve,
     e_Switches,
@@ -671,6 +685,7 @@ const MenuFuncP_PROGMEM APM menuTabModel[] = {
     #endif
     menuProcExpoAll,
     menuProcMix,
+//    menuProcnMix,
     menuProcLimits,
     menuProcCurve,
     menuProcSwitches,
@@ -704,6 +719,13 @@ const MenuFuncP_PROGMEM APM menuTabDiag[] = {
     menuProcDiagAna,
     menuProcDiagCalib
 };
+
+#define MENU_TAB_NONE		0
+#define MENU_TAB_MODEL	1
+#define MENU_TAB_DIAG		2
+
+#define SIZE_MTAB_MODEL	DIM(menuTabModel)
+#define SIZE_MTAB_DIAG	DIM(menuTabDiag)
 
 uint8_t TITLEP( const prog_char *pstr) { return lcd_putsAtt(0,0,pstr,INVERS) ; }
 
@@ -942,7 +964,7 @@ void MState2::check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8
         break;
     case EVT_KEY_BREAK(BTN_RE):
     case EVT_KEY_FIRST(KEY_MENU):
-        if (maxcol > 0)
+//        if (maxcol > 0)
             s_editMode = !s_editMode;
         break;
     case EVT_KEY_LONG(KEY_EXIT):
@@ -1313,7 +1335,7 @@ for(uint8_t i=0; i<7; i++){
 						menu_lcd_HYPHINV( 18*FW, y, ld->revert, attr ) ;
 //            lcd_putsnAtt(   18*FW, y, PSTR("---INV")+ld->revert*3,3,attr);
             if(active) {
-                CHECK_INCDEC_H_MODELVAR(ld->revert, 0, 1);
+                CHECK_INCDEC_H_MODELVAR_0(ld->revert, 1);
             }
             break;
         }
@@ -1442,7 +1464,7 @@ uint8_t subN = 1;
 		if(sub==subN && subSub==0)
 		{
 			attr = INVERS ;
-			CHECK_INCDEC_H_MODELVAR(b,0,1); g_model.FrSkyUsrProto = b ;
+			CHECK_INCDEC_H_MODELVAR_0(b,1); g_model.FrSkyUsrProto = b ;
 		}
 		lcd_putsAttIdx(  10*FW, FH, PSTR("\005FrHubWSHhi"),b,attr);
 
@@ -1451,7 +1473,7 @@ uint8_t subN = 1;
 		if(sub==subN && subSub==1)
 		{
 			attr = INVERS ;
-			CHECK_INCDEC_H_MODELVAR(b,0,1); g_model.FrSkyImperial = b ;
+			CHECK_INCDEC_H_MODELVAR_0(b,1); g_model.FrSkyImperial = b ;
 		}
 		lcd_putsAttIdx(  16*FW, FH, PSTR("\003MetImp"),b,attr);
 	}
@@ -1480,7 +1502,7 @@ for (int i=0; i<2; i++) {
             break;
         case 1:
             //            CHECK_INCDEC_H_MODELVAR( g_model.frsky.channels[i].type, 0, 1);
-            CHECK_INCDEC_H_MODELVAR( fd->type, 0, 3);
+            CHECK_INCDEC_H_MODELVAR_0( fd->type, 3);
             break;
         }
     }
@@ -1603,14 +1625,14 @@ blink = s_editMode ? BLINK : INVERS ;
 		lcd_putsAttIdx(15*FW, 3*FH, Str_Sounds, g_model.frsky.alarmData[0].frskyAlarmSound,attr);
 		if ( attr == BLINK )
 		{
-  		CHECK_INCDEC_H_MODELVAR( g_model.frsky.alarmData[0].frskyAlarmSound, 0, 15 ) ;
+  		CHECK_INCDEC_H_MODELVAR_0( g_model.frsky.alarmData[0].frskyAlarmSound, 15 ) ;
 		}
   	subN++;
 
 
  		attr = 0 ;
 		lcd_puts_Pleft(4*FH, PSTR("Num Blades"));
-  	if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_MODELVAR(g_model.numBlades, 0, 2);}
+  	if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_MODELVAR_0(g_model.numBlades, 2);}
   	lcd_putcAtt( 13*FW, 4*FH, g_model.numBlades+'2', attr) ;
   	subN++;
   
@@ -1621,7 +1643,7 @@ blink = s_editMode ? BLINK : INVERS ;
 			lcd_puts_Pleft(5*FH, PSTR("AltAlarm"));
 	  	if(sub==subN) {
 				attr = blink ;
-  			g_model.FrSkyAltAlarm = CHECK_INCDEC_H_MODELVAR( b, 0, 2);
+  			g_model.FrSkyAltAlarm = CHECK_INCDEC_H_MODELVAR_0( b, 2);
 			}
   		lcd_putsAttIdx(11*FW, 5*FH, PSTR("\003OFF122400"),b,attr);
 		}
@@ -1639,7 +1661,7 @@ blink = s_editMode ? BLINK : INVERS ;
 	
   	lcd_puts_Pleft( 7*FH, PSTR("GpsAltMain") ) ;
   	menu_lcd_onoff( PARAM_OFS, 7*FH, g_model.FrSkyGpsAlt, sub==subN ) ;
-  	if(sub==subN) CHECK_INCDEC_H_MODELVAR( g_model.FrSkyGpsAlt, 0, 1);
+  	if(sub==subN) CHECK_INCDEC_H_MODELVAR_0( g_model.FrSkyGpsAlt, 1);
 	}
 	else
 	{
@@ -1649,7 +1671,7 @@ blink = s_editMode ? BLINK : INVERS ;
 		for (uint8_t j=0; j<6; j++)
 		{
 			attr = 0 ;
-	  	if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_MODELVAR(  g_model.CustomDisplayIndex[j], 0, NUM_TELEM_ITEMS ) ;}
+	  	if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_MODELVAR_0(  g_model.CustomDisplayIndex[j], NUM_TELEM_ITEMS ) ;}
 			lcd_putsAttIdx( 0, j*FH + 2*FH, Str_telemItems, g_model.CustomDisplayIndex[j], attr ) ;
 			subN++;
 		}
@@ -1667,12 +1689,10 @@ void menuProcGlobals(uint8_t event)
 	uint8_t subN = mstate2.m_posVert ;
 	int8_t subSub = mstate2.m_posHorz;
 	
-//	lcd_outhex4( 0, 7*FH, ( (convert_mode_helper(g_model.gvars[1].gvsource) - 1) << 8 )+ (g_model.gvars[1].gvsource - 1) ) ;
-
 	for (uint8_t i=0; i<MAX_GVARS; i++ )
 	{
 		uint8_t y = (i+1)*FH ;
-		for(uint8_t j=0; j<3;j++)
+		for(uint8_t j=0; j<2;j++)
 		{
       lcd_puts_Pleft(y, PSTR("GV"));
 			lcd_putc( 2*FW, y, i+'1') ;
@@ -1687,7 +1707,7 @@ void menuProcGlobals(uint8_t event)
 
 				case 0 :
 					lcd_putsAttIdx( 12*FW, y, PSTR("\003---RtmEtmTtmAtmRENRUDELETHRAILP1 P2 P3"), g_model.gvars[i].gvsource, attr ) ;
-	  			if(active) CHECK_INCDEC_H_MODELVAR( g_model.gvars[i].gvsource, 0, 12 ) ;
+	  			if(active) CHECK_INCDEC_H_MODELVAR_0( g_model.gvars[i].gvsource, 12 ) ;
 				break ;
 
 				case 1 :
@@ -1790,7 +1810,7 @@ t_pgOfs = evalOffset(sub, 6);
 		lcd_outdezAtt(  18*FW, y,g_model.numVoice, attr);
  	  if(sub==k)
 		{
-      CHECK_INCDEC_H_MODELVAR( g_model.numVoice, 0, 16 ) ;
+      CHECK_INCDEC_H_MODELVAR_0( g_model.numVoice, 16 ) ;
     }
 	}
   else if(k<NUM_CHNOUT+1)
@@ -1813,7 +1833,7 @@ t_pgOfs = evalOffset(sub, 6);
 					lcd_putcAtt( 5*FW, y, (sd->opt.ss.mode == 1) ? 'A' : (sd->opt.ss.mode == 2) ? 'V' : 'S', attr ) ;
       	  if(active)
 					{
-	          CHECK_INCDEC_H_MODELVAR( sd->opt.ss.mode, 0, 2 ) ;
+	          CHECK_INCDEC_H_MODELVAR_0( sd->opt.ss.mode, 2 ) ;
   	      }
 				}
       	else if (j == 1)
@@ -1890,7 +1910,7 @@ t_pgOfs = evalOffset(sub, 6);
   		    putsDrSwitches(5*FW, y, sd->opt.vs.vswtch, attr);
     		  if(active)
 					{
-    		    CHECK_INCDEC_H_MODELVAR( sd->opt.vs.vswtch, 0, MAX_DRSWITCH-1 ) ;
+    		    CHECK_INCDEC_H_MODELVAR_0( sd->opt.vs.vswtch, MAX_DRSWITCH-1 ) ;
     		  }
 				}
     		else if (j == 1)
@@ -1898,7 +1918,7 @@ t_pgOfs = evalOffset(sub, 6);
 					lcd_putsAttIdx( 10*FW, y, PSTR("\006ON    OFF   BOTH  15Secs30Secs60SecsVaribl"), sd->opt.vs.vmode, attr ) ;
     		  if(active)
 					{
-    		    CHECK_INCDEC_H_MODELVAR( sd->opt.vs.vmode, 0, 6 ) ;
+    		    CHECK_INCDEC_H_MODELVAR_0( sd->opt.vs.vmode, 6 ) ;
     		  }
 				}
 				else
@@ -2003,7 +2023,7 @@ for(uint8_t i=0; i<7; i++){
 			 ) && attr)
         switch (subSub) {
         case 0:
-            CHECK_INCDEC_H_MODELVAR( cs.func, 0,CS_MAXF);
+            CHECK_INCDEC_H_MODELVAR_0( cs.func, CS_MAXF);
             if(cstate != CS_STATE(cs.func))
             {
                 cs.v1  = 0;
@@ -2014,7 +2034,7 @@ for(uint8_t i=0; i<7; i++){
             switch (cstate) {
             case (CS_VOFS):
 //#ifdef FRSKY
-                CHECK_INCDEC_H_MODELVAR( cs.v1, 0,NUM_XCHNRAW+NUM_TELEM_ITEMS);
+                CHECK_INCDEC_H_MODELVAR_0( cs.v1, NUM_XCHNRAW+NUM_TELEM_ITEMS);
 //#else
 //                CHECK_INCDEC_H_MODELVAR( event, cs.v1, 0,NUM_XCHNRAW);
 //#endif
@@ -2030,7 +2050,7 @@ for(uint8_t i=0; i<7; i++){
 //#endif
                 break;
             case (CS_TIMER):
-                CHECK_INCDEC_H_MODELVAR( cs.v1, 0,99);
+                CHECK_INCDEC_H_MODELVAR_0( cs.v1, 99);
                 break;
 
             default:
@@ -2047,26 +2067,27 @@ for(uint8_t i=0; i<7; i++){
                 break;
             case (CS_VCOMP):
 //#ifdef FRSKY
-                CHECK_INCDEC_H_MODELVAR( cs.v2, 0,NUM_XCHNRAW+NUM_TELEM_ITEMS);
+                CHECK_INCDEC_H_MODELVAR_0( cs.v2, NUM_XCHNRAW+NUM_TELEM_ITEMS);
 //#else
 //                CHECK_INCDEC_H_MODELVAR( event, cs.v2, 0,NUM_XCHNRAW);
 //#endif
                 break;
             case (CS_TIMER):
-                CHECK_INCDEC_H_MODELVAR( cs.v2, 0,99);
+                CHECK_INCDEC_H_MODELVAR_0( cs.v2, 99);
                 break;
             default:
                 break;
             }
             break;
         case 3:
-          CHECK_INCDEC_H_MODELVAR( cs.andsw, 0, 15 ) ;
+          CHECK_INCDEC_H_MODELVAR_0( cs.andsw, 15 ) ;
 				break;
         }
 }
 }
 
-static int8_t s_currMixIdx;
+static uint8_t s_currMixIdx;
+static uint8_t s_moveMixIdx;
 static int8_t s_currDestCh;
 static bool   s_currMixInsMode;
 
@@ -2082,19 +2103,40 @@ void deleteMix(uint8_t idx)
     eeWaitComplete() ;
 }
 
-static void insertMix(uint8_t idx)
+static void insertMix(uint8_t idx, uint8_t copy)
 {
     MixData *md = &g_model.mixData[0] ;
 		md += idx ;
 	
     memmove( md+1, md,(MAX_MIXERS-(idx+1))*sizeof(MixData) );
-    memset( md,0,sizeof(MixData));
-    md->destCh      = s_currDestCh; //-s_mixTab[sub];
-    md->srcRaw      = s_currDestCh; //1;   //
-    md->weight      = 100;
-    STORE_MODELVARS;
-    eeWaitComplete() ;
+		if ( copy )
+		{
+	    memmove( md, md-1, sizeof(MixData) ) ;
+		}
+		else
+		{
+	    memset( md,0,sizeof(MixData));
+  	  md->destCh      = s_currDestCh; //-s_mixTab[sub];
+    	md->srcRaw      = s_currDestCh; //1;   //
+    	md->weight      = 100;
+		}
+		s_currMixIdx = idx ;
+//    STORE_MODELVARS;
+//    eeWaitComplete() ;
 }
+
+
+
+static uint8_t editSlowDelay( uint8_t y, uint8_t attr, uint8_t value, const prog_char * s )
+{
+  lcd_puts_Pleft( y, s ) ;
+  lcd_outdezAtt(FW*16,y,value,attr);
+  if(attr)  CHECK_INCDEC_H_MODELVAR_0( value, 15); //!! bitfield
+	return value ;
+}
+
+
+uint8_t MixPopup ;
 
 void menuProcMixOne(uint8_t event)
 {
@@ -2103,7 +2145,7 @@ void menuProcMixOne(uint8_t event)
 
     MixData *md2 = mixaddress( s_currMixIdx ) ;
     putsChn(x+1*FW,0,md2->destCh,0);
-    int8_t  sub    = mstate2.m_posVert;
+    uint8_t  sub    = mstate2.m_posVert;
 
     evalOffset(sub, 6);
 
@@ -2147,17 +2189,17 @@ void menuProcMixOne(uint8_t event)
             lcd_putsAtt(FW*14,y, b ? Str_ON : Str_OFF,attr);  //default is 0=OFF
             //            lcd_putsnAtt( x, y, PSTR("OFFON ")+3*value,3,mode ? INVERS:0) ;
             //            menu_lcd_onoff( FW*14, y, md2->enableFmTrim, sub==i ) ;
-            if(attr) { CHECK_INCDEC_H_MODELVAR( b, 0,1); md2->enableFmTrim = b ; }
+            if(attr) { CHECK_INCDEC_H_MODELVAR_0( b, 1); md2->enableFmTrim = b ; }
             break;
         case 4:
             lcd_puts_Pleft(  y,PSTR("\002Trim"));
 						lcd_putsAtt(FW*14,y, md2->carryTrim ? Str_OFF : Str_ON,attr);  //default is 0=ON
-            if(attr) CHECK_INCDEC_H_MODELVAR( md2->carryTrim, 0,1);
+            if(attr) CHECK_INCDEC_H_MODELVAR_0( md2->carryTrim, 1);
             break;
         case 5:
             lcd_puts_Pleft(  y,PSTR("\002Curves"));
             lcd_putsnAtt( FW*14,y,get_curve_string()+md2->curve*3,3,attr);
-            if(attr) CHECK_INCDEC_H_MODELVAR( md2->curve, 0,MAX_CURVE5+MAX_CURVE9+7-1);
+            if(attr) CHECK_INCDEC_H_MODELVAR_0( md2->curve, MAX_CURVE5+MAX_CURVE9+7-1);
             if(attr && md2->curve>=CURVE_BASE && event==EVT_KEY_FIRST(KEY_MENU)){
                 s_curveChan = md2->curve-CURVE_BASE;
                 pushMenu(menuProcCurveOne);
@@ -2175,37 +2217,42 @@ void menuProcMixOne(uint8_t event)
                 lcd_outdezAtt(FW*14,y,b,attr|LEFT);
             else
                 lcd_putsAtt(  FW*13,y,Str_OFF,attr);
-            if(attr) { CHECK_INCDEC_H_MODELVAR( b, 0,3); md2->mixWarn = b ; }
+            if(attr) { CHECK_INCDEC_H_MODELVAR_0( b, 3); md2->mixWarn = b ; }
             break;
         case 8:
             lcd_puts_Pleft(  y,PSTR("\002Multpx"));
             lcd_putsAttIdx(13*FW, y,PSTR("\010Add     MultiplyReplace "),md2->mltpx,attr);
-            if(attr) CHECK_INCDEC_H_MODELVAR( md2->mltpx, 0, 2); //!! bitfield
+            if(attr) CHECK_INCDEC_H_MODELVAR_0( md2->mltpx, 2); //!! bitfield
             break;
         case 9:
-            lcd_puts_Pleft(  y,PSTR("\002Delay Down"));
-            lcd_outdezAtt(FW*16,y,md2->delayDown,attr);
-            if(attr)  CHECK_INCDEC_H_MODELVAR( md2->delayDown, 0,15); //!! bitfield
+						md2->delayDown = editSlowDelay( y, attr, md2->delayDown, PSTR("\002Delay Down") ) ;
+//            lcd_puts_Pleft(  y,PSTR("\002Delay Down"));
+//            lcd_outdezAtt(FW*16,y,md2->delayDown,attr);
+//            if(attr)  CHECK_INCDEC_H_MODELVAR_0( md2->delayDown, 15); //!! bitfield
             break;
         case 10:
-            lcd_puts_Pleft(  y,PSTR("\002Delay Up"));
-            lcd_outdezAtt(FW*16,y,md2->delayUp,attr);
-            if(attr)  CHECK_INCDEC_H_MODELVAR( md2->delayUp, 0,15); //!! bitfield
+						md2->delayUp = editSlowDelay( y, attr, md2->delayUp, PSTR("\002Delay Up") ) ;
+//            lcd_puts_Pleft(  y,PSTR("\002Delay Up"));
+//            lcd_outdezAtt(FW*16,y,md2->delayUp,attr);
+//            if(attr)  CHECK_INCDEC_H_MODELVAR_0( md2->delayUp, 15); //!! bitfield
             break;
         case 11:
-            lcd_puts_Pleft(  y,PSTR("\002Slow  Down"));
-            lcd_outdezAtt(FW*16,y,md2->speedDown,attr);
-            if(attr)  CHECK_INCDEC_H_MODELVAR( md2->speedDown, 0,15); //!! bitfield
+						md2->speedDown = editSlowDelay( y, attr, md2->speedDown, PSTR("\002Slow  Down") ) ;
+//            lcd_puts_Pleft(  y,PSTR("\002Slow  Down"));
+//            lcd_outdezAtt(FW*16,y,md2->speedDown,attr);
+//            if(attr)  CHECK_INCDEC_H_MODELVAR_0( md2->speedDown, 15); //!! bitfield
             break;
         case 12:
-            lcd_puts_Pleft(  y,PSTR("\002Slow  Up"));
-            lcd_outdezAtt(FW*16,y,md2->speedUp,attr);
-            if(attr)  CHECK_INCDEC_H_MODELVAR( md2->speedUp, 0,15); //!! bitfield
+						md2->speedUp = editSlowDelay( y, attr, md2->speedUp, PSTR("\002Slow  Up") ) ;
+//            lcd_puts_Pleft(  y,PSTR("\002Slow  Up"));
+//            lcd_outdezAtt(FW*16,y,md2->speedUp,attr);
+//            if(attr)  CHECK_INCDEC_H_MODELVAR_0( md2->speedUp, 15); //!! bitfield
             break;
         case 13:
             lcd_putsAtt(  2*FW,y,PSTR("DELETE MIX [MENU]"),attr);
             if(attr && event==EVT_KEY_LONG(KEY_MENU)){
                 killEvents(event);
+								Tevent = 0 ;	// Prevent MixPopup appearing
                 deleteMix(s_currMixIdx);
                 audioDefevent(AU_WARNING2);
                 popMenu();
@@ -2215,15 +2262,15 @@ void menuProcMixOne(uint8_t event)
     }
 }
 
-struct MixTab{
-    uint8_t chId:6;    //:4  1..NUM_XCHNOUT  dst chn id
-    uint8_t   showCh:1;// show the dest chn
-    uint8_t   hasDat:1;// show the data info
-    int8_t selCh;   //:5  1..MAX_MIXERS+NUM_XCHNOUT sel sequence
-    int8_t selDat;  //:5  1..MAX_MIXERS+NUM_XCHNOUT sel sequence
-    int8_t insIdx;  //:5  0..MAX_MIXERS-1        insert index into mix data tab
-    int8_t editIdx; //:5  0..MAX_MIXERS-1        edit   index into mix data tab
-} ;
+//struct MixTab{
+//    uint8_t chId:6;    //:4  1..NUM_XCHNOUT  dst chn id
+//    uint8_t   showCh:1;// show the dest chn
+//    uint8_t   hasDat:1;// show the data info
+//    int8_t selCh;   //:5  1..MAX_MIXERS+NUM_XCHNOUT sel sequence
+//    int8_t selDat;  //:5  1..MAX_MIXERS+NUM_XCHNOUT sel sequence
+//    int8_t insIdx;  //:5  0..MAX_MIXERS-1        insert index into mix data tab
+//    int8_t editIdx; //:5  0..MAX_MIXERS-1        edit   index into mix data tab
+//} ;
 int8_t s_mixMaxSel;
 
 struct t_calib
@@ -2236,54 +2283,54 @@ struct t_calib
 
 union t_xmem
 {
-	struct MixTab s_mixTab[MAX_MIXERS+NUM_XCHNOUT+1] ;	
+//	struct MixTab s_mixTab[MAX_MIXERS+NUM_XCHNOUT+1] ;	
 	struct t_calib Cal_data ;
 	char buf[sizeof(g_model.name)+5];
 } Xmem ;
 
-void genMixTab()
-{
-    uint8_t maxDst  = 0;
-    uint8_t mtIdx   = 0;
-    uint8_t sel     = 1;
-    memset(Xmem.s_mixTab,0,sizeof(Xmem.s_mixTab));
+//void genMixTab()
+//{
+//    uint8_t maxDst  = 0;
+//    uint8_t mtIdx   = 0;
+//    uint8_t sel     = 1;
+//    memset(Xmem.s_mixTab,0,sizeof(Xmem.s_mixTab));
 
-    MixData *md=g_model.mixData;
+//    MixData *md=g_model.mixData;
 
-    for(uint8_t i=0; i<MAX_MIXERS; i++)
-    {
-        uint8_t destCh = md[i].destCh;
-        if(destCh==0) destCh=NUM_XCHNOUT;
-        if(destCh > maxDst){
-            while(destCh > maxDst){ //ch-loop, hole alle channels auf
-                maxDst++;
-                Xmem.s_mixTab[mtIdx].chId  = maxDst; //mark channel header
-                Xmem.s_mixTab[mtIdx].showCh = true;
-                Xmem.s_mixTab[mtIdx].selCh = sel++; //vorab vergeben, falls keine dat
-                Xmem.s_mixTab[mtIdx].insIdx= i;     //
-                mtIdx++;
-            }
-            mtIdx--; //folding: letztes ch bekommt zusaetzlich dat
-            s_mixMaxSel =sel;
-            sel--; //letzte zeile hat dat, falls nicht ist selCh schon belegt
-        }
-        if(md[i].destCh==0) break; //letzter eintrag in mix data tab
-        Xmem.s_mixTab[mtIdx].chId    = destCh; //mark channel header
-        Xmem.s_mixTab[mtIdx].editIdx = i;
-        Xmem.s_mixTab[mtIdx].hasDat  = true;
-        Xmem.s_mixTab[mtIdx].selDat  = sel++;
-        if(md[i].destCh == md[i+1].destCh){
-            Xmem.s_mixTab[mtIdx].selCh  = 0; //ueberschreibt letzte Zeile von ch-loop
-            Xmem.s_mixTab[mtIdx].insIdx = 0; //
-        }
-        else{
-            Xmem.s_mixTab[mtIdx].selCh  = sel++;
-            Xmem.s_mixTab[mtIdx].insIdx = i+1; //
-        }
-        s_mixMaxSel =sel;
-        mtIdx++;
-    }
-}
+//    for(uint8_t i=0; i<MAX_MIXERS; i++)
+//    {
+//        uint8_t destCh = md[i].destCh;
+//        if(destCh==0) destCh=NUM_XCHNOUT;
+//        if(destCh > maxDst){
+//            while(destCh > maxDst){ //ch-loop, hole alle channels auf
+//                maxDst++;
+//                Xmem.s_mixTab[mtIdx].chId  = maxDst; //mark channel header
+//                Xmem.s_mixTab[mtIdx].showCh = true;
+//                Xmem.s_mixTab[mtIdx].selCh = sel++; //vorab vergeben, falls keine dat
+//                Xmem.s_mixTab[mtIdx].insIdx= i;     //
+//                mtIdx++;
+//            }
+//            mtIdx--; //folding: letztes ch bekommt zusaetzlich dat
+//            s_mixMaxSel =sel;
+//            sel--; //letzte zeile hat dat, falls nicht ist selCh schon belegt
+//        }
+//        if(md[i].destCh==0) break; //letzter eintrag in mix data tab
+//        Xmem.s_mixTab[mtIdx].chId    = destCh; //mark channel header
+//        Xmem.s_mixTab[mtIdx].editIdx = i;
+//        Xmem.s_mixTab[mtIdx].hasDat  = true;
+//        Xmem.s_mixTab[mtIdx].selDat  = sel++;
+//        if(md[i].destCh == md[i+1].destCh){
+//            Xmem.s_mixTab[mtIdx].selCh  = 0; //ueberschreibt letzte Zeile von ch-loop
+//            Xmem.s_mixTab[mtIdx].insIdx = 0; //
+//        }
+//        else{
+//            Xmem.s_mixTab[mtIdx].selCh  = sel++;
+//            Xmem.s_mixTab[mtIdx].insIdx = i+1; //
+//        }
+//        s_mixMaxSel =sel;
+//        mtIdx++;
+//    }
+//}
 
 static void memswap( void *a, void *b, uint8_t size )
 {
@@ -2301,48 +2348,69 @@ static void memswap( void *a, void *b, uint8_t size )
     }
 }
 
-static void moveMix(uint8_t idx,uint8_t mcopy, uint8_t dir) //true=inc=down false=dec=up - Issue 49
+//void moveMix(uint8_t idx,uint8_t mcopy, uint8_t dir) //true=inc=down false=dec=up - Issue 49
+//{
+//    if(idx>MAX_MIXERS || (idx==0 && !dir) || (idx==MAX_MIXERS && dir)) ;
+//    uint8_t tdx = dir ? idx+1 : idx-1;
+//    MixData *src= mixaddress( idx ) ; //&g_model.mixData[idx];
+//    MixData *tgt= mixaddress( tdx ) ; //&g_model.mixData[tdx];
+
+//    if((src->destCh==0) || (src->destCh>NUM_CHNOUT) || (tgt->destCh>NUM_CHNOUT)) ;
+
+//    if(mcopy)
+//		{
+
+//        if (reachMixerCountLimit())
+//        {
+//            return ;
+//        }
+//		    MixData *md = &g_model.mixData[0] ;
+//				md += idx ;
+	
+//        memmove( md+1, md, (MAX_MIXERS-(idx+1))*sizeof(MixData) );
+//        return ;
+//    }
+
+//    if(tgt->destCh!=src->destCh) {
+//        if ((dir)  && (src->destCh<NUM_CHNOUT)) src->destCh++;
+//        if ((!dir) && (src->destCh>0))          src->destCh--;
+//        return ;
+//    }
+
+//    //flip between idx and tgt
+//    memswap( tgt, src, sizeof(MixData) ) ;
+//    STORE_MODELVARS;
+//    eeWaitComplete() ;
+
+//		return ;
+//}
+
+void moveMix(uint8_t idx, uint8_t dir) //true=inc=down false=dec=up - Issue 49
 {
-    if(idx>MAX_MIXERS || (idx==0 && !dir) || (idx==MAX_MIXERS && dir)) return;
+    if(idx>MAX_MIXERS || (idx==0 && !dir) || (idx==MAX_MIXERS && dir)) return ;
     uint8_t tdx = dir ? idx+1 : idx-1;
     MixData *src= mixaddress( idx ) ; //&g_model.mixData[idx];
     MixData *tgt= mixaddress( tdx ) ; //&g_model.mixData[tdx];
 
-    if((src->destCh==0) || (src->destCh>NUM_CHNOUT) || (tgt->destCh>NUM_CHNOUT)) return;
+    if((src->destCh==0) || (src->destCh>NUM_CHNOUT) || (tgt->destCh>NUM_CHNOUT)) return ;
 
-    if(mcopy)
+    if(tgt->destCh!=src->destCh)
 		{
-
-        if (reachMixerCountLimit())
-        {
-            return;
-        }
-		    MixData *md = &g_model.mixData[0] ;
-				md += idx ;
-	
-        memmove( md+1, md, (MAX_MIXERS-(idx+1))*sizeof(MixData) );
-        return;
-    }
-
-    if(tgt->destCh!=src->destCh) {
-        if ((dir)  && (src->destCh<NUM_CHNOUT)) src->destCh++;
-        if ((!dir) && (src->destCh>0))          src->destCh--;
-        return;
+      if ((dir)  && (src->destCh<NUM_CHNOUT)) src->destCh++;
+      if ((!dir) && (src->destCh>0))          src->destCh--;
+			return ;
     }
 
     //flip between idx and tgt
     memswap( tgt, src, sizeof(MixData) ) ;
     STORE_MODELVARS;
-    eeWaitComplete() ;
-
+//    eeWaitComplete() ;
+		s_moveMixIdx = tdx ;
+		return ;
 }
 
 void menuMixersLimit(uint8_t event)
 {
-    lcd_puts_Pleft(2*FH, PSTR("Max mixers reach: "));
-    lcd_outdez(20*FW, 2*FH, getMixerCount() );
-
-    lcd_puts_Pleft(4*FH, PSTR("Press [EXIT] to abort"));
     switch(event)
     {
     case  EVT_KEY_FIRST(KEY_EXIT):
@@ -2351,22 +2419,36 @@ void menuMixersLimit(uint8_t event)
         pushMenu(menuProcMix);
         break;
     }
+    lcd_puts_Pleft(2*FH, PSTR("Max mixers reach: 32"));
+//    lcd_outdez(20*FW, 2*FH, MAX_MIXERS ) ;		//getMixerCount() );
+
+    lcd_puts_Pleft(4*FH, PSTR("Press [EXIT] to abort"));
 }
 
-uint8_t getMixerCount()
+static uint8_t getMixerCount()
 {
-    uint8_t mixerCount = 0;
-    uint8_t dch ;
+  if ( g_model.mixData[MAX_MIXERS-1].destCh )
+	{
+		return MAX_MIXERS ;
+	}
+	else
+	{
+		return MAX_MIXERS - 1 ;
+	}
+	
+	
+//    uint8_t mixerCount = 0;
+//    uint8_t dch ;
 
-    for(uint8_t i=0;i<MAX_MIXERS;i++)
-    {
-        dch = g_model.mixData[i].destCh ;
-        if ((dch!=0) && (dch<=NUM_CHNOUT))
-        {
-            mixerCount++;
-        }
-    }
-    return mixerCount;
+//    for(uint8_t i=0;i<MAX_MIXERS;i++)
+//    {
+//        dch = g_model.mixData[i].destCh ;
+//        if ((dch!=0) && (dch<=NUM_CHNOUT))
+//        {
+//            mixerCount++;
+//        }
+//    }
+//    return mixerCount;
 }
 
 bool reachMixerCountLimit()
@@ -2395,16 +2477,13 @@ void yesNoMenuExit()
 void menuDeleteMix(uint8_t event)
 //void menuDeleteModel(uint8_t event)
 {
-    lcd_puts_Pleft(1*FH, PSTR("DELETE MIX?"));
-		yesNoMenuExit() ;
-
     switch(event){
     case EVT_ENTRY:
         audioDefevent(AU_WARNING1);
         break;
     case EVT_KEY_FIRST(KEY_MENU):
         deleteMix(mixToDelete);
-        genMixTab();
+//        genMixTab();
 
         //fallthrough
     case EVT_KEY_FIRST(KEY_EXIT):
@@ -2413,144 +2492,407 @@ void menuDeleteMix(uint8_t event)
         pushMenu(menuProcMix);
         break;
     }
+    lcd_puts_Pleft(1*FH, PSTR("DELETE MIX?"));
+		yesNoMenuExit() ;
+
 }
+
+uint8_t	PopupIdx = 0 ;
+uint8_t s_moveMode;
+
+
+void mixpopup()
+{
+	uint8_t popidx = PopupIdx ;
+	
+  lcd_puts_Pleft(1*FH, PSTR("\003 EDIT   "));
+  lcd_puts_Pleft(2*FH, PSTR("\003 INSERT "));
+  lcd_puts_Pleft(3*FH, PSTR("\003 COPY   "));
+  lcd_puts_Pleft(4*FH, PSTR("\003 MOVE   "));
+	lcd_char_inverse( 4*FW, (popidx+1)*FH, 6*FW ) ;
+	lcd_rect( 3*FW, 1*FH-1, 8*FW, 4*FH+2 ) ;
+
+  switch(Tevent)
+	{
+    case EVT_KEY_FIRST(KEY_MENU) :
+			if ( popidx == 1 )
+			{
+      	if ( !reachMixerCountLimit())
+      	{
+					s_currMixInsMode = 1 ;
+      		insertMix(++s_currMixIdx, 0 ) ;
+  	    	s_moveMode=false;
+				}
+			}
+			if ( popidx < 2 )
+			{
+	      pushMenu(menuProcMixOne) ;
+			}
+			else
+			{
+				if( popidx == 2 )	// copy
+				{
+     			insertMix(++s_currMixIdx, 1 ) ;
+				}
+				// PopupIdx == 2 or 3, copy or move
+				s_moveMode = 1 ;
+			}
+			MixPopup = 0 ;
+		break ;
+    
+		case EVT_KEY_FIRST(KEY_UP) :
+			if ( popidx )
+			{
+				popidx -= 1 ;
+			}
+		break ;
+    
+		case EVT_KEY_FIRST(KEY_DOWN) :
+			if ( popidx < 3 )
+			{
+				popidx += 1 ;
+			}
+		break ;
+    
+		case EVT_KEY_FIRST(KEY_EXIT) :
+			MixPopup = 0 ;
+			killEvents( Tevent ) ;
+			Tevent = 0 ;
+		break ;
+	}
+
+	s_moveMixIdx = s_currMixIdx ;
+	PopupIdx = popidx ;
+
+//	if ( Tevent )
+//	{
+//  	killEvents(Tevent);
+//	}
+
+}
+
 
 void menuProcMix(uint8_t event)
 {
-    SIMPLE_MENU("MIXER", menuTabModel, e_Mix, s_mixMaxSel);
-
-    int8_t  sub    = mstate2.m_posVert;
-    static uint8_t s_moveMode;
-//    static uint8_t s_sourceMoveMix;			// Not used
-    static uint8_t s_copyMix;
-    if(sub==0) s_moveMode = false;
-
-    MixData *md=g_model.mixData;
-    switch(event)
-    {
+	TITLE("MIXER");
+	static MState2 mstate2;
+	if ( !MixPopup )
+	{
+		mstate2.check_simple(event,e_Mix,menuTabModel,DIM(menuTabModel),s_mixMaxSel) ;
+	}
+  
+	uint8_t  sub    = mstate2.m_posVert ;
+	uint8_t	menulong = 0 ;
+	
+  switch(Tevent)
+	{
     case EVT_ENTRY:
 //        s_sourceMoveMix=0;			// Not used
-        s_copyMix=true;
-        s_moveMode=false;
-    case EVT_ENTRY_UP:
-        genMixTab();
-        break;
+//      s_copyMix=true;
+	    s_moveMode = false ;
+		break ;
+
     case EVT_KEY_FIRST(KEY_MENU):
-        if(sub>=1) s_moveMode = !s_moveMode;
-        s_copyMix = s_moveMode;
-        if(s_currMixInsMode) s_moveMode = false; //cant have edit mode if mix not selected
-        break;
-    case EVT_KEY_REPT(KEY_UP):
-    case EVT_KEY_FIRST(KEY_UP):
-        s_copyMix = false;  //only copy if going down
-    case EVT_KEY_REPT(KEY_DOWN):
-    case EVT_KEY_FIRST(KEY_DOWN):
-        if(s_moveMode) {
-            //killEvents(event);
-            moveMix(s_currMixIdx,s_copyMix,event==EVT_KEY_FIRST(KEY_DOWN)); //true=inc=down false=dec=up
-            if(s_copyMix && event==EVT_KEY_FIRST(KEY_UP)) sub--;
-            s_copyMix = false;
-            genMixTab();
-        }
-        break;
-    case EVT_KEY_FIRST(KEY_EXIT):
-        if(s_moveMode) {
-//            deleteMix(s_currMixIdx);
-//            s_moveMode = false;
-//            genMixTab();
-            mixToDelete = s_currMixIdx;
-            s_moveMode = false;
-            killEvents(event);
-            pushMenu(menuDeleteMix);
-        }
-        break;
+			if ( s_moveMode )
+			{
+	    	s_moveMode = false ;
+			}
+		break ;
+
     case EVT_KEY_LONG(KEY_MENU):
-      	killEvents(event);
-				Tevent = 0 ;			// Prevent changing weight to/from Gvar
-        if(sub<1) break;
-        if (s_currMixInsMode && !reachMixerCountLimit())
-        {
-            insertMix(s_currMixIdx);
-        }
-        s_moveMode=false;
-        pushMenu(menuProcMixOne);
-        break;
+	  	killEvents(Tevent);
+			Tevent = 0 ;			// Prevent changing weight to/from Gvar
+      if(sub<1) break;
+			menulong = 1 ;
+//      if (s_currMixInsMode && !reachMixerCountLimit())
+//      {
+//          insertMix(s_currMixIdx);
+//      }
+//      s_moveMode=false;
+//      pushMenu(menuProcMixOne);
+    break;
+	}
+
+//    static uint8_t s_sourceMoveMix;			// Not used
+//  static uint8_t s_copyMix;
+  if(sub==0) s_moveMode = false;
+	uint8_t t_pgOfs = evalOffset( sub, 7 ) ;
+	
+//	lcd_outhex4( 50, 0, s_currMixIdx ) ;
+
+	if ( MixPopup )
+	{
+		Tevent = 0 ;
+	}
+
+  uint8_t mix_index = 0 ;
+  uint8_t current = 1 ;
+
+	if ( s_moveMode )
+	{
+		uint8_t dir ;
+		
+		if ( ( dir = (Tevent == EVT_KEY_FIRST(KEY_DOWN) ) ) || Tevent == EVT_KEY_FIRST(KEY_UP) )
+		{
+			moveMix( s_currMixIdx, dir ) ; //true=inc=down false=dec=up - Issue 49
+		}
+	}
+
+  for ( uint8_t chan=1 ; chan <= NUM_CHNOUT ; chan += 1 )
+	{
+    MixData *pmd ;
+		
+		pmd=mixaddress(mix_index) ;
+
+    if ( t_pgOfs < current && current-t_pgOfs < 8)
+		{
+      putsChn(1, (current-t_pgOfs)*FH, chan, 0) ; // show CHx
     }
 
-    int8_t markedIdx=-1;
-    uint8_t i;
-    int8_t minSel=99;
-    int8_t maxSel=-1;
-    //  lcd_puts_P( 6*FW, 1*FH,PSTR("wt src  sw crv"));
-    for(i=0; i<7; i++){
-			struct MixTab *mixtabptr ;
-        uint8_t y = i * FH + 1*FH;
-        uint8_t k = i + s_pgOfs;
-				mixtabptr = &Xmem.s_mixTab[k] ;
-        if(! mixtabptr->showCh && !mixtabptr->hasDat ) break;
+		pmd = mixaddress(mix_index) ;
+		uint8_t firstMix = mix_index ;
+		if (mix_index<MAX_MIXERS && /* pmd->srcRaw && */ pmd->destCh == chan)
+		{
+    	do
+			{
+				if (t_pgOfs < current )
+				{
+					if ( current-t_pgOfs < 8 )
+					{
+    	  	  uint8_t y = (current-t_pgOfs)*FH ;
+    				uint8_t attr = 0 ;
 
-        if(mixtabptr->showCh){
-            putsChn(0,y,mixtabptr->chId, 0); // show CHx
-        }
-        if(sub>0 && sub==mixtabptr->selCh) { //handle CHx is selected (other line)
-            //if(BLINK_ON_PHASE)
-            lcd_hline(0,y+7,FW*4);
-            s_currMixIdx     = mixtabptr->insIdx;
-            s_currDestCh     = mixtabptr->chId;
-            s_currMixInsMode = true;
-            markedIdx        = i;
-        }
-        if(mixtabptr->hasDat){ //show data
-            MixData *md2=&md[mixtabptr->editIdx];
-            uint8_t attr = sub==mixtabptr->selDat ? INVERS : 0;
-						uint8_t tattr = s_moveMode ? attr : 0 ;
-            if(!mixtabptr->showCh) //show prefix only if not first mix
-            		lcd_putsAttIdx( 3*FW, y, PSTR("\001+*R"),md2->mltpx,tattr);
-            lcd_putcAtt(    7*FW+FW/2, y, '%',tattr);
-            putsChnRaw(     9*FW, y, md2->srcRaw,tattr | MIX_SOURCE);
-            if(md2->swtch)putsDrSwitches( 13*FW, y, md2->swtch,tattr);
-            if(md2->curve)lcd_putsnAtt(   17*FW, y, get_curve_string()+md2->curve*3,3,tattr);
+						if ( !s_moveMode && (sub == current) )
+						{
+							s_currMixIdx = mix_index ;
+    					attr = INVERS ;
+							s_currDestCh = chan ;		// For insert
+							if ( menulong )
+							{
+								PopupIdx = 0 ;
+								MixPopup = 1 ;
+							}
+						}
+        	  if(firstMix != mix_index) //show prefix only if not first mix
+        	 		lcd_putsAttIdx( 4*FW, y, PSTR("\001+*R"),pmd->mltpx,0 ) ;
+    	    
+						putsChnRaw(     9*FW, y, pmd->srcRaw, /*attr | */ MIX_SOURCE ) ;
+	#if GVARS
+						pmd->weight = gvarMenuItem( 7*FW+FW/2, y, pmd->weight, -125, 125, attr ) ;
+	#else
+						lcd_outdezAtt(  7*FW+FW/2, y, pmd->weight, attr ) ; //attr);
+	#endif
+    	  	  lcd_putcAtt(    7*FW+FW/2, y, '%', 0 ) ; //tattr);
+    	  	  if( pmd->swtch) putsDrSwitches( 13*FW, y, pmd->swtch, 0 ) ; //tattr);
+          
+						char cs = ' ';
+        	  if (pmd->speedDown || pmd->speedUp)
+        	    cs = 'S';
+        	  if ((pmd->delayUp || pmd->delayDown))
+        	    cs = (cs =='S' ? '*' : 'D');
+        	  lcd_putc(20*FW+1, y, cs ) ;
 
-            bool bs = (md2->speedDown || md2->speedUp);
-            bool bd = (md2->delayUp || md2->delayDown);
-            char cs = (bs && bd) ? '*' : (bs ? 'S' : 'D');
-            if(bs || bd) lcd_putcAtt(20*FW+1, y, cs,s_editMode ? attr : 0);
-
-#if GVARS
-						md2->weight = gvarMenuItem( 7*FW+FW/2, y, md2->weight, -125, 125, attr ) ;
-#else
-            lcd_outdezAtt(  7*FW+FW/2, y, md2->weight,attr);
-#endif
-            if(attr == INVERS){ //handle dat is selected
-#if GVARS == 0
-                CHECK_INCDEC_H_MODELVAR( md2->weight, -125,125);
-#endif
-                s_currMixIdx     = mixtabptr->editIdx;
-                s_currDestCh     = mixtabptr->chId;
-                s_currMixInsMode = false;
-                markedIdx        = i;
-//                if(!s_moveMode) s_sourceMoveMix = k;			// Not used
-            }
-        }
-        //welche sub-indize liegen im sichtbaren bereich?
-        if(mixtabptr->selCh){
-            minSel = min(minSel,mixtabptr->selCh);
-            maxSel = max(maxSel,mixtabptr->selCh);
-        }
-        if(mixtabptr->selDat){
-            minSel = min(minSel,mixtabptr->selDat);
-            maxSel = max(maxSel,mixtabptr->selDat);
-        }
-
-    } //for 7
-    if( sub!=0 &&  markedIdx==-1) { //versuche die Marke zu finden
-        if(sub < minSel) s_pgOfs = max(0,s_pgOfs-1);
-        if(sub > maxSel) s_pgOfs++;
-    }
-    else if(markedIdx<0)              s_pgOfs = max(0,s_pgOfs-1);
-    else if(markedIdx>=6 && i>=8)      s_pgOfs++;
-
+						if ( s_moveMode )
+						{
+							if ( s_moveMixIdx == mix_index )
+							{
+								lcd_char_inverse( 4*FW, y, 17*FW ) ;
+								s_currMixIdx = mix_index ;
+								sub = mstate2.m_posVert = current ;
+							}
+						}
+					}
+					else
+					{
+						if ( current-t_pgOfs == 8 )
+						{
+							if ( s_moveMode )
+							{
+								if ( s_moveMixIdx == mix_index )
+								{
+									mstate2.m_posVert += 1 ;								
+								}
+							}
+						}
+					}
+				}
+				current += 1 ; mix_index += 1; pmd += 1 ;  // mixCnt += 1 ; 
+    	} while ( (mix_index<MAX_MIXERS && /* pmd->srcRaw && */ pmd->destCh == chan)) ;
+		}
+		else
+		{
+			if (sub == current)
+			{
+				s_currDestCh = chan ;		// For insert
+				s_currMixIdx = mix_index ;
+				lcd_rect( 0, (current-t_pgOfs)*FH-1, 24, 9 ) ;
+//				s_moveMode = 0 ;		// Can't move this
+				if ( menulong )		// Must need to insert here
+				{
+      		if ( !reachMixerCountLimit())
+      		{
+//						s_currMixInsMode = 1 ;
+      			insertMix(s_currMixIdx, 0 ) ;
+  	    		s_moveMode=false;
+	      		pushMenu(menuProcMixOne) ;
+						return ;
+      		}
+				}
+			}
+			current += 1 ;
+		}
+	}
+	if ( MixPopup )
+	{
+		Tevent = event ;
+		mixpopup() ;
+	}
+	s_mixMaxSel = current - 1 ;
 }
+
+//void menuProcMix(uint8_t event)
+//{
+//    SIMPLE_MENU("MIXER", menuTabModel, e_Mix, s_mixMaxSel);
+
+//    int8_t  sub    = mstate2.m_posVert;
+//    static uint8_t s_moveMode;
+////    static uint8_t s_sourceMoveMix;			// Not used
+//    static uint8_t s_copyMix;
+//    if(sub==0) s_moveMode = false;
+
+//    MixData *md=g_model.mixData;
+//    switch(event)
+//    {
+//    case EVT_ENTRY:
+////        s_sourceMoveMix=0;			// Not used
+//        s_copyMix=true;
+//        s_moveMode=false;
+//    case EVT_ENTRY_UP:
+//        genMixTab();
+//        break;
+//    case EVT_KEY_FIRST(KEY_MENU):
+//        if(sub>=1) s_moveMode = !s_moveMode;
+//        s_copyMix = s_moveMode;
+//        if(s_currMixInsMode) s_moveMode = false; //cant have edit mode if mix not selected
+//        break;
+//    case EVT_KEY_REPT(KEY_UP):
+//    case EVT_KEY_FIRST(KEY_UP):
+//        s_copyMix = false;  //only copy if going down
+//    case EVT_KEY_REPT(KEY_DOWN):
+//    case EVT_KEY_FIRST(KEY_DOWN):
+//        if(s_moveMode) {
+//            //killEvents(event);
+//            moveMix(s_currMixIdx,s_copyMix,event==EVT_KEY_FIRST(KEY_DOWN)); //true=inc=down false=dec=up
+//            if(s_copyMix && event==EVT_KEY_FIRST(KEY_UP)) sub--;
+//            s_copyMix = false;
+//            genMixTab();
+//        }
+//        break;
+//    case EVT_KEY_FIRST(KEY_EXIT):
+//        if(s_moveMode) {
+////            deleteMix(s_currMixIdx);
+////            s_moveMode = false;
+////            genMixTab();
+//            mixToDelete = s_currMixIdx;
+//            s_moveMode = false;
+//            killEvents(event);
+//            pushMenu(menuDeleteMix);
+//        }
+//        break;
+//    case EVT_KEY_LONG(KEY_MENU):
+//      	killEvents(event);
+//				Tevent = 0 ;			// Prevent changing weight to/from Gvar
+//        if(sub<1) break;
+//        if (s_currMixInsMode && !reachMixerCountLimit())
+//        {
+//            insertMix(s_currMixIdx, 0 );
+//        }
+//        s_moveMode=false;
+//        pushMenu(menuProcMixOne);
+//        break;
+//    }
+
+//    int8_t markedIdx=-1;
+//    uint8_t i;
+//    int8_t minSel=99;
+//    int8_t maxSel=-1;
+//    //  lcd_puts_P( 6*FW, 1*FH,PSTR("wt src  sw crv"));
+//    for(i=0; i<7; i++){
+//			struct MixTab *mixtabptr ;
+//        uint8_t y = i * FH + 1*FH;
+//        uint8_t k = i + s_pgOfs;
+//				mixtabptr = &Xmem.s_mixTab[k] ;
+//        if(! mixtabptr->showCh && !mixtabptr->hasDat ) break;
+
+//        if(mixtabptr->showCh){
+//            putsChn(0,y,mixtabptr->chId, 0); // show CHx
+//        }
+//        if(sub>0 && sub==mixtabptr->selCh) { //handle CHx is selected (other line)
+//            //if(BLINK_ON_PHASE)
+//            lcd_hline(0,y+7,FW*4);
+//            s_currMixIdx     = mixtabptr->insIdx;
+//            s_currDestCh     = mixtabptr->chId;
+//            s_currMixInsMode = true;
+//            markedIdx        = i;
+//        }
+//        if(mixtabptr->hasDat){ //show data
+//            MixData *md2=&md[mixtabptr->editIdx];
+//            uint8_t attr = sub==mixtabptr->selDat ? INVERS : 0;
+//						uint8_t tattr = s_moveMode ? attr : 0 ;
+//            if(!mixtabptr->showCh) //show prefix only if not first mix
+//            		lcd_putsAttIdx( 3*FW, y, PSTR("\001+*R"),md2->mltpx,tattr);
+//            lcd_putcAtt(    7*FW+FW/2, y, '%',tattr);
+//            putsChnRaw(     9*FW, y, md2->srcRaw,tattr | MIX_SOURCE);
+//            if(md2->swtch)putsDrSwitches( 13*FW, y, md2->swtch,tattr);
+//            if(md2->curve)lcd_putsnAtt(   17*FW, y, get_curve_string()+md2->curve*3,3,tattr);
+
+//            char cs = ' ';
+//            if (md2->speedDown || md2->speedUp)
+//              cs = 'S';
+//            if ((md2->delayUp || md2->delayDown))
+//              cs = (cs =='S' ? '*' : 'D');
+//            lcd_putcAtt(20*FW+1, y, cs,s_editMode ? attr : 0);
+            
+////						bool bs = (md2->speedDown || md2->speedUp);
+////            bool bd = (md2->delayUp || md2->delayDown);
+////            char cs = (bs && bd) ? '*' : (bs ? 'S' : 'D');
+////            if(bs || bd) lcd_putcAtt(20*FW+1, y, cs,s_editMode ? attr : 0);
+
+//#if GVARS
+//						md2->weight = gvarMenuItem( 7*FW+FW/2, y, md2->weight, -125, 125, attr ) ;
+//#else
+//            lcd_outdezAtt(  7*FW+FW/2, y, md2->weight,attr);
+//#endif
+//            if(attr == INVERS){ //handle dat is selected
+//#if GVARS == 0
+//                CHECK_INCDEC_H_MODELVAR( md2->weight, -125,125);
+//#endif
+//                s_currMixIdx     = mixtabptr->editIdx;
+//                s_currDestCh     = mixtabptr->chId;
+//                s_currMixInsMode = false;
+//                markedIdx        = i;
+////                if(!s_moveMode) s_sourceMoveMix = k;			// Not used
+//            }
+//        }
+//        //welche sub-indize liegen im sichtbaren bereich?
+//        if(mixtabptr->selCh){
+//            minSel = min(minSel,mixtabptr->selCh);
+//            maxSel = max(maxSel,mixtabptr->selCh);
+//        }
+//        if(mixtabptr->selDat){
+//            minSel = min(minSel,mixtabptr->selDat);
+//            maxSel = max(maxSel,mixtabptr->selDat);
+//        }
+
+//    } //for 7
+//    if( sub!=0 &&  markedIdx==-1) { //versuche die Marke zu finden
+//        if(sub < minSel) s_pgOfs = max(0,s_pgOfs-1);
+//        if(sub > maxSel) s_pgOfs++;
+//    }
+//    else if(markedIdx<0)              s_pgOfs = max(0,s_pgOfs-1);
+//    else if(markedIdx>=6 && i>=8)      s_pgOfs++;
+
+//}
 
 
 uint16_t expou(uint16_t x, uint16_t k)
@@ -2707,16 +3049,15 @@ switch (expoDrOn) {
 y+=FH;
 
 
-#if GVARS
-int8_t   kViewR  = REG(g_model.expoData[s_expoChan].expo[expoDrOn][DR_EXPO][DR_RIGHT], -100, 100);  //NormR;
-int8_t   kViewL  = REG(g_model.expoData[s_expoChan].expo[expoDrOn][DR_EXPO][DR_LEFT], -100, 100);  //NormL;
-int8_t   wViewR  = REG(g_model.expoData[s_expoChan].expo[expoDrOn][DR_WEIGHT][DR_RIGHT]+100, 0, 100);  //NormWeightR+100;
-int8_t   wViewL  = REG(g_model.expoData[s_expoChan].expo[expoDrOn][DR_WEIGHT][DR_LEFT]+100, 0, 100);  //NormWeightL+100;
-#else
 int8_t   kViewR  = g_model.expoData[s_expoChan].expo[expoDrOn][DR_EXPO][DR_RIGHT];  //NormR;
 int8_t   kViewL  = g_model.expoData[s_expoChan].expo[expoDrOn][DR_EXPO][DR_LEFT];  //NormL;
 int8_t   wViewR  = g_model.expoData[s_expoChan].expo[expoDrOn][DR_WEIGHT][DR_RIGHT]+100;  //NormWeightR+100;
 int8_t   wViewL  = g_model.expoData[s_expoChan].expo[expoDrOn][DR_WEIGHT][DR_LEFT]+100;  //NormWeightL+100;
+#if GVARS
+   kViewR  = REG100_100(kViewR);
+   kViewL  = REG100_100(kViewL);
+   wViewR  = REG(wViewR,0,100);
+   wViewL  = REG(wViewL,0,100);
 #endif
 
 #define WE_CHART	(WCHART-1)
@@ -2991,7 +3332,7 @@ if(t_pgOfs<subN) {
 					 p1valdiff || 
 #endif
 					 event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_FIRST(KEY_UP) || event==EVT_KEY_REPT(KEY_DOWN) || event==EVT_KEY_REPT(KEY_UP))
-            CHECK_INCDEC_H_MODELVAR( v ,0,NUMCHARS-1);
+            CHECK_INCDEC_H_MODELVAR_0( v ,NUMCHARS-1);
         v = idx2char(v);
         g_model.name[subSub]=v;
         lcd_putcAtt((10+subSub)*FW, y, v,INVERS);
@@ -3006,7 +3347,7 @@ if(t_pgOfs<subN) {
     if(sub==subN)
 		{
 			attr = INVERS ;
-      CHECK_INCDEC_H_MODELVAR( g_model.modelVoice ,0,49 ) ;
+      CHECK_INCDEC_H_MODELVAR_0( g_model.modelVoice ,49 ) ;
 		}
     lcd_outdezAtt(  15*FW-2, y, (int16_t)g_model.modelVoice + 260 ,attr);
     if((y+=FH)>7*FH) return;
@@ -3030,7 +3371,7 @@ if(t_pgOfs<subN) {
         switch (subSub) {
         case 0:
         {
-            CHECK_INCDEC_H_MODELVAR( min ,0,59);
+            CHECK_INCDEC_H_MODELVAR_0( min ,59);
             g_model.tmrVal = sec + min*60;
             break;
         }
@@ -3074,7 +3415,7 @@ if(t_pgOfs<subN) { //timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/
 if(t_pgOfs<subN) {
     lcd_puts_Pleft(    y, Str_Timer);
     uint8_t attr = 0 ;
-    if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_MODELVAR(g_model.tmrDir,0,1); }
+    if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_MODELVAR_0(g_model.tmrDir,1); }
     lcd_putsAttIdx(  10*FW, y, PSTR("\012Count DownCount Up  "),g_model.tmrDir, attr ) ;
     if((y+=FH)>7*FH) return;
 }subN++;
@@ -3084,7 +3425,7 @@ if(t_pgOfs<subN) {
     b = g_model.thrTrim ;
     lcd_puts_Pleft(    y, PSTR("T-Trim"));
     menu_lcd_onoff( 10*FW, y, b, sub==subN ) ;
-    if(sub==subN) { CHECK_INCDEC_H_MODELVAR(b,0,1); g_model.thrTrim = b ; }
+    if(sub==subN) { CHECK_INCDEC_H_MODELVAR_0(b,1); g_model.thrTrim = b ; }
     if((y+=FH)>7*FH) return;
 }subN++;
 
@@ -3093,14 +3434,14 @@ if(t_pgOfs<subN) {
     b = g_model.thrExpo ;
     lcd_puts_Pleft(    y, PSTR("T-Expo"));
     menu_lcd_onoff( 10*FW, y, b, sub==subN ) ;
-    if(sub==subN) { CHECK_INCDEC_H_MODELVAR(b,0,1); g_model.thrExpo = b ; }
+    if(sub==subN) { CHECK_INCDEC_H_MODELVAR_0(b,1); g_model.thrExpo = b ; }
     if((y+=FH)>7*FH) return;
 }subN++;
 
 if(t_pgOfs<subN) {
     lcd_puts_Pleft(    y, PSTR("Trim Inc"));
     uint8_t attr = 0 ;
-    if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_MODELVAR(g_model.trimInc,0,4);}
+    if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_MODELVAR_0(g_model.trimInc,4);}
     lcd_putsAttIdx(  10*FW, y, PSTR("\006Exp   ExFineFine  MediumCoarse"),g_model.trimInc,attr);
     if((y+=FH)>7*FH) return;
 }subN++;
@@ -3171,13 +3512,13 @@ if(t_pgOfs<subN) {
 				}
         switch (subSub){
         case 0:
-            CHECK_INCDEC_H_MODELVAR(g_model.protocol,0, prot_max ) ;
+            CHECK_INCDEC_H_MODELVAR_0(g_model.protocol, prot_max ) ;
             break;
         case 1:
             if ((g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16)|| (g_model.protocol == PROTO_PPMSIM) )
                 CHECK_INCDEC_H_MODELVAR(g_model.ppmNCH,-2,4);
             else if (g_model.protocol == PROTO_PXX)
-                CHECK_INCDEC_H_MODELVAR(g_model.ppmNCH,0,124);
+                CHECK_INCDEC_H_MODELVAR_0(g_model.ppmNCH,124);
             break;
         case 2:
             if ((g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16) || (g_model.protocol == PROTO_PPMSIM) )
@@ -3217,7 +3558,7 @@ if(t_pgOfs<subN) {
         if ( x > 2 ) x = 2 ;
         g_model.ppmNCH = x ;
         lcd_putsnAtt(10*FW,y, PSTR(DSM2_STR)+DSM2_STR_LEN*(x),DSM2_STR_LEN, (sub==subN ? (s_editMode ? BLINK : INVERS):0));
-        if(sub==subN) CHECK_INCDEC_H_MODELVAR(g_model.ppmNCH,0,2);
+        if(sub==subN) CHECK_INCDEC_H_MODELVAR_0(g_model.ppmNCH,2);
     }
     if((y+=FH)>7*FH) return;
 }subN++;
@@ -3225,7 +3566,7 @@ if(t_pgOfs<subN) {
 if(t_pgOfs<subN) {
   	uint8_t attr = 0 ;
     lcd_puts_Pleft(    y, PSTR("Shift Sel"));
-    if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_MODELVAR(g_model.pulsePol,0,1);}
+    if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_MODELVAR_0(g_model.pulsePol,1);}
     lcd_putsAttIdx( 10*FW, y, PSTR("\003POSNEG"),g_model.pulsePol,attr );
     if((y+=FH)>7*FH) return;
 }subN++;
@@ -3235,7 +3576,7 @@ if(t_pgOfs<subN) {
     b = g_model.extendedLimits ;
     lcd_puts_Pleft(    y, PSTR("E. Limits"));
     menu_lcd_onoff( 10*FW, y, b, sub==subN ) ;
-    if(sub==subN) { CHECK_INCDEC_H_MODELVAR(b,0,1); g_model.extendedLimits = b ; }
+    if(sub==subN) { CHECK_INCDEC_H_MODELVAR_0(b,1); g_model.extendedLimits = b ; }
     if((y+=FH)>7*FH) return;
 }subN++;
 
@@ -3244,7 +3585,7 @@ if(t_pgOfs<subN) {
     b = g_model.traineron ;
     lcd_puts_Pleft(    y, PSTR("Trainer"));
     menu_lcd_onoff( 10*FW, y, b, sub==subN ) ;
-    if(sub==subN) { CHECK_INCDEC_H_MODELVAR(b,0,1); g_model.traineron = b ; }
+    if(sub==subN) { CHECK_INCDEC_H_MODELVAR_0(b,1); g_model.traineron = b ; }
     if((y+=FH)>7*FH) return;
 }subN++;
 
@@ -3253,7 +3594,7 @@ if(t_pgOfs<subN) {
     lcd_puts_Pleft(    y, PSTR("T2ThTrig"));
     b = g_model.t2throttle ;
     menu_lcd_onoff( 10*FW, y, b, sub==subN ) ;
-    if(sub==subN) { g_model.t2throttle =CHECK_INCDEC_H_MODELVAR(b,0,1); }
+    if(sub==subN) { g_model.t2throttle =CHECK_INCDEC_H_MODELVAR_0(b,1); }
     if((y+=FH)>7*FH) return;
 }subN++;
 
@@ -3287,21 +3628,21 @@ uint8_t subN = 1;
     b = g_model.swashType ;
     lcd_puts_Pleft(    y, PSTR("Swash Type"));
 		attr = 0 ;
-    if(sub==subN) {attr = INVERS ; CHECK_INCDEC_H_MODELVAR(b,0,SWASH_TYPE_NUM); g_model.swashType = b ; }
+    if(sub==subN) {attr = INVERS ; CHECK_INCDEC_H_MODELVAR_0(b,SWASH_TYPE_NUM); g_model.swashType = b ; }
     lcd_putsAttIdx( 14*FW, y, PSTR(SWASH_TYPE_STR),b,attr );
     if((y+=FH)>7*FH) return;
 subN++;
 
     lcd_puts_Pleft(    y, PSTR("Collective"));
 		attr = 0 ;
-    if(sub==subN) {attr = INVERS ; CHECK_INCDEC_H_MODELVAR( g_model.swashCollectiveSource, 0, NUM_XCHNRAW);}
+    if(sub==subN) {attr = INVERS ; CHECK_INCDEC_H_MODELVAR_0( g_model.swashCollectiveSource, NUM_XCHNRAW);}
     putsChnRaw(14*FW, y, g_model.swashCollectiveSource, attr);
     if((y+=FH)>7*FH) return;
 subN++;
 
     lcd_puts_Pleft(    y, PSTR("Swash Ring"));
 		attr = LEFT ;
-    if(sub==subN) {attr = INVERS|LEFT ; CHECK_INCDEC_H_MODELVAR( g_model.swashRingValue, 0, 100);}
+    if(sub==subN) {attr = INVERS|LEFT ; CHECK_INCDEC_H_MODELVAR_0( g_model.swashRingValue, 100);}
     lcd_outdezAtt(14*FW, y, g_model.swashRingValue, attr);
     if((y+=FH)>7*FH) return;
 subN++;
@@ -3309,21 +3650,21 @@ subN++;
     b = g_model.swashInvertELE ;
     lcd_puts_Pleft(    y, PSTR("ELE Direction"));
     menu_lcd_HYPHINV( 14*FW, y, b, sub==subN ) ;
-    if(sub==subN) { CHECK_INCDEC_H_MODELVAR( b, 0, 1); g_model.swashInvertELE = b ; }
+    if(sub==subN) { CHECK_INCDEC_H_MODELVAR_0( b, 1); g_model.swashInvertELE = b ; }
     if((y+=FH)>7*FH) return;
 subN++;
 
     b = g_model.swashInvertAIL ;
     lcd_puts_Pleft(    y, PSTR("AIL Direction"));
     menu_lcd_HYPHINV( 14*FW, y, b, sub==subN ) ;
-    if(sub==subN) { CHECK_INCDEC_H_MODELVAR( b, 0, 1); g_model.swashInvertAIL = b ; }
+    if(sub==subN) { CHECK_INCDEC_H_MODELVAR_0( b, 1); g_model.swashInvertAIL = b ; }
     if((y+=FH)>7*FH) return;
 subN++;
 
     b = g_model.swashInvertCOL ;
     lcd_puts_Pleft(    y, PSTR("COL Direction"));
     menu_lcd_HYPHINV( 14*FW, y, b, sub==subN ) ;
-    if(sub==subN) { CHECK_INCDEC_H_MODELVAR(b, 0, 1); g_model.swashInvertCOL = b ; }
+    if(sub==subN) { CHECK_INCDEC_H_MODELVAR_0(b, 1); g_model.swashInvertCOL = b ; }
 //    if((y+=FH)>7*FH) return;
 
 }
@@ -4380,10 +4721,12 @@ void timer(uint8_t val)
 }
 
 
+#if THROTTLE_TRACE
 #define MAXTRACE 120
 uint8_t s_traceBuf[MAXTRACE];
 uint8_t s_traceWr;
 uint8_t s_traceCnt;
+#endif
 void trace()   // called in perOut - once envery 0.01sec
 {
     //value for time described in g_model.tmrMode
@@ -4412,23 +4755,25 @@ void trace()   // called in perOut - once envery 0.01sec
             }
         }
     }
+
     static uint16_t s_time;
+
+#if THROTTLE_TRACE
     static uint16_t s_cnt;
     static uint16_t s_sum;
 //    static uint8_t test = 1;
     s_cnt++;
     s_sum+=val;
+#endif
 		uint16_t t10ms ;
 		t10ms = get_tmr10ms() ;
     if(( t10ms-s_time)<1000) //10 sec
-        //		uint16_t time10ms ;
-        //		time10ms = get_tmr10ms() ;
-        //    if(( time10ms-s_time)<1000) //10 sec
         return;
     s_time= t10ms ;
  
     if ((g_model.protocol==PROTO_DSM2)&&getSwitch(MAX_DRSWITCH-1,0,0) ) audioDefevent(AU_TADA);   //DSM2 bind mode warning
-    //    s_time= time10ms ;
+
+#if THROTTLE_TRACE
     val   = s_sum/s_cnt;
     s_sum = 0;
     s_cnt = 0;
@@ -4439,6 +4784,7 @@ void trace()   // called in perOut - once envery 0.01sec
 		}
     s_traceBuf[s_traceWr++] = val;
     if(s_traceWr>=MAXTRACE) s_traceWr=0;
+#endif
 }
 
 
@@ -4481,8 +4827,10 @@ void menuProcStatistic2(uint8_t event)
     lcd_outdezAtt(14*FW , 4*FH, (g_timeMain*25)/4 ,PREC2);	// g_timeMain*100)/16
 
 #ifndef SIMU
+ #if STACK_TRACE
     lcd_puts_Pleft( 5*FH, PSTR("Stack\017b"));
     lcd_outhex4( 10*FW+3, 5*FH, stack_free() ) ;
+ #endif
 #endif
     lcd_puts_Pleft( 7*FH, PSTR("\003[MENU] to refresh"));
 }
@@ -4560,6 +4908,7 @@ void menuProcStatistic(uint8_t event)
     lcd_puts_Pleft( FH*0, PSTR("\021TOT"));
     putsTime(   13*FW, FH*0, tptr->s_timeCumTot, 0, 0);
 
+#if THROTTLE_TRACE
     uint8_t x=5;
     uint8_t y=60;
     lcd_hline(x-3,y,120+3+3);
@@ -4578,7 +4927,7 @@ void menuProcStatistic(uint8_t event)
         if(traceRd>=MAXTRACE) traceRd=0;
         if(traceRd==traceWr) break;
     }
-
+#endif
 }
 
 NOINLINE void resetTimer1(void)
@@ -5356,7 +5705,7 @@ void perOut(int16_t *chanOut, uint8_t att)
 
                 if(IS_THROTTLE(i) && g_model.thrExpo){
 #if GVARS
-                    v  = 2*expo((v+RESX)/2,REG(g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_RIGHT], -100, 100));
+                    v  = 2*expo((v+RESX)/2,REG100_100(g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_RIGHT]));
 #else
                     v  = 2*expo((v+RESX)/2,g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_RIGHT]);
 #endif                    
@@ -5364,7 +5713,7 @@ void perOut(int16_t *chanOut, uint8_t att)
                 }
                 else
 #if GVARS
-                    v  = expo(v,REG(g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkDir], -100, 100));
+                    v  = expo(v,REG100_100(g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkDir]));
 #else
                     v  = expo(v,g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkDir]);
 #endif                    
@@ -5519,7 +5868,7 @@ void perOut(int16_t *chanOut, uint8_t att)
     for(uint8_t i=0;i<MAX_MIXERS;i++){
         MixData *md = mixaddress( i ) ;
 #if GVARS
-				int8_t mixweight = REG( md->weight, -100, 100 ) ;
+				int8_t mixweight = REG100_100( md->weight) ;
 #endif
 
         if((md->destCh==0) || (md->destCh>NUM_CHNOUT)) break;

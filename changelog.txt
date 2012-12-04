@@ -10,6 +10,14 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 04-Dec-2012  MPB
+r779 Re-write MIXER menu (saves 200+ bytes RAM)
+Fix voice output for low ratios
+Flash savings (~350 bytes smaller)
+Remove stack probe (debug)
+Fix rotary encoder not editing single values on a line
+
+******************************************
 CHANGELOG: 25-Nov-2012  MPB
 r778 Add Global Vars (GVARS)
 Small Flash savings (GVARS add a lot)

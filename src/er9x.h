@@ -19,6 +19,7 @@
 #define VERS 1
 
 #define GVARS	1
+#define STACK_TRACE				0
 
 #include <inttypes.h>
 #include <string.h>
@@ -549,12 +550,16 @@ int8_t checkIncDec( int8_t i_val, int8_t i_min, int8_t i_max, uint8_t i_flags);
 int8_t checkIncDec_hm( int8_t i_val, int8_t i_min, int8_t i_max);
 //int8_t checkIncDec_vm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 int8_t checkIncDec_hg( int8_t i_val, int8_t i_min, int8_t i_max);
+int8_t checkIncDec_hm0(int8_t i_val, int8_t i_max) ;
 
 #define CHECK_INCDEC_H_GENVAR( var, min, max)     \
     var = checkIncDec_hg(var,min,max)
 
 #define CHECK_INCDEC_H_MODELVAR( var, min, max)     \
     var = checkIncDec_hm(var,min,max)
+
+#define CHECK_INCDEC_H_MODELVAR_0( var, max)     \
+    var = checkIncDec_hm0(var,max)
 
 #define STORE_MODELVARS_TRIM   eeDirty(EE_MODEL|EE_TRIM)
 #define STORE_MODELVARS   eeDirty(EE_MODEL)
@@ -643,7 +648,7 @@ extern inline int16_t calc100toRESX(int8_t x)
     return ((x*41)>>2) - x/64;
 }
 
-uint8_t getMixerCount();
+//uint8_t getMixerCount();
 bool reachMixerCountLimit();
 void menuMixersLimit(uint8_t event);
 
@@ -828,6 +833,7 @@ extern uint8_t Tevent ;
 
 #if GVARS
 extern int8_t REG(int8_t x, int8_t min, int8_t max) ;
+extern int8_t REG100_100(int8_t x) ;
 #endif
 
 #endif // er9x_h

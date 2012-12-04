@@ -112,7 +112,7 @@ uint8_t Frsky_user_id ;
 uint8_t Frsky_user_lobyte ;
 
 int16_t FrskyHubData[HUBDATALENGTH] ;  // All 38 words
-int16_t FrskyHubMin[HUBMINMAXLEN] ;
+//int16_t FrskyHubMin[HUBMINMAXLEN] ;
 int16_t FrskyHubMax[HUBMINMAXLEN] ;
 
 uint8_t FrskyVolts[12];
@@ -139,9 +139,9 @@ void store_hub_data( uint8_t index, uint16_t value )
 			if ( FrskyHubMax[index] < FrskyHubData[index] )
 			{	FrskyHubMax[index] = FrskyHubData[index] ;
 			}
-			if ( FrskyHubMin[index] > FrskyHubData[index] )
-			{	FrskyHubMin[index] = FrskyHubData[index] ;
-			}	
+//			if ( FrskyHubMin[index] > FrskyHubData[index] )
+//			{	FrskyHubMin[index] = FrskyHubData[index] ;
+//			}	
 		}
 		if ( index == FR_CELL_V )			// Cell Voltage
 		{
