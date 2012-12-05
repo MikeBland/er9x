@@ -10,6 +10,12 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 05-Dec-2012  MPB
+r780 lcd_char_inverse now can blink
+Mix popup now includes DELETE
+Model name editing works better, allows encoder, saves 226 bytes flash!
+
+******************************************
 CHANGELOG: 04-Dec-2012  MPB
 r779 Re-write MIXER menu (saves 200+ bytes RAM)
 Fix voice output for low ratios

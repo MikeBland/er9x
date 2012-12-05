@@ -2140,7 +2140,7 @@ uint8_t MixPopup ;
 
 void menuProcMixOne(uint8_t event)
 {
-    SIMPLE_SUBMENU_NOTITLE(14);
+    SIMPLE_SUBMENU_NOTITLE(13);
     uint8_t x = TITLEP(s_currMixInsMode ? PSTR("INSERT MIX ") : PSTR("EDIT MIX "));
 
     MixData *md2 = mixaddress( s_currMixIdx ) ;
@@ -2248,16 +2248,16 @@ void menuProcMixOne(uint8_t event)
 //            lcd_outdezAtt(FW*16,y,md2->speedUp,attr);
 //            if(attr)  CHECK_INCDEC_H_MODELVAR_0( md2->speedUp, 15); //!! bitfield
             break;
-        case 13:
-            lcd_putsAtt(  2*FW,y,PSTR("DELETE MIX [MENU]"),attr);
-            if(attr && event==EVT_KEY_LONG(KEY_MENU)){
-                killEvents(event);
-								Tevent = 0 ;	// Prevent MixPopup appearing
-                deleteMix(s_currMixIdx);
-                audioDefevent(AU_WARNING2);
-                popMenu();
-            }
-            break;
+//        case 13:
+//            lcd_putsAtt(  2*FW,y,PSTR("DELETE MIX [MENU]"),attr);
+//            if(attr && event==EVT_KEY_LONG(KEY_MENU)){
+//                killEvents(event);
+//								Tevent = 0 ;	// Prevent MixPopup appearing
+//                deleteMix(s_currMixIdx);
+//                audioDefevent(AU_WARNING2);
+//                popMenu();
+//            }
+//            break;
         }
     }
 }
@@ -2509,8 +2509,9 @@ void mixpopup()
   lcd_puts_Pleft(2*FH, PSTR("\003 INSERT "));
   lcd_puts_Pleft(3*FH, PSTR("\003 COPY   "));
   lcd_puts_Pleft(4*FH, PSTR("\003 MOVE   "));
-	lcd_char_inverse( 4*FW, (popidx+1)*FH, 6*FW ) ;
-	lcd_rect( 3*FW, 1*FH-1, 8*FW, 4*FH+2 ) ;
+  lcd_puts_Pleft(5*FH, PSTR("\003 DELETE "));
+	lcd_char_inverse( 4*FW, (popidx+1)*FH, 6*FW, 0 ) ;
+	lcd_rect( 3*FW, 1*FH-1, 8*FW, 5*FH+2 ) ;
 
   switch(Tevent)
 	{
@@ -2527,6 +2528,13 @@ void mixpopup()
 			if ( popidx < 2 )
 			{
 	      pushMenu(menuProcMixOne) ;
+			}
+			else if ( popidx == 4 )		// Delete
+			{
+				mixToDelete = s_currMixIdx;
+				killEvents(Tevent);
+				Tevent = 0 ;
+				pushMenu(menuDeleteMix);
 			}
 			else
 			{
@@ -2548,7 +2556,7 @@ void mixpopup()
 		break ;
     
 		case EVT_KEY_FIRST(KEY_DOWN) :
-			if ( popidx < 3 )
+			if ( popidx < 4 )
 			{
 				popidx += 1 ;
 			}
@@ -2696,7 +2704,7 @@ void menuProcMix(uint8_t event)
 						{
 							if ( s_moveMixIdx == mix_index )
 							{
-								lcd_char_inverse( 4*FW, y, 17*FW ) ;
+								lcd_char_inverse( 4*FW, y, 17*FW, 0 ) ;
 								s_currMixIdx = mix_index ;
 								sub = mstate2.m_posVert = current ;
 							}
@@ -3281,64 +3289,41 @@ void menuProcModel(uint8_t event)
 {
     MENU("SETUP", menuTabModel, e_Model, 19, {0,sizeof(g_model.name)-1,0,1,0,0,0,0,0,0,0,6,2,0/*repeated...*/});
 
-int8_t  sub    = mstate2.m_posVert;
-uint8_t subSub = mstate2.m_posHorz;
+	int8_t  sub    = mstate2.m_posVert;
+	uint8_t subSub = mstate2.m_posHorz;
     uint8_t t_pgOfs ;
 
-t_pgOfs = evalOffset(sub, 7);
+	t_pgOfs = evalOffset(sub, 7);
 
-uint8_t y = 1*FH;
+	uint8_t y = 1*FH;
 
-lcd_outdezNAtt(7*FW,0,g_eeGeneral.currModel+1,INVERS+LEADING0,2);
+	lcd_outdezNAtt(7*FW,0,g_eeGeneral.currModel+1,INVERS+LEADING0,2);
 
-switch(event){
-    case EVT_KEY_REPT(KEY_LEFT):
-    case EVT_KEY_FIRST(KEY_LEFT):
-        if(sub==1 && subSub>0 && s_editMode) mstate2.m_posHorz--;
-        break;
-    case EVT_KEY_REPT(KEY_RIGHT):
-    case EVT_KEY_FIRST(KEY_RIGHT):
-        if(sub==1 && subSub<sizeof(g_model.name)-1 && s_editMode) mstate2.m_posHorz++;
-        break;
-    case EVT_KEY_FIRST(KEY_MENU):
-			if ( sub == 2 )
-			{
-				putVoiceQueueUpper( g_model.modelVoice ) ;
-			}
-    break;
-}
-
-uint8_t subN = 1;
-if(t_pgOfs<subN) {
+	uint8_t subN = 1;
+	if(t_pgOfs<subN)
+	{
     lcd_puts_Pleft(    y, PSTR("Name"));
-    lcd_putsnAtt(10*FW,   y, g_model.name ,sizeof(g_model.name),BSS | (sub==subN ? (s_editMode ? 0 : INVERS) : 0));
-#ifndef NOPOTSCROLL
-    if(!s_editMode && scrollLR<0) { s_editMode = true; scrollLR = 0; mstate2.m_posHorz = 0; }
-    if(s_editMode && scrollLR>subSub) { s_editMode = false; scrollLR = 0; mstate2.m_posHorz = 0; }
-#endif
-    
-		if(sub==subN && s_editMode){
-#ifndef NOPOTSCROLL
-        mstate2.m_posHorz -= scrollLR;
-#endif        
-				if((int8_t(mstate2.m_posHorz))<0) mstate2.m_posHorz = 0;
-        if((int8_t(mstate2.m_posHorz))>(MODEL_NAME_LEN-1)) mstate2.m_posHorz = MODEL_NAME_LEN-1;
-#ifndef NOPOTSCROLL
-        scrollLR = 0;
-#endif
+		lcd_putsnAtt(10*FW,   y, g_model.name ,sizeof(g_model.name), BSS ) ;
+
+		if(sub==subN)
+		{
+			lcd_rect(10*FW-2, y-1, 10*FW+4, 9 ) ;
+			lcd_char_inverse( (10+subSub)*FW, y, 1*FW, s_editMode ) ;
+	    
+			if(s_editMode)
+			{
         char v = char2idx(g_model.name[subSub]);
-        if(
-#ifndef NOPOTSCROLL
-					 p1valdiff || 
-#endif
-					 event==EVT_KEY_FIRST(KEY_DOWN) || event==EVT_KEY_FIRST(KEY_UP) || event==EVT_KEY_REPT(KEY_DOWN) || event==EVT_KEY_REPT(KEY_UP))
-            CHECK_INCDEC_H_MODELVAR_0( v ,NUMCHARS-1);
+        CHECK_INCDEC_H_MODELVAR_0( v ,NUMCHARS-1);
         v = idx2char(v);
-        g_model.name[subSub]=v;
-        lcd_putcAtt((10+subSub)*FW, y, v,INVERS);
+				if ( g_model.name[subSub] != v )
+				{
+        	g_model.name[subSub]=v;
+    			eeDirty( EE_MODEL ) ;				// Do here or the last change is not stored in ModelNames[]
+				}
+			}
     }
     if((y+=FH)>7*FH) return;
-}subN++;
+	}subN++;
 
 	if(t_pgOfs<subN)
 	{
@@ -3346,6 +3331,10 @@ if(t_pgOfs<subN) {
     lcd_puts_Pleft( y, PSTR("Voice Index\021MENU") ) ;
     if(sub==subN)
 		{
+			if (event == EVT_KEY_FIRST(KEY_MENU) )
+			{
+				putVoiceQueue( g_model.modelVoice + 260 ) ;
+			}
 			attr = INVERS ;
       CHECK_INCDEC_H_MODELVAR_0( g_model.modelVoice ,49 ) ;
 		}
