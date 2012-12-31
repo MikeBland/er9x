@@ -101,6 +101,7 @@ class audioQueue
 
 
 inline void driver() {
+#ifndef SIMU
   if (toneTimeLeft > 0) {	
 					switch ((g_eeGeneral.speakerMode & 1)){					 
 								case 0:
@@ -122,6 +123,7 @@ inline void driver() {
 	} else {
 			PORTE &=  ~(1<<OUT_E_BUZZER); // speaker output 'low'
 	}								  	     
+#endif
 }	 
 
     // heartbeat is responsibile for issueing the audio tones and general square waves

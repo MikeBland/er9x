@@ -106,7 +106,7 @@ PACK(typedef struct t_EEGeneral {
     uint8_t   disablePotScroll:1;
     uint8_t   disableBG:1;
     uint8_t   frskyinternalalarm:1;
-    uint8_t   filterInput;
+    uint8_t   filterInput;		// No longer needed, left for eepe compatibility for now
     uint8_t   lightAutoOff;
     uint8_t   templateSetup;  //RETA order according to chout_ar array
     int8_t    PPM_Multiplier;

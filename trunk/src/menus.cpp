@@ -631,6 +631,7 @@ int16_t calibratedStick[7];
 int16_t ex_chans[NUM_CHNOUT];          // Outputs + intermidiates
 uint8_t s_pgOfs;
 uint8_t s_editMode;
+uint8_t s_editing;
 uint8_t s_noHi;
 #ifndef NOPOTSCROLL
 uint8_t scroll_disabled;
@@ -964,7 +965,7 @@ void MState2::check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8
         break;
     case EVT_KEY_BREAK(BTN_RE):
     case EVT_KEY_FIRST(KEY_MENU):
-//        if (maxcol > 0)
+        if (m_posVert > 0)
             s_editMode = !s_editMode;
         break;
     case EVT_KEY_LONG(KEY_EXIT):
@@ -1030,6 +1031,7 @@ void MState2::check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8
         BLINK_SYNC;
         break;
     }
+		s_editing = s_editMode || p1valdiff ;
 }
 
 
@@ -1302,11 +1304,11 @@ for(uint8_t i=0; i<7; i++){
 		for(uint8_t j=0; j<4;j++)
 		{
         uint8_t attr = ((sub==k && subSub==j) ? (s_editMode ? BLINK : INVERS) : 0);
-				uint8_t active = (attr && (s_editMode
 #ifndef NOPOTSCROLL
-																	  || p1valdiff
+				uint8_t active = (attr && s_editing) ;
+#else
+				uint8_t active = (attr && s_editmode) ;
 #endif
-																	)) ;
         switch(j)
         {
         case 0:
@@ -1823,11 +1825,12 @@ t_pgOfs = evalOffset(sub, 6);
     	for(uint8_t j=0; j<3;j++)
 			{
         uint8_t attr = ((sub==k && subSub==j) ? (s_editMode ? BLINK : INVERS) : 0);
-				uint8_t active = (attr && (s_editMode
+				
 #ifndef NOPOTSCROLL
-																	  || p1valdiff
-#endif																	
-																	)) ;
+				uint8_t active = (attr && s_editing) ;
+#else
+				uint8_t active = (attr && s_editmode) ;
+#endif
 	      if (j == 0)
 				{
 					lcd_putcAtt( 5*FW, y, (sd->opt.ss.mode == 1) ? 'A' : (sd->opt.ss.mode == 2) ? 'V' : 'S', attr ) ;
@@ -1900,11 +1903,11 @@ t_pgOfs = evalOffset(sub, 6);
     	for(uint8_t j=0; j<3;j++)
 			{
         uint8_t attr = ((sub==k && subSub==j) ? (s_editMode ? BLINK : INVERS) : 0);
-				uint8_t active = (attr && (s_editMode
 #ifndef NOPOTSCROLL
-																	  || p1valdiff
-#endif																	
-																	)) ;
+				uint8_t active = (attr && s_editing) ;
+#else
+				uint8_t active = (attr && s_editmode) ;
+#endif
     		if (j == 0)
 				{
   		    putsDrSwitches(5*FW, y, sd->opt.vs.vswtch, attr);
@@ -2500,77 +2503,125 @@ void menuDeleteMix(uint8_t event)
 uint8_t	PopupIdx = 0 ;
 uint8_t s_moveMode;
 
+int8_t qRotary()
+{
+	int8_t diff = 0 ;
+
+	if ( Rotary_diff > 0)
+	{
+		diff = 1 ;
+	}
+	else if ( Rotary_diff < 0)
+	{
+		diff = -1 ;
+	}
+	Rotary_diff = 0 ;
+	return diff ;
+}
+
+#define POPUP_NONE			0
+#define POPUP_SELECT		1
+#define POPUP_EXIT			2
+
+
+uint8_t popupProcess( uint8_t max )
+{
+	int8_t popidxud = qRotary() ;
+	uint8_t popidx = PopupIdx ;
+  
+	switch(Tevent)
+	{
+    case EVT_KEY_FIRST(KEY_MENU) :
+    case EVT_KEY_FIRST(BTN_RE):
+		return POPUP_SELECT ;
+    
+		case EVT_KEY_FIRST(KEY_UP) :
+			popidxud = -1 ;
+		break ;
+    
+		case EVT_KEY_FIRST(KEY_DOWN) :
+			popidxud = 1 ;
+		break ;
+    
+		case EVT_KEY_FIRST(KEY_EXIT) :
+		return POPUP_EXIT ;
+	}
+
+	if (popidxud > 0)
+	{
+		if ( popidx < max )
+		{
+			popidx += 1 ;
+		}
+	}
+	else if (popidxud < 0)
+	{		
+		if ( popidx )
+		{
+			popidx -= 1 ;
+		}
+	}
+	PopupIdx = popidx ;
+	return POPUP_NONE ;
+}
+
+
+
 
 void mixpopup()
 {
-	uint8_t popidx = PopupIdx ;
-	
+
   lcd_puts_Pleft(1*FH, PSTR("\003 EDIT   "));
   lcd_puts_Pleft(2*FH, PSTR("\003 INSERT "));
   lcd_puts_Pleft(3*FH, PSTR("\003 COPY   "));
   lcd_puts_Pleft(4*FH, PSTR("\003 MOVE   "));
   lcd_puts_Pleft(5*FH, PSTR("\003 DELETE "));
-	lcd_char_inverse( 4*FW, (popidx+1)*FH, 6*FW, 0 ) ;
 	lcd_rect( 3*FW, 1*FH-1, 8*FW, 5*FH+2 ) ;
+	
+	uint8_t popaction = popupProcess( 4 ) ;
+	uint8_t popidx = PopupIdx ;
+	lcd_char_inverse( 4*FW, (popidx+1)*FH, 6*FW, 0 ) ;
 
-  switch(Tevent)
+  if ( popaction == POPUP_SELECT )
 	{
-    case EVT_KEY_FIRST(KEY_MENU) :
-			if ( popidx == 1 )
-			{
-      	if ( !reachMixerCountLimit())
-      	{
-					s_currMixInsMode = 1 ;
-      		insertMix(++s_currMixIdx, 0 ) ;
-  	    	s_moveMode=false;
-				}
+		if ( popidx == 1 )
+		{
+      if ( !reachMixerCountLimit())
+      {
+				s_currMixInsMode = 1 ;
+      	insertMix(++s_currMixIdx, 0 ) ;
+  	    s_moveMode=false;
 			}
-			if ( popidx < 2 )
-			{
-	      pushMenu(menuProcMixOne) ;
-			}
-			else if ( popidx == 4 )		// Delete
-			{
-				mixToDelete = s_currMixIdx;
-				killEvents(Tevent);
-				Tevent = 0 ;
-				pushMenu(menuDeleteMix);
-			}
-			else
-			{
-				if( popidx == 2 )	// copy
-				{
-     			insertMix(++s_currMixIdx, 1 ) ;
-				}
-				// PopupIdx == 2 or 3, copy or move
-				s_moveMode = 1 ;
-			}
-			MixPopup = 0 ;
-		break ;
-    
-		case EVT_KEY_FIRST(KEY_UP) :
-			if ( popidx )
-			{
-				popidx -= 1 ;
-			}
-		break ;
-    
-		case EVT_KEY_FIRST(KEY_DOWN) :
-			if ( popidx < 4 )
-			{
-				popidx += 1 ;
-			}
-		break ;
-    
-		case EVT_KEY_FIRST(KEY_EXIT) :
-			MixPopup = 0 ;
-			killEvents( Tevent ) ;
+		}
+		if ( popidx < 2 )
+		{
+	    pushMenu(menuProcMixOne) ;
+		}
+		else if ( popidx == 4 )		// Delete
+		{
+			mixToDelete = s_currMixIdx;
+			killEvents(Tevent);
 			Tevent = 0 ;
-		break ;
+			pushMenu(menuDeleteMix);
+		}
+		else
+		{
+			if( popidx == 2 )	// copy
+			{
+     		insertMix(++s_currMixIdx, 1 ) ;
+			}
+			// PopupIdx == 2 or 3, copy or move
+			s_moveMode = 1 ;
+		}
+		MixPopup = 0 ;
 	}
-
+	else if ( popaction == POPUP_EXIT )
+	{
+		MixPopup = 0 ;
+		killEvents( Tevent ) ;
+		Tevent = 0 ;
+	}
 	s_moveMixIdx = s_currMixIdx ;
-	PopupIdx = popidx ;
 
 //	if ( Tevent )
 //	{
@@ -2582,8 +2633,15 @@ void mixpopup()
 
 void menuProcMix(uint8_t event)
 {
+	int8_t moveByRotary = 0 ;
 	TITLE("MIXER");
 	static MState2 mstate2;
+
+	if ( s_moveMode )
+	{
+		moveByRotary = qRotary() ;		// Do this now, check_simple destroys rotary data
+	}
+
 	if ( !MixPopup )
 	{
 		mstate2.check_simple(event,e_Mix,menuTabModel,DIM(menuTabModel),s_mixMaxSel) ;
@@ -2600,6 +2658,7 @@ void menuProcMix(uint8_t event)
 	    s_moveMode = false ;
 		break ;
 
+    case EVT_KEY_FIRST(BTN_RE):
     case EVT_KEY_FIRST(KEY_MENU):
 			if ( s_moveMode )
 			{
@@ -2638,9 +2697,14 @@ void menuProcMix(uint8_t event)
 
 	if ( s_moveMode )
 	{
-		uint8_t dir ;
+		uint8_t dir = 0 ;
+
+		if ( moveByRotary > 0 )
+		{
+			dir = 1 ;
+		}
 		
-		if ( ( dir = (Tevent == EVT_KEY_FIRST(KEY_DOWN) ) ) || Tevent == EVT_KEY_FIRST(KEY_UP) )
+		if ( moveByRotary || ( dir = (Tevent == EVT_KEY_FIRST(KEY_DOWN) ) ) || Tevent == EVT_KEY_FIRST(KEY_UP) )
 		{
 			moveMix( s_currMixIdx, dir ) ; //true=inc=down false=dec=up - Issue 49
 		}
@@ -2657,7 +2721,6 @@ void menuProcMix(uint8_t event)
       putsChn(1, (current-t_pgOfs)*FH, chan, 0) ; // show CHx
     }
 
-		pmd = mixaddress(mix_index) ;
 		uint8_t firstMix = mix_index ;
 		if (mix_index<MAX_MIXERS && /* pmd->srcRaw && */ pmd->destCh == chan)
 		{
@@ -2682,7 +2745,7 @@ void menuProcMix(uint8_t event)
 							}
 						}
         	  if(firstMix != mix_index) //show prefix only if not first mix
-        	 		lcd_putsAttIdx( 4*FW, y, PSTR("\001+*R"),pmd->mltpx,0 ) ;
+        	 		lcd_putsAttIdx( 3*FW+1, y, PSTR("\001+*R"),pmd->mltpx,0 ) ;
     	    
 						putsChnRaw(     9*FW, y, pmd->srcRaw, /*attr | */ MIX_SOURCE ) ;
 	#if GVARS
@@ -2733,7 +2796,7 @@ void menuProcMix(uint8_t event)
 			{
 				s_currDestCh = chan ;		// For insert
 				s_currMixIdx = mix_index ;
-				lcd_rect( 0, (current-t_pgOfs)*FH-1, 24, 9 ) ;
+				lcd_rect( 0, (current-t_pgOfs)*FH-1, 25, 9 ) ;
 //				s_moveMode = 0 ;		// Can't move this
 				if ( menulong )		// Must need to insert here
 				{
@@ -3333,7 +3396,7 @@ void menuProcModel(uint8_t event)
 		{
 			if (event == EVT_KEY_FIRST(KEY_MENU) )
 			{
-				putVoiceQueue( g_model.modelVoice + 260 ) ;
+				putVoiceQueueUpper( g_model.modelVoice ) ;
 			}
 			attr = INVERS ;
       CHECK_INCDEC_H_MODELVAR_0( g_model.modelVoice ,49 ) ;
@@ -4070,9 +4133,9 @@ void menuProcSetup(uint8_t event)
 {
 
 #ifndef NOPOTSCROLL
-#define DEFAULT_COUNT_ITEMS 27
-#else
 #define DEFAULT_COUNT_ITEMS 26
+#else
+#define DEFAULT_COUNT_ITEMS 25
 #endif
 #ifdef FRSKY
     int8_t sw_offset = -7 ;
@@ -4130,9 +4193,9 @@ void menuProcSetup(uint8_t event)
     uint8_t y = 1*FH;
 
     switch(event){
-    case EVT_KEY_FIRST(KEY_MENU):
-        if(sub>0) s_editMode = !s_editMode;
-        break;
+//    case EVT_KEY_FIRST(KEY_MENU):
+//        if(sub>0) s_editMode = !s_editMode;
+//        break;
     case EVT_KEY_FIRST(KEY_EXIT):
         if(s_editMode) {
             s_editMode = false;
@@ -4287,13 +4350,13 @@ if((g_eeGeneral.speakerMode & 1) == 1 /*|| g_eeGeneral.speakerMode == 2 */){
         if((y+=FH)>7*FH) return;
     }subN++;
 
-    if(t_pgOfs<subN) {
-  			uint8_t attr = 0 ;
-        lcd_puts_Pleft( y,PSTR("Filter ADC"));
-        if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_GENVAR( g_eeGeneral.filterInput, 0, 2); }
-        lcd_putsAttIdx(PARAM_OFS, y, PSTR("\004SINGOSMPFILT"),g_eeGeneral.filterInput,attr);
-        if((y+=FH)>7*FH) return;
-    }subN++;
+//    if(t_pgOfs<subN) {
+//  			uint8_t attr = 0 ;
+//        lcd_puts_Pleft( y,PSTR("Filter ADC"));
+//        if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_GENVAR( g_eeGeneral.filterInput, 0, 2); }
+//        lcd_putsAttIdx(PARAM_OFS, y, PSTR("\004SINGOSMPFILT"),g_eeGeneral.filterInput,attr);
+//        if((y+=FH)>7*FH) return;
+//    }subN++;
 
     if(t_pgOfs<subN) {
         g_eeGeneral.throttleReversed = onoffMenuItem( g_eeGeneral.throttleReversed, y, PSTR("Throttle reverse"), sub==subN, event ) ;
@@ -4675,12 +4738,13 @@ void timer(uint8_t val)
 					int16_t tval = tptr->s_timerVal[0] ;
             if(g_eeGeneral.preBeep && gtval) // beep when 30, 15, 10, 5,4,3,2,1 seconds remaining
             {
-              	if(tval==30) {audioVoiceDefevent(AU_TIMER_30, V_30SECS);}	
-              	if(tval==20) {audioVoiceDefevent(AU_TIMER_20, V_20SECS);}		
-                if(tval==10) {audioVoiceDefevent(AU_TIMER_10, V_10SECS);}	
-                if(tval<= 5) {	if(tval >= 0) {audioVoiceDefevent(AU_TIMER_LT3, tval) ;} else audioDefevent(AU_TIMER_LT3);}
+							uint8_t flasht = 0 ;
+              	if(tval==30) {audioVoiceDefevent(AU_TIMER_30, V_30SECS);flasht = 1;}	
+              	if(tval==20) {audioVoiceDefevent(AU_TIMER_20, V_20SECS);flasht = 1;}		
+                if(tval==10) {audioVoiceDefevent(AU_TIMER_10, V_10SECS);flasht = 1;}	
+                if(tval<= 5) { flasht = 1;	if(tval >= 0) {audioVoiceDefevent(AU_TIMER_LT3, tval) ;} else audioDefevent(AU_TIMER_LT3);}
 
-                if(g_eeGeneral.flashBeep && (tval==30 || tval==20 || tval==10 || tval<=3))
+                if(g_eeGeneral.flashBeep && flasht )
                     g_LightOffCounter = FLASH_DURATION;
             }
 

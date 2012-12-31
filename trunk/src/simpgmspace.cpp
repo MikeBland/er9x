@@ -81,7 +81,7 @@ void *main_thread(void *)
   try {
 #endif
     g_menuStack[0] = menuProc0;
-    // g_menuStack[1] = menuProcModelSelect;
+    g_menuStack[1] = menuProcModelSelect;
 
     eeReadAll(); //load general setup and selected model
 
@@ -133,3 +133,12 @@ static void EeFsDump(){
   puts("");
 }
 #endif
+
+void sig(int sgn)
+{
+  main_thread_error = (char *)malloc(2048);
+  sprintf(main_thread_error,"Signal %d caught\n", sgn);
+  write_backtrace(main_thread_error);
+  throw std::exception();
+}
+
