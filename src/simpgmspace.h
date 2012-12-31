@@ -48,13 +48,7 @@ inline void write_backtrace(char *output)
   }
 }
 #endif
-void sig(int sgn)
-{
-  main_thread_error = (char *)malloc(2048);
-  sprintf(main_thread_error,"Signal %d caught\n", sgn);
-  write_backtrace(main_thread_error);
-  throw std::exception();
-}
+void sig(int sgn);
 #define assert(x) do { if (!(x)) { main_thread_error = (char *)malloc(2048); sprintf(main_thread_error, "Assert failed, %s:%d: %s\n", __FILE__, __LINE__, #x); write_backtrace(main_thread_error); throw std::exception(); } } while(0)
 #else
 #include <assert.h>
@@ -96,6 +90,7 @@ extern sem_t eeprom_write_sem;
 #define strcpy_P strcpy
 #define strncpy_P strncpy
 #define memcpy_P memcpy
+#define asm(x)
 
 #define PORTA dummyport
 #define PORTB portb
@@ -112,6 +107,7 @@ extern sem_t eeprom_write_sem;
 #define DDRE  dummyport
 #define DDRF  dummyport
 #define DDRG  dummyport
+#define PINA  ~pinb
 #define PINB  ~pinb
 #define PINC  ~pinc
 #define PIND  ~pind
@@ -139,6 +135,8 @@ extern sem_t eeprom_write_sem;
 #define SPSR dummyport
 #define SPIF dummyport
 #define SPCR dummyport
+
+#define TCNT0 0
 
 #define TIMSK  dummyport
 #define TIMSK1 dummyport

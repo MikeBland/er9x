@@ -425,7 +425,7 @@ extern uint8_t stickMoved;
 uint16_t stickMoveValue( void ) ;
 
 typedef void (*MenuFuncP)(uint8_t event);
-typedef void (*getADCp)();
+//typedef void (*getADCp)();
 
 /// stoppt alle events von dieser taste bis eine kurze Zeit abgelaufen ist
 void pauseEvents(uint8_t enuk);
@@ -724,8 +724,8 @@ extern uint16_t anaIn(uint8_t chan);
 extern int16_t calibratedStick[7];
 extern int16_t ex_chans[NUM_CHNOUT];
 
-void getADC_single();
-void getADC_filt();
+//void getADC_single();
+//void getADC_filt();
 
 //void checkTHR();
 
@@ -814,7 +814,11 @@ extern uint8_t VoiceCheckFlag ;
 NOINLINE void resetTimer1(void) ;
 
 // Fiddle to force compiler to use a pointer
+#ifndef SIMU
 #define FORCE_INDIRECT(ptr) __asm__ __volatile__ ("" : "=e" (ptr) : "0" (ptr))
+#else
+#define FORCE_INDIRECT(ptr)
+#endif
 
 extern uint8_t telemItemValid( uint8_t index ) ;
 extern uint8_t Main_running ;

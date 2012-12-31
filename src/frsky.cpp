@@ -577,7 +577,6 @@ ISR(USART0_UDRE_vect)
   } else
     UCSR0B &= ~(1 << UDRIE0); // disable UDRE0 interrupt
 }
-#endif
 
 /******************************************/
 
@@ -586,13 +585,14 @@ static void frskyTransmitBuffer()
   frskyTxISRIndex = 0;
   UCSR0B |= (1 << UDRIE0); // enable  UDRE0 interrupt
 }
+#endif
 
 
 uint8_t FrskyAlarmSendState = 0 ;
 uint8_t FrskyDelay = 0 ;
 //uint8_t FrskyRSSIsend = 0 ;
 
-
+#ifndef SIMU
 static void FRSKY10mspoll(void)
 {
   if (FrskyDelay)
@@ -650,6 +650,7 @@ static void FRSKY10mspoll(void)
     frskyTransmitBuffer(); 
   }
 }
+#endif
 
 //  uint8_t i = 0;
 
@@ -966,12 +967,14 @@ void check_frsky()
 		}
 	}
   if (frskyUsrStreaming > 0) frskyUsrStreaming--;
-#endif
-	
+
+
   if ( FrskyAlarmSendState )
   {
     FRSKY10mspoll() ;
   }
+
+#endif
 
   if ( g_model.frsky.channels[0].type == 3 )		// Current (A)
 		current_check( 0 ) ;

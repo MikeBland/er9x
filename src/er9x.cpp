@@ -37,8 +37,11 @@ static void checkMem( void );
 static void checkTHR( void );
 ///   Pr�ft beim Einschalten ob alle Switches 'off' sind.
 static void checkSwitches( void );
+
+#ifndef SIMU
 static void checkQuickSelect( void ); // Quick model select on startup
 static void getADC_osmp( void ) ;
+#endif
 
 EEGeneral  g_eeGeneral;
 ModelData  g_model;
@@ -622,10 +625,11 @@ static void doSplash()
 
         clearKeyEvents();
 
-#ifndef SIMU
-        for(uint8_t i=0; i<32; i++)
-            getADC_filt(); // init ADC array
-#endif
+//#ifndef SIMU
+//        for(uint8_t i=0; i<32; i++)
+//            getADC_filt(); // init ADC array
+//#endif
+        getADC_osmp();
 
         uint16_t inacSum = stickMoveValue();
         //        for(uint8_t i=0; i<4; i++)
@@ -640,7 +644,7 @@ static void doSplash()
             if (!main_thread_running) return;
             sleep(1/*ms*/);
 #else
-            getADC_filt();
+            getADC_osmp();
 #endif
             uint16_t tsum = stickMoveValue();
             //            for(uint8_t i=0; i<4; i++)
@@ -689,7 +693,7 @@ static void checkTHR()
     uint8_t thrchn=(2-(g_eeGeneral.stickMode&1));//stickMode=0123 -> thr=2121
  	  
 #ifndef SIMU
-		getADC_single();   // if thr is down - do not display warning at all
+		getADC_osmp();   // if thr is down - do not display warning at all
 #endif
  	  
 		int16_t lowLim = g_eeGeneral.calibMid[thrchn] ;
@@ -711,7 +715,7 @@ static void checkTHR()
       if (!main_thread_running) return;
       sleep(1/*ms*/);
 #else
-        getADC_single();
+        getADC_osmp();
 #endif
         check_backlight_voice() ;
         
@@ -827,6 +831,7 @@ void putsDblSizeName( uint8_t y )
 		lcd_putcAtt(FW*2+i*2*FW-i-2, y, g_model.name[i],DBLSIZE);
 }
 
+#ifndef SIMU
 static void checkQuickSelect()
 {
     uint8_t i = keyDown(); //check for keystate
@@ -860,6 +865,7 @@ static void checkQuickSelect()
         clearKeyEvents(); // wait for user to release key
     }
 }
+#endif
 
 MenuFuncP g_menuStack[5];
 
@@ -1651,28 +1657,28 @@ uint16_t anaIn(uint8_t chan)
 
 
 #define ADC_VREF_TYPE 0x40
-void getADC_filt()
-{
-    static uint16_t t_ana[2][8];
-    //	uint8_t thro_rev_chan = g_eeGeneral.throttleReversed ? THR_STICK : 10 ;  // 10 means don't reverse
-    for (uint8_t adc_input=0;adc_input<8;adc_input++){
-        ADMUX=adc_input|ADC_VREF_TYPE;
-        // Start the AD conversion
-        ADCSRA|=0x40;
-        // Do this while waiting
-        s_anaFilt[adc_input] = (s_anaFilt[adc_input]/2 + t_ana[1][adc_input]) & 0xFFFE; //gain of 2 on last conversion - clear last bit
-        //t_ana[2][adc_input]  =  (t_ana[2][adc_input]  + t_ana[1][adc_input]) >> 1;
-        t_ana[1][adc_input]  = (t_ana[1][adc_input]  + t_ana[0][adc_input]) >> 1;
+//void getADC_filt()
+//{
+//    static uint16_t t_ana[2][8];
+//    //	uint8_t thro_rev_chan = g_eeGeneral.throttleReversed ? THR_STICK : 10 ;  // 10 means don't reverse
+//    for (uint8_t adc_input=0;adc_input<8;adc_input++){
+//        ADMUX=adc_input|ADC_VREF_TYPE;
+//        // Start the AD conversion
+//        ADCSRA|=0x40;
+//        // Do this while waiting
+//        s_anaFilt[adc_input] = (s_anaFilt[adc_input]/2 + t_ana[1][adc_input]) & 0xFFFE; //gain of 2 on last conversion - clear last bit
+//        //t_ana[2][adc_input]  =  (t_ana[2][adc_input]  + t_ana[1][adc_input]) >> 1;
+//        t_ana[1][adc_input]  = (t_ana[1][adc_input]  + t_ana[0][adc_input]) >> 1;
 
-        // Now wait for the AD conversion to complete
-        while ((ADCSRA & 0x10)==0);
-        ADCSRA|=0x10;
+//        // Now wait for the AD conversion to complete
+//        while ((ADCSRA & 0x10)==0);
+//        ADCSRA|=0x10;
 
-        uint16_t v = ADCW;
-        //      if(adc_input == thro_rev_chan) v = 1024 - v;
-        t_ana[0][adc_input]  = (t_ana[0][adc_input]  + v) >> 1;
-    }
-}
+//        uint16_t v = ADCW;
+//        //      if(adc_input == thro_rev_chan) v = 1024 - v;
+//        t_ana[0][adc_input]  = (t_ana[0][adc_input]  + v) >> 1;
+//    }
+//}
 /*
   s_anaFilt[chan] = (s_anaFilt[chan] + sss_ana[chan]) >> 1;
   sss_ana[chan] = (sss_ana[chan] + ss_ana[chan]) >> 1;
@@ -1686,24 +1692,27 @@ static void getADC_osmp()
     uint16_t temp_ana ;
     //	uint8_t thro_rev_chan = g_eeGeneral.throttleReversed ? THR_STICK : 10 ;  // 10 means don't reverse
     for (uint8_t adc_input=0;adc_input<8;adc_input++){
-        temp_ana = 0 ;
-        for (uint8_t i=0; i<4;i++) {  // Going from 10bits to 11 bits.  Addition = n.  Loop 4^n times
+//        temp_ana = 0 ;
+//        for (uint8_t i=0; i<2;i++) {  // Going from 10bits to 11 bits.  Addition = n.  Loop 2 times
             ADMUX=adc_input|ADC_VREF_TYPE;
             // Start the AD conversion
             ADCSRA|=0x40;
             // Wait for the AD conversion to complete
-            while ((ADCSRA & 0x10)==0);
-            ADCSRA|=0x10;
+            while (ADCSRA & 0x40);
+//            ADCSRA|=0x10;
             //      temp_ana[adc_input] += ADCW;
-            temp_ana += ADCW;
-        }
+            temp_ana = ADCW;
+            ADCSRA|=0x40;
+            // Wait for the AD conversion to complete
+            while (ADCSRA & 0x40);
+//        }
 
-        temp_ana /= 2; // divide by 2^n to normalize result.
+//        temp_ana /= 2; // divide by 2^n to normalize result.
         //    if(adc_input == thro_rev_chan)
         //        temp_ana = 2048 -temp_ana;
 
         //		s_anaFilt[adc_input] = temp_ana[adc_input] / 2; // divide by 2^n to normalize result.
-        s_anaFilt[adc_input] = temp_ana ;
+        s_anaFilt[adc_input] = temp_ana + ADCW ;
 
         //    if(IS_THROTTLE(adc_input) && g_eeGeneral.throttleReversed)
         //        s_anaFilt[adc_input] = 2048 - s_anaFilt[adc_input];
@@ -1711,24 +1720,24 @@ static void getADC_osmp()
 }
 
 
-void getADC_single()
-{
-    uint16_t result ;
-    //	  uint8_t thro_rev_chan = g_eeGeneral.throttleReversed ? THR_STICK : 10 ;  // 10 means don't reverse
-    for (uint8_t adc_input=0;adc_input<8;adc_input++){
-        ADMUX=adc_input|ADC_VREF_TYPE;
-        // Start the AD conversion
-        ADCSRA|=0x40;
-        // Wait for the AD conversion to complete
-        while ((ADCSRA & 0x10)==0);
-        ADCSRA|=0x10;
-        result = ADCW * 2; // use 11 bit numbers
+//void getADC_single()
+//{
+//    uint16_t result ;
+//    //	  uint8_t thro_rev_chan = g_eeGeneral.throttleReversed ? THR_STICK : 10 ;  // 10 means don't reverse
+//    for (uint8_t adc_input=0;adc_input<8;adc_input++){
+//        ADMUX=adc_input|ADC_VREF_TYPE;
+//        // Start the AD conversion
+//        ADCSRA|=0x40;
+//        // Wait for the AD conversion to complete
+//        while ((ADCSRA & 0x10)==0);
+//        ADCSRA|=0x10;
+//        result = ADCW * 2; // use 11 bit numbers
 
-        //      if(adc_input == thro_rev_chan)
-        //          result = 2048 - result ;
-        s_anaFilt[adc_input] = result ; // use 11 bit numbers
-    }
-}
+//        //      if(adc_input == thro_rev_chan)
+//        //          result = 2048 - result ;
+//        s_anaFilt[adc_input] = result ; // use 11 bit numbers
+//    }
+//}
 
 static void getADC_bandgap()
 {
@@ -1762,7 +1771,6 @@ ISR(TIMER0_OVF_vect, ISR_NOBLOCK) //continuous timer 16ms (16MHz/1024)
 {
     g_tmr16KHz++;
 }
-#endif
 
 static uint16_t getTmr16KHz()
 {
@@ -2039,7 +2047,7 @@ int main(void)
     }
     checkMem();
     //setupAdc(); //before checkTHR
-    getADC_single();
+    getADC_osmp();
     checkTHR();
     checkSwitches();
     checkAlarm();
@@ -2090,18 +2098,18 @@ void mainSequence()
     uint16_t t0 = getTmr16KHz();
 		uint8_t numSafety = 16 - g_model.numVoice ;
     //      getADC[g_eeGeneral.filterInput]();
-    if ( g_eeGeneral.filterInput == 1)
-    {
-        getADC_filt() ;
-    }
-    else if ( g_eeGeneral.filterInput == 2)
-    {
+//    if ( g_eeGeneral.filterInput == 1)
+//    {
+//        getADC_filt() ;
+//    }
+//    else if ( g_eeGeneral.filterInput == 2)
+//    {
         getADC_osmp() ;
-    }
-    else
-    {
-        getADC_single() ;
-    }
+//    }
+//    else
+//    {
+//        getADC_single() ;
+//    }
     ADMUX=0x1E|ADC_VREF_TYPE;   // Select bandgap
 		pollRotary() ;
     perMain();      // Give bandgap plenty of time to settle
@@ -2403,6 +2411,7 @@ void mainSequence()
 		}
 	}
 }
+#endif
 
 
 int16_t calc1000toRESX(int16_t x)  // improve calc time by Pat MacKenzie

@@ -10,6 +10,13 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 31-Dec-2012  MPB
+r781 Fix Name editing bug
+Minor change to Mix popup coding
+Remove ADC filter options
+Flash saving
+
+******************************************
 CHANGELOG: 05-Dec-2012  MPB
 r780 lcd_char_inverse now can blink
 Mix popup now includes DELETE
