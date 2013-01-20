@@ -78,6 +78,15 @@ make
 echo ">>>  moving"
 mv er9x.hex ../er9x.hex
 
+echo
+echo "===== Making 128 Version ====="
+echo ">>> cleaning"
+make clean
+echo ">>>  making"
+make CPU=128 EXT=FRSKY
+echo ">>>  moving"
+mv er9x.hex ../er9x-128.hex
+
 echo ">>> cleaning"
 make clean 
 

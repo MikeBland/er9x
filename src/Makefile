@@ -27,7 +27,11 @@
 
 
 # MCU name
+ifeq ($(CPU), 128)
+MCU = atmega128
+else
 MCU = atmega64
+endif
 
 # Processor frequency.
 F_CPU = 16000000
@@ -116,6 +120,10 @@ BEEPER = BUZZER
 #	possible values for BUZZER are
 #	BZM	BUZZER = BUZZER_MOD
 #	SPK	BUZZER = SPEAKER
+
+ifeq ($(CPU), 128)
+	CPU_MOD = 128
+endif
 
 ifeq ($(EXT), ARDUPILOT)
 	EXT_MOD = ARDU
@@ -259,6 +267,10 @@ endif
 
 ifeq ($(NOPOTSCROLL),YES)
  CPPDEFS += -DNOPOTSCROLL
+endif
+
+ifeq ($(CPU), 128)
+ CPPDEFS += -DCPUM128
 endif
 
 #---------------- Compiler Options C ----------------
@@ -556,7 +568,7 @@ stamp:
 	@echo "#define TIME_STR \"`date +%H:%M:%S`\"" >> stamp-er9x.h
 	@echo "#define SUB_VERS $(VER)-$(USER)" >> stamp-er9x.h
 	@echo "#define SVN_VERS \"er9x-r$(REV)\"" >> stamp-er9x.h
-	@echo "#define MOD_VERS \"$(EXT_MOD) $(HT_MOD) $(BEEPER_MOD) \"" >> stamp-er9x.h
+	@echo "#define MOD_VERS \"$(EXT_MOD) $(HT_MOD) $(BEEPER_MOD) $(CPU_MOD) \"" >> stamp-er9x.h
 	@cat stamp-er9x.h
 
 font.lbm: font_6x1.xbm

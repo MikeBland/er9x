@@ -29,6 +29,8 @@ mode3 ail ele thr rud
 mode4 ail thr ele rud
 */
 
+#define	SERIALVOICE	0
+
 #define ROTARY	1
 
 extern int16_t AltOffset ;
@@ -54,10 +56,13 @@ uint8_t Vs_state[NUM_CHNOUT] ;
 #if ROTARY		
 uint8_t RotPosition ;
 uint8_t RotCount ;
+uint8_t TrotCount ;		// TeZ version
+uint8_t LastTrotCount ;		// TeZ version
 uint8_t RotEncoder ;
 int8_t LastRotaryValue ;
 int8_t Rotary_diff ;
 int8_t RotaryControl ;
+uint8_t TezRotary ;
 #endif
 
 uint8_t Tevent ;
@@ -770,6 +775,40 @@ static void checkSwitches()
 				g_eeGeneral.switchWarningStates = warningStates ;
     }
 
+#if SERIALVOICE
+
+
+#undef BAUD
+#define BAUD 38400
+
+#ifndef SIMU
+
+#include <util/setbaud.h>
+
+	PORTD |= 0x04 ;		// Pullup on RXD1
+
+  UBRR1H = UBRRH_VALUE;
+  UBRR1L = UBRRL_VALUE;
+  UCSR1A &= ~(1 << U2X1); // disable double speed operation.
+
+  // set 8 N1
+  UCSR1B = 0 | (0 << RXCIE1) | (0 << TXCIE1) | (0 << UDRIE1) | (0 << RXEN0) | (0 << TXEN1) | (0 << UCSZ12);
+  UCSR1C = 0 | (1 << UCSZ11) | (1 << UCSZ10);
+
+  UCSR1B |= (1 << TXEN1) ; // enable TX
+  UCSR1B |= (1 << RXEN1) ; // enable RX
+  
+  while (UCSR1A & (1 << RXC1)) UDR1; // flush receive buffer
+
+	uint16_t k = 0 ;
+	uint8_t p = 0 ;
+	uint8_t q = 'x' ;
+
+#endif
+
+
+#endif
+
     //loop until all switches are reset
     while (1)
     {
@@ -813,16 +852,46 @@ static void checkSwitches()
             putWarnSwitch(2 + 17*FW + FW/2, 21 );
 
 
+#if SERIALVOICE
+				k += 1 ;
+				if ( k > 2500 )
+				{
+					k = 0 ;
+					if ( p == 0 )
+					{
+						p = 1 ;
+			  	  UDR1 = 'A' ;						
+					}
+					else
+					{
+						p = 0 ;
+			  	  UDR1 = 'B' ;
+					}
+				}
+				if (UCSR1A & (1 << RXC1))
+				{
+					q = UDR1 ;
+				}
+				lcd_putc( 0, 8, q ) ;
+
+#endif
+
         refreshDiplay();
 
 
         if((i==warningStates) || (keyDown())) // check state against settings
         {
+#if SERIALVOICE
+  UCSR1B &= ~(1 << TXEN1) ; // disable TX pin
+  UCSR1B &= ~(1 << RXEN1) ; // disable RX
+#endif
             return;  //wait for key release
         }
 
         check_backlight_voice() ;
     }
+
+
 }
 
 void putsDblSizeName( uint8_t y )
@@ -1397,7 +1466,13 @@ void pollRotary()
 	rotary = PINA ;
 	DDRA = 0xFF ;		// Back to all outputs
 	rotary &= 0xE0 ;
-	RotEncoder = rotary ;
+//	RotEncoder = rotary ;
+
+	if( TezRotary != 0)
+		RotEncoder = 0x20; // switch is on
+	else
+		RotEncoder = rotary ; // just read the lcd pin
+	
 	rotary &= 0xDF ;
 	if ( rotary != RotPosition )
 	{
@@ -1414,6 +1489,10 @@ void pollRotary()
 			RotCount += 1 ;
 		}
 		RotPosition = rotary ;
+	}
+	if (TrotCount != LastTrotCount )
+	{
+		RotCount = LastTrotCount = TrotCount ;
 	}
 }
 #endif
@@ -1701,7 +1780,7 @@ static void getADC_osmp()
             while (ADCSRA & 0x40);
 //            ADCSRA|=0x10;
             //      temp_ana[adc_input] += ADCW;
-            temp_ana = ADCW;
+            temp_ana = ADC;
             ADCSRA|=0x40;
             // Wait for the AD conversion to complete
             while (ADCSRA & 0x40);
@@ -1712,7 +1791,7 @@ static void getADC_osmp()
         //        temp_ana = 2048 -temp_ana;
 
         //		s_anaFilt[adc_input] = temp_ana[adc_input] / 2; // divide by 2^n to normalize result.
-        s_anaFilt[adc_input] = temp_ana + ADCW ;
+        s_anaFilt[adc_input] = temp_ana + ADC ;
 
         //    if(IS_THROTTLE(adc_input) && g_eeGeneral.throttleReversed)
         //        s_anaFilt[adc_input] = 2048 - s_anaFilt[adc_input];
@@ -1752,7 +1831,7 @@ static void getADC_bandgap()
     // Wait for the AD conversion to complete
     while ((ADCSRA & 0x10)==0);
     ADCSRA|=0x10;
-    BandGap = (BandGap * 7 + ADCW + 4 ) >> 3 ;
+    BandGap = (BandGap * 7 + ADC + 4 ) >> 3 ;
     //  if(BandGap<256)
     //      BandGap = 256;
 }
@@ -1988,7 +2067,6 @@ int main(void)
     TCCR3A  = 0;
     TCCR3B  = (1<<ICNC3) | (2<<CS30);      //ICNC3 16MHz / 8
     ETIMSK |= (1<<TICIE3);
-
 
 #if STACK_TRACE
     // Init Stack while interrupts are disabled
