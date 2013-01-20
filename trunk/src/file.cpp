@@ -31,21 +31,41 @@
 // bs=16  128 blocks    verlust link:128  16files:16*8  128     sum 256
 // bs=32   64 blocks    verlust link: 64  16files:16*16 256     sum 320
 //
-#  define EESIZE   2048
-#  define BS       16
+#if defined(CPUM128)
+//#define EEFS_VERS 4
+//#define EEFS_VERS64 4
+//#define EESIZE     2048
+
+#define EEFS_VERS 6
+#define EEFS_VERS64 4
+#define EESIZE     4096
+
+#define MAXFILES   20
+#define BS         16
+#else
+#define EEFS_VERS 4
+#define EESIZE     2048
+#define MAXFILES   20
+#define BS         16
+#endif
+
+#define EESIZE64   2048
+
 #  define RESV     64  //reserv for eeprom header with directory (eeFs)
 #endif
+
+
 #define FIRSTBLK (RESV/BS)
 #define BLOCKS   (EESIZE/BS)
+#define BLOCKS64   (EESIZE64/BS)
 
-#define EEFS_VERS 4
 PACK(struct DirEnt{
   uint8_t  startBlk;
   uint16_t size:12;
   uint16_t typ:4;
 });
 
-#define MAXFILES (1+MAX_MODELS+3)
+//#define MAXFILES (1+MAX_MODELS+3)
 PACK(struct EeFs{
   uint8_t  version;
   uint8_t  mySize;
@@ -117,10 +137,10 @@ static uint8_t EeFsAlloc(){ ///alloc one block from freelist
 int8_t EeFsck()
 {
   uint8_t *bufp;
-  static uint8_t buffer[BLOCKS];
-  bufp = buffer;
+//  static uint8_t buffer[BLOCKS];
+  bufp = Xmem.file_buffer;
   memset(bufp,0,BLOCKS);
-  uint8_t blk ;
+  uint16_t blk ;
   int8_t ret=0;
   for(uint8_t i = 0; i <= MAXFILES; i++){
     uint8_t *startP = i==MAXFILES ? &eeFs.freeList : &eeFs.files[i].startBlk;
@@ -176,7 +196,7 @@ void EeFsFormat()
   eeFs.mySize   = sizeof(eeFs);
   eeFs.freeList = 0;
   eeFs.bs       = BS;
-  for(uint8_t i = FIRSTBLK; i < BLOCKS; i++) EeFsSetLink(i,i+1);
+  for(uint8_t i = FIRSTBLK; i < BLOCKS-1; i++) EeFsSetLink(i,i+1);
   EeFsSetLink(BLOCKS-1, 0);
   eeFs.freeList = FIRSTBLK;
   EeFsFlush();
@@ -185,7 +205,36 @@ bool EeFsOpen()
 {
   eeprom_read_block(&eeFs,0,sizeof(eeFs));
 
+#if defined(CPUM128)
+	uint8_t i ;
+	uint8_t j ;
+	if ( ( eeFs.version == EEFS_VERS64) && ( eeFs.mySize  == sizeof(eeFs) ) )
+	{
+		// Extend from 2k to 4k
+	
+		j = i = eeFs.freeList ;
+		while ( i )
+		{
+			j = i ;
+			i = EeFsGetLink( i ) ;
+		}
+		// j has last block in free list
+  	for( i = BLOCKS64 ; i < BLOCKS-1; i++)
+		{
+		 	EeFsSetLink(i,i+1);
+		}
+  	EeFsSetLink(BLOCKS-1, 0) ;
+  	EeFsSetLink( j, BLOCKS64 ) ;
+		eeFs.version = EEFS_VERS ;
+	  EeFsFlush();
+	}
   return eeFs.version == EEFS_VERS && eeFs.mySize  == sizeof(eeFs);
+  
+//	return eeFs.version == EEFS_VERS64 && eeFs.mySize  == sizeof(eeFs);
+
+#else
+  return eeFs.version == EEFS_VERS && eeFs.mySize  == sizeof(eeFs);
+#endif
 }
 
 bool EFile::exists(uint8_t i_fileId)

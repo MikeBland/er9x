@@ -1,18 +1,10 @@
 ===== Starting build =====
 Timestamp
-Mon Dec 31 22:59:06 UTC 2012
+Sun Jan 20 21:14:54 UTC 2013
 ==========================
 
 ===== Updating from SVN =====
-Error validating server certificate for 'https://er9x.googlecode.com:443':
- - The certificate is not issued by a trusted authority. Use the
-   fingerprint to validate the certificate manually!
-Certificate information:
- - Hostname: *.googlecode.com
- - Valid: from Thu, 06 Dec 2012 08:51:56 GMT until Fri, 07 Jun 2013 19:43:27 GMT
- - Issuer: Google Inc, US
- - Fingerprint: 64:0c:bc:27:47:84:41:e6:69:01:b7:c4:14:a1:c0:e1:78:e6:b1:3f
-(R)eject, accept (t)emporarily or accept (p)ermanently? At revision 780.
+At revision 781.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -44,11 +36,11 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "31.12.2012"
-#define TIME_STR "22:59:19"
-#define SUB_VERS 6683-Mike
-#define SVN_VERS "er9x-r781"
-#define MOD_VERS "JETI   "
+#define DATE_STR "20.01.2013"
+#define TIME_STR "21:15:01"
+#define SUB_VERS 6748-Mike
+#define SVN_VERS "er9x-r782"
+#define MOD_VERS "JETI    "
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -105,10 +97,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   56574 bytes (86.3% Full)
+Program:   56634 bytes (86.4% Full)
 (.text + .data + .bootloader)
 
-Data:       3315 bytes (80.9% Full)
+Data:       3275 bytes (80.0% Full)
 (.data + .bss + .noinit)
 
 
@@ -147,11 +139,11 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "31.12.2012"
-#define TIME_STR "23:00:35"
-#define SUB_VERS 6684-Mike
-#define SVN_VERS "er9x-r781"
-#define MOD_VERS "FRSKY NT  "
+#define DATE_STR "20.01.2013"
+#define TIME_STR "21:15:15"
+#define SUB_VERS 6749-Mike
+#define SVN_VERS "er9x-r782"
+#define MOD_VERS "FRSKY NT   "
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -208,10 +200,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   62058 bytes (94.7% Full)
+Program:   62114 bytes (94.8% Full)
 (.text + .data + .bootloader)
 
-Data:       3480 bytes (85.0% Full)
+Data:       3440 bytes (84.0% Full)
 (.data + .bss + .noinit)
 
 
@@ -250,11 +242,11 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "31.12.2012"
-#define TIME_STR "23:00:54"
-#define SUB_VERS 6685-Mike
-#define SVN_VERS "er9x-r781"
-#define MOD_VERS "FRSKY NHT  "
+#define DATE_STR "20.01.2013"
+#define TIME_STR "21:15:28"
+#define SUB_VERS 6750-Mike
+#define SVN_VERS "er9x-r782"
+#define MOD_VERS "FRSKY NHT   "
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -311,10 +303,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   61492 bytes (93.8% Full)
+Program:   61548 bytes (93.9% Full)
 (.text + .data + .bootloader)
 
-Data:       3478 bytes (84.9% Full)
+Data:       3438 bytes (83.9% Full)
 (.data + .bss + .noinit)
 
 
@@ -353,11 +345,11 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "31.12.2012"
-#define TIME_STR "23:01:15"
-#define SUB_VERS 6686-Mike
-#define SVN_VERS "er9x-r781"
-#define MOD_VERS "ARDU   "
+#define DATE_STR "20.01.2013"
+#define TIME_STR "21:15:42"
+#define SUB_VERS 6751-Mike
+#define SVN_VERS "er9x-r782"
+#define MOD_VERS "ARDU    "
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -414,10 +406,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   58332 bytes (89.0% Full)
+Program:   58394 bytes (89.1% Full)
 (.text + .data + .bootloader)
 
-Data:       3313 bytes (80.9% Full)
+Data:       3273 bytes (79.9% Full)
 (.data + .bss + .noinit)
 
 
@@ -456,11 +448,11 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "31.12.2012"
-#define TIME_STR "23:01:33"
-#define SUB_VERS 6687-Mike
-#define SVN_VERS "er9x-r781"
-#define MOD_VERS "NMEA   "
+#define DATE_STR "20.01.2013"
+#define TIME_STR "21:15:55"
+#define SUB_VERS 6752-Mike
+#define SVN_VERS "er9x-r782"
+#define MOD_VERS "NMEA    "
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -517,10 +509,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   62548 bytes (95.4% Full)
+Program:   62610 bytes (95.5% Full)
 (.text + .data + .bootloader)
 
-Data:       3470 bytes (84.7% Full)
+Data:       3430 bytes (83.7% Full)
 (.data + .bss + .noinit)
 
 
@@ -559,11 +551,11 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "31.12.2012"
-#define TIME_STR "23:01:48"
-#define SUB_VERS 6688-Mike
-#define SVN_VERS "er9x-r781"
-#define MOD_VERS " NHT  "
+#define DATE_STR "20.01.2013"
+#define TIME_STR "21:16:12"
+#define SUB_VERS 6753-Mike
+#define SVN_VERS "er9x-r782"
+#define MOD_VERS " NHT   "
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -617,10 +609,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   53516 bytes (81.7% Full)
+Program:   53578 bytes (81.8% Full)
 (.text + .data + .bootloader)
 
-Data:       3251 bytes (79.4% Full)
+Data:       3211 bytes (78.4% Full)
 (.data + .bss + .noinit)
 
 
@@ -659,11 +651,11 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "31.12.2012"
-#define TIME_STR "23:02:02"
-#define SUB_VERS 6689-Mike
-#define SVN_VERS "er9x-r781"
-#define MOD_VERS "   "
+#define DATE_STR "20.01.2013"
+#define TIME_STR "21:16:27"
+#define SUB_VERS 6754-Mike
+#define SVN_VERS "er9x-r782"
+#define MOD_VERS "    "
 
 Compiling C++: er9x.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
@@ -717,10 +709,113 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   56004 bytes (85.5% Full)
+Program:   56066 bytes (85.5% Full)
 (.text + .data + .bootloader)
 
-Data:       3279 bytes (80.1% Full)
+Data:       3239 bytes (79.1% Full)
+(.data + .bss + .noinit)
+
+
+
+-------- end --------
+
+>>>  moving
+
+===== Making 128 Version =====
+>>> cleaning
+
+-------- begin --------
+
+Cleaning project:
+rm -f er9x.hex
+rm -f er9x.eep
+rm -f er9x.cof
+rm -f er9x.elf
+rm -f er9x.map
+rm -f er9x.sym
+rm -f er9x.lss
+rm -rf obj
+rm -f 
+rm -f 
+rm -rf .dep
+-------- end --------
+
+>>>  making
+
+-------- begin --------
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
+Copyright (C) 2012 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+Generate Version-stamp:
+//Automatically generated file - do not edit
+#define DATE_STR "20.01.2013"
+#define TIME_STR "21:16:41"
+#define SUB_VERS 6755-Mike
+#define SVN_VERS "er9x-r782"
+#define MOD_VERS "FRSKY   128 "
+
+Compiling C++: er9x.cpp
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+
+Compiling C++: stamp.cpp
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+
+Compiling C++: menus.cpp
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+
+Compiling C++: pers.cpp
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+
+Compiling C++: file.cpp
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+
+Compiling C++: lcd.cpp
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+
+Compiling C++: drivers.cpp
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+
+Compiling C++: templates.cpp
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+
+Compiling C++: pulses.cpp
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
+
+Compiling C++: audio.cpp
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
+Compiling C++: frsky.cpp
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
+
+Linking: er9x.elf
+avr-gcc -mmcu=atmega128 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+
+Creating load file for Flash: er9x.hex
+avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
+
+Creating load file for EEPROM: er9x.eep
+avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+--change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+c:\WinAVR-20100110\bin\avr-objcopy.exe: --change-section-lma .eeprom=0x00000000 never used
+
+Creating Extended Listing: er9x.lss
+avr-objdump -h -S er9x.elf > er9x.lss
+
+Creating Symbol Table: er9x.sym
+avr-nm -n er9x.elf > er9x.sym
+
+Size after:
+AVR Memory Usage
+----------------
+Device: atmega128
+
+Program:   64234 bytes (49.0% Full)
+(.text + .data + .bootloader)
+
+Data:       3594 bytes (87.7% Full)
 (.data + .bss + .noinit)
 
 

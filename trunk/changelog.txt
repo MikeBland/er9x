@@ -10,6 +10,12 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 20-Jan-2012  MPB
+Add TeZ rotary encoder support
+Add M128 EEPROM support
+Fix voice output of imperial temperatures
+
+******************************************
 CHANGELOG: 31-Dec-2012  MPB
 r781 Fix Name editing bug
 Minor change to Mix popup coding

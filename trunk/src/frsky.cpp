@@ -371,6 +371,8 @@ void processFrskyPacket(uint8_t *packet)
 
 uint8_t Private_count ;
 uint8_t Private_position ;
+extern uint8_t TrotCount ;
+extern uint8_t TezRotary ;
 
 #ifndef SIMU
 ISR(USART0_RX_vect)
@@ -535,7 +537,7 @@ ISR(USART0_RX_vect)
 					Private_position = 0 ;
         break;
         case PRIVATE_VALUE :
-					if ( Private_position++ == 0 )
+					if ( Private_position == 0 )
 					{
 						// Process first private data byte
 						// PC6, PC7
@@ -545,6 +547,13 @@ ISR(USART0_RX_vect)
 							PORTC = ( PORTC & 0x3F ) | ( data & 0xC0 ) ;		// update outputs						
 						}
 					}
+					if(Private_position==1) {
+						TrotCount = data;
+					}
+					if(Private_position==2) { // rotary encoder switch
+						TezRotary = data;
+					}
+					Private_position++;
 					if ( Private_position == Private_count )
 					{
           	dataState = frskyDataIdle;

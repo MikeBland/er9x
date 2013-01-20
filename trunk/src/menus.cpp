@@ -110,6 +110,14 @@ NOINLINE int16_t m_to_ft( int16_t metres )
 	metres >>= 2 ;
   return result + (metres >> 1 );
 }
+
+NOINLINE int16_t c_to_f( int16_t degrees )
+{
+  degrees += 18 ;
+  degrees *= 115 ;
+  degrees >>= 6 ;
+  return degrees ;
+}
 									 
 uint8_t telemItemValid( uint8_t index )
 {
@@ -242,6 +250,10 @@ void voice_telem_item( int8_t index )
 		case FR_TEMP1:
 		case FR_TEMP2:
 			unit = V_DEGREES ;			
+  		if ( g_model.FrSkyImperial )
+  		{
+				value = c_to_f(value) ;
+			}
 		break ;
 
 //		case FR_A1_MAH:
@@ -421,9 +433,7 @@ uint8_t putsTelemetryChannel(uint8_t x, uint8_t y, int8_t channel, int16_t val, 
 			unit = 'C' ;
   		if ( g_model.FrSkyImperial )
   		{
-  		  val += 18 ;
-  		  val *= 115 ;
-  		  val >>= 6 ;
+				val = c_to_f(val) ;
   		  unit = 'F' ;
 				x -= fieldW ;
   		}
@@ -2276,20 +2286,7 @@ void menuProcMixOne(uint8_t event)
 //} ;
 int8_t s_mixMaxSel;
 
-struct t_calib
-{
-	int16_t midVals[7];
-	int16_t loVals[7];
-	int16_t hiVals[7];
-	uint8_t idxState;
-} ;
-
-union t_xmem
-{
-//	struct MixTab s_mixTab[MAX_MIXERS+NUM_XCHNOUT+1] ;	
-	struct t_calib Cal_data ;
-	char buf[sizeof(g_model.name)+5];
-} Xmem ;
+union t_xmem Xmem ;
 
 //void genMixTab()
 //{

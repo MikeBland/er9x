@@ -840,6 +840,29 @@ extern int8_t REG(int8_t x, int8_t min, int8_t max) ;
 extern int8_t REG100_100(int8_t x) ;
 #endif
 
+struct t_calib
+{
+	int16_t midVals[7];
+	int16_t loVals[7];
+	int16_t hiVals[7];
+	uint8_t idxState;
+} ;
+
+
+union t_xmem
+{
+//	struct MixTab s_mixTab[MAX_MIXERS+NUM_XCHNOUT+1] ;	
+	struct t_calib Cal_data ;
+	char buf[sizeof(g_model.name)+5];
+#if defined(CPUM128)
+  uint8_t file_buffer[256];
+#else
+  uint8_t file_buffer[128];
+#endif
+} ;
+
+extern union t_xmem Xmem ;
+
 #endif // er9x_h
 /*eof*/
 
