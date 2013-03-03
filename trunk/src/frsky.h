@@ -60,10 +60,30 @@
 #define FR_AMP_MAH		36
 #define FR_CELLS_TOT	37
 #define FR_VOLTS			38
+#define FR_VSPD				39
+#define FR_TRASH			40	// Used for invalid id
 
-#define HUBDATALENGTH 39
+#define HUBDATALENGTH 41
 #define HUBMINMAXLEN	9			// Items with a min and max field
 #define HUBOFFSETLEN	7			// Items with an offset field
+
+#if defined(VARIO)
+#define VARIO_QUEUE_LENGTH          5
+#define VARIO_SPEED_LIMIT           10 //m/s
+#define VARIO_SPEED_LIMIT_MUL       10 //to get 0.1m/s steps
+#define VARIO_SPEED_LIMIT_DOWN_OFF  (100+1) //100 steps + OFF
+#define VARIO_SPEED_LIMIT_UP_CENTER 10
+#define VARIO_SPEED_LIMIT_UP_MAX    (10+30)
+
+struct t_vario
+{
+	int16_t  VarioAltitudeQueue[VARIO_QUEUE_LENGTH]; //circular buffer
+	int32_t  VarioAltitude_cm;
+	uint8_t  VarioAltitudeQueuePointer;     // circular-buffer pointer
+	int16_t  VarioSpeed;
+} ;
+
+#endif
 
 /*  FrSky Hub Info
 DataID Meaning       Unit   Range   Note
@@ -94,6 +114,7 @@ DataID Meaning       Unit   Range   Note
 0x25   Acc-y         1/256g -8g ~ +8g
 0x26   Acc-z         1/256g -8g ~ +8g
 0x28   Current       1A   0-100A
+0x29   VerticalSpeed
 0x3A   Voltage(amp sensor) 0.5v 0-48V Before “.”
 0x3B   Voltage(amp sensor)            After “.”
 
@@ -138,6 +159,7 @@ DataID Meaning       Unit   Range   Note
 0x26   Acc-z         1/256g -8g ~ +8g
 0x27
 0x28   Current       1A   0-100A
+0x29   VerticalSpeed
 // . . .
 0x3A   Voltage(amp sensor) 0.5v 0-48V Before “.”
 0x3B   Voltage(amp sensor)            After “.”
@@ -173,7 +195,7 @@ struct FrskyData {
   uint8_t min;
   uint8_t max;
 	uint8_t offset ;
-	uint16_t averaging_total ;
+	int16_t averaging_total ;
   void set(uint8_t value, uint8_t copy);
 	void setoffset();
 };
@@ -203,6 +225,8 @@ extern void process_frsky_q( void ) ;
  
 extern Frsky_current_info Frsky_current[2] ;
 
+extern uint8_t AltitudeDecimals ;
+
 // Global Fr-Sky telemetry data variables
 extern uint8_t frskyStreaming; // >0 (true) == data is streaming in. 0 = nodata detected for some time
 extern uint8_t frskyUsrStreaming; // >0 (true) == user data is streaming in. 0 = no user data detected for some time
@@ -225,7 +249,8 @@ void check_frsky( void ) ;
 
 void FRSKY_setModelAlarms(void) ;
 
-enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm=2) ;
+//enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm=2) ;
+enum AlarmLevel FRSKY_alarmRaised(uint8_t idx) ;
 //void FRSKY_alarmPlay(uint8_t idx, uint8_t alarm) ;
 void resetTelemetry();
 

@@ -77,7 +77,7 @@ const prog_uint8_t APM Fr_indices[] =
 	FR_ACCX,
 	FR_ACCY,
 	FR_ACCZ,
-	HUBDATALENGTH-1,
+	FR_VSPD,
 	FR_CURRENT,
 	FR_V_AMP | 0x80,
 	FR_V_AMPd,
@@ -85,10 +85,17 @@ const prog_uint8_t APM Fr_indices[] =
 	HUBDATALENGTH-1
 } ;
 
+uint8_t AltitudeDecimals ;
+int16_t WholeAltitude ;
+// debug
+//int16_t AltB ;
+//int16_t AltA ;
+
+
 uint8_t frskyRxBuffer[19];   // Receive buffer. 9 bytes (full packet), worst case 18 bytes with byte-stuffing (+1)
 uint8_t frskyTxBuffer[19];   // Ditto for transmit buffer
 uint8_t frskyTxBufferCount = 0;
-uint8_t FrskyRxBufferReady = 0;
+//uint8_t FrskyRxBufferReady = 0;
 uint8_t frskyStreaming = 0;
 uint8_t frskyUsrStreaming = 0;
 
@@ -119,21 +126,77 @@ uint8_t FrskyVolts[12];
 uint8_t FrskyBattCells=0;
 uint16_t Frsky_Amp_hour_prescale ;
 
+#if defined(VARIO)
+struct t_vario VarioData ;
+#endif
+
+void evalVario(int16_t altitude_bp, uint16_t altitude_ap)
+{
+#if defined(VARIO)
+	struct t_vario *vptr ;
+	vptr = &VarioData ;
+
+  int32_t varioAltitude_cm = (int32_t)altitude_bp * 100 + (altitude_bp > 0 ? altitude_ap : -altitude_ap) ;
+  uint8_t varioAltitudeQueuePointer = vptr->VarioAltitudeQueuePointer + 1 ;
+  if (varioAltitudeQueuePointer >= VARIO_QUEUE_LENGTH)
+	{
+    varioAltitudeQueuePointer = 0 ;
+	}
+  vptr->VarioAltitudeQueuePointer = varioAltitudeQueuePointer ;
+  vptr->VarioSpeed -= vptr->VarioAltitudeQueue[varioAltitudeQueuePointer] ;
+  vptr->VarioAltitudeQueue[varioAltitudeQueuePointer] = varioAltitude_cm - vptr->VarioAltitude_cm;
+  vptr->VarioAltitude_cm = varioAltitude_cm;
+  vptr->VarioSpeed += vptr->VarioAltitudeQueue[varioAltitudeQueuePointer] ;
+//	FrskyHubData[FR_VSPD] = vptr->VarioSpeed ;
+#endif
+}
 
 
 void store_hub_data( uint8_t index, uint16_t value )
 {
+	if ( index == FR_ALT_BARO )
+	{
+//		AltB = value ;
+		if ( AltitudeDecimals )
+		{
+			WholeAltitude = value * 10 ;
+			index = FR_TRASH ;
+		}
+	}
+	if ( index == FR_ALT_BAROd )
+	{
+//		AltA = value ;
+		AltitudeDecimals = 1 ;
+		FrskyHubData[FR_ALT_BARO] = WholeAltitude + ( (WholeAltitude > 0) ? value : -value ) ;
+	}
+
 	if ( index < HUBDATALENGTH )
 	{
-		FrskyHubData[index] = value ;
-		if ( g_model.FrSkyGpsAlt )
+    if ( !g_model.FrSkyGpsAlt )         
+    {
+			FrskyHubData[index] = value ;
+    }                     
+		else
 		{
-			if ( index == FR_GPS_ALT )
+      if ( index != FR_ALT_BARO )
 			{
-				FrskyHubData[FR_ALT_BARO] = FrskyHubData[FR_GPS_ALT] ;		// Copy Gps Alt instead
-				index = FR_ALT_BARO ;			// For max and min
+			  FrskyHubData[index] = value ;           /* ReSt */
 			}
+      if ( index == FR_GPS_ALT )
+      {
+         FrskyHubData[FR_ALT_BARO] = FrskyHubData[FR_GPS_ALT] ;      // Copy Gps Alt instead
+         index = FR_ALT_BARO ;         // For max and min
+      }
 		}
+    
+#if defined(VARIO)
+		if ( index == FR_ALT_BARO )
+		{
+			evalVario( value, 0 ) ;
+		}
+#endif
+
+
 		if ( index < HUBMINMAXLEN )
 		{
 			if ( FrskyHubMax[index] < FrskyHubData[index] )
@@ -163,10 +226,17 @@ void store_hub_data( uint8_t index, uint16_t value )
 		}
 		if ( index == FR_RPM )			// RPM
 		{
-			uint8_t x ;
+			uint32_t x ;
 
-			x = (g_model.numBlades == 2 ) ? 15 : ( (g_model.numBlades == 1 ) ? 20 : 30 ) ;
-			FrskyHubData[FR_RPM] *= x ;
+			x = FrskyHubData[FR_RPM] ;
+			x *= 60 ;
+			uint8_t b = g_model.numBlades ;
+			if ( b == 0 )
+			{
+				b = 1 ;
+				g_model.numBlades = b ;
+			}
+			FrskyHubData[FR_RPM] = x / b ;
 		}
 		if ( index == FR_V_AMPd )			// RPM
 		{
@@ -212,6 +282,10 @@ void frsky_proc_user_byte( uint8_t byte )
 						if ( byte > 57 )
 						{
 							byte -= 17 ;		// Move voltage-amp sensors							
+						}									// 58->41, 59->42
+						if ( byte == 48 )
+						{
+							byte = FR_VSPD ;		// Move Vario							
 						}
 					  Frsky_user_id	= pgm_read_byte( &Fr_indices[byte] ) ;
 						Frsky_user_state = 2 ;
@@ -238,7 +312,13 @@ void frsky_proc_user_byte( uint8_t byte )
 		}
 		else
 		{
-			store_hub_data( FR_ALT_BARO, ( byte << 8 ) + Frsky_user_lobyte ) ;	 // Store altitude info
+			int16_t value ;
+			value = ( byte << 8 ) + Frsky_user_lobyte ;
+			store_hub_data( FR_ALT_BARO, value ) ;	 // Store altitude info
+#if defined(VARIO)
+			evalVario( value, 0 ) ;
+#endif
+
 		}				
 	}
 }
@@ -336,7 +416,7 @@ void processFrskyPacket(uint8_t *packet)
 
   }
 
-  FrskyRxBufferReady = 0;
+//  FrskyRxBufferReady = 0;
   frskyStreaming = FRSKY_TIMEOUT10ms; // reset counter only if valid frsky packets are being detected
 }
 
@@ -373,6 +453,11 @@ uint8_t Private_count ;
 uint8_t Private_position ;
 extern uint8_t TrotCount ;
 extern uint8_t TezRotary ;
+
+// debug
+//uint8_t Uerror ;
+//uint8_t Uecount ;
+
 
 #ifndef SIMU
 ISR(USART0_RX_vect)
@@ -420,13 +505,15 @@ ISR(USART0_RX_vect)
 
   if (stat & ((1 << FE0) | (1 << DOR0) | (1 << UPE0)))
   { // discard buffer and start fresh on any comms error
-    FrskyRxBufferReady = 0;
+//    FrskyRxBufferReady = 0;
     numPktBytes = 0;
+//		Uerror = stat & ((1 << FE0) | (1 << DOR0) | (1 << UPE0)) ;
+//		Uecount += 1 ;
   } 
   else
   {
-    if (FrskyRxBufferReady == 0) // can't get more data if the buffer hasn't been cleared
-    {
+//    if (FrskyRxBufferReady == 0) // can't get more data if the buffer hasn't been cleared
+//    {
       switch (dataState) 
       {
         case frskyDataStart:
@@ -563,7 +650,7 @@ ISR(USART0_RX_vect)
 #endif
 
       } // switch
-    } // if (FrskyRxBufferReady == 0)
+//    } // if (FrskyRxBufferReady == 0)
   }
 	cli() ;
   UCSR0B |= (1 << RXCIE0); // enable Interrupt
@@ -708,7 +795,8 @@ void FRSKY_setTxPacket( uint8_t type, uint8_t value, uint8_t p1, uint8_t p2 )
 	frskyTxBufferCount = i + 8 ;
 }
 
-enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm)
+//enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm)
+enum AlarmLevel FRSKY_alarmRaised(uint8_t idx)
 {
 	FrSkyChannelData *ptr_fdata ;
 
@@ -720,8 +808,8 @@ enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm)
 	uint8_t greater = ptr_fdata->alarms_greater ;
   value = frskyTelemetry[idx].value ;
 	
-	if ( alarm != 1 )		// 0 or 2
-	{
+//	if ( alarm != 1 )		// 0 or 2
+//	{
 		level &= 3 ;
 		if ( level != (uint8_t)alarm_off)
 		{
@@ -737,9 +825,9 @@ enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm)
   				return (enum AlarmLevel) level ;
       }
 		}
-  }
-	if ( alarm )		// 1 or 2
-	{
+//  }
+//	if ( alarm )		// 1 or 2
+//	{
 		level = ptr_fdata->alarms_level >> 2 ;
 		level &= 3 ;
 		if ( level != (uint8_t)alarm_off)
@@ -756,7 +844,7 @@ enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm)
   				return (enum AlarmLevel) level ;
       }
 		}
-  }
+//  }
   return alarm_off ;
 }
 
@@ -985,23 +1073,28 @@ void check_frsky()
 
 #endif
 
-  if ( g_model.frsky.channels[0].type == 3 )		// Current (A)
-		current_check( 0 ) ;
-  if ( g_model.frsky.channels[1].type == 3 )		// Current (A)
-		current_check( 1 ) ;
-	
+  if (frskyStreaming)
+	{
+  	if ( g_model.frsky.channels[0].type == 3 )		// Current (A)
+			current_check( 0 ) ;
+  	if ( g_model.frsky.channels[1].type == 3 )		// Current (A)
+			current_check( 1 ) ;
+	}
+
 	// FrSky Current sensor (in amps)
 	// add this every 10 ms, when over 360, we have 1 mAh
 	// 
-	if ( ( Frsky_Amp_hour_prescale += FrskyHubData[FR_CURRENT] ) > 3600 )
+  if (frskyUsrStreaming)
 	{
-		Frsky_Amp_hour_prescale -= 3600 ;
-		int16_t *ptr_hub = &FrskyHubData[FR_AMP_MAH] ;
-		FORCE_INDIRECT(ptr_hub) ;
+		if ( ( Frsky_Amp_hour_prescale += FrskyHubData[FR_CURRENT] ) > 3600 )
+		{
+			Frsky_Amp_hour_prescale -= 3600 ;
+			int16_t *ptr_hub = &FrskyHubData[FR_AMP_MAH] ;
+			FORCE_INDIRECT(ptr_hub) ;
 
-		*ptr_hub += 1 ;
+			*ptr_hub += 1 ;
+		}
 	}
-
 }
 
 // New model loaded

@@ -65,11 +65,8 @@ void eeWriteBlockCmp(const void *i_pointer_ram, uint16_t i_pointer_eeprom, size_
 
 
 
-static uint8_t s_evt;
-void putEvent(uint8_t evt)
-{
-  s_evt = evt;
-}
+uint8_t s_evt;
+
 uint8_t getEvent()
 {
   uint8_t evt = s_evt;

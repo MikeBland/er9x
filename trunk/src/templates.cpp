@@ -64,7 +64,7 @@ const prog_char *const n_Templates[8] PROGMEM = {
 
 #endif
 
-MixData* setDest(uint8_t dch)
+static MixData* setDest(uint8_t dch)
 {
     uint8_t i = 0;
     while ((g_model.mixData[i].destCh<=dch) && (g_model.mixData[i].destCh) && (i<MAX_MIXERS)) i++;

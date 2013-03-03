@@ -10,7 +10,20 @@ description here
 ====================================================================================
 
 ******************************************
-CHANGELOG: 20-Jan-2012  MPB
+CHANGELOG: 03-Mar-2013  MPB
+Added some code towards a vario.
+Added some code to support FrSkys new vario device (not yet commercially available).
+Allow more blades (1-50) for the RPM scaling.
+Increase the voice queue size from 10 to 16.
+Add 'minus' to voice output.
+Allow GVARS as voice inputs.
+Add the !Curve option for curves (from O9X).
+Many flash savings (some from O9X).
+Calibration procedure does not need the centre position for pots.
+Allow selection of the first channel in the PPM output.
+
+******************************************
+CHANGELOG: 20-Jan-2013  MPB
 Add TeZ rotary encoder support
 Add M128 EEPROM support
 Fix voice output of imperial temperatures

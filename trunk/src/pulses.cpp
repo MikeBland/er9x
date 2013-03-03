@@ -222,14 +222,17 @@ void setupPulsesPPM( uint8_t proto )
 {
 #define PPM_CENTER 1500*2
   int16_t PPM_range = g_model.extendedLimits ? 640*2 : 512*2;   //range of 0.7..1.7msec
-    
+  
+	uint8_t startChan = g_model.ppmStart ;
+	  
 	//Total frame length = 22.5msec
   //each pulse is 0.7..1.7ms long with a 0.3ms stop tail
   //The pulse ISR is 2mhz that's why everything is multiplied by 2
   uint16_t *ptr ;
   ptr = (proto == PROTO_PPM) ? pulses2MHz.pword : &pulses2MHz.pword[PULSES_WORD_SIZE/2] ;
   uint8_t p= ( ( proto == PROTO_PPM16) ? 16 : 8 ) +g_model.ppmNCH*2 ; //Channels *2
-  uint16_t q=(g_model.ppmDelay*50+300)*2; //Stoplen *2
+  p += startChan ;
+	uint16_t q=(g_model.ppmDelay*50+300)*2; //Stoplen *2
   uint16_t rest=22500u*2-q; //Minimum Framelen=22.5 ms
   rest += (int16_t(g_model.ppmFrameLength))*1000;
   //    if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
@@ -237,7 +240,7 @@ void setupPulsesPPM( uint8_t proto )
 	{
 		*ptr++ = q ;
 	}
-	for( uint8_t i = (proto == PROTO_PPM16) ? p-8 : 0 ;i<p ; i++ )
+	for( uint8_t i = (proto == PROTO_PPM16) ? p-8 : startChan ;i<p ; i++ )
   { //NUM_CHNOUT
 //    int16_t v = max(min(g_chans512[i],PPM_range),-PPM_range) + PPM_CENTER;
     int16_t v = g_chans512[i] ;

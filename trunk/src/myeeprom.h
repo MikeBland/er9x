@@ -106,7 +106,7 @@ PACK(typedef struct t_EEGeneral {
     uint8_t   disablePotScroll:1;
     uint8_t   disableBG:1;
     uint8_t   frskyinternalalarm:1;
-    uint8_t   filterInput;		// No longer needed, left for eepe compatibility for now
+    uint8_t   spare_filter ;		// No longer needed, left for eepe compatibility for now
     uint8_t   lightAutoOff;
     uint8_t   templateSetup;  //RETA order according to chout_ar array
     int8_t    PPM_Multiplier;
@@ -156,7 +156,7 @@ PACK(typedef struct t_MixData {
     uint8_t srcRaw;            //
     int8_t  weight;
     int8_t  swtch;
-    uint8_t curve;             //0=symmetrisch 1=no neg 2=no pos
+    int8_t curve;             //0=symmetrisch 1=no neg 2=no pos
     uint8_t delayUp:4;
     uint8_t delayDown:4;
     uint8_t speedUp:4;         // Servogeschwindigkeit aus Tabelle (10ms Cycle)
@@ -213,7 +213,10 @@ PACK(typedef struct t_FrSkyalarms
 
 PACK(typedef struct t_FrSkyData {
     FrSkyChannelData channels[2];
-		FrSkyAlarmData alarmData[4] ;
+		uint8_t unused0 ;
+		uint8_t frskyAlarmLimit ;
+		uint8_t frskyAlarmSound ;
+//		FrSkyAlarmData alarmData[4] ;
 }) FrSkyData;
 
 PACK(typedef struct t_gvar {
@@ -245,10 +248,10 @@ PACK(typedef struct t_ModelData {
     uint8_t   protocol;
     int8_t    ppmNCH;
     uint8_t   thrTrim:1;            // Enable Throttle Trim
-		uint8_t   numBlades:2;					// RPM scaling
+		uint8_t   xnumBlades:2;					// RPM scaling
 		uint8_t   spare10:1;
     uint8_t   thrExpo:1;            // Enable Throttle Expo
-		uint8_t   spare11:3;
+		uint8_t   ppmStart:3 ;					// Start channel for PPM
     int8_t    trimInc;              // Trim Increments
     int8_t    ppmDelay;
     int8_t    trimSw;
@@ -274,8 +277,11 @@ PACK(typedef struct t_ModelData {
     uint8_t   numVoice;		// 0-16, rest are Safety switches
     SafetySwData  safetySw[NUM_CHNOUT];
     FrSkyData frsky;
+		uint8_t numBlades ;
+		uint8_t unused1[8] ;
 		uint8_t CustomDisplayIndex[6] ;
 		GvarData gvars[MAX_GVARS] ;
+		// Add uint8_t startChannel ;	// start channel for PPM/PXX/DSM out
 }) ModelData;
 
 #define TOTAL_EEPROM_USAGE (sizeof(ModelData)*MAX_MODELS + sizeof(EEGeneral))
