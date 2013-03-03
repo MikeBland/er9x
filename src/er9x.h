@@ -16,6 +16,8 @@
 #ifndef er9x_h
 #define er9x_h
 
+//#define VARIO	1
+
 #define VERS 1
 
 #define GVARS	1
@@ -245,7 +247,7 @@ enum EnumKeys {
 #define NUM_CSW  12 //number of custom switches
 #define SWITCH_WARN_STR	"Switch Warning"
 
-#define CURV_STR "---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
+#define CURV_STR "\003---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
 #define CURVE_BASE 7
 
 #define CSWITCH_STR  "\007----   v>ofs  v<ofs  |v|>ofs|v|<ofsAND    OR     XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""v1>=v2 ""v1<=v2 TimeOff"
@@ -439,7 +441,9 @@ bool    keyState(EnumKeys enuk);
 /// Das Ergebnis hat die Form:
 /// EVT_KEY_BREAK(key), EVT_KEY_FIRST(key), EVT_KEY_REPT(key) oder EVT_KEY_LONG(key)
 uint8_t getEvent();
-void putEvent(uint8_t evt);
+
+extern uint8_t s_evt;
+#define putEvent(evt) (s_evt = evt)
 
 
 /// goto given Menu, but substitute current menu in menuStack
@@ -786,9 +790,9 @@ extern const prog_int8_t APM TelemIndex[] ;
 extern int16_t convertTelemConstant( int8_t channel, int8_t value) ;
 
 #ifdef FRSKY
-#define NUM_TELEM_ITEMS 24
+#define NUM_TELEM_ITEMS 30
 #else
-#define NUM_TELEM_ITEMS 3
+#define NUM_TELEM_ITEMS 8
 #endif
 
 #define FLASH_DURATION 50
@@ -807,7 +811,7 @@ extern uint8_t sysFlags;
 extern void putVoiceQueue( uint8_t value ) ;
 extern void putVoiceQueueLong( uint16_t value ) ;
 extern void	putVoiceQueueUpper( uint8_t value ) ;
-void voice_numeric( uint16_t value, uint8_t num_decimals, uint8_t units_index ) ;
+void voice_numeric( int16_t value, uint8_t num_decimals, uint8_t units_index ) ;
 extern void voice_telem_item( int8_t index ) ;
 extern uint8_t VoiceCheckFlag ;
 
@@ -840,6 +844,8 @@ extern int8_t REG(int8_t x, int8_t min, int8_t max) ;
 extern int8_t REG100_100(int8_t x) ;
 #endif
 
+extern uint16_t evalChkSum( void ) ;
+
 struct t_calib
 {
 	int16_t midVals[7];
@@ -848,6 +854,16 @@ struct t_calib
 	uint8_t idxState;
 } ;
 
+struct t_p1
+{
+	int16_t p1val ;
+	int16_t p1valdiff ;
+  int16_t p1valprev ;
+	int16_t p2valprev ;
+	int16_t p3valprev ;
+} ;
+
+extern struct t_p1 P1values ;
 
 union t_xmem
 {

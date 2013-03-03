@@ -368,9 +368,17 @@ int16_t getValue(uint8_t i)
 	int16_t offset = 0 ;
 #endif
     if(i<PPM_BASE) return calibratedStick[i];//-512..512
-    else if(i<PPM_BASE+4) return (g_ppmIns[i-PPM_BASE] - g_eeGeneral.trainer.calib[i-PPM_BASE])*2;
-    else if(i<CHOUT_BASE) return g_ppmIns[i-PPM_BASE]*2;
-    else if(i<CHOUT_BASE+NUM_CHNOUT) return ex_chans[i-CHOUT_BASE];
+		else if(i<CHOUT_BASE)
+		{
+			int16_t x ;
+			x = g_ppmIns[i-PPM_BASE] ;
+			if(i<PPM_BASE+4)
+			{
+				x -= g_eeGeneral.trainer.calib[i-PPM_BASE] ;
+			}
+			return x*2;
+		}
+		else if(i<CHOUT_BASE+NUM_CHNOUT) return ex_chans[i-CHOUT_BASE];
 #ifdef FRSKY
     else if(i<CHOUT_BASE+NUM_CHNOUT+NUM_TELEM_ITEMS)
 		{
@@ -417,9 +425,12 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 		}
 
     uint8_t dir = swtch>0;
-    if(abs(swtch)<(MAX_DRSWITCH-NUM_CSW)) {
-        if(!dir) return ! keyState((EnumKeys)(SW_BASE-swtch-1));
-        return            keyState((EnumKeys)(SW_BASE+swtch-1));
+    uint8_t aswtch = abs(swtch) ;
+
+    if(aswtch<(MAX_DRSWITCH-NUM_CSW))
+		{
+			aswtch = keyState((EnumKeys)(SW_BASE+aswtch-1)) ;
+			return !dir ? (!aswtch) : aswtch ;
     }
 
     //custom switch, Issue 78
@@ -427,7 +438,7 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
     //input -> 1..4 -> sticks,  5..8 pots
     //MAX,FULL - disregard
     //ppm
-    cs_index = abs(swtch)-(MAX_DRSWITCH-NUM_CSW);
+    cs_index = aswtch-(MAX_DRSWITCH-NUM_CSW);
     CSwData &cs = g_model.customSw[cs_index];
     if(!cs.func) return false;
 
@@ -452,8 +463,9 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 #ifdef FRSKY
         if (cs.v1 > CHOUT_BASE+NUM_CHNOUT)
 				{
-          y = convertTelemConstant( cs.v1-CHOUT_BASE-NUM_CHNOUT-1, cs.v2 ) ;
-					valid = telemItemValid( cs.v1-CHOUT_BASE-NUM_CHNOUT-1 ) ;
+					uint8_t idx = cs.v1-CHOUT_BASE-NUM_CHNOUT-1 ;
+          y = convertTelemConstant( idx, cs.v2 ) ;
+					valid = telemItemValid( idx ) ;
 				}
         else
 #endif
@@ -761,13 +773,7 @@ static void checkSwitches()
 
     if(g_eeGeneral.disableSwitchWarning) return; // if warning is on
 
-    // first - display warning
-    alertMessages( Str_Switch_warn, PSTR("Please Reset Switches") ) ;
-//    for(uint8_t i=0;i<8;i++) lcd_putsnAtt((5+i)*FW, 3*FH, PSTR("TRE012AG")+i,1,  ((g_eeGeneral.switchWarningStates & (1<<i)) ? INVERS : 0 ) );
-//    refreshDiplay();
-
     uint8_t x = warningStates & SWP_IL5;
-//    if(x==SWP_IL1 || x==SWP_IL2 || x==SWP_IL3 || x==SWP_IL4 || x==SWP_IL5) //illegal states for ID0/1/2
     if(!(x==SWP_LEG1 || x==SWP_LEG2 || x==SWP_LEG3)) //legal states for ID0/1/2
     {
         warningStates &= ~SWP_IL5; // turn all off, make sure only one is on
@@ -827,7 +833,7 @@ static void checkSwitches()
         //first row - THR, GEA, AIL, ELE, ID0/1/2
         uint8_t x = i ^ warningStates ;
 
-        lcd_puts_Pleft( 2*FH, PSTR("                      ") ) ;
+		    alertMessages( Str_Switch_warn, PSTR("Please Reset Switches") ) ;
 
         if(x & SWP_THRB)
             putWarnSwitch(2 + 0*FW, 0 );
@@ -867,10 +873,21 @@ static void checkSwitches()
 						p = 0 ;
 			  	  UDR1 = 'B' ;
 					}
+					UCSR1A = ( 1 << TXC1 ) ;		// CLEAR flag
+					while ( ( UCSR1A & ( 1 << TXC1 ) ) == 0 )
+					{
+						// wait
+					}
+#undef BAUD
+#define BAUD 19200
+				  UBRR1L = UBRRL_VALUE;
 				}
 				if (UCSR1A & (1 << RXC1))
 				{
 					q = UDR1 ;
+#undef BAUD
+#define BAUD 38400
+				  UBRR1L = UBRRL_VALUE;
 				}
 				lcd_putc( 0, 8, q ) ;
 
@@ -1061,7 +1078,7 @@ static uint8_t checkTrim(uint8_t event)
         }
         else
         {
-            *TrimPtr[idx] = (x>0) ? 125 : -125;
+            *TrimPtr[idx] = (x<0) ? -125 : 125;
             STORE_MODELVARS_TRIM;
             if(x <= 125 && x >= -125){
                 audio.event(AU_TRIM_MOVE,(-abs(x)/4)+60);
@@ -1075,8 +1092,7 @@ static uint8_t checkTrim(uint8_t event)
 
 //global helper vars
 bool    checkIncDec_Ret;
-int16_t p1val;
-int16_t p1valdiff;
+struct t_p1 P1values ;
 
 int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flags)
 {
@@ -1122,7 +1138,7 @@ int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flag
     }
 
     //change values based on P1
-    newval -= p1valdiff;
+    newval -= P1values.p1valdiff;
 		if ( RotaryState == ROTARY_VALUE )
 		{
 			newval += Rotary_diff ;
@@ -1195,7 +1211,7 @@ void popMenu(bool uppermost)
         audioDefevent(AU_MENUS);
         (*g_menuStack[g_menuStackPtr])(EVT_ENTRY_UP);
     }else{
-        alert(PSTR("menuStack underflow"));
+        alert(PSTR("mStack uflow"));
     }
 }
 
@@ -1212,7 +1228,7 @@ void pushMenu(MenuFuncP newMenu)
     if(g_menuStackPtr >= DIM(g_menuStack))
     {
         g_menuStackPtr--;
-        alert(PSTR("menuStack overflow"));
+        alert(PSTR("mStack oflow"));
         return;
     }
     audioDefevent(AU_MENUS);
@@ -1501,6 +1517,7 @@ void pollRotary()
 void perMain()
 {
     static uint16_t lastTMR;
+//    static uint8_t timer20mS ;
 		uint16_t t10ms ;
 		t10ms = get_tmr10ms() ;
     tick10ms = t10ms != lastTMR;
@@ -1543,20 +1560,24 @@ void perMain()
     doBackLightVoice(evt);
 
 #ifndef NOPOTSCROLL
-    static int16_t p1valprev;
 		int16_t p1d ;
 
-    p1d = (p1val-calibratedStick[6])/32;
+		struct t_p1 *ptrp1 ;
+		ptrp1 = &P1values ;
+		FORCE_INDIRECT(ptrp1) ;
+
+		int16_t c6 = calibratedStick[6] ;
+    p1d = ( ptrp1->p1val-c6 )/32;
     if(p1d) {
-        p1d = (p1valprev-calibratedStick[6])/2;
-        p1val = calibratedStick[6];
+        p1d = (ptrp1->p1valprev-c6)/2;
+        ptrp1->p1val = c6 ;
     }
-    p1valprev = calibratedStick[6];
+    ptrp1->p1valprev = c6 ;
     if ( g_eeGeneral.disablePotScroll )
     {
         p1d = 0 ;
     }
-		p1valdiff = p1d ;
+		ptrp1->p1valdiff = p1d ;
 #endif
 
 		{
@@ -1617,24 +1638,28 @@ void perMain()
 		}
 #endif
 
-		if ( AlertMessage )
-		{
-			almess( AlertMessage, ALERT_TYPE ) ;
-      if(keyDown())
+			if ( AlertMessage )
 			{
-				AlertMessage = 0 ;
+				almess( AlertMessage, ALERT_TYPE ) ;
+    	  if(keyDown())
+				{
+					AlertMessage = 0 ;
+				}
+	//    	if ( stickMoved )
+	//			{
+	//				AlertMessage = 0 ;
+	//			}
 			}
-//    	if ( stickMoved )
-//			{
-//				AlertMessage = 0 ;
-//			}
-		}
-		else
-		{
-			Tevent = evt ;
-    	g_menuStack[g_menuStackPtr](evt);
-		}
-    refreshDiplay();
+			else
+			{
+				Tevent = evt ;
+    		g_menuStack[g_menuStackPtr](evt);
+			}
+//		if ( ++timer20mS > 9 )		// Only do next bit every 100mS
+//		{
+//			timer20mS = 0 ;
+    	refreshDiplay();
+//		}
 		{
 			uint8_t pg ;
 			pg = PORTG ;
@@ -1728,10 +1753,23 @@ uint16_t anaIn(uint8_t chan)
 {
     //                     ana-in:   3 1 2 0 4 5 6 7
     //static prog_char APM crossAna[]={4,2,3,1,5,6,7,0}; // wenn schon Tabelle, dann muss sich auch lohnen
-    const static prog_char APM crossAna[]={3,1,2,0,4,5,6,7};
-    volatile uint16_t *p = &s_anaFilt[pgm_read_byte(crossAna+chan)];
+
+//    const static prog_char APM crossAna[]={3,1,2,0,4,5,6,7};
+	if ( chan == 3 )
+	{
+		chan = 0 ;		
+	}
+	else
+	{
+		if ( chan == 0 )
+		{
+			chan = 3 ;			
+		}
+	}
+//    volatile uint16_t *p = &s_anaFilt[chan];
     //  AutoLock autoLock;
-    return  *p;
+//    return  *p;
+		return s_anaFilt[chan] ;
 }
 
 
@@ -2298,9 +2336,9 @@ void mainSequence()
 							{
      		        if ( g_model.frsky.channels[i].type == 3 )		// Current (A)
 								{
-									if ( g_model.frsky.alarmData[0].frskyAlarmLimit )
+									if ( g_model.frsky.frskyAlarmLimit )
 									{
-    		          	if ( (  FrskyHubData[FR_A1_MAH+i] >> 6 ) >= g_model.frsky.alarmData[0].frskyAlarmLimit )
+    		          	if ( (  FrskyHubData[FR_A1_MAH+i] >> 6 ) >= g_model.frsky.frskyAlarmLimit )
 										{
 											if ( g_eeGeneral.speakerMode & 2 )
 											{
@@ -2308,7 +2346,7 @@ void mainSequence()
 											}
 											else
 											{
-												audio.event( g_model.frsky.alarmData[0].frskyAlarmSound ) ;
+												audio.event( g_model.frsky.frskyAlarmSound ) ;
 											}
 										}
 									}

@@ -199,7 +199,7 @@ void audioVoiceDefevent(uint8_t e, uint8_t v) ;
 #define BACKLIGHT_BIT			0x04
 #define SPARE_BIT					0x08
 
-#define VOICE_Q_LENGTH		10
+#define VOICE_Q_LENGTH		16
 
 // Voice states
 #define V_STARTUP					0
@@ -246,7 +246,9 @@ extern struct t_voice Voice ;
 #define V_FOOT					25
 
 #define	V_HELLO					28
-
+#define V_LIMIT					29
+#define V_MINUS					30
+#define V_FBATTLOW			31
 #define V_POINT					35
 #define V_VOLTS					36
 #define V_VOLT					37

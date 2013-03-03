@@ -22,6 +22,8 @@
 #include "frsky.h"
 #endif
 
+static void validateName( char *name, uint8_t size ) ;
+
 const prog_char APM Str_EEPROM_Overflow[] =  "EEPROM overflow" ;
 
 EFile theFile;  //used for any file operation
@@ -30,13 +32,13 @@ EFile theWriteFile; //separate write file
 
 #define FILE_TYP_GENERAL 1
 #define FILE_TYP_MODEL   2
-#define partCopy(sizeDst,sizeSrc)                         \
+/*#define partCopy(sizeDst,sizeSrc)                         \
       pSrc -= (sizeSrc);                                  \
       pDst -= (sizeDst);                                  \
       memmove(pDst, pSrc, (sizeSrc));                     \
       memset (pDst+(sizeSrc), 0,  (sizeDst)-(sizeSrc));
 #define fullCopy(size) partCopy(size,size)
-
+*/
 void generalDefault()
 {
   memset(&g_eeGeneral,0,sizeof(g_eeGeneral));
@@ -51,31 +53,41 @@ void generalDefault()
     g_eeGeneral.calibSpanPos[i] = 0x180;
   }
   strncpy_P(g_eeGeneral.ownerName,PSTR("ME        "),10);
-  int16_t sum=0;
-  for(uint8_t i=0; i<12;i++) sum+=g_eeGeneral.calibMid[i];
-  g_eeGeneral.chkSum = sum;
+  g_eeGeneral.chkSum = evalChkSum() ;
+}
+
+uint16_t evalChkSum()
+{
+  uint16_t sum=0;
+  for (uint8_t i=0; i<12;i++)
+	{
+    sum += g_eeGeneral.calibMid[i];
+	}
+  return sum;
 }
 
 static bool eeLoadGeneral()
 {
   theFile.openRd(FILE_GENERAL);
   memset(&g_eeGeneral, 0, sizeof(EEGeneral));
-  uint8_t sz = theFile.readRlc((uint8_t*)&g_eeGeneral, sizeof(EEGeneral));
+//  uint8_t sz = theFile.readRlc((uint8_t*)&g_eeGeneral, sizeof(EEGeneral));
+  theFile.readRlc((uint8_t*)&g_eeGeneral, sizeof(EEGeneral));
 
-  for(uint8_t i=0; i<sizeof(g_eeGeneral.ownerName);i++) // makes sure name is valid
-  {
-      uint8_t idx = char2idx(g_eeGeneral.ownerName[i]);
-      g_eeGeneral.ownerName[i] = idx2char(idx);
-  }
+	validateName( g_eeGeneral.ownerName, sizeof(g_eeGeneral.ownerName) ) ;
+
+//  for(uint8_t i=0; i<sizeof(g_eeGeneral.ownerName);i++) // makes sure name is valid
+//  {
+//      uint8_t idx = char2idx(g_eeGeneral.ownerName[i]);
+//      g_eeGeneral.ownerName[i] = idx2char(idx);
+//  }
 
   if(g_eeGeneral.myVers<MDVERS)
       sysFlags |= sysFLAG_OLD_EEPROM; // if old EEPROM - Raise flag
 
   g_eeGeneral.myVers   =  MDVERS; // update myvers
 
-  uint16_t sum=0;
-  if(sz>(sizeof(EEGeneral)-20)) for(uint8_t i=0; i<12;i++) sum+=g_eeGeneral.calibMid[i];
-  return g_eeGeneral.chkSum == sum;
+//  if(sz>(sizeof(EEGeneral)-20)) for(uint8_t i=0; i<12;i++) sum+=g_eeGeneral.calibMid[i];
+  return g_eeGeneral.chkSum == evalChkSum() ;
 }
 
 void modelDefault(uint8_t id)
@@ -120,6 +132,16 @@ void eeLoadModelName(uint8_t id,char*buf,uint8_t len)
 //    return theFile.size();
 //}
 
+static void validateName( char *name, uint8_t size )
+{
+	for(uint8_t i=0; i<size;i++) // makes sure name is valid
+  {
+//		uint8_t idx = char2idx(name[i]);
+		name[i] = idx2char(char2idx(name[i])) ;
+	}
+}
+
+
 bool eeModelExists(uint8_t id)
 {
     return EFile::exists(FILE_MODEL(id));
@@ -127,8 +149,8 @@ bool eeModelExists(uint8_t id)
 
 void eeLoadModel(uint8_t id)
 {
-    if(id<MAX_MODELS)
-    {
+  if(id<MAX_MODELS)
+  {
         theFile.openRd(FILE_MODEL(id));
         memset(&g_model, 0, sizeof(ModelData));
         uint16_t sz = theFile.readRlc((uint8_t*)&g_model, sizeof(g_model));
@@ -137,12 +159,17 @@ void eeLoadModel(uint8_t id)
         {
             modelDefault(id);
         }
+				validateName( g_model.name, sizeof(g_model.name) ) ;
 
-        for(uint8_t i=0; i<sizeof(g_model.name);i++) // makes sure name is valid
-        {
-            uint8_t idx = char2idx(g_model.name[i]);
-            g_model.name[i] = idx2char(idx);
-        }
+//        for(uint8_t i=0; i<sizeof(g_model.name);i++) // makes sure name is valid
+//        {
+//            uint8_t idx = char2idx(g_model.name[i]);
+//            g_model.name[i] = idx2char(idx);
+//        }
+		if ( g_model.numBlades == 0 )
+		{
+			g_model.numBlades = g_model.xnumBlades + 2 ;				
+		}
 
 //        g_model.mdVers = MDVERS; //update mdvers
 
@@ -153,7 +180,7 @@ void eeLoadModel(uint8_t id)
   FrskyAlarmSendState |= 0x40 ;		// Get RSSI Alarms
         FRSKY_setModelAlarms();
 #endif
-    }
+  }
 }
 
 bool eeDuplicateModel(uint8_t id)
