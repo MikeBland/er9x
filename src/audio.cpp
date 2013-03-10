@@ -330,7 +330,7 @@ void voice_numeric( int16_t value, uint8_t num_decimals, uint8_t units_index )
 
 	if ( value < 0 )
 	{
-		value = 0 ;
+		value = - value ;
 		putVoiceQueue( V_MINUS ) ;		
 	}
 
@@ -359,10 +359,16 @@ void voice_numeric( int16_t value, uint8_t num_decimals, uint8_t units_index )
 			}
 			qr.quot = qr.rem ;			
 		}
-		putVoiceQueue( qr.quot + 100 ) ;
+		if ( qr.quot )
+		{
+			putVoiceQueue( qr.quot + 100 ) ;
+		}
 		if ( flag == 0 )
 		{
-			putVoiceQueueUpper( qr.rem + 140 ) ;
+			if ( qr.rem )
+			{
+				putVoiceQueueUpper( qr.rem + 140 ) ;
+			}
 		}
 	}
 	else

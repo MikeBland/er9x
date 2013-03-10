@@ -83,11 +83,8 @@ audioQueue  audio;
 
 uint8_t sysFlags = 0;
 
-uint8_t AlarmTimer = 100 ;		// Units of 10 mS
-uint8_t AlarmCheckFlag = 0 ;
-uint8_t CsCheckFlag = 0 ;
-uint8_t VoiceFtimer = 10 ;		// Units of 10 mS
-uint8_t VoiceCheckFlag = 2 ;
+struct t_alarmControl AlarmControl = { 100, 0, 0, 10, 2 } ;
+
 int8_t  CsTimer[NUM_CSW] ;
 
 
@@ -363,10 +360,6 @@ uint8_t putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8
 
 int16_t getValue(uint8_t i)
 {
-#ifdef FRSKY
-	int8_t j ;
-	int16_t offset = 0 ;
-#endif
     if(i<PPM_BASE) return calibratedStick[i];//-512..512
 		else if(i<CHOUT_BASE)
 		{
@@ -379,29 +372,11 @@ int16_t getValue(uint8_t i)
 			return x*2;
 		}
 		else if(i<CHOUT_BASE+NUM_CHNOUT) return ex_chans[i-CHOUT_BASE];
-#ifdef FRSKY
     else if(i<CHOUT_BASE+NUM_CHNOUT+NUM_TELEM_ITEMS)
 		{
-			j = pgm_read_byte( &TelemIndex[i-CHOUT_BASE-NUM_CHNOUT] ) ;
-			if ( j >= 0 )
-			{
-	      if ( j == FR_ALT_BARO )
-				{
-          offset = AltOffset ;
-				}
-				return FrskyHubData[j] + offset ;
-			}
-			else if ( j == -3 )		// Battery
-			{
-				return g_vbat100mV ;
-			}
-			else
-			{
-				return TimerG.s_timerVal[j+2] ;
-			}
+			return get_telemetry_value( i-CHOUT_BASE-NUM_CHNOUT ) ;
 		}
-#endif
-    else return 0;
+    return 0;
 }
 
 bool Last_switch[NUM_CSW] ;
@@ -604,10 +579,12 @@ void check_backlight_voice()
         BACKLIGHT_ON ;
     else
         BACKLIGHT_OFF ;
-	
-	if ( tmr10ms != g_blinkTmr10ms )
+
+	uint8_t x ;
+	x = g_blinkTmr10ms ;
+	if ( tmr10ms != x )
 	{
-		tmr10ms = g_blinkTmr10ms ;
+		tmr10ms = x ;
 		Voice.voice_process() ;
 	}
 }
@@ -1054,7 +1031,7 @@ static uint8_t checkTrim(uint8_t event)
     if((k>=0) && (k<8))// && (event & _MSK_KEY_REPT))
     {
         //LH_DWN LH_UP LV_DWN LV_UP RV_DWN RV_UP RH_DWN RH_UP
-        uint8_t idx = k/2;
+        uint8_t idx = (uint8_t)k/2;
         int8_t tm = *TrimPtr[idx] ;
         int8_t  v = (s==0) ? (abs(tm)/4)+1 : s;
         bool thrChan = ((2-(g_eeGeneral.stickMode&1)) == idx);
@@ -1224,15 +1201,15 @@ void chainMenu(MenuFuncP newMenu)
 void pushMenu(MenuFuncP newMenu)
 {
 
-    g_menuStackPtr++;
-    if(g_menuStackPtr >= DIM(g_menuStack))
+//    g_menuStackPtr++;
+    if(g_menuStackPtr >= DIM(g_menuStack)-1)
     {
-        g_menuStackPtr--;
+//        g_menuStackPtr--;
         alert(PSTR("mStack oflow"));
         return;
     }
     audioDefevent(AU_MENUS);
-    g_menuStack[g_menuStackPtr] = newMenu;
+    g_menuStack[++g_menuStackPtr] = newMenu;
     (*newMenu)(EVT_ENTRY);
 }
 
@@ -1314,6 +1291,11 @@ void putVoiceQueueUpper( uint8_t value )
 void putVoiceQueue( uint8_t value )
 {
 	putVoiceQueueLong( value ) ;
+}
+
+void setVolume()
+{
+	putVoiceQueueLong( g_eeGeneral.volume + 0xFFF7 ) ;
 }
 
 void putVoiceQueueLong( uint16_t value )
@@ -1634,6 +1616,10 @@ void perMain()
 				{
 					g_model.gvars[i].gvar = limit( -125, calibratedStick[ (g_model.gvars[i].gvsource-6)] / 8, 125 ) ;
 				}
+				else if ( g_model.gvars[i].gvsource <= 28 )	// Pot
+				{
+					g_model.gvars[i].gvar = limit( -125, ex_chans[g_model.gvars[i].gvsource-13] / 10, 125 ) ;
+				}
 			}
 		}
 #endif
@@ -1867,8 +1853,8 @@ static void getADC_bandgap()
     // Do it twice, first conversion may be wrong
     ADCSRA|=0x40;
     // Wait for the AD conversion to complete
-    while ((ADCSRA & 0x10)==0);
-    ADCSRA|=0x10;
+    while (ADCSRA & 0x40) ;
+//    ADCSRA|=0x10;
     BandGap = (BandGap * 7 + ADC + 4 ) >> 3 ;
     //  if(BandGap<256)
     //      BandGap = 256;
@@ -1898,19 +1884,14 @@ static uint16_t getTmr16KHz()
     }
 }
 
-
-// Clocks every 64 uS
-ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
-{ 
-    cli();
-    TIMSK &= ~(1<<OCIE0); //stop reentrance
-    sei();
-
-
-    OCR0 += 2;			// Interrupt every 128 uS
-
+// Clocks every 128 uS
+ISR(TIMER2_OVF_vect, ISR_NOBLOCK) //10ms timer
+{
+  cli();
+  TIMSK &= ~ (1<<TOIE2) ; //stop reentrance
+  sei();
   
-  AUDIO_DRIVER();  // the tone generator
+	AUDIO_DRIVER();  // the tone generator
 	// Now handle the Voice output
 	// Check for LcdLocked (in interrupt), and voice_enabled
 	if ( g_eeGeneral.speakerMode & 2 )
@@ -1928,18 +1909,20 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 				}
 				else
 				{
+					uint8_t tVoiceLatch = vptr->VoiceLatch ;
+					
 					PORTB |= (1<<OUT_B_LIGHT) ;				// Latch clock high
 					if ( ( vptr->VoiceCounter & 1 ) == 0 )
 					{
-						vptr->VoiceLatch &= ~VOICE_DATA_BIT ;
+						tVoiceLatch &= ~VOICE_DATA_BIT ;
 						if ( vptr->VoiceSerial & 0x4000 )
 						{
-							vptr->VoiceLatch |= VOICE_DATA_BIT ;
+							tVoiceLatch |= VOICE_DATA_BIT ;
 						}
 						vptr->VoiceSerial <<= 1 ;
 					}
-					vptr->VoiceLatch ^= VOICE_CLOCK_BIT ;
-					PORTA_LCD_DAT = vptr->VoiceLatch ;			// Latch data set
+					tVoiceLatch ^= VOICE_CLOCK_BIT ;
+					vptr->VoiceLatch = PORTA_LCD_DAT = tVoiceLatch ;			// Latch data set
 					PORTB &= ~(1<<OUT_B_LIGHT) ;			// Latch clock low
 					if ( --vptr->VoiceCounter == 0 )
 					{
@@ -1950,13 +1933,21 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 			}
 		}
 	}
+  cli();
+  TIMSK |= (1<<TOIE2) ;
+  sei();
+}
 
+// Clocks every 10 mS
+ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
+{ 
+  OCR0 += 156 ;			// Interrupt every 128 uS
 
-  static uint8_t cnt10ms = 77; // execute 10ms code once every 78 ISRs
-  if (cnt10ms-- == 0) { // BEGIN { ... every 10ms ... }
-    // Begin 10ms event
-    cnt10ms = 77;
-
+//  static uint8_t cnt10ms = 77; // execute 10ms code once every 78 ISRs
+//  if (cnt10ms-- == 0) { // BEGIN { ... every 10ms ... }
+//    // Begin 10ms event
+//    cnt10ms = 77;
+		
 		AUDIO_HEARTBEAT();  // the queue processing
 
         per10ms();
@@ -1965,23 +1956,23 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 #endif
         heartbeat |= HEART_TIMER10ms;
 	// See if time for alarm checking
-		if (--AlarmTimer == 0 )
+		struct t_alarmControl *pac = &AlarmControl ;
+		FORCE_INDIRECT(pac) ;
+
+		if (--pac->AlarmTimer == 0 )
 		{
-			AlarmTimer = 100 ;		// Restart timer
-			AlarmCheckFlag += 1 ;	// Flag time to check alarms
-			CsCheckFlag = 1 ;
+			pac->AlarmTimer = 100 ;		// Restart timer
+			pac->AlarmCheckFlag += 1 ;	// Flag time to check alarms
+			pac->CsCheckFlag = 1 ;
 		}
-		if (--VoiceFtimer == 0 )
+		if (--pac->VoiceFtimer == 0 )
 		{
-			VoiceFtimer = 10 ;		// Restart timer
-			VoiceCheckFlag = 1 ;	// Flag time to check alarms
+			pac->VoiceFtimer = 10 ;		// Restart timer
+			pac->VoiceCheckFlag = 1 ;	// Flag time to check alarms
 		}
 
-  } // end 10ms event
+//  } // end 10ms event
 
-  cli();
-  TIMSK |= (1<<OCIE0);
-  sei();
 }
 
 
@@ -2095,7 +2086,9 @@ int main(void)
     //TCCR0  = (1<<WGM01)|(7 << CS00);//  CTC mode, clk/1024
     TCCR0  = (7 << CS00);//  Norm mode, clk/1024
     OCR0   = 156;
-    TIMSK |= (1<<OCIE0) |  (1<<TOIE0);
+    TCCR2  = (2 << CS00);//  Norm mode, clk/8
+    
+		TIMSK |= (1<<OCIE0) | (1<<TOIE0) | (1<<TOIE2) ;
 
     // TCNT1 2MHz Pulse generator
     TCCR1A = (0<<WGM10);
@@ -2152,7 +2145,8 @@ int main(void)
 
     // moved here and logic added to only play statup tone if splash screen enabled.
     // that way we save a bit, but keep the option for end users!
-		putVoiceQueueLong( g_eeGeneral.volume + 0xFFF7 ) ;
+		setVolume() ;
+//		putVoiceQueueLong( g_eeGeneral.volume + 0xFFF7 ) ;
     if(!g_eeGeneral.disableSplashScreen)
     {
 	    if( g_eeGeneral.speakerMode )		// Not just beeper
@@ -2238,9 +2232,9 @@ void mainSequence()
     }
     t0 = getTmr16KHz() - t0;
     if ( t0 > g_timeMain ) g_timeMain = t0 ;
-    if ( AlarmCheckFlag > 1 )
+    if ( AlarmControl.AlarmCheckFlag > 1 )
     {
-        AlarmCheckFlag = 0 ;
+        AlarmControl.AlarmCheckFlag = 0 ;
         // Check for alarms here
         // Including Altitude limit
 //				Debug3 = 1 ;
@@ -2357,6 +2351,7 @@ void mainSequence()
 #endif
 
 				// Now for the Safety/alarm switch alarms
+				// Carried out evey 100 mS
 				{
 					uint8_t i ;
 					static uint8_t periodCounter ;
@@ -2417,7 +2412,7 @@ void mainSequence()
 	// New switch voices
 	// New entries, Switch, (on/off/both), voice file index
 
-  if ( VoiceCheckFlag )		// Every 100 mS
+  if ( AlarmControl.VoiceCheckFlag )		// Every 100 mS
   {
 		uint8_t i ;
 		static uint16_t timer ;
@@ -2434,7 +2429,7 @@ void mainSequence()
 			if ( sd->opt.vs.vswtch )		// Configured
 			{
 				curent_state = getSwitch( sd->opt.vs.vswtch, 0 ) ;
-				if ( VoiceCheckFlag != 2 )
+				if ( AlarmControl.VoiceCheckFlag != 2 )
 				{
 					if ( ( mode == 0 ) || ( mode == 2 ) )
 					{ // ON
@@ -2481,11 +2476,11 @@ void mainSequence()
 				Vs_state[i] = curent_state ;
 			}
 		}
-		VoiceCheckFlag = 0 ;
+		AlarmControl.VoiceCheckFlag = 0 ;
 	}
-	if ( CsCheckFlag )		// Custom Switch Timers
+	if ( AlarmControl.CsCheckFlag )		// Custom Switch Timers
 	{
-		CsCheckFlag = 0 ;
+		AlarmControl.CsCheckFlag = 0 ;
 		uint8_t i ;
 		
 		for ( i = 0 ; i < NUM_CSW ; i += 1 )
@@ -2565,10 +2560,17 @@ int8_t REG(int8_t x, int8_t min, int8_t max)
 }
 #endif
 
+uint8_t IS_EXPO_THROTTLE( uint8_t x )
+{
+	return g_model.thrExpo && IS_THROTTLE( x ) ;
+}
 
 uint8_t IS_THROTTLE( uint8_t x )
 {
-	return (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4)) ;
+	uint8_t y ;
+	y = g_eeGeneral.stickMode&1 ;
+	y = 2 - y ;
+	return (((y) == x) && (x<4)) ;
 }
 
 

@@ -1,10 +1,10 @@
 ===== Starting build =====
 Timestamp
-Mon Mar  4 13:05:19 UTC 2013
+Sun Mar 10 22:29:04 UTC 2013
 ==========================
 
 ===== Updating from SVN =====
-At revision 784.
+At revision 785.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -28,7 +28,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -36,10 +36,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "04.03.2013"
-#define TIME_STR "08:05:20"
-#define SUB_VERS 182-erez
-#define SVN_VERS "er9x-r785"
+#define DATE_STR "10.03.2013"
+#define TIME_STR "22:29:11"
+#define SUB_VERS 217-Mike
+#define SVN_VERS "er9x-r786"
 #define MOD_VERS "JETI    "
 
 Compiling C++: er9x.cpp
@@ -84,7 +84,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
-avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
+c:\WinAVR-20100110\bin\avr-objcopy.exe: --change-section-lma .eeprom=0x00000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -97,7 +97,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   56060 bytes (85.5% Full)
+Program:   56354 bytes (86.0% Full)
 (.text + .data + .bootloader)
 
 Data:       3255 bytes (79.5% Full)
@@ -131,7 +131,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -139,10 +139,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "04.03.2013"
-#define TIME_STR "08:05:24"
-#define SUB_VERS 183-erez
-#define SVN_VERS "er9x-r785"
+#define DATE_STR "10.03.2013"
+#define TIME_STR "22:29:29"
+#define SUB_VERS 218-Mike
+#define SVN_VERS "er9x-r786"
 #define MOD_VERS "FRSKY NT   "
 
 Compiling C++: er9x.cpp
@@ -187,7 +187,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
-avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
+c:\WinAVR-20100110\bin\avr-objcopy.exe: --change-section-lma .eeprom=0x00000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -200,10 +200,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   61588 bytes (94.0% Full)
+Program:   61802 bytes (94.3% Full)
 (.text + .data + .bootloader)
 
-Data:       3426 bytes (83.6% Full)
+Data:       3424 bytes (83.6% Full)
 (.data + .bss + .noinit)
 
 
@@ -234,7 +234,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -242,10 +242,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "04.03.2013"
-#define TIME_STR "08:05:29"
-#define SUB_VERS 184-erez
-#define SVN_VERS "er9x-r785"
+#define DATE_STR "10.03.2013"
+#define TIME_STR "22:29:48"
+#define SUB_VERS 219-Mike
+#define SVN_VERS "er9x-r786"
 #define MOD_VERS "FRSKY NHT   "
 
 Compiling C++: er9x.cpp
@@ -290,7 +290,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
-avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
+c:\WinAVR-20100110\bin\avr-objcopy.exe: --change-section-lma .eeprom=0x00000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -303,10 +303,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   61098 bytes (93.2% Full)
+Program:   61312 bytes (93.6% Full)
 (.text + .data + .bootloader)
 
-Data:       3424 bytes (83.6% Full)
+Data:       3422 bytes (83.5% Full)
 (.data + .bss + .noinit)
 
 
@@ -337,7 +337,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -345,10 +345,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "04.03.2013"
-#define TIME_STR "08:05:33"
-#define SUB_VERS 185-erez
-#define SVN_VERS "er9x-r785"
+#define DATE_STR "10.03.2013"
+#define TIME_STR "22:30:07"
+#define SUB_VERS 220-Mike
+#define SVN_VERS "er9x-r786"
 #define MOD_VERS "ARDU    "
 
 Compiling C++: er9x.cpp
@@ -393,7 +393,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
-avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
+c:\WinAVR-20100110\bin\avr-objcopy.exe: --change-section-lma .eeprom=0x00000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -406,7 +406,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   57818 bytes (88.2% Full)
+Program:   58114 bytes (88.7% Full)
 (.text + .data + .bootloader)
 
 Data:       3253 bytes (79.4% Full)
@@ -440,7 +440,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -448,10 +448,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "04.03.2013"
-#define TIME_STR "08:05:37"
-#define SUB_VERS 186-erez
-#define SVN_VERS "er9x-r785"
+#define DATE_STR "10.03.2013"
+#define TIME_STR "22:30:26"
+#define SUB_VERS 221-Mike
+#define SVN_VERS "er9x-r786"
 #define MOD_VERS "NMEA    "
 
 Compiling C++: er9x.cpp
@@ -496,7 +496,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
-avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
+c:\WinAVR-20100110\bin\avr-objcopy.exe: --change-section-lma .eeprom=0x00000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -509,7 +509,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   62034 bytes (94.7% Full)
+Program:   62330 bytes (95.1% Full)
 (.text + .data + .bootloader)
 
 Data:       3410 bytes (83.3% Full)
@@ -543,7 +543,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -551,10 +551,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "04.03.2013"
-#define TIME_STR "08:05:42"
-#define SUB_VERS 187-erez
-#define SVN_VERS "er9x-r785"
+#define DATE_STR "10.03.2013"
+#define TIME_STR "22:30:45"
+#define SUB_VERS 222-Mike
+#define SVN_VERS "er9x-r786"
 #define MOD_VERS " NHT   "
 
 Compiling C++: er9x.cpp
@@ -596,7 +596,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
-avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
+c:\WinAVR-20100110\bin\avr-objcopy.exe: --change-section-lma .eeprom=0x00000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -609,10 +609,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   53078 bytes (81.0% Full)
+Program:   53372 bytes (81.4% Full)
 (.text + .data + .bootloader)
 
-Data:       3191 bytes (77.9% Full)
+Data:       3189 bytes (77.9% Full)
 (.data + .bss + .noinit)
 
 
@@ -643,7 +643,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -651,10 +651,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "04.03.2013"
-#define TIME_STR "08:05:46"
-#define SUB_VERS 188-erez
-#define SVN_VERS "er9x-r785"
+#define DATE_STR "10.03.2013"
+#define TIME_STR "22:31:03"
+#define SUB_VERS 223-Mike
+#define SVN_VERS "er9x-r786"
 #define MOD_VERS "    "
 
 Compiling C++: er9x.cpp
@@ -696,7 +696,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
-avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
+c:\WinAVR-20100110\bin\avr-objcopy.exe: --change-section-lma .eeprom=0x00000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -709,7 +709,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   55490 bytes (84.7% Full)
+Program:   55786 bytes (85.1% Full)
 (.text + .data + .bootloader)
 
 Data:       3219 bytes (78.6% Full)
@@ -743,7 +743,7 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2
+avr-gcc (GCC) 4.7.2 20120917 (prerelease)
 Copyright (C) 2012 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -751,10 +751,10 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "04.03.2013"
-#define TIME_STR "08:05:50"
-#define SUB_VERS 189-erez
-#define SVN_VERS "er9x-r785"
+#define DATE_STR "10.03.2013"
+#define TIME_STR "22:31:22"
+#define SUB_VERS 224-Mike
+#define SVN_VERS "er9x-r786"
 #define MOD_VERS "FRSKY   128 "
 
 Compiling C++: er9x.cpp
@@ -799,7 +799,7 @@ avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
 Creating load file for EEPROM: er9x.eep
 avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
 --change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
-avr-objcopy: --change-section-lma .eeprom=0x0000000000000000 never used
+c:\WinAVR-20100110\bin\avr-objcopy.exe: --change-section-lma .eeprom=0x00000000 never used
 
 Creating Extended Listing: er9x.lss
 avr-objdump -h -S er9x.elf > er9x.lss
@@ -812,7 +812,7 @@ AVR Memory Usage
 ----------------
 Device: atmega128
 
-Program:   63708 bytes (48.6% Full)
+Program:   63930 bytes (48.8% Full)
 (.text + .data + .bootloader)
 
 Data:       3580 bytes (87.4% Full)
