@@ -143,7 +143,7 @@ PACK(typedef struct t_ExpoData {
 PACK(typedef struct t_LimitData {
     int8_t  min;
     int8_t  max;
-    bool    revert;
+    bool    reverse;
     int16_t  offset;
 }) LimitData;
 
@@ -165,7 +165,7 @@ PACK(typedef struct t_MixData {
     uint8_t mltpx:3;           // multiplex method 0=+ 1=* 2=replace
     uint8_t mixWarn:2;         // mixer warning
     uint8_t enableFmTrim:1;
-    uint8_t mixres:1;
+    uint8_t differential:1;
     int8_t  sOffset;
     int8_t  res;
 }) MixData;
@@ -281,7 +281,6 @@ PACK(typedef struct t_ModelData {
 		uint8_t unused1[8] ;
 		uint8_t CustomDisplayIndex[6] ;
 		GvarData gvars[MAX_GVARS] ;
-		// Add uint8_t startChannel ;	// start channel for PPM/PXX/DSM out
 }) ModelData;
 
 #define TOTAL_EEPROM_USAGE (sizeof(ModelData)*MAX_MODELS + sizeof(EEGeneral))

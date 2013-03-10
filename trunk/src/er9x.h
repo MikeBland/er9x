@@ -376,6 +376,7 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 //#define IS_THROTTLE(x)  (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4))
 
 uint8_t IS_THROTTLE( uint8_t x ) ;
+uint8_t IS_EXPO_THROTTLE( uint8_t x ) ;
 
 #define NUM_KEYS BTN_RE+1
 #define TRM_BASE TRM_LH_DWN
@@ -494,6 +495,8 @@ bool    getSwitch(int8_t swtch, bool nc, uint8_t level=0);
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t swtch,uint8_t att);
 void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t type);
 
+extern int16_t get_telemetry_value( int8_t channel ) ;
+
 extern uint8_t  s_timerState;
 #define TMR_OFF     0
 #define TMR_RUNNING 1
@@ -525,7 +528,6 @@ extern struct t_timerg TimerG ;
 void resetTimer2() ;
 
 const prog_char *get_switches_string() ;
-const prog_char *get_curve_string() ;
 
 extern uint8_t heartbeat;
 
@@ -808,12 +810,22 @@ extern uint8_t sysFlags;
 //audio settungs are external to keep out clutter!
 #include "audio.h"
 
+extern void setVolume( void ) ;
 extern void putVoiceQueue( uint8_t value ) ;
 extern void putVoiceQueueLong( uint16_t value ) ;
 extern void	putVoiceQueueUpper( uint8_t value ) ;
 void voice_numeric( int16_t value, uint8_t num_decimals, uint8_t units_index ) ;
 extern void voice_telem_item( int8_t index ) ;
-extern uint8_t VoiceCheckFlag ;
+
+struct t_alarmControl
+{
+	uint8_t AlarmTimer ;		// Units of 10 mS
+	uint8_t AlarmCheckFlag ;
+	uint8_t CsCheckFlag ;
+	uint8_t VoiceFtimer ;		// Units of 10 mS
+	uint8_t VoiceCheckFlag ;
+} ;
+extern struct t_alarmControl AlarmControl ;
 
 NOINLINE void resetTimer1(void) ;
 

@@ -10,6 +10,17 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 10-Mar-2013  MPB
+Correct voice of negative values
+Raise voice volume for inactivity warning
+Correct Voice of exactly 100
+Add differential option for mix curve
+Use timer 2 for high speed audio, timer 1 just for 10mS
+Add channel outputs as inputs to GVARS
+Fix cvlt test in a custom switch
+Some flash savings
+
+******************************************
 CHANGELOG: 03-Mar-2013  MPB
 Added some code towards a vario.
 Added some code to support FrSkys new vario device (not yet commercially available).
