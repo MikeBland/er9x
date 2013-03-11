@@ -792,9 +792,9 @@ extern const prog_int8_t APM TelemIndex[] ;
 extern int16_t convertTelemConstant( int8_t channel, int8_t value) ;
 
 #ifdef FRSKY
-#define NUM_TELEM_ITEMS 30
+#define NUM_TELEM_ITEMS 32
 #else
-#define NUM_TELEM_ITEMS 8
+#define NUM_TELEM_ITEMS 10
 #endif
 
 #define FLASH_DURATION 50

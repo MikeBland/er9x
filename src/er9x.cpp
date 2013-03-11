@@ -163,7 +163,7 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
 	if ( att & MIX_SOURCE )
 	{
 #if GVARS
-		chanLimit += 6 ;
+		chanLimit += MAX_GVARS + 1 ;
 #else
 		chanLimit += 1 ;
 #endif
@@ -176,7 +176,7 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
 //        lcd_putsnAtt(x,y,modi12x3+g_eeGeneral.stickMode*16+4*(idx-1),4,att);
     else if(idx<=chanLimit)
 #if GVARS
-        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POSGV1 GV2 GV3 GV4 GV5 "),(idx-5),att);
+        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POSGV1 GV2 GV3 GV4 GV5 GV6 GV7"),(idx-5),att);
 #else
         lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POS"),(idx-5),att);
 #endif
