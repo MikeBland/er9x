@@ -11,6 +11,12 @@ description here
 
 ******************************************
 CHANGELOG: 10-Mar-2013  MPB
+Change default to CURVE, not DIFF
+Add two more GVARS
+Begin to allow alternative languages
+
+******************************************
+CHANGELOG: 10-Mar-2013  MPB
 Correct voice of negative values
 Raise voice volume for inactivity warning
 Correct Voice of exactly 100

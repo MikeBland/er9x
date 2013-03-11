@@ -22,6 +22,8 @@
 #include "frsky.h"
 #endif
 
+#include "en.h"
+
 #define THROTTLE_TRACE		1
 
 //extern void putVoiceQueue( uint8_t value ) ;
@@ -33,23 +35,25 @@ struct t_timerg TimerG ;
 
 uint8_t RotaryState ;		// Defaults to ROTARY_MENU_LR
 
-const prog_char APM Str_Switch_warn[] =  "Switch Warning" ;
+const prog_char APM Str_Switch_warn[] =  STR_SWITCH_WARN ;
 
-const prog_char APM Str_ALTeq[] =  "Alt=" ;
-const prog_char APM Str_TXeq[] =  "Tx=" ;
-const prog_char APM Str_RXeq[] =  "Rx=" ;
-const prog_char APM Str_TRE012AG[] =  "TRE012AG" ;
-const prog_char APM Str_YelOrgRed[] = "\003---YelOrgRed" ;
-const prog_char APM Str_A_eq[] =  "A =" ;
-const prog_char APM Str_Timer[] =  "Timer" ;
-const prog_char APM Str_Sounds[] = "\006Warn1 ""Warn2 ""Cheap ""Ring  ""SciFi ""Robot ""Chirp ""Tada  ""Crickt""Siren ""AlmClk""Ratata""Tick  ""Haptc1""Haptc2""Haptc3" ;
+const prog_char APM Str_ALTeq[] = STR_ALTEQ ;
+const prog_char APM Str_TXeq[] =  STR_TXEQ ;
+const prog_char APM Str_RXeq[] =  STR_RXEQ ;
+const prog_char APM Str_TRE012AG[] = STR_TRE012AG ;
+const prog_char APM Str_YelOrgRed[] = STR_YELORGRED ;
+const prog_char APM Str_A_eq[] =  STR_A_EQ ;
+const prog_char APM Str_Timer[] =  STR_TIMER ;
+const prog_char APM Str_Sounds[] = STR_SOUNDS ;
 
 
-#define V_GVAR1		-8
-#define V_GVAR2		-7
-#define V_GVAR3		-6
-#define V_GVAR4		-5
-#define V_GVAR5		-4
+#define V_GVAR1		-10
+#define V_GVAR2		-9
+#define V_GVAR3		-8
+#define V_GVAR4		-7
+#define V_GVAR5		-6
+#define V_GVAR6		-5
+#define V_GVAR7		-4
 
 #define BATTERY		-3
 #define TIMER1		-2
@@ -85,11 +89,13 @@ const prog_char APM Str_Sounds[] = "\006Warn1 ""Warn2 ""Cheap ""Ring  ""SciFi ""
 #define TEL_ITEM_GVAR3	27
 #define TEL_ITEM_GVAR4	28
 #define TEL_ITEM_GVAR5	29
+#define TEL_ITEM_GVAR6	30
+#define TEL_ITEM_GVAR7	31
 
 #ifdef FRSKY
 
 
-const prog_char APM Str_telemItems[] = "\004----A1= A2= RSSITSSITim1Tim2Alt GaltGspdT1= T2= RPM FUELMah1Mah2CvltBattAmpsMah CtotFasVAccXAccYAccZVspdGvr1Gvr2Gvr3Gvr4Gvr5" ; 
+const prog_char APM Str_telemItems[] = "\004----A1= A2= RSSITSSITim1Tim2Alt GaltGspdT1= T2= RPM FUELMah1Mah2CvltBattAmpsMah CtotFasVAccXAccYAccZVspdGvr1Gvr2Gvr3Gvr4Gvr5Gvr6Gvr7" ; 
 const prog_int8_t APM TelemIndex[] = {FR_A1_COPY, FR_A2_COPY,
 															FR_RXRSI_COPY, FR_TXRSI_COPY,
 															TIMER1, TIMER2,
@@ -98,14 +104,14 @@ const prog_int8_t APM TelemIndex[] = {FR_A1_COPY, FR_A2_COPY,
 														  FR_FUEL, FR_A1_MAH, FR_A2_MAH, FR_CELL_MIN,
 															BATTERY, FR_CURRENT, FR_AMP_MAH, FR_CELLS_TOT, FR_VOLTS,
 															FR_ACCX, FR_ACCY,	FR_ACCZ, FR_VSPD, V_GVAR1, V_GVAR2,
-															V_GVAR3, V_GVAR4, V_GVAR5 } ;
+															V_GVAR3, V_GVAR4, V_GVAR5, V_GVAR6, V_GVAR7 } ;
 
-const prog_uint8_t APM TelemValid[] = { 1, 1, 1, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0 } ;
+const prog_uint8_t APM TelemValid[] = { 1, 1, 1, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0 } ;
 
 #else
 const prog_char APM Str_telemItems[] = "\004----TIM1TIM2BATTGvr1Gvr2Gvr3Gvr4Gvr5" ;
-const prog_int8_t APM TelemIndex[] = { TIMER1, TIMER2, BATTERY, V_GVAR1, V_GVAR2,	V_GVAR3, V_GVAR4, V_GVAR5 } ;
-const prog_uint8_t APM TelemValid[] = { 0, 0, 0, 0, 0, 0, 0, 0 } ;
+const prog_int8_t APM TelemIndex[] = { TIMER1, TIMER2, BATTERY, V_GVAR1, V_GVAR2,	V_GVAR3, V_GVAR4, V_GVAR5, V_GVAR6, V_GVAR7 } ;
+const prog_uint8_t APM TelemValid[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } ;
 
 #endif
 
@@ -209,6 +215,8 @@ void voice_telem_item( int8_t index )
 		case V_GVAR3 :
 		case V_GVAR4 :
 		case V_GVAR5 :
+		case V_GVAR6 :
+		case V_GVAR7 :
 			value = g_model.gvars[index-V_GVAR1].gvar ;
 		break ;
 			 
@@ -432,7 +440,7 @@ uint8_t putsTelemetryChannel(uint8_t x, uint8_t y, int8_t channel, int16_t val, 
 			{
 				x += FW+4 ;
 			}
-			att &= DBLSIZE ;
+			att &= DBLSIZE | INVERS | BLINK ;
       putsTime(x-FW, y, val, att, att) ;
 			displayed = 1 ;
     	unit = channel + 2 + '1';
@@ -1690,7 +1698,7 @@ blink = s_editMode ? BLINK : INVERS ;
 		}
 
 		value = g_model.frsky.frskyAlarmLimit << 6 ;
-		lcd_puts_Pleft(3*FH, PSTR("mAh Alarm"));
+		lcd_puts_Pleft(3*FH, PSTR(STR_MAH_ALARM));
   	uint8_t attr = ((sub==subN && subSub==0) ? (s_editMode ? BLINK : INVERS) : 0);
 //		uint8_t active = (attr && s_editMode) ;
   	lcd_outdezAtt( 14*FW, 3*FH, value, attr ) ;
@@ -2051,39 +2059,39 @@ for(uint8_t i=0; i<7; i++){
     lcd_puts_Pleft( y, PSTR("SW") ) ;
     lcd_putc(  2*FW , y, k + (k>8 ? 'A'-9: '1'));
 //    lcd_putsnAtt( 4*FW , y, PSTR(CSWITCH_STR)+CSW_LEN_FUNC*cs.func,CSW_LEN_FUNC,subSub==0 ? attr : 0);
-		lcd_putsAttIdx( 4*FW-3, y, PSTR(CSWITCH_STR),cs.func,subSub==0 ? attr : 0);
+		lcd_putsAttIdx( 4*FW-5, y, PSTR(CSWITCH_STR),cs.func,subSub==0 ? attr : 0);
 
     uint8_t cstate = CS_STATE(cs.func);
 
     if(cstate == CS_VOFS)
     {
-        putsChnRaw(    11*FW-3, y, cs.v1  ,subSub==1 ? attr : 0);
+        putsChnRaw(    11*FW-5, y, cs.v1  ,subSub==1 ? attr : 0);
 //#ifdef FRSKY
         if (cs.v1 > CHOUT_BASE+NUM_CHNOUT)
 				{
 					int16_t value = convertTelemConstant( cs.v1-CHOUT_BASE-NUM_CHNOUT-1, cs.v2 ) ;
 //          lcd_outdezAtt( 20*FW, y, convertTelemValue( cs.v1-CHOUT_BASE-NUM_CHNOUT-1, cs.v2 ) ,subSub==2 ? attr : 0);
-					putsTelemetryChannel( 19*FW-4, y, cs.v1-CHOUT_BASE-NUM_CHNOUT-1, value, subSub==2 ? attr : 0, TELEM_UNIT ) ;
+					putsTelemetryChannel( 19*FW-8, y, cs.v1-CHOUT_BASE-NUM_CHNOUT-1, value, subSub==2 ? attr : 0, TELEM_UNIT ) ;
 				}
         else
 //#endif
-          lcd_outdezAtt( 19*FW-3, y, cs.v2  ,subSub==2 ? attr : 0);
+          lcd_outdezAtt( 19*FW-6, y, cs.v2  ,subSub==2 ? attr : 0);
     }
     else if(cstate == CS_VBOOL)
     {
-        putsDrSwitches(11*FW-3, y, cs.v1  ,subSub==1 ? attr : 0);
-        putsDrSwitches(15*FW-3, y, cs.v2  ,subSub==2 ? attr : 0);
+        putsDrSwitches(11*FW-5, y, cs.v1  ,subSub==1 ? attr : 0);
+        putsDrSwitches(15*FW-6, y, cs.v2  ,subSub==2 ? attr : 0);
     }
     else if(cstate == CS_VCOMP)
     {
-        putsChnRaw(    11*FW-3, y, cs.v1  ,subSub==1 ? attr : 0);
-        putsChnRaw(    15*FW, y, cs.v2  ,subSub==2 ? attr : 0);
+        putsChnRaw(    11*FW-5, y, cs.v1  ,subSub==1 ? attr : 0);
+        putsChnRaw(    15*FW-3, y, cs.v2  ,subSub==2 ? attr : 0);
     }
 		else // cstate == CS_TIMER
 		{
 	    lcd_puts_Pleft( y, PSTR("\016On") ) ;
-      lcd_outdezAtt( 14*FW-3, y, cs.v1+1  ,subSub==1 ? attr : 0);
-      lcd_outdezAtt( 19*FW-3, y, cs.v2+1  ,subSub==2 ? attr : 0);
+      lcd_outdezAtt( 14*FW-5, y, cs.v1+1  ,subSub==1 ? attr : 0);
+      lcd_outdezAtt( 19*FW-6, y, cs.v2+1  ,subSub==2 ? attr : 0);
 		}
 //    lcd_putc( 19*FW+3, y, cs.andsw ? 'S' : '-') ;
 		{
@@ -2093,7 +2101,7 @@ for(uint8_t i=0; i<7; i++){
 			{
 				as += 1 ;				
 			}
-			putsDrSwitches( 18*FW-1, y, as,(subSub==3 ? attr : 0)|CONDENSED) ;
+			putsDrSwitches( 18*FW-3, y, as,(subSub==3 ? attr : 0)|CONDENSED) ;
 //    lcd_putcAtt( 20*FW+2, y, cs.andsw ? (cs.andsw + ((cs.andsw>9) ? 'A'-10 : '0') ) : '-', subSub==3 ? attr : 0) ;
 		}
     if((s_editMode
@@ -2203,6 +2211,16 @@ static uint8_t editSlowDelay( uint8_t y, uint8_t attr, uint8_t value, const prog
 	return value ;
 }
 
+void put_curve( uint8_t x, uint8_t y, int8_t idx, uint8_t attr )
+{
+	if ( idx < 0 )
+	{
+    lcd_putcAtt( x-FW, y, '!', attr ) ;
+		idx = -idx + 6 ;
+	}
+	lcd_putsAttIdx( x, y,get_curve_string()-1,idx,attr);
+}
+
 
 uint8_t PopupActive ;
 
@@ -2260,7 +2278,7 @@ void menuProcMixOne(uint8_t event)
         case 5 :
 					{	
 					 	uint8_t value = md2->differential ;
-	          lcd_putsAtt(  2*FW, y, value ? PSTR("\015Curve") : PSTR("Diff"), attr ) ;
+	          lcd_putsAtt(  2*FW, y, value ? PSTR("\015Diff") : PSTR("Curve"), attr ) ;
     		    if(attr) CHECK_INCDEC_H_MODELVAR_0( md2->differential, 1 ) ;
 					 	if ( value != md2->differential )
 						{
@@ -2270,23 +2288,17 @@ void menuProcMixOne(uint8_t event)
         break;
         case 6 :
 						if ( md2->differential )		// Non zero for curve
+						{
+		          md2->curve = gvarMenuItem( 16*FW, y, md2->curve, -100, 100, attr ) ;
+						}
+						else
 						{	
-							int8_t idx = md2->curve ;
-							if ( idx < 0 )
-							{
-    						lcd_putcAtt( 12*FW, y, '!', attr ) ;
-								idx = -idx + 6 ;
-							}
-							lcd_putsAttIdx(13*FW, y,get_curve_string()-1,idx,attr);
+							put_curve( 3*FW, y, md2->curve, attr ) ;
           	  if(attr) CHECK_INCDEC_H_MODELVAR( md2->curve, -MAX_CURVE5-MAX_CURVE9 , MAX_CURVE5+MAX_CURVE9+7-1);
           	  if(attr && md2->curve>=CURVE_BASE && event==EVT_KEY_FIRST(KEY_MENU)){
           	      s_curveChan = md2->curve-CURVE_BASE;
           	      pushMenu(menuProcCurveOne);
           	  }
-						}
-						else
-						{
-		          md2->curve = gvarMenuItem( 5*FW, y, md2->curve, -100, 100, attr ) ;
 						}
         break;
         case 7:
@@ -2715,20 +2727,20 @@ void menuProcMix(uint8_t event)
         	  if(firstMix != mix_index) //show prefix only if not first mix
         	 		lcd_putsAttIdx( 3*FW+1, y, PSTR("\001+*R"),pmd->mltpx,0 ) ;
     	    
-						putsChnRaw(     9*FW, y, pmd->srcRaw, /*attr | */ MIX_SOURCE ) ;
+						putsChnRaw(     8*FW, y, pmd->srcRaw, /*attr | */ MIX_SOURCE ) ;
 	#if GVARS
 						pmd->weight = gvarMenuItem( 7*FW+FW/2, y, pmd->weight, -125, 125, attr ) ;
 	#else
 						lcd_outdezAtt(  7*FW+FW/2, y, pmd->weight, attr ) ; //attr);
 	#endif
-    	  	  lcd_putcAtt(    7*FW+FW/2, y, '%', 0 ) ; //tattr);
-    	  	  if( pmd->swtch) putsDrSwitches( 13*FW, y, pmd->swtch, 0 ) ; //tattr);
+//    	  	  lcd_putcAtt(    7*FW+FW/2, y, '%', 0 ) ; //tattr);
+    	  	  if( pmd->swtch) putsDrSwitches( 12*FW, y, pmd->swtch, 0 ) ; //tattr);
 						if ( pmd->curve )
 						{
-							if ( pmd->differential ) lcd_putsAttIdx( 17*FW, y, get_curve_string()-1, pmd->curve, 0 ) ;
+							if ( pmd->differential ) lcd_putcAtt( 16*FW, y, 'd', 0 ) ;
 							else
 							{
-	    	  	  	lcd_putcAtt( 17*FW, y, 'd', 0 ) ;
+	    	  	  	put_curve( 16*FW, y, pmd->curve, 0 ) ;
 							}
 						}
 						char cs = ' ';
@@ -3375,7 +3387,7 @@ if(t_pgOfs<subN) {
 		    lcd_puts_Pleft( y, PSTR("\023uS") );
 				x = 12*FW ;
 			}
-      lcd_putsAttIdx(  x, y, PSTR("\0044CH 6CH 8CH 10CH12CH14CH16CH"),(g_model.ppmNCH+2),(sub==subN && subSub==1  ? (s_editMode ? BLINK : INVERS):0));
+      lcd_putsAttIdx(  x, y, PSTR(STR_PPMCHANNELS),(g_model.ppmNCH+2),(sub==subN && subSub==1  ? (s_editMode ? BLINK : INVERS):0));
       lcd_outdezAtt(  x+7*FW-2, y,  (g_model.ppmDelay*50)+300, (sub==subN && subSub==2 ? (s_editMode ? BLINK : INVERS):0));
     }
     else if (g_model.protocol == PROTO_PXX)
@@ -5848,6 +5860,15 @@ void perOut(int16_t *chanOut, uint8_t att)
         //========== CURVES ===============
 				if ( md->differential )
 				{
+      		//========== DIFFERENTIAL =========
+      		int16_t curveParam = REG( md->curve, -100, 100 ) ;
+      		if (curveParam > 0 && v < 0)
+      		  v = ((int32_t)v * (100 - curveParam)) / 100;
+      		else if (curveParam < 0 && v > 0)
+      		  v = ((int32_t)v * (100 + curveParam)) / 100;
+				}
+				else
+				{
       	  switch(md->curve){
       	  case 0:
       	      break;
@@ -5892,15 +5913,6 @@ void perOut(int16_t *chanOut, uint8_t att)
       	      	v = intpol(v, idx - 7);
 							}
       	  }
-				}
-				else
-				{
-      		//========== DIFFERENTIAL =========
-      		int16_t curveParam = REG( md->curve, -100, 100 ) ;
-      		if (curveParam > 0 && v < 0)
-      		  v = ((int32_t)v * (100 - curveParam)) / 100;
-      		else if (curveParam < 0 && v > 0)
-      		  v = ((int32_t)v * (100 + curveParam)) / 100;
 				}
 
         //========== TRIM ===============

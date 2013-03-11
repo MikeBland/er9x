@@ -63,7 +63,7 @@
 #define GENERAL_OWNER_NAME_LEN 10
 #define MODEL_NAME_LEN         10
 
-#define MAX_GVARS 5
+#define MAX_GVARS 7
 
 PACK(typedef struct t_TrainerMix {
     uint8_t srcChn:3; //0-7 = ch1-8
