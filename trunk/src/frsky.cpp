@@ -156,16 +156,15 @@ void store_hub_data( uint8_t index, uint16_t value )
 {
 	if ( index == FR_ALT_BARO )
 	{
-//		AltB = value ;
+		value *= 10 ;
 		if ( AltitudeDecimals )
 		{
-			WholeAltitude = value * 10 ;
+			WholeAltitude = value ;
 			index = FR_TRASH ;
 		}
 	}
 	if ( index == FR_ALT_BAROd )
 	{
-//		AltA = value ;
 		AltitudeDecimals = 1 ;
 		FrskyHubData[FR_ALT_BARO] = WholeAltitude + ( (WholeAltitude > 0) ? value : -value ) ;
 	}
@@ -184,7 +183,7 @@ void store_hub_data( uint8_t index, uint16_t value )
 			}
       if ( index == FR_GPS_ALT )
       {
-         FrskyHubData[FR_ALT_BARO] = FrskyHubData[FR_GPS_ALT] ;      // Copy Gps Alt instead
+         FrskyHubData[FR_ALT_BARO] = FrskyHubData[FR_GPS_ALT] * 10 ;      // Copy Gps Alt instead
          index = FR_ALT_BARO ;         // For max and min
       }
 		}
@@ -314,7 +313,7 @@ void frsky_proc_user_byte( uint8_t byte )
 		{
 			int16_t value ;
 			value = ( byte << 8 ) + Frsky_user_lobyte ;
-			store_hub_data( FR_ALT_BARO, value ) ;	 // Store altitude info
+			store_hub_data( FR_ALT_BARO, value * 10 ) ;	 // Store altitude info
 #if defined(VARIO)
 			evalVario( value, 0 ) ;
 #endif
@@ -390,9 +389,9 @@ void processFrskyPacket(uint8_t *packet)
 			while ( j < i )
 			{
 				frsky_proc_user_byte( packet[j] ) ;
-        frskyUsrStreaming = FRSKY_USR_TIMEOUT10ms; // reset counter only if valid frsky packets are being detected
 				j += 1 ;
 			}
+      frskyUsrStreaming = FRSKY_USR_TIMEOUT10ms ; // reset counter only if valid frsky packets are being detected
     }	
     break;
 
@@ -407,9 +406,9 @@ void processFrskyPacket(uint8_t *packet)
 		{
 			frsky_proc_user_byte( packet[j] ) ;
 			// reset counter only if valid frsky packets are being detected
-			frskyUsrStreaming = FRSKY_USR_TIMEOUT10ms; 
 			j += 1 ;
 		}
+		frskyUsrStreaming = FRSKY_USR_TIMEOUT10ms; 
     }	
     break;					//!!!!!!!!!!!!!!!!!!
 #endif

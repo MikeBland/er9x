@@ -171,8 +171,6 @@ void eeLoadModel(uint8_t id)
 			g_model.numBlades = g_model.xnumBlades + 2 ;				
 		}
 
-//        g_model.mdVers = MDVERS; //update mdvers
-
         resetTimer1();
         resetTimer2();
 

@@ -176,7 +176,7 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
 //        lcd_putsnAtt(x,y,modi12x3+g_eeGeneral.stickMode*16+4*(idx-1),4,att);
     else if(idx<=chanLimit)
 #if GVARS
-        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POSGV1 GV2 GV3 GV4 GV5 GV6 GV7"),(idx-5),att);
+        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POSGV1 GV2 GV3 GV4 GV5 GV6 GV7 "),(idx-5),att);
 #else
         lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POS"),(idx-5),att);
 #endif
@@ -1032,6 +1032,10 @@ static uint8_t checkTrim(uint8_t event)
     {
         //LH_DWN LH_UP LV_DWN LV_UP RV_DWN RV_UP RH_DWN RH_UP
         uint8_t idx = (uint8_t)k/2;
+				if ( g_eeGeneral.crosstrim )
+				{
+					idx = 3 - idx ;			
+				}
         int8_t tm = *TrimPtr[idx] ;
         int8_t  v = (s==0) ? (abs(tm)/4)+1 : s;
         bool thrChan = ((2-(g_eeGeneral.stickMode&1)) == idx);
@@ -1174,6 +1178,11 @@ int8_t checkIncDec_hm0( int8_t i_val, int8_t i_max)
 int8_t checkIncDec_hg( int8_t i_val, int8_t i_min, int8_t i_max)
 {
     return checkIncDec( i_val,i_min,i_max,EE_GENERAL);
+}
+
+int8_t checkIncDec_hg0( int8_t i_val, int8_t i_max)
+{
+    return checkIncDec( i_val,0 ,i_max,EE_GENERAL);
 }
 
 MenuFuncP lastPopMenu()
@@ -2255,6 +2264,10 @@ void mainSequence()
                     limit = 122 ;	//m
                 }
 								altitude = FrskyHubData[FR_ALT_BARO] + AltOffset ;
+//								if ( AltitudeDecimals )
+//								{
+									altitude /= 10 ;									
+//								}
 								if (g_model.FrSkyUsrProto == 0)  // Hub
 								{
       						if ( g_model.FrSkyImperial )

@@ -124,6 +124,8 @@ PACK(typedef struct t_EEGeneral {
     uint8_t   switchWarningStates;
 		int8_t		volume ;
     uint8_t   res[3];
+    uint8_t   crosstrim:1;
+    uint8_t   spare1:7;
 }) EEGeneral;
 
 

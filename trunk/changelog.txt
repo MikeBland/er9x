@@ -10,6 +10,12 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 15-Mar-2013  MPB
+Improve Altitude display, voice and alarms
+Add Radio cross trims.
+Minor flash saving
+
+******************************************
 CHANGELOG: 10-Mar-2013  MPB
 Change default to CURVE, not DIFF
 Add two more GVARS
