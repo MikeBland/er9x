@@ -556,10 +556,14 @@ int8_t checkIncDec( int8_t i_val, int8_t i_min, int8_t i_max, uint8_t i_flags);
 int8_t checkIncDec_hm( int8_t i_val, int8_t i_min, int8_t i_max);
 //int8_t checkIncDec_vm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
 int8_t checkIncDec_hg( int8_t i_val, int8_t i_min, int8_t i_max);
+int8_t checkIncDec_hg0( int8_t i_val, int8_t i_max) ;
 int8_t checkIncDec_hm0(int8_t i_val, int8_t i_max) ;
 
 #define CHECK_INCDEC_H_GENVAR( var, min, max)     \
     var = checkIncDec_hg(var,min,max)
+
+#define CHECK_INCDEC_H_GENVAR_0( var, max)     \
+    var = checkIncDec_hg0( var, max )
 
 #define CHECK_INCDEC_H_MODELVAR( var, min, max)     \
     var = checkIncDec_hm(var,min,max)
