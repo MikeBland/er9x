@@ -53,17 +53,7 @@ uint8_t Main_running ;
 uint8_t SlaveMode ;
 uint8_t Vs_state[NUM_CHNOUT] ;
 
-#if ROTARY		
-uint8_t RotPosition ;
-uint8_t RotCount ;
-uint8_t TrotCount ;		// TeZ version
-uint8_t LastTrotCount ;		// TeZ version
-uint8_t RotEncoder ;
-int8_t LastRotaryValue ;
-int8_t Rotary_diff ;
-int8_t RotaryControl ;
-uint8_t TezRotary ;
-#endif
+struct t_rotary Rotary ;
 
 uint8_t Tevent ;
 
@@ -214,9 +204,9 @@ void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
 {
     switch(idx1){
-    case  0:            lcd_putsAtt(x+FW,y,PSTR("---"),att);return;
-    case  MAX_DRSWITCH: lcd_putsAtt(x+FW,y,Str_ON ,att);return;
-    case -MAX_DRSWITCH: lcd_putsAtt(x+FW,y,Str_OFF,att);return;
+    case  0:            lcd_putsnAtt(x+FW,y,PSTR("---"),3,att);return;
+    case  MAX_DRSWITCH: lcd_putsnAtt(x+FW,y,Str_ON,3 ,att);return;
+    case -MAX_DRSWITCH: lcd_putsnAtt(x+FW,y,Str_OFF,3,att);return;
     }
 		if ( idx1 < 0 )
 		{
@@ -228,7 +218,9 @@ void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
 		{
 			z = -idx1 ;			
 		}
-    lcd_putsnAtt(x+FW,y,get_switches_string()+3*(z-1),3,att);
+		z -= 1 ;
+		z *= 3 ;
+    lcd_putsnAtt(x+FW,y,get_switches_string()+(uint8_t)z,3,att);
 }
 
 const prog_char *get_switches_string()
@@ -1010,6 +1002,85 @@ int8_t *TrimPtr[4] =
     &g_model.trim[3]
 } ;
 
+#ifdef PHASES		
+uint8_t getFlightPhase()
+{
+	uint8_t i ;
+  PhaseData *phase = &g_model.phaseData[0];
+
+  for ( i = 0 ; i < MAX_MODES ; i += 1 )
+	{
+    if ( phase->swtch && getSwitch( phase->swtch, 0 ) )
+		{
+      return i + 1 ;
+    }
+		phase += 1 ;
+  }
+  return 0 ;
+}
+
+int16_t getRawTrimValue( uint8_t phase, uint8_t idx )
+{
+	if ( phase )
+	{
+		return g_model.phaseData[phase-1].trim[idx] + TRIM_EXTENDED_MAX + 1 ;
+	}	
+	else
+	{
+		return *TrimPtr[idx] ;
+	}
+}
+
+uint8_t getTrimFlightPhase( uint8_t phase, uint8_t idx )
+{
+  for ( uint8_t i=0 ; i<MAX_MODES ; i += 1 )
+	{
+    if (phase == 0) return 0;
+    int16_t trim = getRawTrimValue( phase, idx ) ;
+    if ( trim <= TRIM_EXTENDED_MAX )
+		{
+			return phase ;
+		}
+    uint8_t result = trim-TRIM_EXTENDED_MAX-1 ;
+    if (result >= phase)
+		{
+			result += 1 ;
+		}
+    phase = result;
+  }
+  return 0;
+}
+
+
+int16_t getTrimValue( uint8_t phase, uint8_t idx )
+{
+  return getRawTrimValue( getTrimFlightPhase( phase, idx ), idx ) ;
+}
+
+
+void setTrimValue(uint8_t phase, uint8_t idx, int16_t trim)
+{
+	if ( phase )
+	{
+		phase = getTrimFlightPhase( phase, idx ) ;
+	}
+	if ( phase )
+	{
+  	g_model.phaseData[phase-1].trim[idx] = trim - ( TRIM_EXTENDED_MAX + 1 ) ;
+	}
+	else
+	{
+    if(trim < -125 || trim > 125)
+		{
+			trim = ( trim > 0 ) ? 125 : -125 ;
+		}	
+   	*TrimPtr[idx] = trim ;
+	}
+  STORE_MODELVARS_TRIM ;
+}
+#endif
+
+
 static uint8_t checkTrim(uint8_t event)
 {
     int8_t  k = (event & EVT_KEY_MASK) - TRM_BASE;
@@ -1036,7 +1107,12 @@ static uint8_t checkTrim(uint8_t event)
 				{
 					idx = 3 - idx ;			
 				}
+#ifdef PHASES		
+				uint8_t phaseNo = getTrimFlightPhase( CurrentPhase, idx ) ;
+    		int16_t tm = getTrimValue( phaseNo, idx ) ;
+#else
         int8_t tm = *TrimPtr[idx] ;
+#endif
         int8_t  v = (s==0) ? (abs(tm)/4)+1 : s;
         bool thrChan = ((2-(g_eeGeneral.stickMode&1)) == idx);
         bool thro = (thrChan && (g_model.thrTrim));
@@ -1045,13 +1121,21 @@ static uint8_t checkTrim(uint8_t event)
         int16_t x = (k&1) ? tm + v : tm - v;   // positive = k&1
 
         if(((x==0)  ||  ((x>=0) != (tm>=0))) && (!thro) && (tm!=0)){
+#ifdef PHASES		
+						setTrimValue( phaseNo, idx, 0 ) ;
+#else
             *TrimPtr[idx]=0;
+#endif
             killEvents(event);
             audioDefevent(AU_TRIM_MIDDLE);
 
         } else if(x>-125 && x<125){
+#ifdef PHASES		
+						setTrimValue( phaseNo, idx, x ) ;
+#else
             *TrimPtr[idx] = (int8_t)x;
             STORE_MODELVARS_TRIM;
+#endif
             //if(event & _MSK_KEY_REPT) warble = true;
             if(x <= 125 && x >= -125){
                 audio.event(AU_TRIM_MOVE,(abs(x)/4)+60);
@@ -1059,8 +1143,12 @@ static uint8_t checkTrim(uint8_t event)
         }
         else
         {
+#ifdef PHASES		
+						setTrimValue( phaseNo, idx, (x>0) ? 125 : -125 ) ;
+#else
             *TrimPtr[idx] = (x<0) ? -125 : 125;
             STORE_MODELVARS_TRIM;
+#endif
             if(x <= 125 && x >= -125){
                 audio.event(AU_TRIM_MOVE,(-abs(x)/4)+60);
             }
@@ -1073,7 +1161,9 @@ static uint8_t checkTrim(uint8_t event)
 
 //global helper vars
 bool    checkIncDec_Ret;
+#ifndef NOPOTSCROLL
 struct t_p1 P1values ;
+#endif
 
 int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flags)
 {
@@ -1119,10 +1209,12 @@ int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flag
     }
 
     //change values based on P1
+#ifndef NOPOTSCROLL
     newval -= P1values.p1valdiff;
+#endif
 		if ( RotaryState == ROTARY_VALUE )
 		{
-			newval += Rotary_diff ;
+			newval += Rotary.Rotary_diff ;
 		}
     if(newval>i_max)
     {
@@ -1459,7 +1551,6 @@ void t_voice::voice_process(void)
 	}
 }
 
-#if ROTARY		
 void pollRotary()
 {
 	// Rotary Encoder polling
@@ -1475,35 +1566,64 @@ void pollRotary()
 	rotary &= 0xE0 ;
 //	RotEncoder = rotary ;
 
-	if( TezRotary != 0)
-		RotEncoder = 0x20; // switch is on
+	struct t_rotary *protary = &Rotary ;
+	FORCE_INDIRECT(protary) ;
+
+	if( protary->TezRotary != 0)
+		protary->RotEncoder = 0x20; // switch is on
 	else
-		RotEncoder = rotary ; // just read the lcd pin
+		protary->RotEncoder = rotary ; // just read the lcd pin
 	
 	rotary &= 0xDF ;
-	if ( rotary != RotPosition )
+	if ( rotary != protary->RotPosition )
 	{
 		uint8_t x ;
-		x = RotPosition & 0x40 ;
+		x = protary->RotPosition & 0x40 ;
 		x <<= 1 ;
 		x ^= rotary & 0x80 ;
 		if ( x )
 		{
-			RotCount -= 1 ;
+			protary->RotCount -= 1 ;
 		}
 		else
 		{
-			RotCount += 1 ;
+			protary->RotCount += 1 ;
 		}
-		RotPosition = rotary ;
+		protary->RotPosition = rotary ;
 	}
-	if (TrotCount != LastTrotCount )
+	if ( protary->TrotCount != protary->LastTrotCount )
 	{
-		RotCount = LastTrotCount = TrotCount ;
+		protary->RotCount = protary->LastTrotCount = protary->TrotCount ;
 	}
 }
-#endif
 
+const static prog_uint8_t APM rate[8] = { 0, 75, 40, 25, 10, 5, 2, 1 } ;
+
+uint8_t calcStickScroll( uint8_t index )
+{
+	uint8_t direction ;
+	int8_t value ;
+
+	if ( ( g_eeGeneral.stickMode & 1 ) == 0 )
+	{
+		index ^= 3 ;
+	}
+	
+	value = calibratedStick[index] / 128 ;
+	direction = value > 0 ? 0x80 : 0 ;
+	if ( value < 0 )
+	{
+		value = -value ;			// (abs)
+	}
+	if ( value > 7 )
+	{
+		value = 7 ;			
+	}
+	value = pgm_read_byte(rate+(uint8_t)value) ;
+	return value | direction ;
+}
+
+uint8_t StickScrollAllowed ;
 
 void perMain()
 {
@@ -1548,7 +1668,6 @@ void perMain()
     uint8_t evt=getEvent();
     evt = checkTrim(evt);
 
-    doBackLightVoice(evt);
 
 #ifndef NOPOTSCROLL
 		int16_t p1d ;
@@ -1571,38 +1690,93 @@ void perMain()
 		ptrp1->p1valdiff = p1d ;
 #endif
 
+		struct t_rotary *protary = &Rotary ;
+		FORCE_INDIRECT(protary) ;
 		{
 			int8_t x ;
-			x = RotCount - LastRotaryValue ;
+			x = protary->RotCount - protary->LastRotaryValue ;
 			if ( x == -1 )
 			{
 				x = 0 ;
 			}
-			Rotary_diff = ( x ) / 2 ;
-			LastRotaryValue += Rotary_diff * 2 ;
+			protary->Rotary_diff = ( x ) / 2 ;
+			protary->LastRotaryValue += protary->Rotary_diff * 2 ;
 		}
+    
+		doBackLightVoice( evt | protary->Rotary_diff ) ;
 
 		if ( g_menuStack[g_menuStackPtr] == menuProc0)
 		{
-			if ( Rotary_diff )
+			if ( protary->Rotary_diff )
 			{
-				int16_t x = RotaryControl ;
-				x += Rotary_diff ;
+				int16_t x = protary->RotaryControl ;
+				x += protary->Rotary_diff ;
 				if ( x > 125 )
 				{
-					RotaryControl = 125 ;
+					protary->RotaryControl = 125 ;
 				}
 				else if ( x < -125 )
 				{
-					RotaryControl = -125 ;
+					protary->RotaryControl = -125 ;
 				}
 				else
 				{
-					RotaryControl = x ;					
+					protary->RotaryControl = x ;					
 				}
-				Rotary_diff = 0 ;
+				protary->Rotary_diff = 0 ;
 			}
 		}
+		if ( g_eeGeneral.stickScroll && StickScrollAllowed )
+		{
+			static uint8_t repeater ;
+			uint8_t direction ;
+			int8_t value ;
+		
+			if ( repeater < 128 )
+			{
+				repeater += 1 ;
+			}
+			value = calcStickScroll( 2 ) ;
+			direction = value & 0x80 ;
+			value &= 0x7F ;
+			if ( value )
+			{
+				if ( repeater > value )
+				{
+					repeater = 0 ;
+					if ( direction )
+					{
+						putEvent(EVT_KEY_FIRST(KEY_UP));
+					}
+					else
+					{
+						putEvent(EVT_KEY_FIRST(KEY_DOWN));
+					}
+				}
+			}
+			else
+			{
+				value = calcStickScroll( 3 ) ;
+				direction = value & 0x80 ;
+				value &= 0x7F ;
+				if ( value )
+				{
+					if ( repeater > value )
+					{
+						repeater = 0 ;
+						if ( direction )
+						{
+							putEvent(EVT_KEY_FIRST(KEY_RIGHT));
+						}
+						else
+						{
+							putEvent(EVT_KEY_FIRST(KEY_LEFT));
+						}
+					}
+				}
+			}
+		}
+		StickScrollAllowed = 1 ;
 
 #if GVARS
 		for( uint8_t i = 0 ; i < MAX_GVARS ; i += 1 )
@@ -1615,7 +1789,7 @@ void perMain()
 				}
 			  else if ( g_model.gvars[i].gvsource == 5 )	// REN
 				{
-					g_model.gvars[i].gvar = RotaryControl ;
+					g_model.gvars[i].gvar = Rotary.RotaryControl ;
 				}
 				else if ( g_model.gvars[i].gvsource <= 9 )	// Stick
 				{
@@ -1625,7 +1799,7 @@ void perMain()
 				{
 					g_model.gvars[i].gvar = limit( -125, calibratedStick[ (g_model.gvars[i].gvsource-6)] / 8, 125 ) ;
 				}
-				else if ( g_model.gvars[i].gvsource <= 28 )	// Pot
+				else if ( g_model.gvars[i].gvsource <= 28 )	// Chans
 				{
 					g_model.gvars[i].gvar = limit( -125, ex_chans[g_model.gvars[i].gvsource-13] / 10, 125 ) ;
 				}
@@ -2125,8 +2299,8 @@ int main(void)
         }
     }
 #endif
+		sei(); //damit alert in eeReadGeneral() nicht haengt
 
-    sei(); //damit alert in eeReadGeneral() nicht haengt
     g_menuStack[0] =  menuProc0;
 
     lcdSetRefVolt(25);
@@ -2143,15 +2317,21 @@ int main(void)
     //we assume that startup is like pressing a switch and moving sticks.  Hence the lightcounter is set
     //if we have a switch on backlight it will be able to turn on the backlight.
 
-		uint8_t loc ;
-    loc = g_eeGeneral.lightOnStickMove ;
-    if(g_eeGeneral.lightAutoOff > g_eeGeneral.lightOnStickMove)
-      loc = g_eeGeneral.lightAutoOff ;
+		{
+//			uint8_t sm ;
+//			sm = stickMoved ;
+			stickMoved = 1 ;
+			doBackLightVoice(1) ;
+			stickMoved = 0 ;
+
+//    loc = g_eeGeneral.lightOnStickMove ;
+//    if(g_eeGeneral.lightAutoOff > g_eeGeneral.lightOnStickMove)
+//      loc = g_eeGeneral.lightAutoOff ;
     
-		g_LightOffCounter = (loc*250)<<1;
+//		g_LightOffCounter = (loc*250)<<1;
 
-    check_backlight_voice();
-
+//    check_backlight_voice();
+		}
     // moved here and logic added to only play statup tone if splash screen enabled.
     // that way we save a bit, but keep the option for end users!
 		setVolume() ;
@@ -2251,11 +2431,11 @@ void mainSequence()
 #ifdef FRSKY
         if (frskyUsrStreaming)
         {
-            int16_t limit = g_model.FrSkyAltAlarm ;
+            int16_t limit ; //= g_model.FrSkyAltAlarm ;
             int16_t altitude ;
-            if ( limit )
+            if ( g_model.FrSkyAltAlarm )
             {
-                if (limit == 2)  // 400
+                if (g_model.FrSkyAltAlarm == 2)  // 400
                 {
                     limit = 400 ;	//ft
                 }
@@ -2586,5 +2766,9 @@ uint8_t IS_THROTTLE( uint8_t x )
 	return (((y) == x) && (x<4)) ;
 }
 
+int16_t calc100toRESX(int8_t x)
+{
+    return ((x*41)>>2) - x/64;
+}
 
 

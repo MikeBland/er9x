@@ -296,8 +296,7 @@ void per10ms()
     ++enuk;
   }
 
-extern uint8_t RotEncoder ;
-	keys[enuk].input( RotEncoder & 0x20,(EnumKeys)enuk); // Rotary Enc. Switch
+	keys[enuk].input( Rotary.RotEncoder & 0x20,(EnumKeys)enuk); // Rotary Enc. Switch
 
 }
 

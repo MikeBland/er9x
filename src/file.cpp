@@ -134,11 +134,15 @@ static uint8_t EeFsAlloc(){ ///alloc one block from freelist
   return ret;
 }
 
+// This is only called from eeReadAll() (in pers.cpp)
+// BEFORE g_model is loaded so re-use g_model for bufp
+// g_model is always set to zeroes before it is loaded
 int8_t EeFsck()
 {
   uint8_t *bufp;
 //  static uint8_t buffer[BLOCKS];
-  bufp = Xmem.file_buffer;
+  bufp = (uint8_t *)&g_model ;
+//  bufp = Xmem.file_buffer;
   memset(bufp,0,BLOCKS);
   uint16_t blk ;
   int8_t ret=0;

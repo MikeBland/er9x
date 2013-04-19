@@ -59,12 +59,14 @@ extern bool warble;*/
 //extern int16_t p1valdiff;
 //extern uint8_t scroll_disabled;
 
+extern uint8_t g_posHorz ;
+
 // Menus related stuff ...
 struct MState2
 {
   uint8_t m_posVert;
-  uint8_t m_posHorz;
-  void init(){m_posVert=m_posHorz=0;};
+//  uint8_t m_posHorz;
+  void init(){m_posVert=0;};
   void check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8_t menuTabSize, const prog_uint8_t *subTab, uint8_t subTabMax, uint8_t maxrow);
   void check_simple(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8_t menuTabSize, uint8_t maxrow);
   void check_submenu_simple(uint8_t event, uint8_t maxrow);

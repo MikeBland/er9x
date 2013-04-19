@@ -93,8 +93,14 @@ int16_t WholeAltitude ;
 
 
 uint8_t frskyRxBuffer[19];   // Receive buffer. 9 bytes (full packet), worst case 18 bytes with byte-stuffing (+1)
-uint8_t frskyTxBuffer[19];   // Ditto for transmit buffer
-uint8_t frskyTxBufferCount = 0;
+
+struct t_frskyTx
+{
+	uint8_t frskyTxBuffer[19];   // Ditto for transmit buffer
+	uint8_t frskyTxBufferCount ;
+	uint8_t frskyTxISRIndex ;
+} FrskyTx ;
+
 //uint8_t FrskyRxBufferReady = 0;
 uint8_t frskyStreaming = 0;
 uint8_t frskyUsrStreaming = 0;
@@ -450,8 +456,8 @@ void processFrskyPacket(uint8_t *packet)
 
 uint8_t Private_count ;
 uint8_t Private_position ;
-extern uint8_t TrotCount ;
-extern uint8_t TezRotary ;
+//extern uint8_t TrotCount ;
+//extern uint8_t TezRotary ;
 
 // debug
 //uint8_t Uerror ;
@@ -634,10 +640,10 @@ ISR(USART0_RX_vect)
 						}
 					}
 					if(Private_position==1) {
-						TrotCount = data;
+						Rotary.TrotCount = data;
 					}
 					if(Private_position==2) { // rotary encoder switch
-						TezRotary = data;
+						Rotary.TezRotary = data;
 					}
 					Private_position++;
 					if ( Private_position == Private_count )
@@ -660,15 +666,17 @@ ISR(USART0_RX_vect)
    USART0 (transmit) Data Register Emtpy ISR
    Usef to transmit FrSky data packets, which are buffered in frskyTXBuffer. 
 */
-uint8_t frskyTxISRIndex = 0;
 
 #ifndef SIMU
 ISR(USART0_UDRE_vect)
 {
-  if (frskyTxBufferCount > 0) 
+	struct t_frskyTx *pftx = &FrskyTx ;	
+	FORCE_INDIRECT(pftx) ;
+  
+	if ( pftx->frskyTxBufferCount > 0) 
   {
-    UDR0 = frskyTxBuffer[frskyTxISRIndex++];
-    frskyTxBufferCount--;
+    pftx->frskyTxBufferCount--;
+    UDR0 = pftx->frskyTxBuffer[pftx->frskyTxISRIndex++];
   } else
     UCSR0B &= ~(1 << UDRIE0); // disable UDRE0 interrupt
 }
@@ -677,7 +685,7 @@ ISR(USART0_UDRE_vect)
 
 static void frskyTransmitBuffer()
 {
-  frskyTxISRIndex = 0;
+  FrskyTx.frskyTxISRIndex = 0;
   UCSR0B |= (1 << UDRIE0); // enable  UDRE0 interrupt
 }
 #endif
@@ -696,7 +704,7 @@ static void FRSKY10mspoll(void)
     return ;
   }
 
-  if (frskyTxBufferCount)
+  if (FrskyTx.frskyTxBufferCount)
   {
     return; // we only have one buffer. If it's in use, then we can't send yet.
   }
@@ -775,12 +783,12 @@ static void FRSKY10mspoll(void)
 void FRSKY_setTxPacket( uint8_t type, uint8_t value, uint8_t p1, uint8_t p2 )
 {
 	uint8_t i = 0;
-  frskyTxBuffer[i++] = START_STOP;        // Start of packet
-  frskyTxBuffer[i++] = type ;
+  FrskyTx.frskyTxBuffer[i++] = START_STOP;        // Start of packet
+  FrskyTx.frskyTxBuffer[i++] = type ;
   i = frskyPushValue( i, value) ;
   {
     uint8_t *ptr ;
-    ptr = &frskyTxBuffer[i] ;
+    ptr = &FrskyTx.frskyTxBuffer[i] ;
 		FORCE_INDIRECT(ptr) ;
     *ptr++ = p1 ;
     *ptr++ = p2 ;
@@ -791,7 +799,7 @@ void FRSKY_setTxPacket( uint8_t type, uint8_t value, uint8_t p1, uint8_t p2 )
     *ptr++ = 0x00 ;
     *ptr = START_STOP ;        // End of packet
 	}
-	frskyTxBufferCount = i + 8 ;
+	FrskyTx.frskyTxBufferCount = i + 8 ;
 }
 
 //enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm)
@@ -872,7 +880,7 @@ enum AlarmLevel FRSKY_alarmRaised(uint8_t idx)
 
 inline void FRSKY_EnableTXD(void)
 {
-  frskyTxBufferCount = 0;
+  FrskyTx.frskyTxBufferCount = 0;
   UCSR0B |= (1 << TXEN0) | (1 << UDRIE0); // enable TX and TX interrupt
 }
 
@@ -938,7 +946,7 @@ void FRSKY_Init(void)
 void frskyAlarmsRefresh()
 {
 
-  if (frskyTxBufferCount) return; // we only have one buffer. If it's in use, then we can't send. Sorry.
+  if (FrskyTx.frskyTxBufferCount) return; // we only have one buffer. If it's in use, then we can't send. Sorry.
 	FRSKY_setTxPacket( ALRM_REQUEST, 0, 0, 0 )
   frskyTransmitBuffer();
 }
@@ -948,7 +956,7 @@ uint8_t frskyPushValue( uint8_t i, uint8_t value)
 {
 	uint8_t j ;
   uint8_t *ptr ;
-  ptr = &frskyTxBuffer[i] ;
+  ptr = &FrskyTx.frskyTxBuffer[i] ;
 	FORCE_INDIRECT(ptr) ;
 	j = 0 ;
   // byte stuff the only byte than might need it
@@ -1032,8 +1040,12 @@ void current_check( uint8_t i )
 {
 	Frsky_current_info *ptr_current ;
 
-	ptr_current = &Frsky_current[i] ;
+	ptr_current = &Frsky_current[0] ;
 	FORCE_INDIRECT(ptr_current) ;
+	if ( i )
+	{
+		ptr_current += 1 ;
+	}
   // value * ratio / 100 gives 10ths of amps
   // add this every 10 ms, when over 3600, we have 1 mAh
   // so subtract 3600 and add 1 to mAh total
@@ -1085,14 +1097,16 @@ void check_frsky()
 	// 
   if (frskyUsrStreaming)
 	{
-		if ( ( Frsky_Amp_hour_prescale += FrskyHubData[FR_CURRENT] ) > 3600 )
+		uint16_t ah_temp ;
+		ah_temp = Frsky_Amp_hour_prescale + FrskyHubData[FR_CURRENT] ;
+		if ( ah_temp > 3600 )
 		{
-			Frsky_Amp_hour_prescale -= 3600 ;
+			ah_temp -= 3600 ;
 			int16_t *ptr_hub = &FrskyHubData[FR_AMP_MAH] ;
 			FORCE_INDIRECT(ptr_hub) ;
-
 			*ptr_hub += 1 ;
 		}
+		FrskyHubData[FR_CURRENT] = ah_temp ;
 	}
 }
 
