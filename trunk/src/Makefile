@@ -80,6 +80,8 @@ TEMPLATES = YES
 
 NOPOTSCROLL =
 
+PHASES =
+
 N2F = NO
 
 # BEEPER. Values = BUZZER or BUZZER_MOD  or SPEAKER
@@ -163,6 +165,11 @@ endif
 
 ifeq ($(NOPOTSCROLL),YES)
 	NOPOTSCROLL = YES
+	SC_MOD=NPS
+endif
+
+ifeq ($(PHASES),YES)
+	PH_MOD=PH
 endif
 
 #--------------------------------------------------------------------------------
@@ -269,8 +276,13 @@ ifeq ($(NOPOTSCROLL),YES)
  CPPDEFS += -DNOPOTSCROLL
 endif
 
+ifeq ($(PHASES),YES)
+ CPPDEFS += -DPHASES
+endif
+
 ifeq ($(CPU), 128)
  CPPDEFS += -DCPUM128
+ CPPDEFS += -DPHASES
 endif
 
 #---------------- Compiler Options C ----------------
@@ -568,7 +580,7 @@ stamp:
 	@echo "#define TIME_STR \"`date +%H:%M:%S`\"" >> stamp-er9x.h
 	@echo "#define SUB_VERS $(VER)-$(USER)" >> stamp-er9x.h
 	@echo "#define SVN_VERS \"er9x-r$(REV)\"" >> stamp-er9x.h
-	@echo "#define MOD_VERS \"$(EXT_MOD) $(HT_MOD) $(BEEPER_MOD) $(CPU_MOD) \"" >> stamp-er9x.h
+	@echo "#define MOD_VERS \"$(EXT_MOD) $(HT_MOD) $(BEEPER_MOD) $(CPU_MOD) $(SC_MOD) \"" >> stamp-er9x.h
 	@cat stamp-er9x.h
 
 font.lbm: font_6x1.xbm

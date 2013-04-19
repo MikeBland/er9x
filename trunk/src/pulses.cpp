@@ -304,7 +304,10 @@ normal:
 
 inline void _send_1(uint16_t v)
 {
-    *pulses2MHzptr++ = v;
+	uint8_t *ptr ;
+	ptr = pulses2MHzptr ;
+	*ptr++ = v ;
+  pulses2MHzptr = ptr ;
 }
 
 #define BITLEN_DSM2 (8*2) //125000 Baud
@@ -698,8 +701,8 @@ static void setupPulsesPXX()
         putPcmByte( chan_1 >> 4 ) ;  // High byte of channel
     }
     chan = PcmControl.PcmCrc ;		        // get the crc
-    putPcmByte( chan ) ; 			// Checksum lo
     putPcmByte( chan >> 8 ) ; // Checksum hi
+    putPcmByte( chan ) ; 			// Checksum lo
     putPcmHead(  ) ;      // sync byte
     putPcmFlush() ;
     OCR1C += 40000 ;		// 20mS on

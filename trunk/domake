@@ -15,7 +15,7 @@ echo "===== Making JETI Version ====="
 echo ">>> cleaning"
 make clean
 echo ">>>  making"
-make EXT=JETI
+make EXT=JETI PHASES=YES
 echo ">>>  moving"
 mv er9x.hex ../er9x-jeti.hex
 
@@ -24,7 +24,7 @@ echo "===== Making FRSKY Version ====="
 echo ">>> cleaning"
 make clean
 echo ">>>  making"
-make EXT=FRSKY TEMPLATES=NO
+make EXT=FRSKY TEMPLATES=NO PHASES=YES
 echo ">>>  moving"
 mv er9x.hex ../er9x-frsky.hex
 
@@ -35,7 +35,7 @@ echo "===== Making FRSKY - NOHELI/NOTEMPLATE Version ====="
 echo ">>> cleaning"
 make clean
 echo ">>>  making"
-make EXT=FRSKY TEMPLATES=NO HELI=NO
+make EXT=FRSKY TEMPLATES=NO HELI=NO PHASES=YES
 echo ">>>  moving"
 mv er9x.hex ../er9x-frsky-noht.hex
 
@@ -46,7 +46,7 @@ echo "===== Making ARDUPILOT Version ====="
 echo ">>> cleaning"
 make clean
 echo ">>>  making"
-make EXT=ARDUPILOT
+make EXT=ARDUPILOT PHASES=YES
 echo ">>>  moving"
 mv er9x.hex ../er9x-ardupilot.hex
 
@@ -55,7 +55,7 @@ echo "===== Making nmea Version ====="
 echo ">>> cleaning"
 make clean
 echo ">>>  making"
-make EXT=NMEA
+make EXT=NMEA PHASES=YES
 echo ">>>  moving"
 mv er9x.hex ../er9x-nmea.hex
 
@@ -65,7 +65,7 @@ echo "===== Making MAIN - NOHELI/NOTEMPLATE Version ====="
 echo ">>> cleaning"
 make clean
 echo ">>>  making"
-make TEMPLATES=NO HELI=NO
+make TEMPLATES=NO HELI=NO PHASES=YES
 echo ">>>  moving"
 mv er9x.hex ../er9x-noht.hex
 
@@ -74,7 +74,7 @@ echo "===== Making MAIN Version ====="
 echo ">>> cleaning"
 make clean
 echo ">>>  making"
-make
+make PHASES=YES
 echo ">>>  moving"
 mv er9x.hex ../er9x.hex
 
@@ -83,7 +83,7 @@ echo "===== Making 128 Version ====="
 echo ">>> cleaning"
 make clean
 echo ">>>  making"
-make CPU=128 EXT=FRSKY
+make CPU=128 EXT=FRSKY PHASES=YES
 echo ">>>  moving"
 mv er9x.hex ../er9x-128.hex
 

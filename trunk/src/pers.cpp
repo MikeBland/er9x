@@ -59,12 +59,15 @@ void generalDefault()
 uint16_t evalChkSum()
 {
   uint16_t sum=0;
-  for (uint8_t i=0; i<12;i++)
+	uint16_t *p ;
+	p = ( uint16_t *)g_eeGeneral.calibMid ;
+  for (int i=0; i<12;i++)
 	{
-    sum += g_eeGeneral.calibMid[i];
+    sum += *p++ ;
 	}
   return sum;
 }
+
 
 static bool eeLoadGeneral()
 {

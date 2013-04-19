@@ -1,10 +1,10 @@
 ===== Starting build =====
 Timestamp
-Fri Mar 15 23:05:20 UTC 2013
+Fri Apr 19 15:43:10 UTC 2013
 ==========================
 
 ===== Updating from SVN =====
-At revision 787.
+At revision 788.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -28,52 +28,52 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2 20120917 (prerelease)
-Copyright (C) 2012 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.8.0 20130306 (experimental)
+Copyright (C) 2013 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "15.03.2013"
-#define TIME_STR "23:05:27"
-#define SUB_VERS 277-Mike
-#define SVN_VERS "er9x-r788"
-#define MOD_VERS "JETI    "
+#define DATE_STR "19.04.2013"
+#define TIME_STR "15:43:19"
+#define SUB_VERS 548-Mike
+#define SVN_VERS "er9x-r789"
+#define MOD_VERS "JETI     "
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: pulses.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
 
 Compiling C++: audio.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
 
 Compiling C++: jeti.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/jeti.o.d jeti.cpp -o obj/jeti.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/jeti.o.d jeti.cpp -o obj/jeti.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/jeti.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
@@ -97,10 +97,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   56402 bytes (86.1% Full)
+Program:   57644 bytes (88.0% Full)
 (.text + .data + .bootloader)
 
-Data:       3264 bytes (79.7% Full)
+Data:       3186 bytes (77.8% Full)
 (.data + .bss + .noinit)
 
 
@@ -131,52 +131,52 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2 20120917 (prerelease)
-Copyright (C) 2012 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.8.0 20130306 (experimental)
+Copyright (C) 2013 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "15.03.2013"
-#define TIME_STR "23:05:43"
-#define SUB_VERS 278-Mike
-#define SVN_VERS "er9x-r788"
-#define MOD_VERS "FRSKY NT   "
+#define DATE_STR "19.04.2013"
+#define TIME_STR "15:43:39"
+#define SUB_VERS 549-Mike
+#define SVN_VERS "er9x-r789"
+#define MOD_VERS "FRSKY NT    "
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: pulses.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
 
 Compiling C++: audio.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
 
 Compiling C++: frsky.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
@@ -200,10 +200,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   61938 bytes (94.5% Full)
+Program:   63068 bytes (96.2% Full)
 (.text + .data + .bootloader)
 
-Data:       3433 bytes (83.8% Full)
+Data:       3354 bytes (81.9% Full)
 (.data + .bss + .noinit)
 
 
@@ -234,52 +234,52 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2 20120917 (prerelease)
-Copyright (C) 2012 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.8.0 20130306 (experimental)
+Copyright (C) 2013 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "15.03.2013"
-#define TIME_STR "23:06:00"
-#define SUB_VERS 279-Mike
-#define SVN_VERS "er9x-r788"
-#define MOD_VERS "FRSKY NHT   "
+#define DATE_STR "19.04.2013"
+#define TIME_STR "15:44:02"
+#define SUB_VERS 550-Mike
+#define SVN_VERS "er9x-r789"
+#define MOD_VERS "FRSKY NHT    "
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: pulses.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
 
 Compiling C++: audio.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
 
 Compiling C++: frsky.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
@@ -303,10 +303,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   61448 bytes (93.8% Full)
+Program:   62578 bytes (95.5% Full)
 (.text + .data + .bootloader)
 
-Data:       3431 bytes (83.8% Full)
+Data:       3353 bytes (81.9% Full)
 (.data + .bss + .noinit)
 
 
@@ -337,52 +337,52 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2 20120917 (prerelease)
-Copyright (C) 2012 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.8.0 20130306 (experimental)
+Copyright (C) 2013 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "15.03.2013"
-#define TIME_STR "23:06:17"
-#define SUB_VERS 280-Mike
-#define SVN_VERS "er9x-r788"
-#define MOD_VERS "ARDU    "
+#define DATE_STR "19.04.2013"
+#define TIME_STR "15:44:23"
+#define SUB_VERS 551-Mike
+#define SVN_VERS "er9x-r789"
+#define MOD_VERS "ARDU     "
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: pulses.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
 
 Compiling C++: audio.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
 
 Compiling C++: ardupilot.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/ardupilot.o.d ardupilot.cpp -o obj/ardupilot.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/ardupilot.o.d ardupilot.cpp -o obj/ardupilot.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/ardupilot.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
@@ -406,10 +406,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   58162 bytes (88.7% Full)
+Program:   59388 bytes (90.6% Full)
 (.text + .data + .bootloader)
 
-Data:       3262 bytes (79.6% Full)
+Data:       3184 bytes (77.7% Full)
 (.data + .bss + .noinit)
 
 
@@ -440,52 +440,52 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2 20120917 (prerelease)
-Copyright (C) 2012 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.8.0 20130306 (experimental)
+Copyright (C) 2013 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "15.03.2013"
-#define TIME_STR "23:06:34"
-#define SUB_VERS 281-Mike
-#define SVN_VERS "er9x-r788"
-#define MOD_VERS "NMEA    "
+#define DATE_STR "19.04.2013"
+#define TIME_STR "15:44:43"
+#define SUB_VERS 552-Mike
+#define SVN_VERS "er9x-r789"
+#define MOD_VERS "NMEA     "
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: pulses.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
 
 Compiling C++: audio.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
 
 Compiling C++: nmea.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/nmea.o.d nmea.cpp -o obj/nmea.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/nmea.o.d nmea.cpp -o obj/nmea.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/nmea.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
@@ -509,10 +509,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   62378 bytes (95.2% Full)
+Program:   63580 bytes (97.0% Full)
 (.text + .data + .bootloader)
 
-Data:       3419 bytes (83.5% Full)
+Data:       3341 bytes (81.6% Full)
 (.data + .bss + .noinit)
 
 
@@ -543,49 +543,49 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2 20120917 (prerelease)
-Copyright (C) 2012 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.8.0 20130306 (experimental)
+Copyright (C) 2013 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "15.03.2013"
-#define TIME_STR "23:06:51"
-#define SUB_VERS 282-Mike
-#define SVN_VERS "er9x-r788"
-#define MOD_VERS " NHT   "
+#define DATE_STR "19.04.2013"
+#define TIME_STR "15:45:02"
+#define SUB_VERS 553-Mike
+#define SVN_VERS "er9x-r789"
+#define MOD_VERS " NHT    "
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: pulses.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
 
 Compiling C++: audio.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_HELI -DNO_TEMPLATES -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
@@ -609,10 +609,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   53422 bytes (81.5% Full)
+Program:   54668 bytes (83.4% Full)
 (.text + .data + .bootloader)
 
-Data:       3198 bytes (78.1% Full)
+Data:       3122 bytes (76.2% Full)
 (.data + .bss + .noinit)
 
 
@@ -643,49 +643,49 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2 20120917 (prerelease)
-Copyright (C) 2012 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.8.0 20130306 (experimental)
+Copyright (C) 2013 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "15.03.2013"
-#define TIME_STR "23:07:07"
-#define SUB_VERS 283-Mike
-#define SVN_VERS "er9x-r788"
-#define MOD_VERS "    "
+#define DATE_STR "19.04.2013"
+#define TIME_STR "15:45:20"
+#define SUB_VERS 554-Mike
+#define SVN_VERS "er9x-r789"
+#define MOD_VERS "     "
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: pulses.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
 
 Compiling C++: audio.cpp
-avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
@@ -709,10 +709,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   55834 bytes (85.2% Full)
+Program:   57078 bytes (87.1% Full)
 (.text + .data + .bootloader)
 
-Data:       3228 bytes (78.8% Full)
+Data:       3150 bytes (76.9% Full)
 (.data + .bss + .noinit)
 
 
@@ -743,52 +743,52 @@ rm -rf .dep
 >>>  making
 
 -------- begin --------
-avr-gcc (GCC) 4.7.2 20120917 (prerelease)
-Copyright (C) 2012 Free Software Foundation, Inc.
+avr-gcc (GCC) 4.8.0 20130306 (experimental)
+Copyright (C) 2013 Free Software Foundation, Inc.
 This is free software; see the source for copying conditions.  There is NO
 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 
 Generate Version-stamp:
 //Automatically generated file - do not edit
-#define DATE_STR "15.03.2013"
-#define TIME_STR "23:07:25"
-#define SUB_VERS 284-Mike
-#define SVN_VERS "er9x-r788"
-#define MOD_VERS "FRSKY   128 "
+#define DATE_STR "19.04.2013"
+#define TIME_STR "15:45:38"
+#define SUB_VERS 555-Mike
+#define SVN_VERS "er9x-r789"
+#define MOD_VERS "FRSKY   128  "
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: pulses.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
 
 Compiling C++: audio.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
 
 Compiling C++: frsky.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DCPUM128 -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
 avr-gcc -mmcu=atmega128 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
@@ -812,10 +812,10 @@ AVR Memory Usage
 ----------------
 Device: atmega128
 
-Program:   64064 bytes (48.9% Full)
+Program:   65200 bytes (49.7% Full)
 (.text + .data + .bootloader)
 
-Data:       3589 bytes (87.6% Full)
+Data:       3381 bytes (82.5% Full)
 (.data + .bss + .noinit)
 
 

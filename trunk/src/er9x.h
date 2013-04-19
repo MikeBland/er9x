@@ -184,7 +184,6 @@ typedef uint32_t  prog_uint32_t __attribute__((__progmem__));//,deprecated("prog
 
 
 
-
 #define OUT_G_SIM_CTL  4 //1 : phone-jack=ppm_in
 #define INP_G_ID1      3
 #define INP_G_RF_POW   1
@@ -318,6 +317,7 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define SWP_LEG2	(SWP_ID1B)
 #define SWP_LEG3	(SWP_ID2B)
 
+#define NUM_STICKS	4
 
 #define SWASH_TYPE_STR   "\006---   ""120   ""120X  ""140   ""90    "
 
@@ -421,6 +421,8 @@ uint8_t IS_EXPO_THROTTLE( uint8_t x ) ;
 
 #define PXX_SEND_RXNUM     0x01
 #define PXX_SEND_FAILSAFE  0x02
+
+#define TRIM_EXTENDED_MAX	500
 
 extern uint8_t pxxFlag;
 extern uint8_t stickMoved;
@@ -653,10 +655,10 @@ uint8_t putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8
 uint16_t scale_telem_value( uint16_t val, uint8_t channel, uint8_t times2, uint8_t *p_att ) ;
 #endif
 
-extern inline int16_t calc100toRESX(int8_t x)
-{
-    return ((x*41)>>2) - x/64;
-}
+extern int16_t calc100toRESX(int8_t x) ;
+//{
+//    return ((x*41)>>2) - x/64;
+//}
 
 //uint8_t getMixerCount();
 bool reachMixerCountLimit();
@@ -701,6 +703,7 @@ void menuProcTrim(uint8_t event);
 void menuProcExpoOne(uint8_t event);
 void menuProcExpoAll(uint8_t event);
 void menuProcModel(uint8_t event);
+void menuModelPhases(uint8_t event) ;
 void menuProcHeli(uint8_t event);
 void menuProcDiagCalib(uint8_t event);
 void menuProcDiagAna(uint8_t event);
@@ -840,6 +843,15 @@ NOINLINE void resetTimer1(void) ;
 #define FORCE_INDIRECT(ptr)
 #endif
 
+#ifdef PHASES		
+extern uint8_t getFlightPhase( void ) ; 
+extern int16_t getRawTrimValue( uint8_t phase, uint8_t idx ) ;
+extern int16_t getTrimValue( uint8_t phase, uint8_t idx ) ;
+extern void setTrimValue(uint8_t phase, uint8_t idx, int16_t trim) ;
+#endif
+
+extern uint8_t StickScrollAllowed ;
+
 extern uint8_t telemItemValid( uint8_t index ) ;
 extern uint8_t Main_running ;
 extern const prog_char *AlertMessage ;
@@ -886,14 +898,32 @@ union t_xmem
 //	struct MixTab s_mixTab[MAX_MIXERS+NUM_XCHNOUT+1] ;	
 	struct t_calib Cal_data ;
 	char buf[sizeof(g_model.name)+5];
-#if defined(CPUM128)
-  uint8_t file_buffer[256];
-#else
-  uint8_t file_buffer[128];
-#endif
+//#if defined(CPUM128)
+//  uint8_t file_buffer[256];
+//#else
+//  uint8_t file_buffer[128];
+//#endif
 } ;
 
 extern union t_xmem Xmem ;
+
+extern uint8_t CurrentPhase ;
+
+struct t_rotary
+{
+	uint8_t RotPosition ;
+	uint8_t RotCount ;
+	uint8_t TrotCount ;		// TeZ version
+	uint8_t LastTrotCount ;		// TeZ version
+	uint8_t RotEncoder ;
+	int8_t LastRotaryValue ;
+	int8_t RotaryControl ;
+	uint8_t TezRotary ;
+	int8_t Rotary_diff ;
+} ;
+
+extern struct t_rotary Rotary ;
+
 
 #endif // er9x_h
 /*eof*/

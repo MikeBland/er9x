@@ -10,6 +10,16 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 19-Apr-2013  MPB
+4.8 compiler used
+Mix offset option
+Centre beep filtering
+Stick Scrolling
+Flight Phases
+Flash and RAM saving
+Mix popup improvements
+
+******************************************
 CHANGELOG: 15-Mar-2013  MPB
 Improve Altitude display, voice and alarms
 Add Radio cross trims.
