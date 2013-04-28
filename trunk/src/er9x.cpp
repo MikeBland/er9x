@@ -615,8 +615,9 @@ static void doSplash()
 //        for(uint8_t i=0; i<32; i++)
 //            getADC_filt(); // init ADC array
 //#endif
+#ifndef SIMU
         getADC_osmp();
-
+#endif
         uint16_t inacSum = stickMoveValue();
         //        for(uint8_t i=0; i<4; i++)
         //           inacSum += anaIn(i)/INAC_DEVISOR;
@@ -921,6 +922,10 @@ static void checkQuickSelect()
     }
 }
 #endif
+
+uint32_t OneSecTimer ;
+uint8_t StickScrollAllowed ;
+uint8_t StickScrollTimer ;
 
 MenuFuncP g_menuStack[5];
 
@@ -1620,10 +1625,13 @@ uint8_t calcStickScroll( uint8_t index )
 		value = 7 ;			
 	}
 	value = pgm_read_byte(rate+(uint8_t)value) ;
+	if ( value )
+	{
+		StickScrollTimer = STICK_SCROLL_TIMEOUT ;		// Seconds
+	}
 	return value | direction ;
 }
 
-uint8_t StickScrollAllowed ;
 
 void perMain()
 {
@@ -1643,6 +1651,15 @@ void perMain()
 
 		{
 			struct t_timerg *tptr ;
+
+			if ( ++OneSecTimer >= 100 )
+			{
+				OneSecTimer -= 100 ;
+				if ( StickScrollTimer )
+				{
+					StickScrollTimer -= 1 ;				
+				}
+			}
 
 			tptr = &TimerG ;
 			FORCE_INDIRECT(tptr) ;
@@ -1726,37 +1743,20 @@ void perMain()
 				protary->Rotary_diff = 0 ;
 			}
 		}
+		
 		if ( g_eeGeneral.stickScroll && StickScrollAllowed )
 		{
-			static uint8_t repeater ;
-			uint8_t direction ;
-			int8_t value ;
+		 	if ( StickScrollTimer )
+			{
+				static uint8_t repeater ;
+				uint8_t direction ;
+				int8_t value ;
 		
-			if ( repeater < 128 )
-			{
-				repeater += 1 ;
-			}
-			value = calcStickScroll( 2 ) ;
-			direction = value & 0x80 ;
-			value &= 0x7F ;
-			if ( value )
-			{
-				if ( repeater > value )
+				if ( repeater < 128 )
 				{
-					repeater = 0 ;
-					if ( direction )
-					{
-						putEvent(EVT_KEY_FIRST(KEY_UP));
-					}
-					else
-					{
-						putEvent(EVT_KEY_FIRST(KEY_DOWN));
-					}
+					repeater += 1 ;
 				}
-			}
-			else
-			{
-				value = calcStickScroll( 3 ) ;
+				value = calcStickScroll( 2 ) ;
 				direction = value & 0x80 ;
 				value &= 0x7F ;
 				if ( value )
@@ -1766,16 +1766,41 @@ void perMain()
 						repeater = 0 ;
 						if ( direction )
 						{
-							putEvent(EVT_KEY_FIRST(KEY_RIGHT));
+							putEvent(EVT_KEY_FIRST(KEY_UP));
 						}
 						else
 						{
-							putEvent(EVT_KEY_FIRST(KEY_LEFT));
+							putEvent(EVT_KEY_FIRST(KEY_DOWN));
+						}
+					}
+				}
+				else
+				{
+					value = calcStickScroll( 3 ) ;
+					direction = value & 0x80 ;
+					value &= 0x7F ;
+					if ( value )
+					{
+						if ( repeater > value )
+						{
+							repeater = 0 ;
+							if ( direction )
+							{
+								putEvent(EVT_KEY_FIRST(KEY_RIGHT));
+							}
+							else
+							{
+								putEvent(EVT_KEY_FIRST(KEY_LEFT));
+							}
 						}
 					}
 				}
 			}
 		}
+		else
+		{
+			StickScrollTimer = 0 ;		// Seconds
+		}	
 		StickScrollAllowed = 1 ;
 
 #if GVARS

@@ -810,6 +810,7 @@ extern int16_t convertTelemConstant( int8_t channel, int8_t value) ;
 extern uint16_t g_LightOffCounter;
 extern uint16_t inacCounter ;
 
+#define STICK_SCROLL_TIMEOUT		5
 
 #define sysFLAG_OLD_EEPROM (0x01)
 extern uint8_t sysFlags;
