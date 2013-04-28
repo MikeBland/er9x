@@ -209,18 +209,18 @@ PACK(typedef struct t_FrSkyChannelData {
     uint8_t   type:2;               // 0=volts, 1=raw, 2=volts*2, 3=Amps
 }) FrSkyChannelData;
 
-PACK(typedef struct t_FrSkyalarms
-{
-	uint8_t frskyAlarmType ;
-	uint8_t frskyAlarmLimit ;
-	uint8_t frskyAlarmSound ;
-}) FrSkyAlarmData;
+//PACK(typedef struct t_FrSkyalarms
+//{
+//	uint8_t frskyAlarmType ;
+//	uint8_t frskyAlarmLimit ;
+//	uint8_t frskyAlarmSound ;
+//}) FrSkyAlarmData;
 
 PACK(typedef struct t_FrSkyData {
     FrSkyChannelData channels[2];
 		uint8_t unused0 ;
-		uint8_t frskyAlarmLimit ;
-		uint8_t frskyAlarmSound ;
+		uint8_t frskyAlarmLimit ;		// For mAh
+		uint8_t frskyAlarmSound ;		// For mAh
 //		FrSkyAlarmData alarmData[4] ;
 }) FrSkyData;
 
@@ -230,7 +230,6 @@ PACK(typedef struct t_gvar {
 //	int8_t gvswitch ;
 }) GvarData ;
 
-// Following used for M128 ??
 PACK(typedef struct t_PhaseData {
 	// Trim store as -1001 to -1, trim value-501, 0-5 use trim of phase 0-5
   int16_t trim[4];     // -500..500 => trim value, 501 => use trim of phase 0, 502, 503, 504 => use trim of modes 1|2|3|4 instead
@@ -292,7 +291,8 @@ PACK(typedef struct t_ModelData {
     SafetySwData  safetySw[NUM_CHNOUT];
     FrSkyData frsky;
 		uint8_t numBlades ;
-		uint8_t unused1[8] ;
+		uint8_t frskyoffset[2] ;		// Offsets for A1 and A2
+		uint8_t unused1[6] ;
 		uint8_t CustomDisplayIndex[6] ;
 		GvarData gvars[MAX_GVARS] ;
 		PhaseData phaseData[MAX_MODES] ;

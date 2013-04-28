@@ -258,6 +258,7 @@ void killEvents(uint8_t event)
 volatile uint16_t g_tmr10ms;
 //volatile uint8_t g8_tmr10ms ;
 volatile uint8_t  g_blinkTmr10ms;
+extern uint8_t StickScrollTimer ;
 
 
 void per10ms()
@@ -277,6 +278,7 @@ void per10ms()
     keys[enuk].input(in & (1<<i),(EnumKeys)enuk);
     ++enuk;
   }
+
   const static  prog_uchar  APM crossTrim[]={
     1<<INP_D_TRM_LH_DWN,
     1<<INP_D_TRM_LH_UP,
@@ -295,9 +297,15 @@ void per10ms()
     keys[enuk].input(in & pgm_read_byte(crossTrim+i),(EnumKeys)enuk);
     ++enuk;
   }
-
-	keys[enuk].input( Rotary.RotEncoder & 0x20,(EnumKeys)enuk); // Rotary Enc. Switch
-
+	
+	uint8_t value = Rotary.RotEncoder & 0x20 ;
+	keys[enuk].input( value,(EnumKeys)enuk); // Rotary Enc. Switch
+	
+	value |= ~PINB & 0x7E ;
+	if ( value )
+	{
+		StickScrollTimer = STICK_SCROLL_TIMEOUT ;
+	}
 }
 
 

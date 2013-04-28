@@ -10,12 +10,20 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 28-Apr-2013  MPB
+Fix SLOW UP missing bug
+Fix default switches bug
+Fix voice timer minute bug
+Companion patches
+Stick scrolling times out if not used
+
+******************************************
 CHANGELOG: 19-Apr-2013  MPB
 4.8 compiler used
 Mix offset option
 Centre beep filtering
 Stick Scrolling
-Flight Phases
+Flight Modes
 Flash and RAM saving
 Mix popup improvements
 

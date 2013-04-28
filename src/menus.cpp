@@ -2299,7 +2299,7 @@ uint8_t PopupActive ;
 
 void menuProcMixOne(uint8_t event)
 {
-    SIMPLE_SUBMENU_NOTITLE(14);
+    SIMPLE_SUBMENU_NOTITLE(15);
     uint8_t x = TITLEP(s_currMixInsMode ? PSTR("INSERT MIX ") : PSTR("EDIT MIX "));
 
     MixData *md2 = mixaddress( s_currMixIdx ) ;
@@ -4195,63 +4195,32 @@ void menuProcSetup(uint8_t event)
 {
 
 #ifndef NOPOTSCROLL
-#define DEFAULT_COUNT_ITEMS 28
+	#ifdef FRSKY
+	#define DEFAULT_COUNT_ITEMS 31
+	#define SW_OFFSET			(DEFAULT_COUNT_ITEMS-9)
+	#else
+	#define DEFAULT_COUNT_ITEMS 30
+	#define SW_OFFSET			(DEFAULT_COUNT_ITEMS-8)
+	#endif
 #else
-#define DEFAULT_COUNT_ITEMS 27
+	#ifdef FRSKY
+	#define DEFAULT_COUNT_ITEMS 30
+	#define SW_OFFSET			(DEFAULT_COUNT_ITEMS-8)
+	#else
+	#define DEFAULT_COUNT_ITEMS 29
+	#define SW_OFFSET			(DEFAULT_COUNT_ITEMS-7)
+	#endif
 #endif
-#ifdef FRSKY
-    int8_t sw_offset = -8 ;
-    uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //26 is default
-		if (( g_eeGeneral.speakerMode & 1) == 0) sw_offset += 1 ;
-		switch ((g_eeGeneral.speakerMode & 1)){
-				//beeper
-//				case 0:
-//						break;
-				//piezo speaker
-			 	case 1:
-          vCountItems = DEFAULT_COUNT_ITEMS + 3;
-	 			break;
-			 	//pcmwav
-			 // case 2:
-       //                                         vCountItems = DEFAULT_COUNT_ITEMS + 2;
-				//		break;	  	
-		}		
-//		if(((g_eeGeneral.speakerMode & 1) == 1 /*|| g_eeGeneral.speakerMode == 2*/) && g_eeGeneral.frskyinternalalarm == 1){ // add in alert red/org/yel
-//				vCountItems = vCountItems + 3;
-//				sw_offset -= 3 ;
-//		}		
-		
-#else 
-    int8_t sw_offset = -7 ;
-                uint8_t vCountItems = DEFAULT_COUNT_ITEMS; //21 is default
-		switch ((g_eeGeneral.speakerMode & 1)){
-				//beeper
-//				case 0:
-//						break;
-				//piezo speaker
-			 	case 1:
-          vCountItems = DEFAULT_COUNT_ITEMS + 2;
-	 			break;
-			 	//pcmwav
-			 // case 2:
-       //                                         vCountItems = DEFAULT_COUNT_ITEMS + 1;
-				//		break;	  	
-		}
-#endif
-    sw_offset += vCountItems ;
 
 
-    //  SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, COUNT_ITEMS+1);
-    SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, vCountItems+1);
+    SIMPLE_MENU("RADIO SETUP", menuTabDiag, e_Setup, DEFAULT_COUNT_ITEMS+1);
     uint8_t sub    = mstate2.m_posVert;
     uint8_t subSub = g_posHorz;
 
     uint8_t t_pgOfs ;
     t_pgOfs = evalOffset(sub, 7);
 
-    //if(s_pgOfs==COUNT_ITEMS-7) s_pgOfs= sub<(COUNT_ITEMS-4) ? COUNT_ITEMS-8 : COUNT_ITEMS-6;
-//    if(s_pgOfs==vCountItems-7) s_pgOfs= sub<(vCountItems-4) ? vCountItems-8 : vCountItems-6;
-    if(t_pgOfs==vCountItems-7) t_pgOfs += sub<(vCountItems-4) ? -1 : 1 ;
+    if(t_pgOfs==DEFAULT_COUNT_ITEMS-7) t_pgOfs += sub<(DEFAULT_COUNT_ITEMS-4) ? -1 : 1 ;
     uint8_t y = 1*FH;
 
     switch(event){
@@ -4267,12 +4236,12 @@ void menuProcSetup(uint8_t event)
     case EVT_KEY_REPT(KEY_LEFT):
     case EVT_KEY_FIRST(KEY_LEFT):
         if(sub==1 && subSub>0 && s_editMode) g_posHorz--; //for owner name
-        if(sub==sw_offset && subSub>0) g_posHorz--;   //for Sw Position
+        if(sub==SW_OFFSET && subSub>0) g_posHorz--;   //for Sw Position
         break;
     case EVT_KEY_REPT(KEY_RIGHT):
     case EVT_KEY_FIRST(KEY_RIGHT):
         if(sub==1 && subSub<sizeof(g_model.name)-1 && s_editMode) g_posHorz++;
-        if(sub==sw_offset && subSub<7) g_posHorz++;
+        if(sub==SW_OFFSET && subSub<7) g_posHorz++;
         break;
     case EVT_KEY_REPT(KEY_UP):
     case EVT_KEY_FIRST(KEY_UP):
@@ -4331,7 +4300,6 @@ void menuProcSetup(uint8_t event)
   			uint8_t attr = 0 ;
         b = g_eeGeneral.speakerMode ;
         lcd_puts_Pleft( y,PSTR("Sound Mode"));
-        //lcd_putsnAtt(PARAM_OFS - FW - 4, y, PSTR("Beeper""PiSpkr""PcmWav")+6*b,6,(sub==subN ? INVERS:0));
         if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_GENVAR_0( b, 3); g_eeGeneral.speakerMode = b ; }
         lcd_putsAttIdx( 11*FW, y, PSTR("\012Beeper    ""PiSpkr    ""BeeprVoice""PiSpkVoice"),b,attr);
 
@@ -4355,12 +4323,10 @@ void menuProcSetup(uint8_t event)
     }subN++;
 
 
-if((g_eeGeneral.speakerMode & 1) == 1){
-	
     if(t_pgOfs<subN) {
   			uint8_t attr = LEFT ;
 			
-        lcd_puts_Pleft( y,PSTR("Speaker Pitch"));
+        lcd_puts_Pleft( y,PSTR(" Speaker Pitch"));
         if(sub==subN) {
 						attr = INVERS | LEFT ;
             CHECK_INCDEC_H_GENVAR( g_eeGeneral.speakerPitch, 1, 100);
@@ -4369,11 +4335,9 @@ if((g_eeGeneral.speakerMode & 1) == 1){
         if((y+=FH)>7*FH) return;
     }subN++;
 
-//}
-//if((g_eeGeneral.speakerMode & 1) == 1 /*|| g_eeGeneral.speakerMode == 2 */){
     if(t_pgOfs<subN) {
   			uint8_t attr = LEFT ;
-        lcd_puts_Pleft( y,PSTR("Haptic Strength"));
+        lcd_puts_Pleft( y,PSTR(" Haptic Strength"));
         if(sub==subN) {
 						attr = INVERS | LEFT ;
             CHECK_INCDEC_H_GENVAR_0( g_eeGeneral.hapticStrength, 5);
@@ -4381,7 +4345,6 @@ if((g_eeGeneral.speakerMode & 1) == 1){
         lcd_outdezAtt(PARAM_OFS,y,g_eeGeneral.hapticStrength,attr);
         if((y+=FH)>7*FH) return;
     }subN++;
-}
 
     if(t_pgOfs<subN) {
   			uint8_t attr = LEFT ;
@@ -4408,17 +4371,8 @@ if((g_eeGeneral.speakerMode & 1) == 1){
         lcd_puts_Pleft( y,PSTR("Inactivity alarm\023m"));
         if(sub==subN) { attr = INVERS ;CHECK_INCDEC_H_GENVAR( g_eeGeneral.inactivityTimer, -10, 110); } //0..120minutes
         lcd_outdezAtt(PARAM_OFS+2*FW-2, y, g_eeGeneral.inactivityTimer+10, attr);
-//        lcd_putc(lcd_lastPos, y, 'm');
         if((y+=FH)>7*FH) return;
     }subN++;
-
-//    if(t_pgOfs<subN) {
-//  			uint8_t attr = 0 ;
-//        lcd_puts_Pleft( y,PSTR("Filter ADC"));
-//        if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_GENVAR_0( g_eeGeneral.filterInput, 2); }
-//        lcd_putsAttIdx(PARAM_OFS, y, PSTR("\004SINGOSMPFILT"),g_eeGeneral.filterInput,attr);
-//        if((y+=FH)>7*FH) return;
-//    }subN++;
 
     if(t_pgOfs<subN) {
         g_eeGeneral.throttleReversed = onoffMenuItem_g( g_eeGeneral.throttleReversed, y, PSTR("Throttle reverse"), sub==subN) ;
@@ -4455,7 +4409,8 @@ if((g_eeGeneral.speakerMode & 1) == 1){
 
 		for ( uint8_t i = 0 ; i < 2 ; i += 1 )
 		{
-    if(t_pgOfs<subN) {
+	    if(t_pgOfs<subN)
+			{
 				uint8_t b ;
         lcd_puts_Pleft( y,( i == 0) ? PSTR("Light off after") : PSTR("Light on Stk Mv") );
 				b = ( i == 0 ) ? g_eeGeneral.lightAutoOff : g_eeGeneral.lightOnStickMove ;
@@ -4477,7 +4432,7 @@ if((g_eeGeneral.speakerMode & 1) == 1){
 					g_eeGeneral.lightOnStickMove = b ;
 				}
         if((y+=FH)>7*FH) return;
-    }subN++;
+  	  }subN++;
 			
 		}
 
@@ -4606,7 +4561,6 @@ if((g_eeGeneral.speakerMode & 1) == 1){
 //frsky alert mappings
 #ifdef FRSKY
 
-		if((g_eeGeneral.speakerMode & 1) == 1 /*|| g_eeGeneral.speakerMode == 2*/){
 						if(t_pgOfs<subN)
 						{
 					    uint8_t b = g_eeGeneral.frskyinternalalarm ;
@@ -4618,64 +4572,6 @@ if((g_eeGeneral.speakerMode & 1) == 1){
 								}
 				        if((y+=FH)>7*FH) return;
 				    }subN++;
-		}		    
-				    
-//    if(((g_eeGeneral.speakerMode & 1) == 1 /*|| g_eeGeneral.speakerMode == 2*/) && g_eeGeneral.frskyinternalalarm == 1){ 
-    
-
-					  
-						
-//						for ( uint8_t i = 0 ; i < 3 ; i += 1 )
-//					  {
-//					    uint8_t b ;
-					
-//					    b = g_eeGeneral.FRSkyYellow ;    // Done here to stop a compiler warning
-//					    if(t_pgOfs<subN)
-//							{
-								
-//								if ( i == 0 )
-//								{
-//					        lcd_puts_Pleft( y,PSTR("Alert [Yel]"));
-//								}
-//								else if ( i == 1 )
-//								{
-//					        b = g_eeGeneral.FRSkyOrange ;
-//					        lcd_puts_Pleft( y,PSTR("Alert [Org]"));
-//								}
-//								else if ( i == 2 )
-//								{
-//					        b = g_eeGeneral.FRSkyRed ;
-//					        lcd_puts_Pleft( y,PSTR("Alert [Red]"));
-//								}
-		
-					      
-//					      //audio menu
-//								lcd_putsAttIdx(PARAM_OFS - FW - 4, y, Str_Sounds,b,(sub==subN ? INVERS:0));
-						
-//					      if(sub==subN)
-//								{
-//									CHECK_INCDEC_H_GENVAR_0( b, 15);
-//									if ( i == 0 )
-//									{
-//							      g_eeGeneral.FRSkyYellow = b ;
-//									}
-//									else if ( i == 1 )
-//									{
-//							      g_eeGeneral.FRSkyOrange = b ;
-//									}
-//									else if ( i == 2 )
-//									{
-//							      g_eeGeneral.FRSkyRed = b ;
-//									}
-									
-//								   if (checkIncDec_Ret) {
-//											audio.event(b);
-//									 }
-//								}
-//								if((y+=FH)>7*FH) return;
-//					    }subN++;
-//					  }
-//		}			  
 #endif
 
     if(t_pgOfs<subN) {
@@ -4800,13 +4696,14 @@ void timer(uint8_t val)
                     g_LightOffCounter = FLASH_DURATION;
             }
 
-            if(g_eeGeneral.minuteBeep && (((g_model.tmrDir ? gtval-tval : tval)%60)==0)) //short beep every minute
+						div_t mins ;
+						mins = div( g_model.tmrDir ? gtval-tval : tval, 60 ) ;
+
+            if(g_eeGeneral.minuteBeep && ((mins.rem)==0)) //short beep every minute
             {
 								if ( g_eeGeneral.speakerMode & 2 )
 								{
-									uint8_t mins ;
-									mins = tval/60 ;
-									if ( mins ) {voice_numeric( mins, 0, V_MINUTES ) ;}
+									if ( mins.quot ) {voice_numeric( mins.quot, 0, V_MINUTES ) ;}
 								}
 								else
 								{
@@ -5676,8 +5573,11 @@ uint8_t  bpanaCenter = 0;
 struct t_output
 {
 	uint16_t sDelay[MAX_MIXERS] ;
+#ifndef SIMU	
 	__int24	 act   [MAX_MIXERS] ;
-//	int32_t  act   [MAX_MIXERS] ;
+#else
+	int32_t  act   [MAX_MIXERS] ;
+#endif
 	uint8_t  swOn  [MAX_MIXERS] ;
 #if GVARS
 	int16_t  anas [NUM_XCHNRAW+1+MAX_GVARS] ;		// To allow for 3POS

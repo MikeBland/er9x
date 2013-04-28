@@ -581,7 +581,7 @@ stamp:
 	@echo "#define SUB_VERS $(VER)-$(USER)" >> stamp-er9x.h
 	@echo "#define SVN_VERS \"er9x-r$(REV)\"" >> stamp-er9x.h
 	@echo "#define MOD_VERS \"$(EXT_MOD) $(HT_MOD) $(BEEPER_MOD) $(CPU_MOD) $(SC_MOD) \"" >> stamp-er9x.h
-	@cat stamp-er9x.h
+#	@cat stamp-er9x.h
 
 font.lbm: font_6x1.xbm
 	@echo
