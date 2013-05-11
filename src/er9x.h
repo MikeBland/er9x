@@ -799,7 +799,7 @@ extern const prog_int8_t APM TelemIndex[] ;
 extern int16_t convertTelemConstant( int8_t channel, int8_t value) ;
 
 #ifdef FRSKY
-#define NUM_TELEM_ITEMS 32
+#define NUM_TELEM_ITEMS 33
 #else
 #define NUM_TELEM_ITEMS 10
 #endif
@@ -810,7 +810,7 @@ extern int16_t convertTelemConstant( int8_t channel, int8_t value) ;
 extern uint16_t g_LightOffCounter;
 extern uint16_t inacCounter ;
 
-#define STICK_SCROLL_TIMEOUT		5
+#define STICK_SCROLL_TIMEOUT		9
 
 #define sysFLAG_OLD_EEPROM (0x01)
 extern uint8_t sysFlags;

@@ -296,6 +296,8 @@ PACK(typedef struct t_ModelData {
 		uint8_t CustomDisplayIndex[6] ;
 		GvarData gvars[MAX_GVARS] ;
 		PhaseData phaseData[MAX_MODES] ;
+//		uint8_t   curentSource ;
+//		uint8_t   altSource ;
 }) ModelData;
 
 #define TOTAL_EEPROM_USAGE (sizeof(ModelData)*MAX_MODELS + sizeof(EEGeneral))

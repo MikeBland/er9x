@@ -175,8 +175,8 @@ DataID Meaning       Unit   Range   Note
 #define FRSKY_USR_TIMEOUT10ms 	250
 #else
 // .20 seconds
-#define FRSKY_TIMEOUT10ms 			20
-#define FRSKY_USR_TIMEOUT10ms		60
+#define FRSKY_TIMEOUT10ms 			35
+#define FRSKY_USR_TIMEOUT10ms		90
 #endif
 
 enum AlarmLevel {

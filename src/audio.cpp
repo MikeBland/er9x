@@ -344,6 +344,8 @@ void voice_numeric( int16_t value, uint8_t num_decimals, uint8_t units_index )
 	qr = div( value, 100 ) ;
 	if ( qr.quot )
 	{
+		// At least 100
+		num_decimals = 0 ;		// Cancel decimals
 		if ( qr.quot > 9 )		// Thousands
 		{
 			flag = 1 ;
