@@ -1602,7 +1602,8 @@ void pollRotary()
 	}
 }
 
-const static prog_uint8_t APM rate[8] = { 0, 75, 40, 25, 10, 5, 2, 1 } ;
+//const static prog_uint8_t APM rate[8] = { 0, 75, 40, 25, 10, 5, 2, 1 } ;
+const static prog_uint8_t APM rate[8] = { 0, 0, 100, 40, 16, 7, 3, 1 } ;
 
 uint8_t calcStickScroll( uint8_t index )
 {
@@ -1750,7 +1751,7 @@ void perMain()
 			{
 				static uint8_t repeater ;
 				uint8_t direction ;
-				int8_t value ;
+				uint8_t value ;
 		
 				if ( repeater < 128 )
 				{
@@ -1764,13 +1765,16 @@ void perMain()
 					if ( repeater > value )
 					{
 						repeater = 0 ;
-						if ( direction )
+						if ( evt == 0 )
 						{
-							putEvent(EVT_KEY_FIRST(KEY_UP));
-						}
-						else
-						{
-							putEvent(EVT_KEY_FIRST(KEY_DOWN));
+							if ( direction )
+							{
+								evt = EVT_KEY_FIRST(KEY_UP) ;
+							}
+							else
+							{
+								evt = EVT_KEY_FIRST(KEY_DOWN) ;
+							}
 						}
 					}
 				}
@@ -1784,13 +1788,16 @@ void perMain()
 						if ( repeater > value )
 						{
 							repeater = 0 ;
-							if ( direction )
+							if ( evt == 0 )
 							{
-								putEvent(EVT_KEY_FIRST(KEY_RIGHT));
-							}
-							else
-							{
-								putEvent(EVT_KEY_FIRST(KEY_LEFT));
+								if ( direction )
+								{
+									evt = EVT_KEY_FIRST(KEY_RIGHT) ;
+								}
+								else
+								{
+									evt = EVT_KEY_FIRST(KEY_LEFT) ;
+								}
 							}
 						}
 					}

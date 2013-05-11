@@ -272,11 +272,12 @@ void per10ms()
 	g_blinkTmr10ms = tmr ;
   uint8_t enuk = KEY_MENU;
   uint8_t    in = ~PINB;
-  for(int i=1; i<7; i++)
+  for(uint8_t i=1; i<7; i++)
   {
     //INP_B_KEY_MEN 1  .. INP_B_KEY_LFT 6
-    keys[enuk].input(in & (1<<i),(EnumKeys)enuk);
+    keys[enuk].input(in & 2,(EnumKeys)enuk);
     ++enuk;
+		in >>= 1 ;
   }
 
   const static  prog_uchar  APM crossTrim[]={

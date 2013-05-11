@@ -302,31 +302,35 @@ normal:
 
  */
 
-inline void _send_1(uint16_t v)
-{
-	uint8_t *ptr ;
-	ptr = pulses2MHzptr ;
-	*ptr++ = v ;
-  pulses2MHzptr = ptr ;
-}
+//static inline void _send_1(uint16_t v)
+//{
+//	uint8_t *ptr ;
+//	ptr = pulses2MHzptr ;
+//	*ptr++ = v ;
+//  pulses2MHzptr = ptr ;
+//}
 
 #define BITLEN_DSM2 (8*2) //125000 Baud
 void sendByteDsm2(uint8_t b) //max 10changes 0 10 10 10 10 1
 {
     bool    lev = 0;
     uint8_t len = BITLEN_DSM2; //max val: 9*16 < 256
+		uint8_t *ptr ;
+
+		ptr = pulses2MHzptr ;
     for( uint8_t i=0; i<=8; i++){ //8Bits + Stop=1
         bool nlev = b & 1; //lsb first
         if(lev == nlev){
             len += BITLEN_DSM2;
         }else{
-            _send_1(len -1);
+						*ptr++ = len -1 ;
             len  = BITLEN_DSM2;
             lev  = nlev;
         }
         b = (b>>1) | 0x80; //shift in stop bit
     }
-    _send_1(len+BITLEN_DSM2-1); // 2 stop bits
+    *ptr++ = len+BITLEN_DSM2-1 ; // 2 stop bits
+	  pulses2MHzptr = ptr ;
 }
 
 
@@ -376,9 +380,15 @@ void setupPulsesDsm2(uint8_t chns)
     {
     	sendByteDsm2(dsmDat[counter]);
     }
-    pulses2MHzptr-=1 ; //remove last stopbits and
-    _send_1( 255 ) ;	 //prolong them
-    _send_1(0);        //end of pulse stream
+		uint8_t *ptr ;
+
+		ptr = pulses2MHzptr ;
+
+//    pulses2MHzptr-=1 ; //remove last stopbits and
+//    _send_1( 255 ) ;	 //prolong them
+		*ptr = 0 ;
+		*(ptr-1) = 255 ;
+//    _send_1(0);        //end of pulse stream
     Dsm2_pulsePtr = pulses2MHz.pbyte ;
 }
 

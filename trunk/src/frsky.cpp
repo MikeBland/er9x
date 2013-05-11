@@ -171,7 +171,15 @@ void store_hub_data( uint8_t index, uint16_t value )
 	}
 	if ( index == FR_ALT_BAROd )
 	{
-		AltitudeDecimals = 1 ;
+		AltitudeDecimals |= 1 ;
+		if ( value > 9 )
+		{
+			AltitudeDecimals |= 2 ;
+		}
+		if ( AltitudeDecimals & 2 )
+		{
+			value /= 10 ;			
+		}
 		FrskyHubData[FR_ALT_BARO] = WholeAltitude + ( (WholeAltitude > 0) ? value : -value ) ;
 	}
 
@@ -309,9 +317,9 @@ void frsky_proc_user_byte( uint8_t byte )
 			}		 
 		}
 	}
-	else if (g_model.FrSkyUsrProto == 1)  // WS How High
+	else // if (g_model.FrSkyUsrProto == 1)  // WS How High
 	{
-    if ( frskyUsrStreaming < (FRSKY_TIMEOUT10ms*3 - 10))  // At least 100mS passed since last data received
+    if ( frskyUsrStreaming < (FRSKY_USR_TIMEOUT10ms - 10))  // At least 100mS passed since last data received
 		{
 			Frsky_user_lobyte = byte ;
 		}
@@ -319,7 +327,7 @@ void frsky_proc_user_byte( uint8_t byte )
 		{
 			int16_t value ;
 			value = ( byte << 8 ) + Frsky_user_lobyte ;
-			store_hub_data( FR_ALT_BARO, value * 10 ) ;	 // Store altitude info
+			store_hub_data( FR_ALT_BARO, value ) ;	 // Store altitude info
 #if defined(VARIO)
 			evalVario( value, 0 ) ;
 #endif
@@ -395,9 +403,9 @@ void processFrskyPacket(uint8_t *packet)
 			while ( j < i )
 			{
 				frsky_proc_user_byte( packet[j] ) ;
+      	frskyUsrStreaming = FRSKY_USR_TIMEOUT10ms ; // reset counter only if valid frsky packets are being detected
 				j += 1 ;
 			}
-      frskyUsrStreaming = FRSKY_USR_TIMEOUT10ms ; // reset counter only if valid frsky packets are being detected
     }	
     break;
 
@@ -1039,19 +1047,22 @@ void resetTelemetry()
 void current_check( uint8_t i )
 {
 	Frsky_current_info *ptr_current ;
+	uint8_t cvalue ;
 
 	ptr_current = &Frsky_current[0] ;
 	FORCE_INDIRECT(ptr_current) ;
+	cvalue = frskyTelemetry[0].value ;
 	if ( i )
 	{
 		ptr_current += 1 ;
+		cvalue = frskyTelemetry[1].value ;
 	}
   // value * ratio / 100 gives 10ths of amps
   // add this every 10 ms, when over 3600, we have 1 mAh
   // so subtract 3600 and add 1 to mAh total
   // alternatively, add up the raw value, and use 3600 * 100 / ratio for 1mAh
 			
-	if ( (  ptr_current->Amp_hour_prescale += frskyTelemetry[i].value ) > ptr_current->Amp_hour_boundary )
+	if ( (  ptr_current->Amp_hour_prescale += cvalue ) > ptr_current->Amp_hour_boundary )
 	{
 		 ptr_current->Amp_hour_prescale -= ptr_current->Amp_hour_boundary ;
 		int16_t *ptr_hub = &FrskyHubData[FR_A1_MAH+i] ;
@@ -1092,8 +1103,8 @@ void check_frsky()
 			current_check( 1 ) ;
 	}
 
-	// FrSky Current sensor (in amps)
-	// add this every 10 ms, when over 360, we have 1 mAh
+	// FrSky Current sensor (in amps, 1dp)
+	// add this every 10 ms, when over 3600, we have 1 mAh
 	// 
   if (frskyUsrStreaming)
 	{
@@ -1106,7 +1117,7 @@ void check_frsky()
 			FORCE_INDIRECT(ptr_hub) ;
 			*ptr_hub += 1 ;
 		}
-		FrskyHubData[FR_CURRENT] = ah_temp ;
+		Frsky_Amp_hour_prescale = ah_temp ;
 	}
 }
 

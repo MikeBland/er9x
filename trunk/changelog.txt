@@ -10,6 +10,12 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 11-May-2013  MPB
+Fix WSHH problems
+Add watts for FAS-40/100
+Stick scroll tweaking
+
+******************************************
 CHANGELOG: 28-Apr-2013  MPB
 Fix SLOW UP missing bug
 Fix default switches bug
