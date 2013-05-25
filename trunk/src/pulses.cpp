@@ -76,7 +76,8 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
     //    channel += 1 ;
     //  }
     //  PulseTotal += (OCR1A  = *pulsePtr++);
-    OCR1A  = *pulsePtr++;
+    OCR1A  = *pulsePtr ;
+		pulsePtr += 1 ;
     
 		{
 			struct t_latency *ptrLat = &g_latency ;
@@ -398,7 +399,8 @@ ISR(TIMER1_CAPT_vect) //2MHz pulse generation
     //      static uint8_t  pulsePol;
     uint8_t x ;
     PORTB ^=  (1<<OUT_B_PPM);
-    x = *Dsm2_pulsePtr++;      // Byte size
+    x = *Dsm2_pulsePtr;      // Byte size
+    Dsm2_pulsePtr += 1 ;
     ICR1 = x ;
     if ( x > 200 )
     {
@@ -670,6 +672,12 @@ void putPcmHead()
     putPcmPart( 0xC0 ) ;
 }
 
+uint16_t scaleForPXX( uint8_t i )
+{
+	return g_chans512[i] *3 / 4 + 2250 ;	
+}
+
+
 //void setUpPulsesPCM()
 static void setupPulsesPXX()
 {
@@ -696,8 +704,8 @@ static void setupPulsesPXX()
     pxxFlag = 0;          // reset flag after send
     for ( i = 0 ; i < 8 ; i += 2 )		// First 8 channels only
     {																	// Next 8 channels would have 2048 added
-        chan = g_chans512[i] *3 / 4 + 2250 ;
-        chan_1 = g_chans512[i+1] *3 / 4 + 2250 ;
+        chan = scaleForPXX(i) ;
+        chan_1 = scaleForPXX(i+1) ;
 //        if ( chan > 2047 )
 //        {
 //            chan = 2047 ;

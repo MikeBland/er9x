@@ -131,7 +131,7 @@ void Key::input(bool val, EnumKeys enuk)
       //fallthrough
     case KSTATE_START:
       putEvent(EVT_KEY_FIRST(enuk));
-      inacCounter = 0;
+      Inactivity.inacCounter = 0;
 //      m_dblcnt++;
 #ifdef KSTATE_RPTDELAY
       m_state   = KSTATE_RPTDELAY;
@@ -272,6 +272,45 @@ void per10ms()
 	g_blinkTmr10ms = tmr ;
   uint8_t enuk = KEY_MENU;
   uint8_t    in = ~PINB;
+	
+	static uint8_t current ;
+	uint8_t dir_keys ;
+	uint8_t lcurrent ;
+
+	dir_keys = in & 0x78 ;		// Mask to direction keys
+	if ( ( lcurrent = current ) )
+	{ // Something already pressed
+		if ( ( lcurrent & dir_keys ) == 0 )
+		{
+			lcurrent = 0 ;	// No longer pressed
+		}
+		else
+		{
+			in &= lcurrent | 0x06 ;	// current or MENU or EXIT allowed
+		}
+	}
+	if ( lcurrent == 0 )
+	{ // look for a key
+		if ( dir_keys & 0x20 )	// right
+		{
+			lcurrent = 0x60 ;		// Allow L and R for 9X
+		}
+		else if ( dir_keys & 0x40 )	// left
+		{
+			lcurrent = 0x60 ;		// Allow L and R for 9X
+		}
+		else if ( dir_keys & 0x08 )	// down
+		{
+			lcurrent = 0x08 ;
+		}
+		else if ( dir_keys & 0x10 )	// up
+		{
+			lcurrent = 0x10 ;
+		}
+		in &= lcurrent | 0x06 ;	// current or MENU or EXIT allowed
+	}
+	current = lcurrent ;
+
   for(uint8_t i=1; i<7; i++)
   {
     //INP_B_KEY_MEN 1  .. INP_B_KEY_LFT 6

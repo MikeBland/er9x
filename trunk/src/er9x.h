@@ -808,7 +808,15 @@ extern int16_t convertTelemConstant( int8_t channel, int8_t value) ;
 
 //extern uint8_t  beepAgain;
 extern uint16_t g_LightOffCounter;
-extern uint16_t inacCounter ;
+
+struct t_inactivity
+{
+	uint8_t inacPrescale ;
+	uint16_t inacCounter ;
+	uint16_t inacSum ;
+} ;
+ 
+extern struct t_inactivity Inactivity ;
 
 #define STICK_SCROLL_TIMEOUT		9
 
