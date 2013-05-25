@@ -10,6 +10,13 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 25-May-2013  MPB
+Save flash in LCD initialise
+Fix Watts overflow above 655 Watts
+Fix Modelname edit
+Direction button filtering
+
+******************************************
 CHANGELOG: 11-May-2013  MPB
 Fix WSHH problems
 Add watts for FAS-40/100
