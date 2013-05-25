@@ -398,7 +398,7 @@ int16_t get_telemetry_value( int8_t channel )
 #ifdef FRSKY
   if ( channel == FR_WATT )
 	{
-		return FrskyHubData[FR_VOLTS] * FrskyHubData[FR_CURRENT] / 100 ;
+		return (FrskyHubData[FR_VOLTS]>>1) * (FrskyHubData[FR_CURRENT]>>1) / 25 ;
 	}	 
 #endif
 	if ( channel < -3 )	// A GVAR
@@ -3341,8 +3341,8 @@ void menuProcModel(uint8_t event)
 
 		if(sub==subN)
 		{
-			lcd_rect(10*FW-2, y-1, 10*FW+4, 9 ) ;
-			lcd_char_inverse( (10+subSub)*FW, y, 1*FW, s_editMode ) ;
+			lcd_rect(11*FW-2, y-1, 10*FW+4, 9 ) ;
+			lcd_char_inverse( (11+subSub)*FW, y, 1*FW, s_editMode ) ;
 	    
 			if(s_editMode)
 			{
@@ -4786,27 +4786,44 @@ void trace()   // called in perOut - once envery 0.01sec
         }
     }
 
-    static uint16_t s_time;
 
 #if THROTTLE_TRACE
-    static uint16_t s_cnt;
-    static uint16_t s_sum;
+	struct t_trace
+	{
+    uint16_t s_cnt ;
+    uint16_t s_sum ;		
+    uint16_t s_time ;
+	} ;
+		static struct t_trace traceVal ;
+		struct t_trace *tracePtr = &traceVal ;
+		FORCE_INDIRECT(tracePtr) ;
+
 //    static uint8_t test = 1;
-    s_cnt++;
-    s_sum+=val;
+    tracePtr->s_cnt++;
+    tracePtr->s_sum+=val;
+#else
+    static uint16_t s_time;
 #endif
 		uint16_t t10ms ;
 		t10ms = get_tmr10ms() ;
+#if THROTTLE_TRACE
+    if(( t10ms-tracePtr->s_time)<1000) //10 sec
+#else
     if(( t10ms-s_time)<1000) //10 sec
+#endif
         return;
+#if THROTTLE_TRACE
+    tracePtr->s_time= t10ms ;
+#else
     s_time= t10ms ;
+#endif
  
     if ((g_model.protocol==PROTO_DSM2)&&getSwitch(MAX_DRSWITCH-1,0,0) ) audioDefevent(AU_TADA);   //DSM2 bind mode warning
 
 #if THROTTLE_TRACE
-    val   = s_sum/s_cnt;
-    s_sum = 0;
-    s_cnt = 0;
+    val   = tracePtr->s_sum/tracePtr->s_cnt;
+    tracePtr->s_sum = 0;
+    tracePtr->s_cnt = 0;
 
     if ( s_traceCnt <= MAXTRACE )
 		{
@@ -5594,9 +5611,9 @@ int16_t intpol(int16_t x, uint8_t idx) // -100, -75, -50, -25, 0 ,25 ,50, 75, 10
 // It's also easier to initialize them here.
 int32_t  chans[NUM_CHNOUT] = {0};
 //__int24  chans[NUM_CHNOUT] = {0};
-uint8_t inacPrescale ;
-uint16_t inacCounter = 0;
-uint16_t inacSum = 0;
+
+struct t_inactivity Inactivity = {0} ;
+
 uint8_t  bpanaCenter = 0;
 struct t_output
 {
@@ -5624,13 +5641,17 @@ void perOut(int16_t *chanOut, uint8_t att)
     uint8_t  anaCenter = 0;
     uint16_t d = 0;
 
-    if(tick10ms) {
+    if(tick10ms)
+		{
+			struct t_inactivity *PtrInactivity = &Inactivity ;
+			FORCE_INDIRECT(PtrInactivity) ;
+
         if(s_noHi) s_noHi--;
         uint16_t tsum = stickMoveValue() ;
-        if (tsum != inacSum)
+        if (tsum != PtrInactivity->inacSum)
 				{
-          inacSum = tsum;
-    			inacCounter = 0;
+          PtrInactivity->inacSum = tsum;
+    			PtrInactivity->inacCounter = 0;
           stickMoved = 1;  // reset in perMain
         }
         else
@@ -5638,12 +5659,12 @@ void perOut(int16_t *chanOut, uint8_t att)
 					uint8_t timer = g_eeGeneral.inactivityTimer + 10 ;
 					if( ( timer) && (g_vbat100mV>49))
   	      {
-            if (++inacPrescale > 15 )
+            if (++PtrInactivity->inacPrescale > 15 )
             {
-              inacCounter++;
-              inacPrescale = 0 ;
-      	      if(inacCounter>(uint16_t)((timer)*(100*60/16)))
-                if((inacCounter&0x1F)==1) {
+              PtrInactivity->inacCounter++;
+              PtrInactivity->inacPrescale = 0 ;
+      	      if(PtrInactivity->inacCounter>(uint16_t)((timer)*(100*60/16)))
+                if((PtrInactivity->inacCounter&0x1F)==1) {
 										putVoiceQueueLong( 0xFFF6 ) ;		// Nearly full volume
                     audioVoiceDefevent( AU_INACTIVITY, V_INACTIVE ) ;
 										setVolume() ;										// Back to required volume

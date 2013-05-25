@@ -27,10 +27,14 @@
 
 
 # MCU name
+ifeq ($(CPU), 2561)
+MCU = atmega2561
+else
 ifeq ($(CPU), 128)
 MCU = atmega128
 else
 MCU = atmega64
+endif
 endif
 
 # Processor frequency.
@@ -122,6 +126,10 @@ BEEPER = BUZZER
 #	possible values for BUZZER are
 #	BZM	BUZZER = BUZZER_MOD
 #	SPK	BUZZER = SPEAKER
+
+ifeq ($(CPU), 2561)
+	CPU_MOD = 2561
+endif
 
 ifeq ($(CPU), 128)
 	CPU_MOD = 128
@@ -277,6 +285,11 @@ ifeq ($(NOPOTSCROLL),YES)
 endif
 
 ifeq ($(PHASES),YES)
+ CPPDEFS += -DPHASES
+endif
+
+ifeq ($(CPU), 2561)
+ CPPDEFS += -DCPUM128
  CPPDEFS += -DPHASES
 endif
 
