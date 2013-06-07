@@ -10,6 +10,14 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 07-Jun-2013  MPB
+Change curve editing
+Higher resolution switch timers
+Change expo/dual rate editing
+Fix late offset bug
+Flash savings
+
+******************************************
 CHANGELOG: 25-May-2013  MPB
 Save flash in LCD initialise
 Fix Watts overflow above 655 Watts

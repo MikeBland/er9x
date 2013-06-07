@@ -16,6 +16,7 @@
 
 #include "er9x.h"
 #include <stdlib.h>
+#include "en.h"
 
 // Next two lines swapped as new complier/linker reverses them in memory!
 const
@@ -73,10 +74,12 @@ audioQueue  audio;
 
 uint8_t sysFlags = 0;
 
-struct t_alarmControl AlarmControl = { 100, 0, 0, 10, 2 } ;
+struct t_alarmControl AlarmControl = { 100, 0, 10, 2 } ;
 
-int8_t  CsTimer[NUM_CSW] ;
+int16_t  CsTimer[NUM_CSW] ;
 
+const prog_char APM Str_Alert[] = STR_ALERT ;
+const prog_char APM Str_Switches[] = SWITCHES_STR ;
 
 #define BACKLIGHT_ON    (Voice.Backlight = 1)
 #define BACKLIGHT_OFF   (Voice.Backlight = 0)
@@ -163,14 +166,12 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
         lcd_putsnAtt(x,y,PSTR("----"),4,att);
     else if(idx<=4)
         lcd_putsnAtt(x,y,&modi12x3[(pgm_read_byte(modn12x3+g_eeGeneral.stickMode*4+(idx-1))-1)*4],4,att);
-//        lcd_putsnAtt(x,y,modi12x3+g_eeGeneral.stickMode*16+4*(idx-1),4,att);
     else if(idx<=chanLimit)
 #if GVARS
         lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POSGV1 GV2 GV3 GV4 GV5 GV6 GV7 "),(idx-5),att);
 #else
         lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POS"),(idx-5),att);
 #endif
-//        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POS"),(idx-5),att);
 #ifdef FRSKY
     else
         lcd_putsAttIdx(x,y,Str_telemItems,(idx-NUM_XCHNRAW),att);
@@ -220,13 +221,8 @@ void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
 		}
 		z -= 1 ;
 		z *= 3 ;
-    lcd_putsnAtt(x+FW,y,get_switches_string()+(uint8_t)z,3,att);
+    lcd_putsnAtt(x+FW,y,Str_Switches+(uint8_t)z,3,att);
 }
-
-const prog_char *get_switches_string()
-{
-    return PSTR(SWITCHES_STR)	;
-}	
 
 void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t type )
 { // Valid values of type are 0, 1 or 2 only
@@ -656,14 +652,11 @@ static void checkMem()
 void alertMessages( const prog_char * s, const prog_char * t )
 {
     lcd_clear();
-    lcd_putsAtt(64-5*FW,0*FH,PSTR("ALERT"),DBLSIZE);
+    lcd_putsAtt(64-5*FW,0*FH,Str_Alert,DBLSIZE);
     lcd_puts_Pleft(4*FH,s);
     lcd_puts_Pleft(5*FH,t);
     lcd_puts_Pleft(6*FH,  PSTR("Press any key to skip") ) ;
-    refreshDiplay();
 		lcdSetContrast() ;
-
-    clearKeyEvents();
 }
 
 
@@ -694,6 +687,8 @@ static void checkTHR()
 
     // first - display warning
     alertMessages( PSTR("Throttle not idle"), PSTR("Reset throttle") ) ;
+    refreshDiplay();
+    clearKeyEvents();
 
     //loop until all switches are reset
     while (1)
@@ -732,7 +727,7 @@ static void checkWarnings()
 
 void putWarnSwitch( uint8_t x, uint8_t idx )
 {
-  lcd_putsnAtt( x, 2*FH, get_switches_string() + idx, 3, 0) ;
+  lcd_putsnAtt( x, 2*FH, Str_Switches + idx, 3, 0) ;
 }
 
 static void checkSwitches()
@@ -785,6 +780,7 @@ static void checkSwitches()
 
 #endif
 
+	uint8_t first = 1 ;
     //loop until all switches are reset
     while (1)
     {
@@ -796,7 +792,6 @@ static void checkSwitches()
             i |= t;
         }
 //        alertMessages( PSTR("Switches Warning"), PSTR("Please Reset Switches") ) ;
-
 
         //show the difference between i and switch?
         //show just the offending switches.
@@ -862,9 +857,13 @@ static void checkSwitches()
 				lcd_putc( 0, 8, q ) ;
 
 #endif
-
         refreshDiplay();
 
+				if ( first )
+				{
+    			clearKeyEvents();
+					first = 0 ;
+				}
 
         if((i==warningStates) || (keyDown())) // check state against settings
         {
@@ -923,7 +922,6 @@ static void checkQuickSelect()
 }
 #endif
 
-uint32_t OneSecTimer ;
 uint8_t StickScrollAllowed ;
 uint8_t StickScrollTimer ;
 
@@ -944,7 +942,7 @@ void almess( const prog_char * s, uint8_t type )
 	if ( type == ALERT_TYPE)
 	{
     lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
-		h = PSTR("ALERT") ;
+		h = Str_Alert ;
 	}
 	else
 	{
@@ -1615,7 +1613,8 @@ uint8_t calcStickScroll( uint8_t index )
 		index ^= 3 ;
 	}
 	
-	value = calibratedStick[index] / 128 ;
+	value = (calibratedStick[index] * 2) >> 8 ; // same as / 128
+
 	direction = value > 0 ? 0x80 : 0 ;
 	if ( value < 0 )
 	{
@@ -1636,11 +1635,11 @@ uint8_t calcStickScroll( uint8_t index )
 
 void perMain()
 {
-    static uint16_t lastTMR;
+    static uint8_t lastTMR;
 //    static uint8_t timer20mS ;
-		uint16_t t10ms ;
-		t10ms = get_tmr10ms() ;
-    tick10ms = t10ms != lastTMR;
+		uint8_t t10ms ;
+		t10ms = g_tmr10ms ;
+    tick10ms = t10ms - lastTMR ;
     lastTMR = t10ms ;
     //    uint16_t time10ms ;
     //		time10ms = get_tmr10ms();
@@ -1648,19 +1647,10 @@ void perMain()
     //    lastTMR = time10ms;
 
     perOut(g_chans512, 0);
-    if(!tick10ms) return; //make sure the rest happen only every 10ms.
+    if(tick10ms == 0) return ; //make sure the rest happen only every 10ms.
 
 		{
 			struct t_timerg *tptr ;
-
-			if ( ++OneSecTimer >= 100 )
-			{
-				OneSecTimer -= 100 ;
-				if ( StickScrollTimer )
-				{
-					StickScrollTimer -= 1 ;				
-				}
-			}
 
 			tptr = &TimerG ;
 			FORCE_INDIRECT(tptr) ;
@@ -2177,8 +2167,8 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 		if (--pac->AlarmTimer == 0 )
 		{
 			pac->AlarmTimer = 100 ;		// Restart timer
-			pac->AlarmCheckFlag += 1 ;	// Flag time to check alarms
-			pac->CsCheckFlag = 1 ;
+//			pac->AlarmCheckFlag += 1 ;	// Flag time to check alarms
+			pac->OneSecFlag = 1 ;
 		}
 		if (--pac->VoiceFtimer == 0 )
 		{
@@ -2198,11 +2188,6 @@ ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
 // (The timer is free-running and is thus not reset to zero at each capture interval.)
 ISR(TIMER3_CAPT_vect, ISR_NOBLOCK) //capture ppm in 16MHz / 8 = 2MHz
 {
-
-
-
-
-
     uint16_t capture=ICR3;
     cli();
     ETIMSK &= ~(1<<TICIE3); //stop reentrance
@@ -2223,7 +2208,7 @@ ISR(TIMER3_CAPT_vect, ISR_NOBLOCK) //capture ppm in 16MHz / 8 = 2MHz
   	  	if(val>800 && val<2200)
 				{
   		    g_ppmIns[ppmInState++ - 1] =
-  	  	    (int16_t)(val - 1500)*(g_eeGeneral.PPM_Multiplier+10)/10; //+-500 != 512, but close enough.
+  	  	    (int16_t)(val - 1500)* (uint8_t)(g_eeGeneral.PPM_Multiplier+10)/10; //+-500 != 512, but close enough.
 
 		    }else{
   		    ppmInState=0; // not triggered
@@ -2421,222 +2406,44 @@ int main(void)
 
 #ifdef FRSKY
 extern int16_t AltOffset ;
+
+int16_t getAltbaroWithOffset()
+{
+ 	return FrskyHubData[FR_ALT_BARO] + AltOffset ;
+}
 #endif
 
 
 void mainSequence()
 {
-    uint16_t t0 = getTmr16KHz();
-		uint8_t numSafety = 16 - g_model.numVoice ;
-    //      getADC[g_eeGeneral.filterInput]();
+  uint16_t t0 = getTmr16KHz();
+	uint8_t numSafety = 16 - g_model.numVoice ;
+  //      getADC[g_eeGeneral.filterInput]();
 //    if ( g_eeGeneral.filterInput == 1)
 //    {
 //        getADC_filt() ;
 //    }
 //    else if ( g_eeGeneral.filterInput == 2)
 //    {
-        getADC_osmp() ;
+  getADC_osmp() ;
 //    }
 //    else
 //    {
 //        getADC_single() ;
 //    }
-    ADMUX=0x1E|ADC_VREF_TYPE;   // Select bandgap
-		pollRotary() ;
-    perMain();      // Give bandgap plenty of time to settle
-    getADC_bandgap() ;
-    //while(get_tmr10ms()==old10ms) sleep_mode();
-    if(heartbeat == 0x3)
-    {
-        wdt_reset();
-        heartbeat = 0;
-    }
-    t0 = getTmr16KHz() - t0;
-    if ( t0 > g_timeMain ) g_timeMain = t0 ;
-    if ( AlarmControl.AlarmCheckFlag > 1 )
-    {
-        AlarmControl.AlarmCheckFlag = 0 ;
-        // Check for alarms here
-        // Including Altitude limit
-//				Debug3 = 1 ;
-
-#ifdef FRSKY
-        if (frskyUsrStreaming)
-        {
-            int16_t limit ; //= g_model.FrSkyAltAlarm ;
-            int16_t altitude ;
-            if ( g_model.FrSkyAltAlarm )
-            {
-                if (g_model.FrSkyAltAlarm == 2)  // 400
-                {
-                    limit = 400 ;	//ft
-                }
-                else
-                {
-                    limit = 122 ;	//m
-                }
-								altitude = FrskyHubData[FR_ALT_BARO] + AltOffset ;
-//								if ( AltitudeDecimals )
-//								{
-									altitude /= 10 ;									
-//								}
-								if (g_model.FrSkyUsrProto == 0)  // Hub
-								{
-      						if ( g_model.FrSkyImperial )
-									{
-        						altitude = m_to_ft( altitude ) ;
-									}
-								}
-                if ( altitude > limit )
-                {
-                    audioDefevent(AU_WARNING2) ;
-                }
-            }
-						uint16_t total_volts = 0 ;
-						uint8_t audio_sounded = 0 ;
-						uint8_t low_cell = 220 ;		// 4.4V
-				    for (uint8_t k=0; k<FrskyBattCells; k++)
-						{
-							total_volts += FrskyVolts[k] ;
-							if ( FrskyVolts[k] < low_cell )
-							{
-								low_cell = FrskyVolts[k] ;
-							}
-
-							if ( audio_sounded == 0 )
-							{
-	        			if ( FrskyVolts[k] < g_model.frSkyVoltThreshold )
-								{
-	            		audioDefevent(AU_WARNING3);
-									audio_sounded = 1 ;
-			        	}
-							}
-	  			  }
-						// Now we have total volts available
-						FrskyHubData[FR_CELLS_TOT] = total_volts / 5 ;
-						if ( low_cell < 220 )
-						{
-							FrskyHubData[FR_CELL_MIN] = low_cell ;
-						}
-
-        }
-
-
-        // this var prevents and alarm sounding if an earlier alarm is already sounding
-        // firing two alarms at once is pointless and sounds rubbish!
-        // this also means channel A alarms always over ride same level alarms on channel B
-        // up to debate if this is correct!
-        //				bool AlarmRaisedAlready = false;
-
-        if (frskyStreaming)
-				{
-//            enum AlarmLevel level[4] ;
-//            // RED ALERTS
-//            if( (level[0]=FRSKY_alarmRaised(0,0)) == alarm_red) FRSKY_alarmPlay(0,0);
-//            else if( (level[1]=FRSKY_alarmRaised(0,1)) == alarm_red) FRSKY_alarmPlay(0,1);
-//            else	if( (level[2]=FRSKY_alarmRaised(1,0)) == alarm_red) FRSKY_alarmPlay(1,0);
-//            else if( (level[3]=FRSKY_alarmRaised(1,1)) == alarm_red) FRSKY_alarmPlay(1,1);
-//            // ORANGE ALERTS
-//            else	if( level[0] == alarm_orange) FRSKY_alarmPlay(0,0);
-//            else if( level[1] == alarm_orange) FRSKY_alarmPlay(0,1);
-//            else	if( level[2] == alarm_orange) FRSKY_alarmPlay(1,0);
-//            else if( level[3] == alarm_orange) FRSKY_alarmPlay(1,1);
-//            // YELLOW ALERTS
-//            else	if( level[0] == alarm_yellow) FRSKY_alarmPlay(0,0);
-//            else if( level[1] == alarm_yellow) FRSKY_alarmPlay(0,1);
-//            else	if( level[2] == alarm_yellow) FRSKY_alarmPlay(1,0);
-//            else if( level[3] == alarm_yellow) FRSKY_alarmPlay(1,1);
-
-						// Check for current alarm
-        		for (int i=0; i<2; i++)
-						{
-							// To be enhanced by checking the type as well
-       		    if (g_model.frsky.channels[i].ratio)
-							{
-     		        if ( g_model.frsky.channels[i].type == 3 )		// Current (A)
-								{
-									if ( g_model.frsky.frskyAlarmLimit )
-									{
-    		          	if ( (  FrskyHubData[FR_A1_MAH+i] >> 6 ) >= g_model.frsky.frskyAlarmLimit )
-										{
-											if ( g_eeGeneral.speakerMode & 2 )
-											{
-												putVoiceQueue( V_CAPACITY ) ;
-											}
-											else
-											{
-												audio.event( g_model.frsky.frskyAlarmSound ) ;
-											}
-										}
-									}
-								}
-       		    }
-        		}
-        }
-#endif
-
-				// Now for the Safety/alarm switch alarms
-				// Carried out evey 100 mS
-				{
-					uint8_t i ;
-					static uint8_t periodCounter ;
-					
-					periodCounter += 0x11 ;
-					periodCounter &= 0xF7 ;
-					if ( periodCounter > 0x5F )
-					{
-						periodCounter &= 0x0F ;
-					}
-					for ( i = 0 ; i < numSafety ; i += 1 )
-					{
-    				SafetySwData *sd = &g_model.safetySw[i] ;
-						if (sd->opt.ss.mode == 1)
-						{
-							if(getSwitch( sd->opt.ss.swtch,0))
-							{
-								audio.event( ((g_eeGeneral.speakerMode & 1) == 0) ? 1 : sd->opt.ss.val ) ;
-							}
-						}
-						if (sd->opt.ss.mode == 2)
-						{
-							if ( sd->opt.ss.swtch > MAX_DRSWITCH )
-							{
-								switch ( sd->opt.ss.swtch - MAX_DRSWITCH -1 )
-								{
-									case 0 :
-										if ( ( periodCounter & 3 ) == 0 )
-										{
-											voice_telem_item( sd->opt.ss.val ) ;
-										}
-									break ;
-									case 1 :
-										if ( ( periodCounter & 0xF0 ) == 0 )
-										{
-											voice_telem_item( sd->opt.ss.val ) ;
-										}
-									break ;
-									case 2 :
-										if ( ( periodCounter & 7 ) == 2 )
-										{
-											voice_telem_item( sd->opt.ss.val ) ;
-										}
-									break ;
-								}
-							}
-							else if ( ( periodCounter & 1 ) == 0 )		// Every 4 seconds
-							{
-								if(getSwitch( sd->opt.ss.swtch,0))
-								{
-									putVoiceQueue( sd->opt.ss.val + 128 ) ;
-								}
-							}
-						}
-					}
-				}
-    }
-	// New switch voices
-	// New entries, Switch, (on/off/both), voice file index
-
+  ADMUX=0x1E|ADC_VREF_TYPE;   // Select bandgap
+	pollRotary() ;
+  perMain();      // Give bandgap plenty of time to settle
+  getADC_bandgap() ;
+  //while(get_tmr10ms()==old10ms) sleep_mode();
+  if(heartbeat == 0x3)
+  {
+      wdt_reset();
+      heartbeat = 0;
+  }
+  t0 = getTmr16KHz() - t0;
+  if ( t0 > g_timeMain ) g_timeMain = t0 ;
+  
   if ( AlarmControl.VoiceCheckFlag )		// Every 100 mS
   {
 		uint8_t i ;
@@ -2701,12 +2508,6 @@ void mainSequence()
 				Vs_state[i] = curent_state ;
 			}
 		}
-		AlarmControl.VoiceCheckFlag = 0 ;
-	}
-	if ( AlarmControl.CsCheckFlag )		// Custom Switch Timers
-	{
-		AlarmControl.CsCheckFlag = 0 ;
-		uint8_t i ;
 		
 		for ( i = 0 ; i < NUM_CSW ; i += 1 )
 		{
@@ -2715,20 +2516,42 @@ void mainSequence()
 
     	if(cstate == CS_TIMER)
 			{
-				if ( CsTimer[i] == 0 )
+				int16_t y ;
+				y = CsTimer[i] ;
+				if ( y == 0 )
 				{
-					CsTimer[i] = -cs.v1-1 ;
-				}
-				else if ( CsTimer[i] < 0 )
-				{
-					if ( ++CsTimer[i] == 0 )
+					int8_t z ;
+					z = cs.v1 ;
+					if ( z >= 0 )
 					{
-						CsTimer[i] = cs.v2 ;
+						z = -z-1 ;
+						y = z * 10 ;					
+					}
+					else
+					{
+						y = z ;
+					}
+				}
+				else if ( y < 0 )
+				{
+					if ( ++y == 0 )
+					{
+						int8_t z ;
+						z = cs.v2 ;
+						if ( z >= 0 )
+						{
+							z += 1 ;
+							y = z * 10 - 1  ;
+						}
+						else
+						{
+							y = -z-1 ;
+						}
 					}
 				}
 				else  // if ( CsTimer[i] > 0 )
 				{
-					CsTimer[i] -= 1 ;
+					y -= 1 ;
 				}
 				if ( cs.andsw )
 				{
@@ -2740,10 +2563,205 @@ void mainSequence()
 					}
 	        if (getSwitch( x, 0, 0) == 0 )
 				  {
-						CsTimer[i] = -1 ;
+						y = -1 ;
 					}	
 				}
+				CsTimer[i] = y ;
 			}
+		}
+		AlarmControl.VoiceCheckFlag = 0 ;
+	}
+	
+	if ( AlarmControl.OneSecFlag )		// Custom Switch Timers
+  {
+		uint8_t i ;
+//      AlarmControl.AlarmCheckFlag = 0 ;
+      // Check for alarms here
+      // Including Altitude limit
+//				Debug3 = 1 ;
+
+#ifdef FRSKY
+      if (frskyUsrStreaming)
+      {
+          int16_t limit ; //= g_model.FrSkyAltAlarm ;
+          int16_t altitude ;
+          if ( g_model.FrSkyAltAlarm )
+          {
+              if (g_model.FrSkyAltAlarm == 2)  // 400
+              {
+                  limit = 400 ;	//ft
+              }
+              else
+              {
+                  limit = 122 ;	//m
+              }
+							altitude = getAltbaroWithOffset() ;
+//								if ( AltitudeDecimals )
+//								{
+								altitude /= 10 ;									
+//								}
+							if (g_model.FrSkyUsrProto == 0)  // Hub
+							{
+      					if ( g_model.FrSkyImperial )
+								{
+        					altitude = m_to_ft( altitude ) ;
+								}
+							}
+              if ( altitude > limit )
+              {
+                  audioDefevent(AU_WARNING2) ;
+              }
+          }
+					uint16_t total_volts = 0 ;
+					uint8_t audio_sounded = 0 ;
+					uint8_t low_cell = 220 ;		// 4.4V
+				  for (uint8_t k=0; k<FrskyBattCells; k++)
+					{
+						total_volts += FrskyVolts[k] ;
+						if ( FrskyVolts[k] < low_cell )
+						{
+							low_cell = FrskyVolts[k] ;
+						}
+
+						if ( audio_sounded == 0 )
+						{
+	        		if ( FrskyVolts[k] < g_model.frSkyVoltThreshold )
+							{
+	            	audioDefevent(AU_WARNING3);
+								audio_sounded = 1 ;
+			        }
+						}
+	  			}
+					// Now we have total volts available
+					FrskyHubData[FR_CELLS_TOT] = total_volts / 5 ;
+					if ( low_cell < 220 )
+					{
+						FrskyHubData[FR_CELL_MIN] = low_cell ;
+					}
+
+      }
+
+
+      // this var prevents and alarm sounding if an earlier alarm is already sounding
+      // firing two alarms at once is pointless and sounds rubbish!
+      // this also means channel A alarms always over ride same level alarms on channel B
+      // up to debate if this is correct!
+      //				bool AlarmRaisedAlready = false;
+
+      if (frskyStreaming)
+			{
+//            enum AlarmLevel level[4] ;
+//            // RED ALERTS
+//            if( (level[0]=FRSKY_alarmRaised(0,0)) == alarm_red) FRSKY_alarmPlay(0,0);
+//            else if( (level[1]=FRSKY_alarmRaised(0,1)) == alarm_red) FRSKY_alarmPlay(0,1);
+//            else	if( (level[2]=FRSKY_alarmRaised(1,0)) == alarm_red) FRSKY_alarmPlay(1,0);
+//            else if( (level[3]=FRSKY_alarmRaised(1,1)) == alarm_red) FRSKY_alarmPlay(1,1);
+//            // ORANGE ALERTS
+//            else	if( level[0] == alarm_orange) FRSKY_alarmPlay(0,0);
+//            else if( level[1] == alarm_orange) FRSKY_alarmPlay(0,1);
+//            else	if( level[2] == alarm_orange) FRSKY_alarmPlay(1,0);
+//            else if( level[3] == alarm_orange) FRSKY_alarmPlay(1,1);
+//            // YELLOW ALERTS
+//            else	if( level[0] == alarm_yellow) FRSKY_alarmPlay(0,0);
+//            else if( level[1] == alarm_yellow) FRSKY_alarmPlay(0,1);
+//            else	if( level[2] == alarm_yellow) FRSKY_alarmPlay(1,0);
+//            else if( level[3] == alarm_yellow) FRSKY_alarmPlay(1,1);
+
+					// Check for current alarm
+        	for (int i=0; i<2; i++)
+					{
+						// To be enhanced by checking the type as well
+       		  if (g_model.frsky.channels[i].ratio)
+						{
+     		      if ( g_model.frsky.channels[i].type == 3 )		// Current (A)
+							{
+								if ( g_model.frsky.frskyAlarmLimit )
+								{
+    		          if ( (  FrskyHubData[FR_A1_MAH+i] >> 6 ) >= g_model.frsky.frskyAlarmLimit )
+									{
+										if ( g_eeGeneral.speakerMode & 2 )
+										{
+											putVoiceQueue( V_CAPACITY ) ;
+										}
+										else
+										{
+											audio.event( g_model.frsky.frskyAlarmSound ) ;
+										}
+									}
+								}
+							}
+       		  }
+        	}
+      }
+#endif
+
+			// Now for the Safety/alarm switch alarms
+			// Carried out evey 100 mS
+			{
+				static uint8_t periodCounter ;
+					
+				periodCounter += 0x11 ;
+				periodCounter &= 0xF7 ;
+				if ( periodCounter > 0x5F )
+				{
+					periodCounter &= 0x0F ;
+				}
+				for ( i = 0 ; i < numSafety ; i += 1 )
+				{
+    			SafetySwData *sd = &g_model.safetySw[i] ;
+					if (sd->opt.ss.mode == 1)
+					{
+						if(getSwitch( sd->opt.ss.swtch,0))
+						{
+							audio.event( ((g_eeGeneral.speakerMode & 1) == 0) ? 1 : sd->opt.ss.val ) ;
+						}
+					}
+					if (sd->opt.ss.mode == 2)
+					{
+						if ( sd->opt.ss.swtch > MAX_DRSWITCH )
+						{
+							switch ( sd->opt.ss.swtch - MAX_DRSWITCH -1 )
+							{
+								case 0 :
+									if ( ( periodCounter & 3 ) == 0 )
+									{
+										voice_telem_item( sd->opt.ss.val ) ;
+									}
+								break ;
+								case 1 :
+									if ( ( periodCounter & 0xF0 ) == 0 )
+									{
+										voice_telem_item( sd->opt.ss.val ) ;
+									}
+								break ;
+								case 2 :
+									if ( ( periodCounter & 7 ) == 2 )
+									{
+										voice_telem_item( sd->opt.ss.val ) ;
+									}
+								break ;
+							}
+						}
+						else if ( ( periodCounter & 1 ) == 0 )		// Every 4 seconds
+						{
+							if(getSwitch( sd->opt.ss.swtch,0))
+							{
+								putVoiceQueue( sd->opt.ss.val + 128 ) ;
+							}
+						}
+					}
+				}
+			}
+	
+	// New switch voices
+	// New entries, Switch, (on/off/both), voice file index
+
+		AlarmControl.OneSecFlag = 0 ;
+//		uint8_t i ;
+		
+		if ( StickScrollTimer )
+		{
+			StickScrollTimer -= 1 ;				
 		}
 	}
 }
@@ -2776,7 +2794,7 @@ int8_t REG(int8_t x, int8_t min, int8_t max)
       g_model.gvars[x].gvar = result = min;
 //      eeDirty( EE_MODEL | EE_TRIM ) ;
     }
-    if (result > max) {
+    else if (result > max) {
       g_model.gvars[x].gvar = result = max;
 //      eeDirty( EE_MODEL | EE_TRIM ) ;
     }
@@ -2787,7 +2805,11 @@ int8_t REG(int8_t x, int8_t min, int8_t max)
 
 uint8_t IS_EXPO_THROTTLE( uint8_t x )
 {
-	return g_model.thrExpo && IS_THROTTLE( x ) ;
+	if ( g_model.thrExpo )
+	{
+		return IS_THROTTLE( x ) ;
+	}
+	return 0 ;
 }
 
 uint8_t IS_THROTTLE( uint8_t x )

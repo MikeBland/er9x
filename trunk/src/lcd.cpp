@@ -130,7 +130,8 @@ uint8_t lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
         uint8_t condense=0;
 
         if (mode & CONDENSED) {
-            *p++ = inv ? ~0 : 0;
+            *p = inv ? ~0 : 0;
+						p += 1 ;
             condense=1;
 	    	x += FWNUM-FW ;
 	}
@@ -141,7 +142,7 @@ uint8_t lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
                 /*condense the letter by skipping column 4 */
                 continue;
             }
-            if(p<DISPLAY_END) *p++ = inv ? ~b : b;
+            if(p<DISPLAY_END) {*p = inv ? ~b : b; p += 1 ; }
         }
         if(p<DISPLAY_END) *p++ = inv ? ~0 : 0;
     }
