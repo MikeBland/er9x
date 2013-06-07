@@ -181,6 +181,7 @@ void Key::input(bool val, EnumKeys enuk)
 bool keyState(EnumKeys enuk)
 {
   uint8_t xxx = 0 ;
+	uint8_t ping = PING ;
   if(enuk < (int)DIM(keys))  return keys[enuk].state() ? 1 : 0;
 
   switch((uint8_t)enuk){
@@ -202,15 +203,15 @@ bool keyState(EnumKeys enuk)
 #endif
 
 
-    case SW_RuddDR : xxx = PING & (1<<INP_G_RuddDR);
+    case SW_RuddDR : xxx = ping & (1<<INP_G_RuddDR);
     break ;
       //     INP_G_ID1 INP_E_ID2
       // id0    0        1
       // id1    1        1
       // id2    1        0
-    case SW_ID0    : xxx = ~PING & (1<<INP_G_ID1);
+    case SW_ID0    : xxx = ~ping & (1<<INP_G_ID1);
     break ;
-    case SW_ID1    : xxx = (PING & (1<<INP_G_ID1)) ; if ( xxx ) xxx = (PINE & (1<<INP_E_ID2));
+    case SW_ID1    : xxx = (ping & (1<<INP_G_ID1)) ; if ( xxx ) xxx = (PINE & (1<<INP_E_ID2));
     break ;
     case SW_ID2    : xxx = ~PINE & (1<<INP_E_ID2);
     break ;

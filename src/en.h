@@ -60,4 +60,6 @@
 
 #define STR_MAH_ALARM		"mAh Alarm"
 
+#define STR_ALERT		"ALERT"
+
 

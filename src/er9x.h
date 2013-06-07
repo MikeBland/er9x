@@ -246,6 +246,8 @@ enum EnumKeys {
 #define NUM_CSW  12 //number of custom switches
 #define SWITCH_WARN_STR	"Switch Warning"
 
+extern const prog_char APM Str_Switches[] ;
+
 #define CURV_STR "\003---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
 #define CURVE_BASE 7
 
@@ -343,6 +345,7 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define DR_WEIGHT 1
 #define DR_RIGHT  0
 #define DR_LEFT   1
+#define DR_BOTH   2
 #define DR_DRSW1  99
 #define DR_DRSW2  98
 
@@ -528,8 +531,6 @@ struct t_timerg
 
 extern struct t_timerg TimerG ;
 void resetTimer2() ;
-
-const prog_char *get_switches_string() ;
 
 extern uint8_t heartbeat;
 
@@ -836,8 +837,8 @@ extern void voice_telem_item( int8_t index ) ;
 struct t_alarmControl
 {
 	uint8_t AlarmTimer ;		// Units of 10 mS
-	uint8_t AlarmCheckFlag ;
-	uint8_t CsCheckFlag ;
+//	uint8_t AlarmCheckFlag ;
+	uint8_t OneSecFlag ;
 	uint8_t VoiceFtimer ;		// Units of 10 mS
 	uint8_t VoiceCheckFlag ;
 } ;
