@@ -262,13 +262,13 @@ uint16_t scale_telem_value( uint16_t val, uint8_t channel, uint8_t times2, uint8
 	
 	fd = &g_model.frsky.channels[channel] ;
   value = val ;
-  ratio = fd->ratio ;
+  ratio = fd->opt.alarm.ratio ;
   if ( times2 )
   {
       ratio <<= 1 ;
   }
   value *= ratio ;
-	if ( fd->type == 3/*A*/)
+	if ( fd->opt.alarm.type == 3/*A*/)
   {
       value /= 100 ;
       *p_att |= PREC1 ;
@@ -296,7 +296,7 @@ uint8_t putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8
 
 		fd = &g_model.frsky.channels[channel] ;
     value = val ;
-    if (fd->type == 2/*V*/)
+    if (fd->opt.alarm.type == 2/*V*/)
     {
         times2 = 1 ;
     }
@@ -315,7 +315,7 @@ uint8_t putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8
         {
             value <<= 1 ;
         }
-		  	if (fd->type == 3/*A*/)
+		  	if (fd->opt.alarm.type == 3/*A*/)
         {
             value *= 255 ;
             value /= 100 ;
@@ -325,7 +325,7 @@ uint8_t putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8
     //              val = (uint16_t)staticTelemetry[i]*g_model.frsky.channels[i].ratio / 255;
     //              putsTelemetry(x0-2, 2*FH, val, g_model.frsky.channels[i].type, blink|DBLSIZE|LEFT);
     //  if (g_model.frsky.channels[channel].type == 0/*v*/)
-    if ( (fd->type == 0/*v*/) || (fd->type == 2/*v*/) )
+    if ( (fd->opt.alarm.type == 0/*v*/) || (fd->opt.alarm.type == 2/*v*/) )
     {
       lcd_outdezNAtt(x, y, value, att|PREC1, 5) ;
 			unit = 'v' ;
@@ -334,7 +334,7 @@ uint8_t putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8
     else
     {
         lcd_outdezAtt(x, y, value, att);
-		    if (fd->type == 3/*A*/)
+		    if (fd->opt.alarm.type == 3/*A*/)
 				{
 					unit = 'A' ;
         	if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, unit, att);
@@ -2570,6 +2570,80 @@ void mainSequence()
 			}
 		}
 		AlarmControl.VoiceCheckFlag = 0 ;
+		
+#ifdef FRSKY
+		// Vario
+	  {
+
+extern FunctionData Function[] ;
+				
+			static uint8_t varioRepeatRate = 0 ;
+			
+			if ( ( Function[0].func == 1 ) || ( Function[0].func == 2 ) ) // Vario enabled
+			{
+				if ( getSwitch( Function[0].swtch, 0, 0 ) )
+				{
+					uint8_t new_rate = 0 ;
+					if ( varioRepeatRate )
+					{
+						varioRepeatRate -= 1 ;
+					}
+					if ( varioRepeatRate == 0 )
+					{
+						int16_t vspd ;
+						if ( Function[0].func == 1 )
+						{
+							vspd = FrskyHubData[FR_VSPD] ;
+							if ( Function[0].param > 1 )
+							{
+								vspd /= Function[0].param ;							
+							}
+						}
+						else // Function[0].func == 2
+						{
+							vspd = FrskyHubData[FR_A2_COPY] - 128 ;
+							if ( ( vspd < 3 ) && ( vspd > -3 ) )
+							{
+								vspd = 0 ;							
+							}
+							vspd *= Function[0].param ;
+						}
+						if ( vspd )
+						{
+							{
+								if ( vspd < 0 )
+								{
+									vspd = -vspd ;
+          		    audio.event( AU_VARIO_DOWN ) ;
+								}
+								else
+								{
+          		    audio.event( AU_VARIO_UP ) ;
+								}
+								if ( vspd < 75 )
+								{
+									new_rate = 8 ;
+								}
+								else if ( vspd < 125 )
+								{
+									new_rate = 6 ;
+								}
+								else if ( vspd < 175 )
+								{
+									new_rate = 4 ;
+								}
+								else
+								{
+									new_rate = 2 ;
+								}
+							}
+						}
+						varioRepeatRate = new_rate ;
+					}
+				}
+			}
+		}	
+#endif // FrSky
 	}
 	
 	if ( AlarmControl.OneSecFlag )		// Custom Switch Timers
@@ -2671,9 +2745,9 @@ void mainSequence()
         	for (int i=0; i<2; i++)
 					{
 						// To be enhanced by checking the type as well
-       		  if (g_model.frsky.channels[i].ratio)
+       		  if (g_model.frsky.channels[i].opt.alarm.ratio)
 						{
-     		      if ( g_model.frsky.channels[i].type == 3 )		// Current (A)
+     		      if ( g_model.frsky.channels[i].opt.alarm.type == 3 )		// Current (A)
 							{
 								if ( g_model.frsky.frskyAlarmLimit )
 								{
@@ -2718,31 +2792,32 @@ void mainSequence()
 					}
 					if (sd->opt.ss.mode == 2)
 					{
+						uint8_t pCounter = periodCounter ;
 						if ( sd->opt.ss.swtch > MAX_DRSWITCH )
 						{
 							switch ( sd->opt.ss.swtch - MAX_DRSWITCH -1 )
 							{
 								case 0 :
-									if ( ( periodCounter & 3 ) == 0 )
+									if ( ( pCounter & 3 ) == 0 )
 									{
 										voice_telem_item( sd->opt.ss.val ) ;
 									}
 								break ;
 								case 1 :
-									if ( ( periodCounter & 0xF0 ) == 0 )
+									if ( ( pCounter & 0xF0 ) == 0 )
 									{
 										voice_telem_item( sd->opt.ss.val ) ;
 									}
 								break ;
 								case 2 :
-									if ( ( periodCounter & 7 ) == 2 )
+									if ( ( pCounter & 7 ) == 2 )
 									{
 										voice_telem_item( sd->opt.ss.val ) ;
 									}
 								break ;
 							}
 						}
-						else if ( ( periodCounter & 1 ) == 0 )		// Every 4 seconds
+						else if ( ( pCounter & 1 ) == 0 )		// Every 4 seconds
 						{
 							if(getSwitch( sd->opt.ss.swtch,0))
 							{
@@ -2752,7 +2827,6 @@ void mainSequence()
 					}
 				}
 			}
-	
 	// New switch voices
 	// New entries, Switch, (on/off/both), voice file index
 

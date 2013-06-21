@@ -179,15 +179,15 @@ DataID Meaning       Unit   Range   Note
 #define FRSKY_USR_TIMEOUT10ms		90
 #endif
 
-enum AlarmLevel {
-  alarm_off = (uint8_t) 0,
-  alarm_yellow = (uint8_t)1,
-  alarm_orange = (uint8_t)2,
-  alarm_red = (uint8_t)3
-};
+//enum AlarmLevel {
+//  alarm_off = (uint8_t) 0,
+//  alarm_yellow = (uint8_t)1,
+//  alarm_orange = (uint8_t)2,
+//  alarm_red = (uint8_t)3
+//};
 
-#define ALARM_GREATER(channel, alarm) (((uint8_t)g_model.frsky.channels[channel].alarms_greater >> (uint8_t)alarm) & (uint8_t)1)
-#define ALARM_LEVEL(channel, alarm) (((uint8_t)g_model.frsky.channels[channel].alarms_level >> (uint8_t)(2*alarm)) & (uint8_t)3)
+#define ALARM_GREATER(channel, alarm) (((uint8_t)g_model.frsky.channels[channel].opt.alarm.alarms_greater >> (uint8_t)alarm) & (uint8_t)1)
+#define ALARM_LEVEL(channel, alarm) (((uint8_t)g_model.frsky.channels[channel].opt.alarm.alarms_level >> (uint8_t)(2*alarm)) & (uint8_t)3)
 
 struct FrskyData {
   uint8_t value;
@@ -250,7 +250,7 @@ void check_frsky( void ) ;
 void FRSKY_setModelAlarms(void) ;
 
 //enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm=2) ;
-enum AlarmLevel FRSKY_alarmRaised(uint8_t idx) ;
+//enum AlarmLevel FRSKY_alarmRaised(uint8_t idx) ;
 //void FRSKY_alarmPlay(uint8_t idx, uint8_t alarm) ;
 void resetTelemetry();
 

@@ -72,6 +72,8 @@
 #define AU_MIX_WARNING_1 (30)
 #define AU_MIX_WARNING_2 (31)
 #define AU_MIX_WARNING_3 (32)
+#define AU_VARIO_UP (33)
+#define AU_VARIO_DOWN (34)
 
 #define BEEP_QUIET (0)
 #define BEEP_NOKEYS (1)
@@ -87,11 +89,7 @@ class audioQueue
 
     audioQueue();
 
-    // only difference between these two functions is that one does the
-    // interupt queue (Now) and the other queues for playing ASAP.
-    void playNow(uint8_t tFreq, uint8_t tLen, uint8_t tPause, uint8_t tRepeat=0, uint8_t tHaptic=0, int8_t tFreqIncr=0);
-
-    void playASAP(uint8_t tFreq, uint8_t tLen, uint8_t tPause, uint8_t tRepeat=0, uint8_t tHaptic=0, int8_t tFreqIncr=0);
+    void play(uint8_t tFreq, uint8_t tLen, uint8_t tPause, uint8_t flags = 0 ) ;
 
     bool busy();
 
@@ -191,6 +189,12 @@ void audioVoiceDefevent(uint8_t e, uint8_t v) ;
 
 #define AUDIO_DRIVER()      audio.driver()
 #define AUDIO_HEARTBEAT()   audio.heartbeat()
+
+
+#define PLAY_REPEAT(x)            (x)                 /* Range 0 to 15 */
+#define PLAY_NOW                  0x10
+#define PLAY_HAPTIC				        0x20
+#define PLAY_INCREMENT(x)         ((uint8_t)(((uint8_t)x) << 6))   /* -1, 0, 1, 2 */
 
 
 // Bits in VoiceLatch

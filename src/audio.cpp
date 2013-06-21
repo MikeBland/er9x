@@ -121,49 +121,81 @@ inline uint8_t audioQueue::getToneLength(uint8_t tLen)
   return result;
 }
 
-void audioQueue::playNow(uint8_t tFreq, uint8_t tLen, uint8_t tPause,
-    uint8_t tRepeat, uint8_t tHaptic, int8_t tFreqIncr)
+void audioQueue::play(uint8_t tFreq, uint8_t tLen, uint8_t tPause, uint8_t flags )
 {
 	
 	if(!freeslots()){
 			return;
 	}
-	
-  if (g_eeGeneral.beeperVal) {
-    toneFreq = (tFreq ? tFreq + g_eeGeneral.speakerPitch + BEEP_OFFSET : 0); // add pitch compensator
-    toneTimeLeft = getToneLength(tLen);
-    tonePause = tPause;
-    toneHaptic = tHaptic;
-    hapticTick = 0;
-    toneFreqIncr = tFreqIncr;
-    t_queueWidx = t_queueRidx;
+  if (g_eeGeneral.beeperVal)
+	{
+	  int8_t tFreqIncr = (flags >> 6) ;
+		uint8_t tRepeat = flags & 0x0F ;
 
-    if (tRepeat) {
-      playASAP(tFreq, tLen, tPause, tRepeat-1, tHaptic, tFreqIncr);
+	  if (tFreqIncr == 3) tFreqIncr = -1 ;
+
+    if (tFreq > 0)
+		{ //we dont add pitch if zero as this is a pause only event
+      tFreq += g_eeGeneral.speakerPitch + BEEP_OFFSET; // add pitch compensator
     }
+    tLen = getToneLength(tLen);
+
+		if ( flags & PLAY_NOW )
+		{
+    	toneFreq = tFreq ; // add pitch compensator
+    	toneTimeLeft = tLen ;
+    	tonePause = tPause;
+    	toneHaptic = flags & PLAY_HAPTIC ? 1 : 0 ;
+    	hapticTick = 0;
+    	toneFreqIncr = tFreqIncr ;
+    	t_queueWidx = t_queueRidx;
+
+//    	if (tRepeat) {
+//    	  playASAP(tFreq, tLen, tPause, tRepeat-1, toneHaptic, 0 ) ;
+//    	}
+		}
+		else
+		{
+			tRepeat += 1 ;			
+		}
+
+		if ( tRepeat )
+		{
+    	uint8_t next_queueWidx = (t_queueWidx + 1) % AUDIO_QUEUE_LENGTH;
+    	if (next_queueWidx != t_queueRidx)
+			{
+    	  queueToneFreq[t_queueWidx] = tFreq ; // add pitch compensator
+    	  queueToneLength[t_queueWidx] = tLen ;
+    	  queueTonePause[t_queueWidx] = tPause;
+    	  queueToneHaptic[t_queueWidx] = flags & PLAY_HAPTIC ? 1 : 0;
+    	  queueToneRepeat[t_queueWidx] = tRepeat - 1;
+    	  queueToneFreqIncr[t_queueWidx] = tFreqIncr;
+    	  t_queueWidx = next_queueWidx;
+			}
+		}
   }
 }
 
-void audioQueue::playASAP(uint8_t tFreq, uint8_t tLen, uint8_t tPause,
-    uint8_t tRepeat, uint8_t tHaptic, int8_t tFreqIncr)
-{
-	if(!freeslots()){
-			return;
-	}	
+//void audioQueue::playASAP(uint8_t tFreq, uint8_t tLen, uint8_t tPause,
+//    uint8_t tRepeat, uint8_t tHaptic, int8_t tFreqIncr)
+//{
+//	if(!freeslots()){
+//			return;
+//	}	
 	
-  if (g_eeGeneral.beeperVal) {
-    uint8_t next_queueWidx = (t_queueWidx + 1) % AUDIO_QUEUE_LENGTH;
-    if (next_queueWidx != t_queueRidx) {
-      queueToneFreq[t_queueWidx] = (tFreq ? tFreq + g_eeGeneral.speakerPitch + BEEP_OFFSET : 0); // add pitch compensator
-      queueToneLength[t_queueWidx] = getToneLength(tLen);
-      queueTonePause[t_queueWidx] = tPause;
-      queueToneHaptic[t_queueWidx] = tHaptic;
-      queueToneRepeat[t_queueWidx] = tRepeat;
-      queueToneFreqIncr[t_queueWidx] = tFreqIncr;
-      t_queueWidx = next_queueWidx;
-    }
-  }
-}
+//  if (g_eeGeneral.beeperVal) {
+//    uint8_t next_queueWidx = (t_queueWidx + 1) % AUDIO_QUEUE_LENGTH;
+//    if (next_queueWidx != t_queueRidx) {
+//      queueToneFreq[t_queueWidx] = (tFreq ? tFreq + g_eeGeneral.speakerPitch + BEEP_OFFSET : 0); // add pitch compensator
+//      queueToneLength[t_queueWidx] = getToneLength(tLen);
+//      queueTonePause[t_queueWidx] = tPause;
+//      queueToneHaptic[t_queueWidx] = tHaptic;
+//      queueToneRepeat[t_queueWidx] = tRepeat;
+//      queueToneFreqIncr[t_queueWidx] = tFreqIncr;
+//      t_queueWidx = next_queueWidx;
+//    }
+//  }
+//}
 
 void audioQueue::event(uint8_t e, uint8_t f) {
 
@@ -171,126 +203,135 @@ void audioQueue::event(uint8_t e, uint8_t f) {
 	if (t_queueRidx == t_queueWidx) {		
 	  switch (e) {
 		    case AU_WARNING1:
-		      playNow(BEEP_DEFAULT_FREQ, 10, 1, 0, 1);
+		      play(BEEP_DEFAULT_FREQ, 10, 1, PLAY_HAPTIC | PLAY_NOW ) ;
 		      break;
 		    case AU_WARNING2:
-		      playNow(BEEP_DEFAULT_FREQ, 20, 1, 0, 1);
-		      break;
-		    case AU_WARNING3:
-		      playNow(BEEP_DEFAULT_FREQ, 30, 1, 0, 1);
+		      play(BEEP_DEFAULT_FREQ, 20, 1, PLAY_HAPTIC | PLAY_NOW);
 		      break;
 	      case AU_CHEEP:
-	        playASAP(BEEP_DEFAULT_FREQ+30,10,2,2,1,2);
+	        play(BEEP_DEFAULT_FREQ+30,10,2,2 | PLAY_HAPTIC | PLAY_INCREMENT(2) ) ;
 	        break;
 	      case AU_RING:
-	        playASAP(BEEP_DEFAULT_FREQ+25,5,2,10,1);
-	        playASAP(BEEP_DEFAULT_FREQ+25,5,10,1,1);
-	        playASAP(BEEP_DEFAULT_FREQ+25,5,2,10,1);
+	        play(BEEP_DEFAULT_FREQ+25,5,2,10 |PLAY_HAPTIC);
+	        play(BEEP_DEFAULT_FREQ+25,5,10,1 | PLAY_HAPTIC);
+	        play(BEEP_DEFAULT_FREQ+25,5,2,10 | PLAY_HAPTIC);
 	        break;
 	      case AU_SCIFI:
-	        playASAP(80,10,3,2,0,-1);
-	        playASAP(60,10,3,2,0,1);
-	        playASAP(70,10,1,0,2);
+	        play(80,10,3,2 | PLAY_INCREMENT(-1));
+	        play(60,10,3,2 | PLAY_INCREMENT(1));
+	        play(70,10,1, PLAY_HAPTIC );
 	        break;
 	      case AU_ROBOT:
-	        playASAP(70,5,1,1,1);
-	        playASAP(50,15,2,1,1);
-	        playASAP(80,15,2,1,1);
+	        play(70,5,1,1 | PLAY_HAPTIC);
+	        play(50,15,2,1 | PLAY_HAPTIC);
+	        play(80,15,2,1 | PLAY_HAPTIC);
 	        break;
 	      case AU_CHIRP:
-	        playASAP(BEEP_DEFAULT_FREQ+40,5,1,2,1);
-	        playASAP(BEEP_DEFAULT_FREQ+54,5,1,3,1);
+	        play(BEEP_DEFAULT_FREQ+40,5,1,2 | PLAY_HAPTIC);
+	        play(BEEP_DEFAULT_FREQ+54,5,1,3 | PLAY_HAPTIC);
 	        break;
 	      case AU_TADA:
-	        playASAP(50,5,5);
-	        playASAP(90,5,5);
-	        playASAP(110,3,4,2);
+	        play(50,5,5,0);
+	        play(90,5,5,0);
+	        play(110,3,4,2);
 	        break;
 	      case AU_CRICKET:
-	        playASAP(80,5,10,3,1);
-	        playASAP(80,5,20,1,1);
-	        playASAP(80,5,10,3,1);
+	        play(80,5,10,3 | PLAY_HAPTIC);
+	        play(80,5,20,1 | PLAY_HAPTIC);
+	        play(80,5,10,3 | PLAY_HAPTIC);
 	        break;
 	      case AU_SIREN:
-	        playASAP(10,20,5,2,1,1);
+	        play(10,20,5,2 | PLAY_HAPTIC | PLAY_INCREMENT(1));
 	        break;
 	      case AU_ALARMC:
-	        playASAP(50,4,10,2,1);
-	        playASAP(70,8,20,1,1);
-	        playASAP(50,8,10,2,1);
-	        playASAP(70,4,20,1,1);
+	        play(50,4,10,2 | PLAY_HAPTIC);
+	        play(70,8,20,1 | PLAY_HAPTIC);
+	        play(50,8,10,2 | PLAY_HAPTIC);
+	        play(70,4,20,1 | PLAY_HAPTIC);
 	        break;
 	      case AU_RATATA:
-	        playASAP(BEEP_DEFAULT_FREQ+50,5,10,10,1);
+	        play(BEEP_DEFAULT_FREQ+50,5,10,10 | PLAY_HAPTIC);
 	        break;
 	      case AU_TICK:
-	        playASAP(BEEP_DEFAULT_FREQ+50,5,50,2,1);
+	        play(BEEP_DEFAULT_FREQ+50,5,50,2 | PLAY_HAPTIC);
 	        break;
 	      case AU_HAPTIC1:
-	        playASAP(0,20,10,1,1);
+	        play(0,20,10,1 | PLAY_HAPTIC);
 	        break;
 	      case AU_HAPTIC2:
-	        playASAP(0,20,10,2,1);
+	        play(0,20,10,2 | PLAY_HAPTIC);
 	        break;
 	      case AU_HAPTIC3:
-	        playASAP(0,20,10,3,1);
+	        play(0,20,10,3 | PLAY_HAPTIC);
 	        break;
+		    case AU_INACTIVITY:
+		      play(70, 10, 2, 2 | PLAY_NOW ) ;
+		      break;
+		    case AU_TX_BATTERY_LOW:
+		        play(60, 20, 3, 2 | PLAY_INCREMENT(1));
+		        play(80, 20, 3, 2 | PLAY_HAPTIC | PLAY_INCREMENT(-1));
+		      break;
 		    case AU_ERROR:
-		      playNow(BEEP_DEFAULT_FREQ, 40, 1, 0, 1);
+		      play(BEEP_DEFAULT_FREQ, 40, 1, PLAY_HAPTIC | PLAY_NOW);
 		      break;
 		    case AU_KEYPAD_UP:
 		      if (beepVal != BEEP_NOKEYS) {
-		        playNow(BEEP_KEY_UP_FREQ, 10, 1);
+		        play(BEEP_KEY_UP_FREQ, 10, 1, PLAY_NOW );
 		      }
 		      break;
 		    case AU_KEYPAD_DOWN:
 		      if (beepVal != BEEP_NOKEYS) {
-		        playNow(BEEP_KEY_DOWN_FREQ, 10, 1);
+		        play(BEEP_KEY_DOWN_FREQ, 10, 1, PLAY_NOW);
 		      }
 		      break;
 		    case AU_TRIM_MOVE:
-		      playNow(f, 6, 1);
+		      play(f, 6, 1, PLAY_NOW);
 		      break;
 		    case AU_TRIM_MIDDLE:
-		      playNow(BEEP_DEFAULT_FREQ, 10, 2, 0, 1);
+		      play(BEEP_DEFAULT_FREQ, 10, 2, PLAY_HAPTIC | PLAY_NOW);
 		      break;
 		    case AU_MENUS:
 		      if (beepVal != BEEP_NOKEYS) {
-		        playNow(BEEP_DEFAULT_FREQ, 10, 2, 0, 0);
+		        play(BEEP_DEFAULT_FREQ, 10, 2, PLAY_NOW);
 		      }
 		      break;
 		    case AU_POT_STICK_MIDDLE:
-		      playNow(BEEP_DEFAULT_FREQ + 50, 10, 1, 0, 0);
-		      break;
-		    case AU_MIX_WARNING_1:
-		      playNow(BEEP_DEFAULT_FREQ + 50, 10, 1, 1, 1);
-		      break;
-		    case AU_MIX_WARNING_2:
-		      playNow(BEEP_DEFAULT_FREQ + 52, 10, 1, 2, 1);
-		      break;
-		    case AU_MIX_WARNING_3:
-		      playNow(BEEP_DEFAULT_FREQ + 54, 10, 1, 3, 1);
+		      play(BEEP_DEFAULT_FREQ + 50, 10, 1, PLAY_NOW);
 		      break;
 		    case AU_TIMER_30:
-		      playNow(BEEP_DEFAULT_FREQ + 50, 15, 3, 3, 1);
+		      play(BEEP_DEFAULT_FREQ + 50, 15, 3, 3 | PLAY_HAPTIC | PLAY_NOW);
 		      break;
 		    case AU_TIMER_20:
-		      playNow(BEEP_DEFAULT_FREQ + 50, 15, 3, 2, 1);
+		      play(BEEP_DEFAULT_FREQ + 50, 15, 3, 2 | PLAY_HAPTIC | PLAY_NOW);
 		      break;
 		    case AU_TIMER_10:
-		      playNow(BEEP_DEFAULT_FREQ + 50, 15, 3, 1, 1);
+		      play(BEEP_DEFAULT_FREQ + 50, 15, 3, 1 | PLAY_HAPTIC | PLAY_NOW);
 		      break;
 		    case AU_TIMER_LT3:
-		      playNow(BEEP_DEFAULT_FREQ, 20, 25, 1, 1);
+		      play(BEEP_DEFAULT_FREQ, 20, 25, 1 | PLAY_HAPTIC | PLAY_NOW);
 		      break;
-		    case AU_INACTIVITY:
-		      playNow(70, 10, 2,2);
+		    case AU_WARNING3:
+		      play(BEEP_DEFAULT_FREQ, 30, 1, PLAY_HAPTIC | PLAY_NOW);
 		      break;
-		    case AU_TX_BATTERY_LOW:
-		        playASAP(60, 20, 3, 2, 0, 1);
-		        playASAP(80, 20, 3, 2, 1, -1);
+				case AU_MIX_WARNING_1:
+		      play(BEEP_DEFAULT_FREQ + 50, 10, 1, 1 | PLAY_HAPTIC | PLAY_NOW);
 		      break;
-		    default:
+		    case AU_MIX_WARNING_2:
+		      play(BEEP_DEFAULT_FREQ + 52, 10, 1, 2 | PLAY_HAPTIC | PLAY_NOW);
+		      break;
+		    case AU_MIX_WARNING_3:
+		      play(BEEP_DEFAULT_FREQ + 54, 10, 1, 3 | PLAY_HAPTIC | PLAY_NOW);
+		      break;
+		    
+				case AU_VARIO_UP :
+		      play(BEEP_DEFAULT_FREQ + 60, 10, 0, PLAY_INCREMENT(1) | PLAY_NOW ) ;
+		    break ;
+		    
+				case AU_VARIO_DOWN :
+		      play(BEEP_DEFAULT_FREQ - 20, 10, 0, PLAY_INCREMENT(-1) | PLAY_NOW ) ;
+		    break ;
+		    
+				default:
 		      break;
 	  }
 	}  

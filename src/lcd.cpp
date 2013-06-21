@@ -17,6 +17,8 @@
 #include "er9x.h"
 #include <stdlib.h>
 
+#define DBL_FONT_SMALL	1
+
 #ifdef SIMU
 bool lcd_refresh = true;
 uint8_t lcd_buf[DISPLAY_W*DISPLAY_H/8];
@@ -32,7 +34,7 @@ const
 
 const
 #include "font_dblsize.lbm"
-#define font_10x16_x20_x7f (font_dblsize+3)
+#define font_10x16_x20_x7f (font_dblsize)
 
 
 void lcd_clear()
@@ -88,30 +90,57 @@ uint8_t lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
 	/* each letter consists of ten top bytes followed by
 	 * five bottom by ten bottom bytes (20 bytes per 
 	 * char) */
-        q = &font_10x16_x20_x7f[(c-0x20)*10 + ((c-0x20)/16)*160];
-        for(char i=5; i>=0; i--){
+
+		  unsigned char c_mapped ;
+
+#ifdef DBL_FONT_SMALL
+			if ( c >= ',' && c <= ':' )
+			{
+				c_mapped = c - ',' + 1 ;		
+			}
+  		else if (c>='A' && c<='Z')
+			{
+				c_mapped = c - 'A' + 0x10 ;
+			}
+  		else if (c>='a' && c<='z')
+			{
+				c_mapped = c - 'a' + 0x2B ;
+			}
+  		else if (c=='_' )
+			{
+				c_mapped = 0x2A ;
+			}
+			else
+			{
+				c_mapped = 0 ;
+			}
+#else
+			c_mapped = c - 0x20 ;
+#endif
+        q = &font_10x16_x20_x7f[(c_mapped)*20] ;// + ((c-0x20)/16)*160];
+        for(char i=11; i>=0; i--){
 	    /*top byte*/
-            uint8_t b1 = i>0 ? pgm_read_byte(q) : 0;
+            uint8_t b1 = i>1 ? pgm_read_byte(q) : 0;
 	    /*bottom byte*/
-            uint8_t b3 = i>0 ? pgm_read_byte(160+q) : 0;
+            uint8_t b3 = i>1 ? pgm_read_byte(10+q) : 0;
 	    /*top byte*/
-            uint8_t b2 = i>0 ? pgm_read_byte(++q) : 0;
+//            uint8_t b2 = i>0 ? pgm_read_byte(++q) : 0;
 	    /*bottom byte*/
-            uint8_t b4 = i>0 ? pgm_read_byte(160+q) : 0;
+//            uint8_t b4 = i>0 ? pgm_read_byte(10+q) : 0;
             q++;
             if(inv) {
                 b1=~b1;
-                b2=~b2;
+//                b2=~b2;
                 b3=~b3;
-                b4=~b4;
+//                b4=~b4;
             }
 
             if(&p[DISPLAY_W+1] < DISPLAY_END){
                 p[0]=b1;
-                p[1]=b2;
+//                p[1]=b2;
                 p[DISPLAY_W] = b3;
-                p[DISPLAY_W+1] = b4;
-                p+=2;
+//                p[DISPLAY_W+1] = b4;
+                p+=1;
             }
         }
 //        q = &dbl_font[(c-0x20)*20];
