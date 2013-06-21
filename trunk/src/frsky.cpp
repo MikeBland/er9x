@@ -54,8 +54,9 @@ const prog_uint8_t APM Fr_indices[] =
 	FR_FUEL,
 	FR_TEMP2,
 	FR_CELL_V,
+	HUBDATALENGTH-1,HUBDATALENGTH-1,
 	FR_GPS_ALTd,
-	HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,
+	HUBDATALENGTH-1,HUBDATALENGTH-1,
 	HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,
 	FR_ALT_BARO | 0x80,
 	FR_GPS_SPEED | 0x80,
@@ -160,6 +161,8 @@ void evalVario(int16_t altitude_bp, uint16_t altitude_ap)
 
 void store_hub_data( uint8_t index, uint16_t value )
 {
+//	int16_t result = (int16_t) value ;
+
 	if ( index == FR_ALT_BARO )
 	{
 		value *= 10 ;
@@ -209,6 +212,10 @@ void store_hub_data( uint8_t index, uint16_t value )
 		}
 #endif
 
+		if ( index == FR_CURRENT )			// FAS current
+		{
+			FrskyHubData[index] -= g_model.frsky.FASoffset ;			
+		}
 
 		if ( index < HUBMINMAXLEN )
 		{
@@ -336,7 +343,7 @@ void frsky_proc_user_byte( uint8_t byte )
 	}
 }
 
-uint8_t frskyPushValue( uint8_t i, uint8_t value);
+static uint8_t frskyPushValue( uint8_t i, uint8_t value);
 
 /*
    Called from somewhere in the main loop or a low prioirty interrupt
@@ -738,7 +745,7 @@ static void FRSKY10mspoll(void)
 		//	FRSKY_setTxPacket( A22PKT + i, g_eeGeneral.frskyinternalalarm ? 0 :g_model.frsky.channels[channel].alarms_value[alarm],
 		//														 ALARM_GREATER(channel, alarm), ALARM_LEVEL(channel, alarm) ) ;					
 		
-			FRSKY_setTxPacket( A22PKT + i, g_model.frsky.channels[channel].alarms_value[alarm],
+			FRSKY_setTxPacket( A22PKT + i, g_model.frsky.channels[channel].opt.alarm.alarms_value[alarm],
                   ALARM_GREATER(channel, alarm), g_eeGeneral.frskyinternalalarm ? 0 :ALARM_LEVEL(channel, alarm) ) ;
 	
 									 
@@ -811,57 +818,57 @@ void FRSKY_setTxPacket( uint8_t type, uint8_t value, uint8_t p1, uint8_t p2 )
 }
 
 //enum AlarmLevel FRSKY_alarmRaised(uint8_t idx, uint8_t alarm)
-enum AlarmLevel FRSKY_alarmRaised(uint8_t idx)
-{
-	FrSkyChannelData *ptr_fdata ;
+//enum AlarmLevel FRSKY_alarmRaised(uint8_t idx)
+//{
+//	FrSkyChannelData *ptr_fdata ;
 
-	ptr_fdata = &g_model.frsky.channels[idx] ;
+//	ptr_fdata = &g_model.frsky.channels[idx] ;
 
-  uint8_t value ;
-  uint8_t alarm_value ;
-	uint8_t level = ptr_fdata->alarms_level ;
-	uint8_t greater = ptr_fdata->alarms_greater ;
-  value = frskyTelemetry[idx].value ;
+//  uint8_t value ;
+//  uint8_t alarm_value ;
+//	uint8_t level = ptr_fdata->alarms_level ;
+//	uint8_t greater = ptr_fdata->alarms_greater ;
+//  value = frskyTelemetry[idx].value ;
 	
-//	if ( alarm != 1 )		// 0 or 2
-//	{
-		level &= 3 ;
-		if ( level != (uint8_t)alarm_off)
-		{
-      alarm_value = ptr_fdata->alarms_value[0] ;
-      if ( greater & 1)
-			{
-    	  if (value > alarm_value)
-  				return (enum AlarmLevel) level ;
-      }
-      else
-			{
-        if (value < alarm_value)
-  				return (enum AlarmLevel) level ;
-      }
-		}
-//  }
-//	if ( alarm )		// 1 or 2
-//	{
-		level = ptr_fdata->alarms_level >> 2 ;
-		level &= 3 ;
-		if ( level != (uint8_t)alarm_off)
-		{
-      alarm_value = ptr_fdata->alarms_value[1] ;
-      if ( greater & 2)
-			{
-    	  if (value > alarm_value)
-  				return (enum AlarmLevel) level ;
-      }
-      else
-			{
-        if (value < alarm_value)
-  				return (enum AlarmLevel) level ;
-      }
-		}
-//  }
-  return alarm_off ;
-}
+////	if ( alarm != 1 )		// 0 or 2
+////	{
+//		level &= 3 ;
+//		if ( level != (uint8_t)alarm_off)
+//		{
+//      alarm_value = ptr_fdata->alarms_value[0] ;
+//      if ( greater & 1)
+//			{
+//    	  if (value > alarm_value)
+//  				return (enum AlarmLevel) level ;
+//      }
+//      else
+//			{
+//        if (value < alarm_value)
+//  				return (enum AlarmLevel) level ;
+//      }
+//		}
+////  }
+////	if ( alarm )		// 1 or 2
+////	{
+//		level = ptr_fdata->alarms_level >> 2 ;
+//		level &= 3 ;
+//		if ( level != (uint8_t)alarm_off)
+//		{
+//      alarm_value = ptr_fdata->alarms_value[1] ;
+//      if ( greater & 2)
+//			{
+//    	  if (value > alarm_value)
+//  				return (enum AlarmLevel) level ;
+//      }
+//      else
+//			{
+//        if (value < alarm_value)
+//  				return (enum AlarmLevel) level ;
+//      }
+//		}
+////  }
+//  return alarm_off ;
+//}
 
 //void FRSKY_alarmPlay(uint8_t idx, uint8_t alarm){			
 //			uint8_t alarmLevel = ALARM_LEVEL(idx, alarm);
@@ -889,7 +896,8 @@ enum AlarmLevel FRSKY_alarmRaised(uint8_t idx)
 inline void FRSKY_EnableTXD(void)
 {
   FrskyTx.frskyTxBufferCount = 0;
-  UCSR0B |= (1 << TXEN0) | (1 << UDRIE0); // enable TX and TX interrupt
+  UCSR0B |= (1 << TXEN0) ; // enable TX
+  UCSR0B |= (1 << UDRIE0) ; // enable TX interrupt
 }
 
 inline void FRSKY_EnableRXD(void)
@@ -899,18 +907,18 @@ inline void FRSKY_EnableRXD(void)
   UCSR0B |= (1 << RXCIE0); // enable Interrupt
 }
 
-#if 0
-void FRSKY_DisableTXD(void)
-{
-  UCSR0B &= ~((1 << TXEN0) | (1 << UDRIE0)); // disable TX pin and interrupt
-}
+//#if 0
+//void FRSKY_DisableTXD(void)
+//{
+//  UCSR0B &= ~((1 << TXEN0) | (1 << UDRIE0)); // disable TX pin and interrupt
+//}
 
-void FRSKY_DisableRXD(void)
-{
-  UCSR0B &= ~(1 << RXEN0);  // disable RX
-  UCSR0B &= ~(1 << RXCIE0); // disable Interrupt
-}
-#endif
+//void FRSKY_DisableRXD(void)
+//{
+//  UCSR0B &= ~(1 << RXEN0);  // disable RX
+//  UCSR0B &= ~(1 << RXCIE0); // disable Interrupt
+//}
+//#endif
 
 void FRSKY_Init(void)
 {
@@ -949,18 +957,18 @@ void FRSKY_Init(void)
 
 }
 
-#if 0
-// Send packet requesting all alarm settings be sent back to us
-void frskyAlarmsRefresh()
-{
+//#if 0
+//// Send packet requesting all alarm settings be sent back to us
+//void frskyAlarmsRefresh()
+//{
 
-  if (FrskyTx.frskyTxBufferCount) return; // we only have one buffer. If it's in use, then we can't send. Sorry.
-	FRSKY_setTxPacket( ALRM_REQUEST, 0, 0, 0 )
-  frskyTransmitBuffer();
-}
-#endif
+//  if (FrskyTx.frskyTxBufferCount) return; // we only have one buffer. If it's in use, then we can't send. Sorry.
+//	FRSKY_setTxPacket( ALRM_REQUEST, 0, 0, 0 )
+//  frskyTransmitBuffer();
+//}
+//#endif
 
-uint8_t frskyPushValue( uint8_t i, uint8_t value)
+static uint8_t frskyPushValue( uint8_t i, uint8_t value)
 {
 	uint8_t j ;
   uint8_t *ptr ;
@@ -1097,9 +1105,9 @@ void check_frsky()
 
   if (frskyStreaming)
 	{
-  	if ( g_model.frsky.channels[0].type == 3 )		// Current (A)
+  	if ( g_model.frsky.channels[0].opt.alarm.type == 3 )		// Current (A)
 			current_check( 0 ) ;
-  	if ( g_model.frsky.channels[1].type == 3 )		// Current (A)
+  	if ( g_model.frsky.channels[1].opt.alarm.type == 3 )		// Current (A)
 			current_check( 1 ) ;
 	}
 
@@ -1128,8 +1136,8 @@ void FRSKY_setModelAlarms(void)
   FrskyAlarmSendState |= 0x0F ;
 	
 #ifndef SIMU
-  Frsky_current[0].Amp_hour_boundary = 360000L/ g_model.frsky.channels[0].ratio ;
-	Frsky_current[1].Amp_hour_boundary = 360000L/ g_model.frsky.channels[1].ratio ;
+  Frsky_current[0].Amp_hour_boundary = 360000L/ g_model.frsky.channels[0].opt.alarm.ratio ;
+	Frsky_current[1].Amp_hour_boundary = 360000L/ g_model.frsky.channels[1].opt.alarm.ratio ;
 #endif
 }
 

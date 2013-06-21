@@ -201,12 +201,29 @@ PACK(typedef struct t_SafetySwData { // Custom Switches data
 	} opt ;
 }) SafetySwData;
 
-PACK(typedef struct t_FrSkyChannelData {
-    uint8_t   ratio;                // 0.0 means not used, 0.1V steps EG. 6.6 Volts = 66. 25.1V = 251, etc.
-    uint8_t   alarms_value[2];      // 0.1V steps EG. 6.6 Volts = 66. 25.1V = 251, etc.
-    uint8_t   alarms_level:4;
-    uint8_t   alarms_greater:2;     // 0=LT(<), 1=GT(>)
-    uint8_t   type:2;               // 0=volts, 1=raw, 2=volts*2, 3=Amps
+PACK(typedef struct t_FrSkyChannelData
+{
+	union opt
+	{
+		struct alarm
+		{
+    	uint8_t   ratio;                // 0.0 means not used, 0.1V steps EG. 6.6 Volts = 66. 25.1V = 251, etc.
+    	uint8_t   alarms_value[2];      // 0.1V steps EG. 6.6 Volts = 66. 25.1V = 251, etc.
+    	uint8_t   alarms_level:4;
+    	uint8_t   alarms_greater:2;     // 0=LT(<), 1=GT(>)
+    	uint8_t   type:2;               // 0=volts, 1=raw, 2=volts*2, 3=Amps
+		} alarm ;
+		struct scale
+		{
+    	uint8_t   ratio ;       	// 0.0 means not used, 0.1V steps EG. 6.6 Volts = 66. 25.1V = 251, etc.
+    	uint8_t   offset ;    	  // 0.0 means not used, 0.1V steps EG. 6.6 Volts = 66. 25.1V = 251, etc.
+			uint8_t   units ;					// 0.1V steps EG. 6.6 Volts = 66. 25.1V = 251, etc.
+    	uint8_t   multiplier:3 ;  // 1, 2, 3 or 4
+    	uint8_t   unused1:1 ;
+    	uint8_t   decimals:2 ;		// 0, 1 or 2
+    	uint8_t   type:2;       	// 0=volts, 1=raw, 2=volts*2, 3=Amps
+		} scale ;
+	} opt ;
 }) FrSkyChannelData;
 
 //PACK(typedef struct t_FrSkyalarms
@@ -218,7 +235,9 @@ PACK(typedef struct t_FrSkyChannelData {
 
 PACK(typedef struct t_FrSkyData {
     FrSkyChannelData channels[2];
-		uint8_t unused0 ;
+		uint8_t voltSource:2 ;
+		uint8_t ampSource:2 ;
+		uint8_t FASoffset:4 ;			// 0.0 to 1.5
 		uint8_t frskyAlarmLimit ;		// For mAh
 		uint8_t frskyAlarmSound ;		// For mAh
 //		FrSkyAlarmData alarmData[4] ;
@@ -238,6 +257,11 @@ PACK(typedef struct t_PhaseData {
   uint8_t fadeOut:4;
 }) PhaseData;
 	 
+PACK(typedef struct t_FunctionData { // Function data
+  int8_t  swtch ; //input
+  uint8_t func ;
+  uint8_t param ;
+}) FunctionData ;
 
 //PACK(typedef struct t_swVoice {
 //  uint8_t  vswtch:5 ;
@@ -291,12 +315,12 @@ PACK(typedef struct t_ModelData {
     SafetySwData  safetySw[NUM_CHNOUT];
     FrSkyData frsky;
 		uint8_t numBlades ;
-		uint8_t frskyoffset[2] ;		// Offsets for A1 and A2
-		uint8_t unused1[6] ;
+		uint8_t frskyoffset[2] ;		// Offsets for A1 and A2 (pending)
+		uint8_t unused1[5] ;
+		uint8_t sub_trim_limit ;
 		uint8_t CustomDisplayIndex[6] ;
 		GvarData gvars[MAX_GVARS] ;
 		PhaseData phaseData[MAX_MODES] ;
-//		uint8_t   curentSource ;
 //		uint8_t   altSource ;
 }) ModelData;
 
