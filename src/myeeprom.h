@@ -263,6 +263,14 @@ PACK(typedef struct t_FunctionData { // Function data
   uint8_t param ;
 }) FunctionData ;
 
+PACK(typedef struct t_Vario
+{
+  uint8_t varioSource ;
+  int8_t  swtch ;
+  uint8_t param ;
+}) VarioData ;	
+
+
 //PACK(typedef struct t_swVoice {
 //  uint8_t  vswtch:5 ;
 //	uint8_t vmode:3 ; // ON, OFF, BOTH, 15Secs, 30Secs, 60Secs, Varibl
