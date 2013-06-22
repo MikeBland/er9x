@@ -1748,10 +1748,11 @@ for (int i=0; i<2; i++) {
 extern uint8_t frskyRSSIlevel[2] ;
 extern uint8_t frskyRSSItype[2] ;
 
+VarioData VarioSetup ;
 
 void menuProcTelemetry2(uint8_t event)
 {
-    MENU("TELEMETRY2", menuTabModel, e_Telemetry2, 15, {0, 1, 1, 1, 0});
+    MENU("TELEMETRY2", menuTabModel, e_Telemetry2, 18, {0, 1, 1, 1, 0});
 
 uint8_t  sub    = mstate2.m_posVert;
 uint8_t subSub = g_posHorz;
@@ -1882,6 +1883,44 @@ blink = s_editMode ? BLINK : INVERS ;
       CHECK_INCDEC_H_MODELVAR_0( g_model.frsky.FASoffset, 15 ) ;
 		}
   	lcd_outdezAtt( 14*FW, FH, g_model.frsky.FASoffset, attr ) ;
+		subN += 1 ;
+	
+		// Vario
+   	for( uint8_t j=0 ; j<3 ; j += 1 )
+		{
+      uint8_t attr = (sub==subN) ? INVERS : 0 ;
+			uint8_t y = (2+j)*FH ;
+
+   		if (j == 0)
+			{
+				lcd_puts_Pleft( 2*FH, PSTR("Vario: Source") ) ;
+				lcd_putsAttIdx( 15*FW, y, PSTR("\004----vspdA2  "), VarioSetup.varioSource, attr ) ;
+   		  if(attr)
+				{
+					VarioSetup.varioSource = checkIncDec( VarioSetup.varioSource, 0, 2, 0 ) ;
+   		  }
+				
+			}
+   		else if (j == 1)
+   		{
+				lcd_puts_Pleft( y, PSTR("\002Switch") ) ;
+				putsDrSwitches( 15*FW, y, VarioSetup.swtch, attr ) ;
+   		  if(attr)
+				{
+					VarioSetup.swtch = checkIncDec( VarioSetup.swtch, -MAX_DRSWITCH+1, MAX_DRSWITCH, 0 ) ;
+   		  }
+			}
+			else
+			{
+				lcd_puts_Pleft( y, PSTR("\002Sensitivity") ) ;
+ 				lcd_outdezAtt( 17*FW, y, VarioSetup.param, attr) ;
+   		  if(attr)
+				{
+					VarioSetup.param = checkIncDec( VarioSetup.param, 0, 50, 0 ) ;
+   		  }
+			}	
+			subN += 1 ;
+		}
 	}
 }
 
@@ -1993,12 +2032,11 @@ void menuProcTemplates(uint8_t event)  //Issue 73
 }
 #endif
 
-FunctionData Function[1] ;
-
+//FunctionData Function[1] ;
 
 void menuProcSafetySwitches(uint8_t event)
 {
-	MENU("SAFETY SWITCHES", menuTabModel, e_SafetySwitches, NUM_CHNOUT+1+1+1, {0, 0, 2/*repeated*/});
+	MENU("SAFETY SWITCHES", menuTabModel, e_SafetySwitches, NUM_CHNOUT+1+1, {0, 0, 2/*repeated*/});
 
 uint8_t y = 0;
 uint8_t k = 0;
@@ -2157,44 +2195,44 @@ t_pgOfs = evalOffset(sub, 6);
 			}
 		}
 	}
-	else
-	{
-		// Function(s)
-		lcd_puts_Pleft( y, PSTR("F1") ) ;
-   	for( uint8_t j=0 ; j<3 ; j += 1 )
-		{
-      uint8_t attr = ((sub==k && subSub==j) ? (s_editMode ? BLINK : INVERS) : 0) ;
-#ifndef NOPOTSCROLL
-			uint8_t active = (attr && s_editing) ;
-#else
-			uint8_t active = (attr && s_editMode) ;
-#endif
-   		if (j == 0)
-			{
-				putsDrSwitches( 5*FW, y, Function[0].swtch , attr ) ;
-   		  if(active)
-				{
-					Function[0].swtch = checkIncDec( Function[0].swtch, -MAX_DRSWITCH+1, MAX_DRSWITCH, 0 ) ;
-   		  }
-			}
-   		else if (j == 1)
-   		{
-				lcd_putsAttIdx( 10*FW, y, PSTR("\005-----variovarA2"), Function[0].func, attr ) ;
-   		  if(active)
-				{
-					Function[0].func = checkIncDec( Function[0].func, 0, 2, 0 ) ;
-   		  }
-			}
-			else
-			{
- 				lcd_outdezAtt( 17*FW, y, Function[0].param, attr) ;
-   		  if(active)
-				{
-					Function[0].param = checkIncDec( Function[0].param, 0, 50, 0 ) ;
-   		  }
-			}	
-		}
-	}
+//	else
+//	{
+//		// Function(s)
+//		lcd_puts_Pleft( y, PSTR("F1") ) ;
+//   	for( uint8_t j=0 ; j<3 ; j += 1 )
+//		{
+//      uint8_t attr = ((sub==k && subSub==j) ? (s_editMode ? BLINK : INVERS) : 0) ;
+//#ifndef NOPOTSCROLL
+//			uint8_t active = (attr && s_editing) ;
+//#else
+//			uint8_t active = (attr && s_editMode) ;
+//#endif
+//   		if (j == 0)
+//			{
+//				putsDrSwitches( 5*FW, y, Function[0].swtch , attr ) ;
+//   		  if(active)
+//				{
+//					Function[0].swtch = checkIncDec( Function[0].swtch, -MAX_DRSWITCH+1, MAX_DRSWITCH, 0 ) ;
+//   		  }
+//			}
+//   		else if (j == 1)
+//   		{
+//				lcd_putsAttIdx( 10*FW, y, PSTR("\005-----variovarA2"), Function[0].func, attr ) ;
+//   		  if(active)
+//				{
+//					Function[0].func = checkIncDec( Function[0].func, 0, 2, 0 ) ;
+//   		  }
+//			}
+//			else
+//			{
+// 				lcd_outdezAtt( 17*FW, y, Function[0].param, attr) ;
+//   		  if(active)
+//				{
+//					Function[0].param = checkIncDec( Function[0].param, 0, 50, 0 ) ;
+//   		  }
+//			}	
+//		}
+//	}
  }
 }
 

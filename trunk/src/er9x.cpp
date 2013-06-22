@@ -2575,13 +2575,13 @@ void mainSequence()
 		// Vario
 	  {
 
-extern FunctionData Function[] ;
+extern VarioData VarioSetup ;
 				
 			static uint8_t varioRepeatRate = 0 ;
 			
-			if ( ( Function[0].func == 1 ) || ( Function[0].func == 2 ) ) // Vario enabled
+			if ( VarioSetup.varioSource ) // Vario enabled
 			{
-				if ( getSwitch( Function[0].swtch, 0, 0 ) )
+				if ( getSwitch( VarioSetup.swtch, 0, 0 ) )
 				{
 					uint8_t new_rate = 0 ;
 					if ( varioRepeatRate )
@@ -2591,22 +2591,22 @@ extern FunctionData Function[] ;
 					if ( varioRepeatRate == 0 )
 					{
 						int16_t vspd ;
-						if ( Function[0].func == 1 )
+						if ( VarioSetup.varioSource == 1 )
 						{
 							vspd = FrskyHubData[FR_VSPD] ;
-							if ( Function[0].param > 1 )
+							if ( VarioSetup.param > 1 )
 							{
-								vspd /= Function[0].param ;							
+								vspd /= VarioSetup.param ;							
 							}
 						}
-						else // Function[0].func == 2
+						else // VarioSetup.varioSource == 2
 						{
 							vspd = FrskyHubData[FR_A2_COPY] - 128 ;
 							if ( ( vspd < 3 ) && ( vspd > -3 ) )
 							{
 								vspd = 0 ;							
 							}
-							vspd *= Function[0].param ;
+							vspd *= VarioSetup.param ;
 						}
 						if ( vspd )
 						{
