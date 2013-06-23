@@ -6384,7 +6384,7 @@ uint8_t evalOffset(int8_t sub, uint8_t max)
 	int8_t x = sub-t_pgOfs ;
     if(sub<1) t_pgOfs=0;
     else if(x>(int8_t)max) t_pgOfs = sub-(int8_t)max;
-    else if(x<(int8_t)(max-6)) t_pgOfs = sub-(int8_t)(max+6);
+    else if(x<(int8_t)(max-6)) t_pgOfs = sub-(int8_t)max+6;
 		return (s_pgOfs = t_pgOfs) ;
 }
 
