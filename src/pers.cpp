@@ -93,7 +93,7 @@ static bool eeLoadGeneral()
   return g_eeGeneral.chkSum == evalChkSum() ;
 }
 
-void modelDefault(uint8_t id)
+void modelDefaultWrite(uint8_t id)
 {
   memset(&g_model, 0, sizeof(ModelData));
   strncpy_P(g_model.name,PSTR("MODEL     "), 10);
@@ -104,6 +104,7 @@ void modelDefault(uint8_t id)
 //  g_model.mdVers = MDVERS;
 
   applyTemplate(0); //default 4 channel template
+  theFile.writeRlc(FILE_MODEL(id),FILE_TYP_MODEL,(uint8_t*)&g_model,sizeof(g_model),200);
 }
 
 void eeLoadModelName(uint8_t id,char*buf,uint8_t len)
@@ -160,7 +161,7 @@ void eeLoadModel(uint8_t id)
 
         if(sz<256) // if not loaded a fair amount
         {
-            modelDefault(id);
+            modelDefaultWrite(id);
         }
 				validateName( g_model.name, sizeof(g_model.name) ) ;
 
@@ -230,9 +231,8 @@ void eeReadAll()
     uint16_t sz = theFile.writeRlc(FILE_GENERAL,FILE_TYP_GENERAL,(uint8_t*)&g_eeGeneral,sizeof(EEGeneral),200);
     if(sz!=sizeof(EEGeneral)) alert(PSTR("genwrite error"));
 
-    modelDefault(0);
+    modelDefaultWrite(0);
     //alert(PSTR("modef ok"));
-    theFile.writeRlc(FILE_MODEL(0),FILE_TYP_MODEL,(uint8_t*)&g_model,sizeof(g_model),200);
     //alert(PSTR("modwrite ok"));
 
   }

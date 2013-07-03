@@ -2455,9 +2455,19 @@ void mainSequence()
 		{
 			uint8_t curent_state ;
 			uint8_t mode ;
+			uint8_t value ;
     	SafetySwData *sd = &g_model.safetySw[i];
 
 			mode = sd->opt.vs.vmode ;
+			value = sd->opt.vs.vval ;
+			if ( mode <= 5 )
+			{
+				if ( value > 250 )
+				{
+					value = g_model.gvars[value-248].gvar ; //Gvars 3-7
+				}
+			}
+
 			if ( sd->opt.vs.vswtch )		// Configured
 			{
 				curent_state = getSwitch( sd->opt.vs.vswtch, 0 ) ;
@@ -2467,20 +2477,20 @@ void mainSequence()
 					{ // ON
 						if ( ( Vs_state[i] == 0 ) && curent_state )
 						{
-							putVoiceQueue( sd->opt.vs.vval ) ;
+							putVoiceQueue( value ) ;
 						}
 					}
 					if ( ( mode == 1 ) || ( mode == 2 ) )
 					{ // OFF
 						if ( ( Vs_state[i] == 1 ) && !curent_state )
 						{
-							uint8_t x ;
-							x = sd->opt.vs.vval ;
+//							uint8_t x ;
+//							x = sd->opt.vs.vval ;
 							if ( mode == 2 )
 							{
-								x += 1 ;							
+								value += 1 ;							
 							}
-							putVoiceQueue( x ) ;
+							putVoiceQueue( value ) ;
 						}
 					}
 					if ( mode > 5 )
@@ -2500,7 +2510,7 @@ void mainSequence()
 							if ( mode == 5 ) mask = 600 ;
 							if ( timer % mask == 0 )
 							{
-								putVoiceQueue( sd->opt.vs.vval ) ;
+								putVoiceQueue( value ) ;
 							}
 						}
 					}
