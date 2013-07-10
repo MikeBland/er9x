@@ -408,7 +408,7 @@ int16_t get_telemetry_value( int8_t channel )
 #ifdef FRSKY
   if ( channel == FR_WATT )
 	{
-		return (FrskyHubData[FR_VOLTS]>>1) * (FrskyHubData[FR_CURRENT]>>1) / 25 ;
+		return (getTelemetryValue(FR_VOLTS)>>1) * ( getTelemetryValue(FR_CURRENT)>>1) / 25 ;
 	}	 
 #endif
 	if ( channel < -3 )	// A GVAR
@@ -429,10 +429,10 @@ int16_t get_telemetry_value( int8_t channel )
 		return getAltbaroWithOffset() ;
 		
     case FR_CELL_MIN :
-		return FrskyHubData[channel] * 2 ;
+		return getTelemetryValue(channel) * 2 ;
 
 		default :
-		return FrskyHubData[channel] ;
+		return getTelemetryValue(channel) ;
 #else
 		default :
 		return 0 ;
@@ -755,7 +755,7 @@ const
 typedef PROGMEM void (*MenuFuncP_PROGMEM)(uint8_t event);
 
 enum EnumTabModel {
-    e_ModelSelect,
+//    e_ModelSelect,
     e_Model,
 #ifndef NO_HELI
     e_Heli,
@@ -783,7 +783,7 @@ enum EnumTabModel {
 };
 
 const MenuFuncP_PROGMEM APM menuTabModel[] = {
-    menuProcModelSelect,
+//    menuProcModelSelect,
     menuProcModel,
     #ifndef NO_HELI
     menuProcHeli,
@@ -1756,8 +1756,6 @@ for (int i=0; i<2; i++) {
 extern uint8_t frskyRSSIlevel[2] ;
 extern uint8_t frskyRSSItype[2] ;
 
-VarioData VarioSetup ;
-
 void menuProcTelemetry2(uint8_t event)
 {
     MENU("TELEMETRY2", menuTabModel, e_Telemetry2, 18, {0, 1, 1, 1, 0});
@@ -1902,29 +1900,32 @@ blink = s_editMode ? BLINK : INVERS ;
    		if (j == 0)
 			{
 				lcd_puts_Pleft( 2*FH, PSTR("Vario: Source") ) ;
-				lcd_putsAttIdx( 15*FW, y, PSTR("\004----vspdA2  "), VarioSetup.varioSource, attr ) ;
+				lcd_putsAttIdx( 15*FW, y, PSTR("\004----vspdA2  "), g_model.varioData.varioSource, attr ) ;
    		  if(attr)
 				{
-					VarioSetup.varioSource = checkIncDec( VarioSetup.varioSource, 0, 2, 0 ) ;
+					CHECK_INCDEC_H_MODELVAR_0( g_model.varioData.varioSource, 2 ) ;
+//					g_model.varioData.varioSource = checkIncDec( g_model.varioData.varioSource, 0, 2, 0 ) ;
    		  }
 				
 			}
    		else if (j == 1)
    		{
 				lcd_puts_Pleft( y, PSTR("\002Switch") ) ;
-				putsDrSwitches( 15*FW, y, VarioSetup.swtch, attr ) ;
+				putsDrSwitches( 15*FW, y, g_model.varioData.swtch, attr ) ;
    		  if(attr)
 				{
-					VarioSetup.swtch = checkIncDec( VarioSetup.swtch, -MAX_DRSWITCH+1, MAX_DRSWITCH, 0 ) ;
+					CHECK_INCDEC_H_MODELVAR( g_model.varioData.swtch, -MAX_DRSWITCH+1, MAX_DRSWITCH ) ;
+//					g_model.varioData.swtch = checkIncDec( g_model.varioData.swtch, -MAX_DRSWITCH+1, MAX_DRSWITCH, 0 ) ;
    		  }
 			}
 			else
 			{
 				lcd_puts_Pleft( y, PSTR("\002Sensitivity") ) ;
- 				lcd_outdezAtt( 17*FW, y, VarioSetup.param, attr) ;
+ 				lcd_outdezAtt( 17*FW, y, g_model.varioData.param, attr) ;
    		  if(attr)
 				{
-					VarioSetup.param = checkIncDec( VarioSetup.param, 0, 50, 0 ) ;
+					CHECK_INCDEC_H_MODELVAR_0( g_model.varioData.param, 50 ) ;
+//					g_model.varioData.param = checkIncDec( g_model.varioData.param, 0, 50, 0 ) ;
    		  }
 			}	
 			subN += 1 ;
@@ -2751,8 +2752,8 @@ uint8_t popupProcess( uint8_t max )
   
 	switch(Tevent)
 	{
-    case EVT_KEY_FIRST(KEY_MENU) :
-    case EVT_KEY_FIRST(BTN_RE):
+    case EVT_KEY_BREAK(KEY_MENU) :
+    case EVT_KEY_BREAK(BTN_RE):
 		return POPUP_SELECT ;
     
 		case EVT_KEY_FIRST(KEY_UP) :
@@ -2764,6 +2765,7 @@ uint8_t popupProcess( uint8_t max )
 		break ;
     
 		case EVT_KEY_FIRST(KEY_EXIT) :
+		case EVT_KEY_LONG(BTN_RE) :
 		return POPUP_EXIT ;
 	}
 
@@ -2785,35 +2787,22 @@ uint8_t popupProcess( uint8_t max )
 	return POPUP_NONE ;
 }
 
-//#define MIXPOPUP	0
-//#define MODELPOPUP 1
+const prog_char APM MixPopList[] = "EDIT\0INSERT\0COPY\0MOVE\0DELETE" ;
 
-const prog_char APM MixPopList[] = "\005EDIT\0INSERT\0COPY\0MOVE\0DELETE" ;
-
-//void popupDisplay( uint8_t model )
-//{
-//  lcd_puts_Pleft(1*FH, MODELPOPUP ? PSTR("\003 EDIT   ") : PSTR("\003 SELECT ") );
-//  lcd_puts_Pleft(2*FH, MODELPOPUP ? PSTR("\003 INSERT ") : PSTR("\003 EDIT   ") );
-//  lcd_puts_Pleft(3*FH, PSTR("\003 COPY   "));
-//  lcd_puts_Pleft(4*FH, PSTR("\003 MOVE   "));
-//  lcd_puts_Pleft(5*FH, PSTR("\003 DELETE "));
-//	lcd_rect( 3*FW, 1*FH-1, 8*FW, 5*FH+2 ) ;
-//}
-
-// *list Byte 0 = num entries
-void popupDisplay( const prog_char *list )
+void popupDisplay( const prog_char *list, uint8_t entries )
 {
-	uint8_t entries = ( uint8_t)pgm_read_byte(list) * FH ;
+	entries *= FH ;
 	uint8_t y ;
 
 	for ( y = FH ; y <= entries ; y += FH )
 	{
 		lcd_puts_Pleft( y, PSTR("\003        ") ) ;
-		lcd_puts_P( 4*FW, y, (list+=1) ) ;
+		lcd_puts_P( 4*FW, y, (list) ) ;
 		while ( pgm_read_byte(list) )
 		{
 			list += 1 ;			
 		}		
+		list += 1 ;			
 	}
 	lcd_rect( 3*FW, 1*FH-1, 8*FW, y+2-FH ) ;
 }
@@ -2821,7 +2810,7 @@ void popupDisplay( const prog_char *list )
 
 static void mixpopup()
 {
-	popupDisplay( MixPopList ) ;
+	popupDisplay( MixPopList, 5 ) ;
 	
 	uint8_t popaction = popupProcess( 4 ) ;
 	uint8_t popidx = PopupIdx ;
@@ -3925,7 +3914,7 @@ uint8_t qloadModel( uint8_t event, uint8_t index )
 // DELETE - This one is important.
 
 uint8_t ModelPopup ;
-const prog_char APM ModelPopList[] = "\004SELECT\0COPY\0MOVE\0DELETE" ;
+const prog_char APM ModelPopList[] = "SELECT\0COPY\0MOVE\0DELETE" ;
 
 void menuProcModelSelect(uint8_t event)
 {
@@ -3969,7 +3958,7 @@ void menuProcModelSelect(uint8_t event)
     lcd_puts_Pleft(  0, PSTR("\011free"));
     lcd_outdez(  17*FW, 0, EeFsGetFree());
 
-    DisplayScreenIndex(e_ModelSelect, DIM(menuTabModel), INVERS);
+//    DisplayScreenIndex(e_ModelSelect, DIM(menuTabModel), INVERS);
 
     int8_t  sub    = mstate2.m_posVert;
     static uint8_t sel_editMode;
@@ -3992,9 +3981,10 @@ void menuProcModelSelect(uint8_t event)
 
 	if ( ModelPopup )
 	{
-		popupDisplay( ModelPopList ) ;
+		uint8_t count = (g_eeGeneral.currModel == mstate2.m_posVert) ? 3 : 4 ; 
+		popupDisplay( ModelPopList, count ) ;
 		
-		uint8_t popaction = popupProcess( 3 ) ;
+		uint8_t popaction = popupProcess( count - 1 ) ;
 		uint8_t popidx = PopupIdx ;
 		lcd_char_inverse( 4*FW, (popidx+1)*FH, 6*FW, 0 ) ;
 		
@@ -4017,13 +4007,13 @@ void menuProcModelSelect(uint8_t event)
 			{
 //        s_editMode = false;
 //        s_noHi = NO_HI_LEN;
-  	    if(g_eeGeneral.currModel != mstate2.m_posVert)
-				{ // Don't allow current model to be deleted
-        	killEvents(event);
-        	DupIfNonzero = 0 ;
-					DupSub = sub ;
-        	pushMenu(menuDeleteDupModel);
-				}
+//  	    if(g_eeGeneral.currModel != mstate2.m_posVert)
+//				{ // Don't allow current model to be deleted, now not selectable!
+       	killEvents(event);
+       	DupIfNonzero = 0 ;
+				DupSub = sub ;
+       	pushMenu(menuDeleteDupModel);
+//				}
 			}
 			else if( popidx == 1 )	// copy
 			{
@@ -4069,9 +4059,9 @@ void menuProcModelSelect(uint8_t event)
     	case  EVT_KEY_FIRST(KEY_RIGHT):
         if(g_eeGeneral.currModel != mstate2.m_posVert)
         {
+          killEvents(event);
 					PopupIdx = 0 ;
 					ModelPopup = 2 ;
-//	          killEvents(event);
 //						qloadModel( event, mstate2.m_posVert ) ;
 
 //            audioDefevent(AU_WARNING2);
@@ -4102,6 +4092,7 @@ void menuProcModelSelect(uint8_t event)
 				}
 				else
 				{
+				 	killEvents(event) ;
 					PopupIdx = 0 ;
 					ModelPopup = 1 ;
 				}	 
@@ -4806,7 +4797,14 @@ void menuProcSetup(uint8_t event)
 					if ( s_editMode )
 					{
 				 		attr = BLINK ;
-						CHECK_INCDEC_H_GENVAR_0(g_eeGeneral.stickMode,3);
+  					uint8_t mode = g_eeGeneral.stickMode ;
+
+						CHECK_INCDEC_H_GENVAR_0( mode,3);
+						if ( mode != g_eeGeneral.stickMode )
+						{
+							g_eeGeneral.stickScroll = 0 ;
+							g_eeGeneral.stickMode = mode ;							
+						}
 					}
 				}
         lcd_putcAtt( 3*FW, y, '1'+g_eeGeneral.stickMode,attr);
@@ -5208,7 +5206,7 @@ int16_t AltOffset = 0 ;
 #ifdef FRSKY
 void displayTemp( uint8_t sensor, uint8_t x, uint8_t y, uint8_t size )
 {
-	putsTelemetryChannel( x, y, (int8_t)sensor+TEL_ITEM_T1-1, FrskyHubData[FR_TEMP1+sensor-1], size | LEFT, 
+	putsTelemetryChannel( x, y, (int8_t)sensor+TEL_ITEM_T1-1, getTelemetryValue(FR_TEMP1+sensor-1), size | LEFT, 
 																( size & DBLSIZE ) ? (TELEM_LABEL | TELEM_UNIT_LEFT) : (TELEM_LABEL | TELEM_UNIT) ) ;
 }
 #endif
@@ -5271,10 +5269,10 @@ void menuProc0(uint8_t event)
 #ifdef FRSKY
         if( (view == e_telemetry) && ((tview & 0x30) == 0x20 ) )
         {
-            AltOffset = -FrskyHubData[FR_ALT_BARO] ;
+            AltOffset = -getTelemetryValue(FR_ALT_BARO) ;
 #ifdef NMEA_EXTRA
 #if (defined(FRSKY) | defined(HUB))								//!!!!!!!!!!!!!!!!!
-		HomeSave = AltMax = FrskyHubData[FR_GPS_ALT] ;				//!!!!!!!!!!!!!!!!!!
+		HomeSave = AltMax = getTelemetryValue(FR_GPS_ALT) ;				//!!!!!!!!!!!!!!!!!!
 #endif
 #endif
         }
@@ -5577,7 +5575,7 @@ const static prog_uint8_t APM xt[4] = {128*1/4+2, 4, 128-4, 128*3/4-2};
                             putsTelemValue( x0-2, 2*FH, frskyTelemetry[i].value, i,  /*blink|*/DBLSIZE|LEFT, 1 ) ;
                             if ( g_model.frsky.channels[i].opt.alarm.type == 3 )		// Current (A)
 														{
-                              lcd_outdez(x0+FW, 4*FH,  FrskyHubData[FR_A1_MAH+i] );
+                              lcd_outdez(x0+FW, 4*FH,  getTelemetryValue(FR_A1_MAH+i) );
 														}
 														else
 														{
@@ -5591,7 +5589,7 @@ const static prog_uint8_t APM xt[4] = {128*1/4+2, 4, 128-4, 128*3/4-2};
                 if (frskyUsrStreaming)
 								{
                 	lcd_puts_Pleft( 1*FH, PSTR("Fuel")) ;
-									x0 = FrskyHubData[FR_FUEL] ;		// Fuel gauge value
+									x0 = getTelemetryValue(FR_FUEL) ;		// Fuel gauge value
 									lcd_hbar( 25, 9, 102, 6, x0 ) ;
 								}
                 lcd_puts_Pleft( 6*FH, Str_RXeq);
@@ -5611,13 +5609,13 @@ const static prog_uint8_t APM xt[4] = {128*1/4+2, 4, 128-4, 128*3/4-2};
 									displayTemp( 2, 14*FW, 7*FH, 0 ) ;
 									
                   lcd_puts_Pleft( 2*FH, PSTR("\012RPM"));
-                  lcd_outdezAtt(13*FW, 1*FH, FrskyHubData[FR_RPM], DBLSIZE|LEFT);
+                  lcd_outdezAtt(13*FW, 1*FH, getTelemetryValue(FR_RPM), DBLSIZE|LEFT);
                     
                   value = getAltbaroWithOffset() ;
 									putsTelemetryChannel( 0, 4*FH, TEL_ITEM_BALT, value, DBLSIZE | LEFT, (TELEM_LABEL | TELEM_UNIT_LEFT)) ;
 #ifdef NMEA_EXTRA
 #if (defined(FRSKY) | defined(HUB))												//!!!!!!!!!!!!
-		   	  if (AltMax < FrskyHubData[FR_GPS_ALT]) AltMax = FrskyHubData[FR_GPS_ALT] ;		//!!!!!!!!!!!
+		   	  if (AltMax < getTelemetryValue(FR_GPS_ALT)) AltMax = getTelemetryValue(FR_GPS_ALT) ;		//!!!!!!!!!!!
 			  if (( HomeSave != 0) | ( AltOffset != 0)) 
 			  {
 				lcd_puts_P(11*FW, 3*FH, PSTR("Amax="));
@@ -5660,18 +5658,18 @@ const static prog_uint8_t APM xt[4] = {128*1/4+2, 4, 128-4, 128*3/4-2};
 							}
 							
                 lcd_puts_Pleft( 2*FH, PSTR("Lat=")) ;
-                lcd_outdezNAtt(8*FW, 2*FH, FrskyHubData[FR_GPS_LAT], LEADING0 | blink, -5);
+                lcd_outdezNAtt(8*FW, 2*FH, getTelemetryValue(FR_GPS_LAT), LEADING0 | blink, -5);
                 lcd_putc(8*FW, 2*FH, '.') ;
-                lcd_outdezNAtt(12*FW, 2*FH, FrskyHubData[FR_GPS_LATd], LEADING0 | blink, -4);
+                lcd_outdezNAtt(12*FW, 2*FH, getTelemetryValue(FR_GPS_LATd), LEADING0 | blink, -4);
                 lcd_puts_Pleft( 3*FH, PSTR("Lon=")) ;
-                lcd_outdezNAtt(8*FW, 3*FH, FrskyHubData[FR_GPS_LONG], LEADING0 | blink, -5);
+                lcd_outdezNAtt(8*FW, 3*FH, getTelemetryValue(FR_GPS_LONG), LEADING0 | blink, -5);
                 lcd_putc(8*FW, 3*FH, '.') ;
-                lcd_outdezNAtt(12*FW, 3*FH, FrskyHubData[FR_GPS_LONGd], LEADING0 | blink, -4);
+                lcd_outdezNAtt(12*FW, 3*FH, getTelemetryValue(FR_GPS_LONGd), LEADING0 | blink, -4);
                 lcd_puts_Pleft( 4*FH, PSTR("Alt=\011m   Max=")) ;
-                lcd_outdez(20*FW, 4*FH, FrskyHubMax[FR_GPS_ALT] );
+                lcd_outdez(20*FW, 4*FH, getTelemetryValue(FR_GPS_ALT) );
                 
 								lcd_puts_Pleft( 5*FH, PSTR("Spd=\011kts Max=")) ;
-								mspeed = FrskyHubMax[FR_GPS_SPEED] ;
+								mspeed = getTelemetryValue(FR_GPS_SPEED) ;
                 if ( g_model.FrSkyImperial )
 								{
 									lcd_puts_Pleft( 5*FH, PSTR("\011mph")) ;
@@ -5687,8 +5685,8 @@ const static prog_uint8_t APM xt[4] = {128*1/4+2, 4, 128-4, 128*3/4-2};
 			lcd_outdezAtt(20*FW, 4*FH, AltMax, 0) ;								//!!!!!!!!!!!!!!
 #endif
 #endif
-								lcd_outdez(8 * FW, 4*FH, FrskyHubData[FR_GPS_ALT] ) ;
-								mspeed = FrskyHubData[FR_GPS_SPEED] ;
+								lcd_outdez(8 * FW, 4*FH, getTelemetryValue(FR_GPS_ALT) ) ;
+								mspeed = getTelemetryValue(FR_GPS_SPEED) ;
                 if ( g_model.FrSkyImperial )
 								{
 									mspeed = ( mspeed * 589 ) >> 9 ;
