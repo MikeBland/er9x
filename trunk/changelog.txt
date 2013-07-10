@@ -10,6 +10,14 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 08-Jul-2013  MPB
+Protect telemetry data reading
+Vario parameters stored in EEPROM
+Rotary LONG exits popup
+No delete on popup for current model
+Disable stick scroll on mode change
+
+******************************************
 CHANGELOG: 03-Jul-2013  MPB
 Model select popup
 GVARS on voice

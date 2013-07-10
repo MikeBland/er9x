@@ -2407,9 +2407,22 @@ int main(void)
 #ifdef FRSKY
 extern int16_t AltOffset ;
 
+
+NOINLINE int16_t getTelemetryValue( uint8_t index )
+{
+	int16_t value ;
+	int16_t *p ;
+	p = &FrskyHubData[index] ;
+	FORCE_INDIRECT(p) ;
+	cli() ;
+	value = *p ;
+	sei() ;
+	return value ;
+}
+
 int16_t getAltbaroWithOffset()
 {
- 	return FrskyHubData[FR_ALT_BARO] + AltOffset ;
+ 	return getTelemetryValue(FR_ALT_BARO) + AltOffset ;
 }
 #endif
 
@@ -2585,13 +2598,11 @@ void mainSequence()
 		// Vario
 	  {
 
-extern VarioData VarioSetup ;
-				
 			static uint8_t varioRepeatRate = 0 ;
 			
-			if ( VarioSetup.varioSource ) // Vario enabled
+			if ( g_model.varioData.varioSource ) // Vario enabled
 			{
-				if ( getSwitch( VarioSetup.swtch, 0, 0 ) )
+				if ( getSwitch( g_model.varioData.swtch, 0, 0 ) )
 				{
 					uint8_t new_rate = 0 ;
 					if ( varioRepeatRate )
@@ -2601,22 +2612,22 @@ extern VarioData VarioSetup ;
 					if ( varioRepeatRate == 0 )
 					{
 						int16_t vspd ;
-						if ( VarioSetup.varioSource == 1 )
+						if ( g_model.varioData.varioSource == 1 )
 						{
-							vspd = FrskyHubData[FR_VSPD] ;
-							if ( VarioSetup.param > 1 )
+							vspd = getTelemetryValue(FR_VSPD) ;
+							if ( g_model.varioData.param > 1 )
 							{
-								vspd /= VarioSetup.param ;							
+								vspd /= g_model.varioData.param ;							
 							}
 						}
 						else // VarioSetup.varioSource == 2
 						{
-							vspd = FrskyHubData[FR_A2_COPY] - 128 ;
+							vspd = getTelemetryValue(FR_A2_COPY) - 128 ;
 							if ( ( vspd < 3 ) && ( vspd > -3 ) )
 							{
 								vspd = 0 ;							
 							}
-							vspd *= VarioSetup.param ;
+							vspd *= g_model.varioData.param ;
 						}
 						if ( vspd )
 						{
@@ -2761,7 +2772,7 @@ extern VarioData VarioSetup ;
 							{
 								if ( g_model.frsky.frskyAlarmLimit )
 								{
-    		          if ( (  FrskyHubData[FR_A1_MAH+i] >> 6 ) >= g_model.frsky.frskyAlarmLimit )
+    		          if ( (  getTelemetryValue(FR_A1_MAH+i) >> 6 ) >= g_model.frsky.frskyAlarmLimit )
 									{
 										if ( g_eeGeneral.speakerMode & 2 )
 										{

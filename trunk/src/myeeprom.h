@@ -268,7 +268,7 @@ PACK(typedef struct t_Vario
   uint8_t varioSource ;
   int8_t  swtch ;
   uint8_t param ;
-}) VarioData ;	
+}) VarioData ;
 
 
 //PACK(typedef struct t_swVoice {
@@ -329,6 +329,7 @@ PACK(typedef struct t_ModelData {
 		uint8_t CustomDisplayIndex[6] ;
 		GvarData gvars[MAX_GVARS] ;
 		PhaseData phaseData[MAX_MODES] ;
+		VarioData varioData ;
 //		uint8_t   altSource ;
 }) ModelData;
 

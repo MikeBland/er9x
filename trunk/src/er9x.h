@@ -845,6 +845,7 @@ struct t_alarmControl
 extern struct t_alarmControl AlarmControl ;
 
 NOINLINE void resetTimer1(void) ;
+NOINLINE int16_t getTelemetryValue( uint8_t index ) ;
 
 // Fiddle to force compiler to use a pointer
 #ifndef SIMU
