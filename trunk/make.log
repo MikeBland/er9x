@@ -1,10 +1,18 @@
 ===== Starting build =====
 Timestamp
-Wed Jul 10 21:20:03 UTC 2013
+Wed Jul 17 22:10:26 UTC 2013
 ==========================
 
 ===== Updating from SVN =====
-At revision 799.
+Error validating server certificate for 'https://er9x.googlecode.com:443':
+ - The certificate is not issued by a trusted authority. Use the
+   fingerprint to validate the certificate manually!
+Certificate information:
+ - Hostname: *.googlecode.com
+ - Valid: from Fri, 12 Jul 2013 09:00:04 GMT until Thu, 31 Oct 2013 23:59:59 GMT
+ - Issuer: Google Inc, US
+ - Fingerprint: 22:ff:da:a9:55:f4:40:00:5e:1d:b5:7a:93:71:42:55:bd:9f:f3:8a
+(R)eject, accept (t)emporarily or accept (p)ermanently? At revision 800.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -91,7 +99,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   55124 bytes (84.1% Full)
+Program:   55430 bytes (84.6% Full)
 (.text + .data + .bootloader)
 
 Data:       3194 bytes (78.0% Full)
@@ -188,10 +196,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   61056 bytes (93.2% Full)
+Program:   61398 bytes (93.7% Full)
 (.text + .data + .bootloader)
 
-Data:       3361 bytes (82.1% Full)
+Data:       3363 bytes (82.1% Full)
 (.data + .bss + .noinit)
 
 
@@ -285,10 +293,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   60566 bytes (92.4% Full)
+Program:   60908 bytes (92.9% Full)
 (.text + .data + .bootloader)
 
-Data:       3360 bytes (82.0% Full)
+Data:       3362 bytes (82.1% Full)
 (.data + .bss + .noinit)
 
 
@@ -382,7 +390,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   56876 bytes (86.8% Full)
+Program:   57180 bytes (87.2% Full)
 (.text + .data + .bootloader)
 
 Data:       3192 bytes (77.9% Full)
@@ -479,7 +487,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   61068 bytes (93.2% Full)
+Program:   61372 bytes (93.6% Full)
 (.text + .data + .bootloader)
 
 Data:       3349 bytes (81.8% Full)
@@ -573,7 +581,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   52158 bytes (79.6% Full)
+Program:   52462 bytes (80.1% Full)
 (.text + .data + .bootloader)
 
 Data:       3132 bytes (76.5% Full)
@@ -667,7 +675,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   54566 bytes (83.3% Full)
+Program:   54870 bytes (83.7% Full)
 (.text + .data + .bootloader)
 
 Data:       3158 bytes (77.1% Full)
@@ -764,10 +772,10 @@ AVR Memory Usage
 ----------------
 Device: atmega128
 
-Program:   63186 bytes (48.2% Full)
+Program:   63530 bytes (48.5% Full)
 (.text + .data + .bootloader)
 
-Data:       3386 bytes (82.7% Full)
+Data:       3388 bytes (82.7% Full)
 (.data + .bss + .noinit)
 
 
@@ -858,7 +866,7 @@ AVR Memory Usage
 ----------------
 Device: atmega128
 
-Program:   54762 bytes (41.8% Full)
+Program:   55068 bytes (42.0% Full)
 (.text + .data + .bootloader)
 
 Data:       3158 bytes (77.1% Full)

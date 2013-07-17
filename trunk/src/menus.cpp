@@ -1481,17 +1481,38 @@ for(uint8_t i=0; i<7; i++){
 				{
 					StickScrollAllowed = 0 ;		// Block while editing
 				}
-
+				int16_t value ;
+				int16_t t = 0 ;
+				if ( g_model.sub_trim_limit )
+				{
+					if ( ( t = ld->offset ) )
+					{
+						if ( t > g_model.sub_trim_limit )
+						{
+							t = g_model.sub_trim_limit ;
+						}
+						else if ( t < -g_model.sub_trim_limit )
+						{
+							t = -g_model.sub_trim_limit ;
+						}
+					}
+				}
+				value = t / 10 ;
         switch(j)
         {
         case 0:
-            lcd_outdezAtt(  8*FW, y,  ld->offset, attr|PREC1);
+            lcd_outdezAtt(  7*FW+3, y,  ld->offset, attr|PREC1);
             if(active) {
                 ld->offset = checkIncDec16(ld->offset, -1000, 1000, EE_MODEL);
             }
             break;
         case 1:
-            lcd_outdezAtt(  12*FW, y, (int8_t)(ld->min-100),   attr);
+					value += (int8_t)(ld->min-100) ;
+					if ( value < -125 )
+					{
+						value = -125 ;						
+					}
+          lcd_outdezAtt(  12*FW, y, value,   attr);
             if(active) {
                 ld->min -=  100;
                 CHECK_INCDEC_H_MODELVAR( ld->min, -limit,25);
@@ -1499,7 +1520,16 @@ for(uint8_t i=0; i<7; i++){
             }
             break;
         case 2:
-            lcd_outdezAtt( 17*FW, y, (int8_t)(ld->max+100),    attr);
+					value += (int8_t)(ld->max+100) ;
+					if ( value > 125 )
+					{
+						value = 125 ;						
+					}
+          lcd_outdezAtt( 17*FW, y, value,    attr);
+					if ( t )
+					{
+						lcd_rect( 9*FW-4, y-1, 56, 9 ) ;
+					}
             if(active) {
                 ld->max +=  100;
                 CHECK_INCDEC_H_MODELVAR( ld->max, -25,limit);
@@ -3732,7 +3762,7 @@ void putsTrimMode( uint8_t x, uint8_t y, uint8_t phase, uint8_t idx, uint8_t att
   }
   else
 	{
-  	lcd_putsAttIdx( x, y, PSTR("\001RETA"), idx, att ) ;
+  	lcd_putsAttIdx( x, y, PSTR("\001RETA"), pgm_read_byte(modn12x3+g_eeGeneral.stickMode*4+idx)-1, att ) ;
   }
 	
 //	lcd_outhex4( 64, 4*FH, v ) ;
@@ -3816,7 +3846,13 @@ void menuModelPhases(uint8_t event)
 		break;
   }
     
-	lcd_puts_Pleft( 2*FH, PSTR(" FM0\017RETA") ) ;
+	lcd_puts_Pleft( 2*FH, PSTR(" FM0") ) ;
+  {
+    for ( i = 1 ; i <= 4 ; i += 1 )
+    {
+  		lcd_putsAttIdx( (14+i)*FW, 2*FH, PSTR("\001RETA"), pgm_read_byte(modn12x3+g_eeGeneral.stickMode*4+(i-1))-1, 0 ) ;
+    }
+  }
 
   for ( i=1 ; i<=MAX_MODES ; i += 1 )
 	{
@@ -5666,10 +5702,10 @@ const static prog_uint8_t APM xt[4] = {128*1/4+2, 4, 128-4, 128*3/4-2};
                 lcd_putc(8*FW, 3*FH, '.') ;
                 lcd_outdezNAtt(12*FW, 3*FH, getTelemetryValue(FR_GPS_LONGd), LEADING0 | blink, -4);
                 lcd_puts_Pleft( 4*FH, PSTR("Alt=\011m   Max=")) ;
-                lcd_outdez(20*FW, 4*FH, getTelemetryValue(FR_GPS_ALT) );
+                lcd_outdez(20*FW, 4*FH, FrskyHubMax[FR_GPS_ALT] );
                 
 								lcd_puts_Pleft( 5*FH, PSTR("Spd=\011kts Max=")) ;
-								mspeed = getTelemetryValue(FR_GPS_SPEED) ;
+								mspeed = FrskyHubMax[FR_GPS_SPEED] ;
                 if ( g_model.FrSkyImperial )
 								{
 									lcd_puts_Pleft( 5*FH, PSTR("\011mph")) ;

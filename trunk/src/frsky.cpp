@@ -124,6 +124,8 @@ uint8_t Frsky_user_state ;
 uint8_t Frsky_user_stuff ;
 uint8_t Frsky_user_id ;
 uint8_t Frsky_user_lobyte ;
+uint8_t Frsky_user_hibyte ;
+uint8_t Frsky_user_ready ;
 
 int16_t FrskyHubData[HUBDATALENGTH] ;  // All 38 words
 //int16_t FrskyHubMin[HUBMINMAXLEN] ;
@@ -275,7 +277,12 @@ void frsky_proc_user_byte( uint8_t byte )
 		{ // Waiting for 0x5E
 			if ( byte == 0x5E )
 			{
-				Frsky_user_state = 1 ;			
+				Frsky_user_state = 1 ;
+				if ( Frsky_user_ready )
+				{
+					Frsky_user_ready = 0 ;
+					store_hub_data( Frsky_user_id & 0x7F, ( Frsky_user_hibyte << 8 ) + Frsky_user_lobyte ) ;
+				}
 			}		
 		}
 		else
@@ -307,6 +314,10 @@ void frsky_proc_user_byte( uint8_t byte )
 						{
 							byte = FR_VSPD ;		// Move Vario							
 						}
+						if ( byte > sizeof(Fr_indices) )
+						{
+							byte = 0 ;	// Use a discard item							
+						}
 					  Frsky_user_id	= pgm_read_byte( &Fr_indices[byte] ) ;
 						Frsky_user_state = 2 ;
 					}
@@ -317,7 +328,8 @@ void frsky_proc_user_byte( uint8_t byte )
 					}
 					else
 					{
-						store_hub_data( Frsky_user_id & 0x7F, ( byte << 8 ) + Frsky_user_lobyte ) ;
+						Frsky_user_hibyte = byte ;
+						Frsky_user_ready = 1 ;
 						Frsky_user_state = 0 ;
 					}
 				}
