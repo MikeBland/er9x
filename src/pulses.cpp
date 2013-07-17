@@ -259,6 +259,10 @@ void setupPulsesPPM( uint8_t proto )
 		*ptr++ = v - q ; /* as Pat MacKenzie suggests */
 		*ptr++ = q;      //to here
 	}
+	if ( rest < 9000 )
+	{
+		rest = 9000 ;
+	}
   *ptr++ = rest;
 	if ( proto != PROTO_PPM )
 	{
