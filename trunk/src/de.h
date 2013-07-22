@@ -29,6 +29,7 @@
 *
 ****************************************************************************
 * Other Authors:
+ * - Fabian Schurig
  * - Andre Bernet
  * - Bertrand Songis
  * - Bryan J. Rentoul (Gruvin)
@@ -46,23 +47,19 @@
 ****************************************************************************/
 
 
-#define STR_ON             "ON "
-#define STR_OFF            "OFF"
+#define STR_ON             "AN "
+#define STR_OFF            "AUS"
 
 #define STR_ALTEQ	         "Alt=" 
 #define STR_TXEQ		       "Tx="
 #define STR_RXEQ		       "Rx="
 #define STR_TRE012AG	     "TRE012AG"
-
-// STR_YELORGRED indexed 3 char each
-#define STR_YELORGRED	     "\003---YelOrgRed"
+#define STR_YELORGRED	     "\003---GelOraRot"
 #define STR_A_EQ		       "A ="
 #define STR_SOUNDS	       "\006Warn1 ""Warn2 ""Cheap ""Ring  ""SciFi ""Robot ""Chirp ""Tada  ""Crickt""Siren ""AlmClk""Ratata""Tick  ""Haptc1""Haptc2""Haptc3"
-#define STR_SWITCH_WARN	   "Switch Warning"
-// STR_TIMER exactly 5 chars long
-#define STR_TIMER          "Timer"
+#define STR_SWITCH_WARN	   "Wechsle Warnung"  
+#define STR_TIMER          "Timer"			
 
-// STR_PPMCHANNELS indexed 4 char each
 #define STR_PPMCHANNELS	   "\0044CH 6CH 8CH 10CH12CH14CH16CH"
 
 #define STR_MAH_ALARM      "mAh Alarm"
@@ -70,20 +67,20 @@
 
 // er9x.cpp
 // ********
-#define STR_LIMITS		     "LIMITS"
-#define STR_EE_LOW_MEM     "EEPROM low mem"
-#define STR_ALERT		       "ALERT"
-#define STR_THR_NOT_IDLE   "Throttle not idle"
-#define STR_RST_THROTTLE   "Reset throttle"
-#define STR_PRESS_KEY_SKIP "Press any key to skip"
-#define STR_ALARMS_DISABLE "Alarms Disabled"
-#define STR_OLD_VER_EEPROM " Old Version EEPROM   CHECK SETTINGS/CALIB"
-#define STR_RESET_SWITCHES "Please Reset Switches"
-#define STR_LOADING        "LOADING"
-#define STR_MESSAGE        "MESSAGE"
-#define STR_PRESS_ANY_KEY  "press any Key"
-#define STR_MSTACK_UFLOW   "mStack uflow"
-#define STR_MSTACK_OFLOW   "mStack oflow"
+#define STR_LIMITS		     "GRENZEN"
+#define STR_EE_LOW_MEM     "EEPROM wenig Speicher"
+#define STR_ALERT		       "ALARM"
+#define STR_THR_NOT_IDLE   "Gas nicht im Ruhezstd"
+#define STR_RST_THROTTLE   "auf Standgas setzen"
+#define STR_PRESS_KEY_SKIP "Drücke eine Taste"
+#define STR_ALARMS_DISABLE "Alarme Deaktiviert"
+#define STR_OLD_VER_EEPROM " EEPROM ist veraltet   PRÜFE EINSTELL/KALIB"
+#define STR_RESET_SWITCHES "Schalter ausschalten"
+#define STR_LOADING        "LÄDT"
+#define STR_MESSAGE        "NACHRICHT"
+#define STR_PRESS_ANY_KEY  "Drücke eine Taste"
+#define STR_MSTACK_UFLOW   "mStack voll"
+#define STR_MSTACK_OFLOW   "mStack leer"
 
 #define STR_CHANS_GV	     "\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POSGV1 GV2 GV3 GV4 GV5 GV6 GV7 "
 #define STR_CHANS_RAW	     "\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POS"
@@ -92,20 +89,20 @@
 
 // pers.cpp
 // ********
-#define STR_ME             "ME        "
-#define STR_MODEL          "MODEL     "
-#define STR_BAD_EEPROM     "Bad EEprom Data"
-#define STR_EE_FORMAT      "EEPROM Formatting"
-#define STR_GENWR_ERROR    "genwrite error"
-#define STR_EE_OFLOW       "EEPROM overflow"
+#define STR_ME             "MEIN      "
+#define STR_MODEL          "MODELL    "
+#define STR_BAD_EEPROM     "ungültige EEpromDaten"
+#define STR_EE_FORMAT      "EEPROM Formatieren"
+#define STR_GENWR_ERROR    "schreib Fehler"
+#define STR_EE_OFLOW       "EEPROM voll"
 
 // templates.cpp
 // ***********
-#define STR_T_S_4CHAN      "Simple 4-CH"
-#define STR_T_TCUT         "T-Cut"
-#define STR_T_STICK_TCUT   "Sticky T-Cut"
-#define STR_T_V_TAIL       "V-Tail"
-#define STR_T_ELEVON       "Elevon\\Delta"
+#define STR_T_S_4CHAN      "Einfache 4-CH"
+#define STR_T_TCUT         "Gas aus"
+#define STR_T_STICK_TCUT   "Erw. Gas aus"
+#define STR_T_V_TAIL       "V-Leitw"
+#define STR_T_ELEVON       "Delta\\Nurflügler"
 #define STR_T_HELI_SETUP   "Heli Setup"
 #define STR_T_GYRO         "Gyro Setup"
 #define STR_T_SERVO_TEST   "Servo Test"
@@ -115,95 +112,97 @@
 #define STR_TELEM_ITEMS	   "\004----A1= A2= RSSITSSITim1Tim2Alt GaltGspdT1= T2= RPM FUELMah1Mah2CvltBattAmpsMah CtotFasVAccXAccYAccZVspdGvr1Gvr2Gvr3Gvr4Gvr5Gvr6Gvr7Fwat"
 #define STR_TELEM_SHORT    "\004----TIM1TIM2BATTGvr1Gvr2Gvr3Gvr4Gvr5Gvr6Gvr7"
 #define STR_GV             "GV"
-#define STR_OFF_ON         "OFFON "
+#define STR_OFF_ON         "AUSAN "
 #define STR_HYPH_INV       "\003---INV"
 #define STR_VERSION        "VERSION"
 #define STR_TRAINER        "TRAINER"
 #define STR_SLAVE          "\007Slave" 
-#define STR_MENU_DONE      "[MENU] WHEN DONE"
-#define STR_CURVES         "CURVES"
-#define STR_CURVE          "CURVE"
-#define STR_GLOBAL_VAR     "GLOBAL VAR"
-#define STR_VALUE          "Value"
-#define STR_PRESET         "PRESET"
+#define STR_MENU_DONE      "[MENÜ] WENN FERTIG"
+#define STR_CURVES         "KURVEN"
+#define STR_CURVE          "KURVE"
+#define STR_GLOBAL_VAR     "GLOBALE VAR"
+#define STR_VALUE          "Wert"
+#define STR_PRESET         "VOREINST"
 #define STR_CV             "CV"
-#define STR_LIMITS         "LIMITS"
-#define STR_COPY_TRIM      "COPY TRIM [MENU]"
-#define STR_TELEMETRY      "TELEMETRY"
-#define STR_USR_PROTO      "UsrProto"
+#define STR_LIMITS         "GRENZEN"
+#define STR_COPY_TRIM      "KOPIERE TRIM [MENÜ]"
+#define STR_TELEMETRY      "TELEMETRIE"
+#define STR_USR_PROTO      "BenProto"
 #define STR_FRHUB_WSHHI    "\005FrHubWSHhi"
 #define STR_MET_IMP        "\003MetImp"
-#define STR_A_CHANNEL      "A  channel"
+#define STR_A_CHANNEL      "A  Kanal"
 #define STR_ALRM           "alrm"
-#define STR_TELEMETRY2     "TELEMETRY2"
+#define STR_TELEMETRY2     "TELEMETRIE2"
 #define STR_TX_RSSIALRM    "TxRSSIalrm"
-#define STR_NUM_BLADES     "Num Blades"
+#define STR_NUM_BLADES     "Num Blätter"
 #define STR_ALT_ALARM      "AltAlarm"
 #define STR_OFF122400      "\003OFF122400"
 #define STR_VOLT_THRES     "Volt Thres="
-#define STR_GPS_ALTMAIN    "GpsAltMain"
-#define STR_CUSTOM_DISP    "Custom Display"
+#define STR_GPS_ALTMAIN    "GpsAltHaupt"
+#define STR_CUSTOM_DISP    "Ind. Bildschirm"
 #define STR_FAS_OFFSET     "FAS Offset"
-#define STR_VARIO_SRC      "Vario: Source"
+#define STR_VARIO_SRC      "Vario: Quelle"
 #define STR_VSPD_A2        "\004----vspdA2  "
-#define STR_2SWITCH        "\002Switch"
-#define STR_2SENSITIVITY   "\002Sensitivity"
-#define STR_GLOBAL_VARS    "GLOBAL VARS"
+#define STR_2SWITCH        "\002Schalter"
+#define STR_2SENSITIVITY   "\002Empfindlichkeit"
+#define STR_GLOBAL_VARS    "GLOBALE VARS"
 #define STR_GV_SOURCE      "\003---RtmEtmTtmAtmRENRUDELETHRAILP1 P2 P3 c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
-#define STR_TEMPLATES      "TEMPLATES"
-#define STR_CHAN_ORDER     "\001Channel Order"
+#define STR_TEMPLATES      "VORLAGEN"
+#define STR_CHAN_ORDER     "\001Kanal Reihenfolge"
 #define STR_SP_RETA        " RETA"
-#define STR_CLEAR_MIXES    "CLEAR MIXES [MENU]"
-#define STR_SAFETY_SW      "SAFETY SWITCHES"
-#define STR_NUM_VOICE_SW   "Number Voice Sw"
-#define STR_V_OPT1         "\007 8 Secs12 Secs16 Secs"
+#define STR_CLEAR_MIXES    "LÖSCHE MISCHER [MENÜ]"
+#define STR_SAFETY_SW      "SICHERHEITS SCHALTER"
+#define STR_NUM_VOICE_SW   "Nummer Sprach Sch"
+#define STR_V_OPT1         "\007 8 Sek 12 Sek 16 Sek "
 #define STR_VS             "VS"
-#define STR_VOICE_OPT      "\006ON    OFF   BOTH  15Secs30Secs60SecsVaribl"
-#define STR_CUST_SWITCH    "CUSTOM SWITCHES"
+#define STR_VOICE_OPT      "\006AN    AUS   BEIDE 15Sek 30Sek 60Sek Eigene"
+#define STR_CUST_SWITCH    "IND. SCHALTER"
 #define STR_S              "S"
-#define STR_15_ON          "\015On"
-#define STR_EDIT_MIX       "EDIT MIX "
-#define STR_2SOURCE        "\002Source"
-#define STR_2WEIGHT        "\002Weight"
+#define STR_15_ON          "\015An"
+
+
+#define STR_EDIT_MIX       "Barb MISCHER "
+#define STR_2SOURCE        "\002Quelle"
+#define STR_2WEIGHT        "\002Gewicht"
 #define STR_FMTRIMVAL      "FmTrimVal"
 #define STR_OFFSET         "Offset"
 #define STR_2FIX_OFFSET    "\002Fix Offset"
 #define STR_FLMODETRIM     "\002FlModetrim"
 #define STR_2TRIM          "\002Trim"
 #define STR_15DIFF         "\015Diff"
-#define STR_Curve          "Curve"
-#define STR_2WARNING       "\002Warning"
+#define STR_Curve          "Kurve"
+#define STR_2WARNING       "\002Warnung"
 #define STR_2MULTIPLEX     "\002Multpx"
 // STR_ADD_MULT_REP indexed 8 chars each
-#define STR_ADD_MULT_REP   "\010Add     MultiplyReplace "
-#define STR_2DELAY_DOWN    "\002Delay Down"
-#define STR_2DELAY_UP      "\002Delay Up"
-#define STR_2SLOW_DOWN     "\002Slow  Down"
-#define STR_2SLOW_UP       "\002Slow  Up"
-#define STR_MAX_MIXERS     "Max mixers reach: 32"
-#define STR_PRESS_EXIT_AB  "Press [EXIT] to abort"
-#define STR_YES_NO         "\003YES\013NO"
-#define STR_MENU_EXIT      "\003[MENU]\013[EXIT]"
-#define STR_DELETE_MIX     "DELETE MIX?"
-#define STR_MIX_POPUP      "EDIT\0INSERT\0COPY\0MOVE\0DELETE"
-#define STR_MIXER          "MIXER"
-// CHR_S S for Slow
-#define CHR_S              'S'
-// CHR_D D for Delay
-#define CHR_D              'D'
+#define STR_ADD_MULT_REP   "\010HinzufügenMultipliziErsetzen  "
+#define STR_2DELAY_DOWN    "\002Pause runter"
+#define STR_2DELAY_UP      "\002Pause hoch"
+#define STR_2SLOW_DOWN     "\002Langsam runter"
+#define STR_2SLOW_UP       "\002Langsam hoch"
+#define STR_MAX_MIXERS     "max Mix erreicht: 32"
+#define STR_PRESS_EXIT_AB  "[EXIT] zum Abbrechen"
+#define STR_YES_NO         "\003JA \013NEIN"
+#define STR_MENU_EXIT      "\003[MENÜ]\013[EXIT]"
+#define STR_DELETE_MIX     "LÖSCHE MISCHER?"
+#define STR_MIX_POPUP      "BARB\0EINFÜGEN\0KOPIEREN\0VERSCHIEBEN\0LÖSCHEN"
+#define STR_MIXER          "MISCHER"
+// CHR_S S for Slow / Langsam
+#define CHR_S              'L'
+// CHR_D D for Delay / Pause
+#define CHR_D              'P'
 // CHR_d d for differential
 #define CHR_d              'd'
 #define STR_EXPO_DR        "EXPO/DR"
-#define STR_4DR_MID        "\004DR Mid"
-#define STR_4DR_LOW        "\004DR Low"
-#define STR_4DR_HI         "\004DR Hi"
+#define STR_4DR_MID        "\004DR Mittel"
+#define STR_4DR_LOW        "\004DR Tief"
+#define STR_4DR_HI         "\004DR Hoch"
 #define STR_2EXPO          "\002Expo"
 #define STR_DR_SW1         "DrSw1"
 #define STR_DR_SW2         "DrSw2"
-#define STR_DUP_MODEL      "DUPLICATE MODEL"
-#define STR_DELETE_MODEL   "DELETE MODEL"
-#define STR_DUPLICATING    "Duplicating model"
-#define STR_SETUP          "SETUP"
+#define STR_DUP_MODEL      "KOPIERE MODELL"
+#define STR_DELETE_MODEL   "LÖSCHE MODELL"
+#define STR_DUPLICATING    "Kopiere Modell"
+#define STR_SETUP          "EINST"
 #define STR_NAME           "Name"
 #define STR_VOICE_INDEX    "Voice Index\021MENU"
 #define STR_TRIGGER        "Trigger"
@@ -324,7 +323,6 @@
 #define STR_STICK_NAMES    "RUD ELE THR AIL "
 
 #define STR_STAT           "STAT"
-#define STR_STAT2          "STAT2"
 // STR_TRIM_OPTS indexed 3 chars each
 #define STR_TRIM_OPTS      "\003ExpExFFneMedCrs"
 #define STR_TTM            "TTm"
@@ -335,7 +333,6 @@
 #define STR_ALT_MAX        "Alt=\011m   Max="
 #define STR_SPD_KTS_MAX    "Spd=\011kts Max="
 #define STR_11_MPH         "\011mph"
-
 
 // ersky9x strings
 #define STR_ST_CARD_STAT   "SD CARD STAT"
@@ -373,5 +370,6 @@
 #define STR_STICK_LH_GAIN  "Stick LH Gain"
 #define STR_STICK_RV_GAIN  "Stick RV Gain"
 #define STR_STICK_RH_GAIN  "Stick RH Gain"
+
 
 

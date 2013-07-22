@@ -242,16 +242,12 @@ enum EnumKeys {
     SW_Trainer
 }; 
 
-#define SWITCHES_STR "THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN""SW1""SW2""SW3""SW4""SW5""SW6""SW7""SW8""SW9""SWA""SWB""SWC"
 #define NUM_CSW  12 //number of custom switches
-#define SWITCH_WARN_STR	"Switch Warning"
 
 extern const prog_char APM Str_Switches[] ;
 
-#define CURV_STR "\003---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
 #define CURVE_BASE 7
 
-#define CSWITCH_STR  "\007----   v>ofs  v<ofs  |v|>ofs|v|<ofsAND    OR     XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""v1>=v2 ""v1<=v2 TimeOff"
 //#define CSW_LEN_FUNC 7
 
 #define CS_OFF       (uint8_t)0
@@ -321,7 +317,6 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 
 #define NUM_STICKS	4
 
-#define SWASH_TYPE_STR   "\006---   ""120   ""120X  ""140   ""90    "
 
 #define SWASH_TYPE_120   1
 #define SWASH_TYPE_120X  2

@@ -298,6 +298,15 @@ ifeq ($(CPU), 128)
  CPPDEFS += -DPHASES
 endif
 
+ifeq ($(LANG), FR)
+ CPPDEFS += -DLANG_FR
+else
+ ifeq ($(LANG), DE)
+  CPPDEFS += -DLANG_DE
+ endif
+endif
+
+
 #---------------- Compiler Options C ----------------
 #  -g*:          generate debugging information
 #  -O*:          optimization level
