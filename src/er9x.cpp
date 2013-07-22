@@ -16,7 +16,7 @@
 
 #include "er9x.h"
 #include <stdlib.h>
-#include "en.h"
+#include "language.h"
 
 // Next two lines swapped as new complier/linker reverses them in memory!
 const
@@ -86,11 +86,11 @@ const prog_char APM Str_Switches[] = SWITCHES_STR ;
 //#define BACKLIGHT_ON    {Backlight = 1 ; if ( (g_eeGeneral.speakerMode & 2) == 0 ) PORTB |=  (1<<OUT_B_LIGHT);}
 //#define BACKLIGHT_OFF   {Backlight = 0 ; if ( (g_eeGeneral.speakerMode & 2) == 0 ) PORTB &= ~(1<<OUT_B_LIGHT);}
 
-const prog_char APM Str_OFF[] =  "OFF" ;
-const prog_char APM Str_ON[] = "ON " ;
+const prog_char APM Str_OFF[] =  STR_OFF ;
+const prog_char APM Str_ON[] = STR_ON ;
 
 const prog_char APM modi12x3[]=                         
-"RUD ELE THR AIL ";
+STR_STICK_NAMES;
 //"RUD THR ELE AIL "
 //"AIL ELE THR RUD "
 //"AIL THR ELE RUD ";
@@ -168,9 +168,9 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
         lcd_putsnAtt(x,y,&modi12x3[(pgm_read_byte(modn12x3+g_eeGeneral.stickMode*4+(idx-1))-1)*4],4,att);
     else if(idx<=chanLimit)
 #if GVARS
-        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POSGV1 GV2 GV3 GV4 GV5 GV6 GV7 "),(idx-5),att);
+        lcd_putsAttIdx(x,y,PSTR(STR_CHANS_GV),(idx-5),att);
 #else
-        lcd_putsAttIdx(x,y,PSTR("\004P1  P2  P3  HALFFULLCYC1CYC2CYC3PPM1PPM2PPM3PPM4PPM5PPM6PPM7PPM8CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH163POS"),(idx-5),att);
+        lcd_putsAttIdx(x,y,PSTR(STR_CHANS_RAW),(idx-5),att);
 #endif
 #ifdef FRSKY
     else
@@ -195,7 +195,7 @@ void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 //		lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
 //  	lcd_outdezNAtt(x+2*FW,y,idx1,LEFT|att,2);
   	lcd_outdezAtt(x1,y,idx1,att);
-    lcd_putsnAtt(x,y,PSTR("CH"),2,att);
+    lcd_putsnAtt(x,y,PSTR(STR_CH),2,att);
 	}
     // !! todo NUM_CHN !!
 //    lcd_putsnAtt(x,y,PSTR("--- CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"
@@ -230,7 +230,7 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t type )
 	if ( type < 2 )		// 0 or 1
 	{
     if(abs(tm)<TMR_VAROFS) {
-        lcd_putsAttIdx(  x, y, PSTR("\003OFFABSRUsRU%ELsEL%THsTH%ALsAL%P1 P1%P2 P2%P3 P3%"),abs(tm),attr);
+        lcd_putsAttIdx(  x, y, PSTR(STR_TMR_MODE),abs(tm),attr);
         if(tm<(-TMRMODE_ABS)) lcd_putcAtt(x-1*FW,  y,'!',attr);
 //        return;
     }
@@ -644,7 +644,7 @@ static void checkMem()
     if(g_eeGeneral.disableMemoryWarning) return;
     if(EeFsGetFree() < 200)
     {
-        alert(PSTR("EEPROM low mem"));
+        alert(PSTR(STR_EE_LOW_MEM));
     }
 
 }
@@ -655,7 +655,7 @@ void alertMessages( const prog_char * s, const prog_char * t )
     lcd_putsAtt(64-5*FW,0*FH,Str_Alert,DBLSIZE);
     lcd_puts_Pleft(4*FH,s);
     lcd_puts_Pleft(5*FH,t);
-    lcd_puts_Pleft(6*FH,  PSTR("Press any key to skip") ) ;
+    lcd_puts_Pleft(6*FH,  PSTR(STR_PRESS_KEY_SKIP) ) ;
 		lcdSetContrast() ;
 }
 
@@ -686,7 +686,7 @@ static void checkTHR()
  	  if(v<=lowLim) return;
 
     // first - display warning
-    alertMessages( PSTR("Throttle not idle"), PSTR("Reset throttle") ) ;
+    alertMessages( PSTR(STR_THR_NOT_IDLE), PSTR(STR_RST_THROTTLE) ) ;
     refreshDiplay();
     clearKeyEvents();
 
@@ -713,14 +713,14 @@ static void checkTHR()
 static void checkAlarm() // added by Gohst
 {
     if(g_eeGeneral.disableAlarmWarning) return;
-    if(!g_eeGeneral.beeperVal) alert(PSTR("Alarms Disabled"));
+    if(!g_eeGeneral.beeperVal) alert(PSTR(STR_ALARMS_DISABLE));
 }
 
 static void checkWarnings()
 {
     if(sysFlags && sysFLAG_OLD_EEPROM)
     {
-        alert(PSTR(" Old Version EEPROM   CHECK SETTINGS/CALIB")); //will update on next save
+        alert(PSTR(STR_OLD_VER_EEPROM)); //will update on next save
         sysFlags &= ~(sysFLAG_OLD_EEPROM); //clear flag
     }
 }
@@ -798,7 +798,7 @@ static void checkSwitches()
         //first row - THR, GEA, AIL, ELE, ID0/1/2
         uint8_t x = i ^ warningStates ;
 
-		    alertMessages( Str_Switch_warn, PSTR("Please Reset Switches") ) ;
+		    alertMessages( Str_Switch_warn, PSTR(STR_RESET_SWITCHES) ) ;
 
         if(x & SWP_THRB)
             putWarnSwitch(2 + 0*FW, 0 );
@@ -910,7 +910,7 @@ static void checkQuickSelect()
         //        eeDirty(EE_GENERAL);
 
         lcd_clear();
-        lcd_putsAtt(64-7*FW,0*FH,PSTR("LOADING"),DBLSIZE);
+        lcd_putsAtt(64-7*FW,0*FH,PSTR(STR_LOADING),DBLSIZE);
 
 				putsDblSizeName( 3*FH ) ;
 //        for(uint8_t i=0;i<sizeof(g_model.name);i++)
@@ -941,12 +941,12 @@ void almess( const prog_char * s, uint8_t type )
   lcd_puts_Pleft(4*FW,s);
 	if ( type == ALERT_TYPE)
 	{
-    lcd_puts_P(64-6*FW,7*FH,PSTR("press any Key"));
+    lcd_puts_P(64-6*FW,7*FH,PSTR(STR_PRESS_ANY_KEY));
 		h = Str_Alert ;
 	}
 	else
 	{
-		h = PSTR("MESSAGE") ;
+		h = PSTR(STR_MESSAGE) ;
 	}
   lcd_putsAtt(64-5*FW,0*FH, h,DBLSIZE);
   refreshDiplay();
@@ -1292,7 +1292,7 @@ void popMenu(bool uppermost)
         audioDefevent(AU_MENUS);
         (*g_menuStack[g_menuStackPtr])(EVT_ENTRY_UP);
     }else{
-        alert(PSTR("mStack uflow"));
+        alert(PSTR(STR_MSTACK_UFLOW));
     }
 }
 
@@ -1309,7 +1309,7 @@ void pushMenu(MenuFuncP newMenu)
     if(g_menuStackPtr >= DIM(g_menuStack)-1)
     {
 //        g_menuStackPtr--;
-        alert(PSTR("mStack oflow"));
+        alert(PSTR(STR_MSTACK_OFLOW));
         return;
     }
     audioDefevent(AU_MENUS);

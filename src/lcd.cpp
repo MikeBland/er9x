@@ -28,12 +28,18 @@ uint8_t lcd_lastPos;
 
 uint8_t displayBuf[DISPLAY_W*DISPLAY_H/8];
 #define DISPLAY_END (displayBuf+sizeof(displayBuf))
-const
-#include "font.lbm"
-#define font_5x8_x20_x7f (font+3)
 
-const
+
+const prog_uchar APM font[] = {
+#include "font.lbm"
+};
+
+#define font_5x8_x20_x7f (font)
+
+const prog_uchar APM font_dblsize[] = {
 #include "font_dblsize.lbm"
+};
+
 #define font_10x16_x20_x7f (font_dblsize)
 
 

@@ -17,6 +17,7 @@
 #include "er9x.h"
 #include <stdlib.h>
 #include "templates.h"
+#include "language.h"
 
 #ifdef FRSKY
 #include "frsky.h"
@@ -24,7 +25,7 @@
 
 static void validateName( char *name, uint8_t size ) ;
 
-const prog_char APM Str_EEPROM_Overflow[] =  "EEPROM overflow" ;
+const prog_char APM Str_EEPROM_Overflow[] =  STR_EE_OFLOW ;
 
 EFile theFile;  //used for any file operation
 EFile theFile2; //sometimes we need two files
@@ -52,7 +53,7 @@ void generalDefault()
     g_eeGeneral.calibSpanNeg[i] = 0x180;
     g_eeGeneral.calibSpanPos[i] = 0x180;
   }
-  strncpy_P(g_eeGeneral.ownerName,PSTR("ME        "),10);
+  strncpy_P(g_eeGeneral.ownerName,PSTR(STR_ME),10);
   g_eeGeneral.chkSum = evalChkSum() ;
 }
 
@@ -96,7 +97,7 @@ static bool eeLoadGeneral()
 void modelDefaultWrite(uint8_t id)
 {
   memset(&g_model, 0, sizeof(ModelData));
-  strncpy_P(g_model.name,PSTR("MODEL     "), 10);
+  strncpy_P(g_model.name,PSTR(STR_MODEL), 10);
 	div_t qr ;
 	qr = div( id+1, 10 ) ;
   g_model.name[5]='0'+qr.quot;
@@ -221,15 +222,15 @@ void eeReadAll()
      !eeLoadGeneral()
   )
   {
-    alert(PSTR("Bad EEprom Data"), true);
-    message(PSTR("EEPROM Formatting"));
+    alert(PSTR(STR_BAD_EEPROM), true);
+    message(PSTR(STR_EE_FORMAT));
     EeFsFormat();
     //alert(PSTR("format ok"));
     generalDefault();
     // alert(PSTR("default ok"));
 
     uint16_t sz = theFile.writeRlc(FILE_GENERAL,FILE_TYP_GENERAL,(uint8_t*)&g_eeGeneral,sizeof(EEGeneral),200);
-    if(sz!=sizeof(EEGeneral)) alert(PSTR("genwrite error"));
+    if(sz!=sizeof(EEGeneral)) alert(PSTR(STR_GENWR_ERROR));
 
     modelDefaultWrite(0);
     //alert(PSTR("modef ok"));

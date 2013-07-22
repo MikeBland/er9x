@@ -42,14 +42,14 @@
 
 #ifndef NO_TEMPLATES
 
-const static prog_char APM string_1[] = "Simple 4-CH";
-const static prog_char APM string_2[] = "T-Cut";
-const static prog_char APM string_3[] = "Sticky T-Cut";
-const static prog_char APM string_4[] = "V-Tail";
-const static prog_char APM string_5[] = "Elevon\\Delta";
-const static prog_char APM string_6[] = "Heli Setup";
-const static prog_char APM string_7[] = "Gyro Setup";
-const static prog_char APM string_8[] = "Servo Test";
+const static prog_char APM string_1[] = STR_T_S_4CHAN   ;
+const static prog_char APM string_2[] = STR_T_TCUT      ;
+const static prog_char APM string_3[] = STR_T_STICK_TCUT;
+const static prog_char APM string_4[] = STR_T_V_TAIL    ;
+const static prog_char APM string_5[] = STR_T_ELEVON    ;
+const static prog_char APM string_6[] = STR_T_HELI_SETUP;
+const static prog_char APM string_7[] = STR_T_GYRO      ;
+const static prog_char APM string_8[] = STR_T_SERVO_TEST;
 
 const prog_char *const n_Templates[8] PROGMEM = {
     string_1,
