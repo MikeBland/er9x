@@ -126,8 +126,9 @@ PACK(typedef struct t_EEGeneral {
     uint8_t   switchWarningStates;
 		int8_t		volume ;
     uint8_t   res[3];
-    uint8_t   crosstrim:1;
-    uint8_t   spare1:7;
+    uint8_t   crosstrim:1 ;
+    uint8_t   FrskyPins:1 ;
+    uint8_t   spare1:6 ;
 }) EEGeneral;
 
 
@@ -267,7 +268,9 @@ PACK(typedef struct t_Vario
 {
   uint8_t varioSource ;
   int8_t  swtch ;
-  uint8_t param ;
+  uint8_t sinkTonesOff:1 ;
+  uint8_t spare:1 ;
+  uint8_t param:6 ;
 }) VarioData ;
 
 
@@ -276,6 +279,16 @@ PACK(typedef struct t_Vario
 //	uint8_t vmode:3 ; // ON, OFF, BOTH, 15Secs, 30Secs, 60Secs, Varibl
 //  uint8_t  val ;
 //}) voiceSwData ;
+
+PACK(typedef struct t_Scaler
+{
+	int8_t source ;
+	uint8_t flags ;
+// other??
+	uint8_t units ;
+}) ScaleData ;
+
+
 
 PACK(typedef struct t_ModelData {
     char      name[MODEL_NAME_LEN];             // 10 must be first for eeLoadModelName

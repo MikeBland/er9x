@@ -30,7 +30,9 @@ mode3 ail ele thr rud
 mode4 ail thr ele rud
 */
 
+// Various debug defines
 #define	SERIALVOICE	0
+// #define BLIGHT_DEBUG 1
 
 #define ROTARY	1
 
@@ -205,9 +207,9 @@ void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
 {
     switch(idx1){
-    case  0:            lcd_putsnAtt(x+FW,y,PSTR("---"),3,att);return;
-    case  MAX_DRSWITCH: lcd_putsnAtt(x+FW,y,Str_ON,3 ,att);return;
-    case -MAX_DRSWITCH: lcd_putsnAtt(x+FW,y,Str_OFF,3,att);return;
+    case  0:            lcd_putsAtt(x+FW,y,PSTR("---"),att);return;
+    case  MAX_DRSWITCH: lcd_putsAtt(x+FW,y,Str_ON,att);return;
+    case -MAX_DRSWITCH: lcd_putsAtt(x+FW,y,Str_OFF,att);return;
     }
 		if ( idx1 < 0 )
 		{
@@ -220,8 +222,8 @@ void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
 			z = -idx1 ;			
 		}
 		z -= 1 ;
-		z *= 3 ;
-    lcd_putsnAtt(x+FW,y,Str_Switches+(uint8_t)z,3,att);
+//		z *= 3 ;
+  lcd_putsAttIdx(x+FW,y,Str_Switches,z,att) ;
 }
 
 void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t type )
@@ -727,7 +729,20 @@ static void checkWarnings()
 
 void putWarnSwitch( uint8_t x, uint8_t idx )
 {
-  lcd_putsnAtt( x, 2*FH, Str_Switches + idx, 3, 0) ;
+  lcd_putsAttIdx( x, 2*FH, Str_Switches, idx, 0) ;
+
+}
+
+uint8_t getCurrentSwitchStates()
+{
+  uint8_t i = 0 ;
+  for( uint8_t j=0; j<8; j++ )
+  {
+    bool t=keyState( (EnumKeys)(SW_BASE_DIAG+7-j) ) ;
+		i <<= 1 ;
+    i |= t ;
+  }
+	return i ;
 }
 
 static void checkSwitches()
@@ -746,52 +761,45 @@ static void checkSwitches()
 				g_eeGeneral.switchWarningStates = warningStates ;
     }
 
-#if SERIALVOICE
+//#if SERIALVOICE
 
 
-#undef BAUD
-#define BAUD 38400
+//#undef BAUD
+//#define BAUD 38400
 
-#ifndef SIMU
+//#ifndef SIMU
 
-#include <util/setbaud.h>
+//#include <util/setbaud.h>
 
-	PORTD |= 0x04 ;		// Pullup on RXD1
+//	PORTD |= 0x04 ;		// Pullup on RXD1
 
-  UBRR1H = UBRRH_VALUE;
-  UBRR1L = UBRRL_VALUE;
-  UCSR1A &= ~(1 << U2X1); // disable double speed operation.
+//  UBRR1H = UBRRH_VALUE;
+//  UBRR1L = UBRRL_VALUE;
+//  UCSR1A &= ~(1 << U2X1); // disable double speed operation.
 
-  // set 8 N1
-  UCSR1B = 0 | (0 << RXCIE1) | (0 << TXCIE1) | (0 << UDRIE1) | (0 << RXEN0) | (0 << TXEN1) | (0 << UCSZ12);
-  UCSR1C = 0 | (1 << UCSZ11) | (1 << UCSZ10);
+//  // set 8 N1
+//  UCSR1B = 0 | (0 << RXCIE1) | (0 << TXCIE1) | (0 << UDRIE1) | (0 << RXEN0) | (0 << TXEN1) | (0 << UCSZ12);
+//  UCSR1C = 0 | (1 << UCSZ11) | (1 << UCSZ10);
 
-  UCSR1B |= (1 << TXEN1) ; // enable TX
-  UCSR1B |= (1 << RXEN1) ; // enable RX
+//  UCSR1B |= (1 << TXEN1) ; // enable TX
+//  UCSR1B |= (1 << RXEN1) ; // enable RX
   
-  while (UCSR1A & (1 << RXC1)) UDR1; // flush receive buffer
+//  while (UCSR1A & (1 << RXC1)) UDR1; // flush receive buffer
 
-	uint16_t k = 0 ;
-	uint8_t p = 0 ;
-	uint8_t q = 'x' ;
+//	uint16_t k = 0 ;
+//	uint8_t p = 0 ;
+//	uint8_t q = 'x' ;
 
-#endif
+//#endif
 
 
-#endif
+//#endif
 
 	uint8_t first = 1 ;
     //loop until all switches are reset
     while (1)
     {
-        uint8_t i = 0;
-        for(uint8_t j=0; j<8; j++)
-        {
-            bool t=keyState((EnumKeys)(SW_BASE_DIAG+7-j));
-						i <<= 1 ;
-            i |= t;
-        }
-//        alertMessages( PSTR("Switches Warning"), PSTR("Please Reset Switches") ) ;
+        uint8_t i = getCurrentSwitchStates() ;
 
         //show the difference between i and switch?
         //show just the offending switches.
@@ -803,60 +811,60 @@ static void checkSwitches()
         if(x & SWP_THRB)
             putWarnSwitch(2 + 0*FW, 0 );
         if(x & SWP_RUDB)
-            putWarnSwitch(2 + 3*FW + FW/2, 3 );
+            putWarnSwitch(2 + 3*FW + FW/2, 1 );
         if(x & SWP_ELEB)
-            putWarnSwitch(2 + 7*FW, 6 );
+            putWarnSwitch(2 + 7*FW, 1 );
 
         if(x & SWP_IL5)
         {
             if(i & SWP_ID0B)
-                putWarnSwitch(2 + 10*FW + FW/2, 9 );
+                putWarnSwitch(2 + 10*FW + FW/2, 3 );
             else if(i & SWP_ID1B)
-                putWarnSwitch(2 + 10*FW + FW/2, 12 );
+                putWarnSwitch(2 + 10*FW + FW/2, 4 );
             else if(i & SWP_ID2B)
-                putWarnSwitch(2 + 10*FW + FW/2, 15 );
+                putWarnSwitch(2 + 10*FW + FW/2, 5 );
         }
 
         if(x & SWP_AILB)
-            putWarnSwitch(2 + 14*FW, 18 );
+            putWarnSwitch(2 + 14*FW, 6 );
         if(x & SWP_GEAB)
-            putWarnSwitch(2 + 17*FW + FW/2, 21 );
+            putWarnSwitch(2 + 17*FW + FW/2, 7 );
 
 
-#if SERIALVOICE
-				k += 1 ;
-				if ( k > 2500 )
-				{
-					k = 0 ;
-					if ( p == 0 )
-					{
-						p = 1 ;
-			  	  UDR1 = 'A' ;						
-					}
-					else
-					{
-						p = 0 ;
-			  	  UDR1 = 'B' ;
-					}
-					UCSR1A = ( 1 << TXC1 ) ;		// CLEAR flag
-					while ( ( UCSR1A & ( 1 << TXC1 ) ) == 0 )
-					{
-						// wait
-					}
-#undef BAUD
-#define BAUD 19200
-				  UBRR1L = UBRRL_VALUE;
-				}
-				if (UCSR1A & (1 << RXC1))
-				{
-					q = UDR1 ;
-#undef BAUD
-#define BAUD 38400
-				  UBRR1L = UBRRL_VALUE;
-				}
-				lcd_putc( 0, 8, q ) ;
+//#if SERIALVOICE
+//				k += 1 ;
+//				if ( k > 2500 )
+//				{
+//					k = 0 ;
+//					if ( p == 0 )
+//					{
+//						p = 1 ;
+//			  	  UDR1 = 'A' ;						
+//					}
+//					else
+//					{
+//						p = 0 ;
+//			  	  UDR1 = 'B' ;
+//					}
+//					UCSR1A = ( 1 << TXC1 ) ;		// CLEAR flag
+//					while ( ( UCSR1A & ( 1 << TXC1 ) ) == 0 )
+//					{
+//						// wait
+//					}
+//#undef BAUD
+//#define BAUD 19200
+//				  UBRR1L = UBRRL_VALUE;
+//				}
+//				if (UCSR1A & (1 << RXC1))
+//				{
+//					q = UDR1 ;
+//#undef BAUD
+//#define BAUD 38400
+//				  UBRR1L = UBRRL_VALUE;
+//				}
+//				lcd_putc( 0, 8, q ) ;
 
-#endif
+//#endif
         refreshDiplay();
 
 				if ( first )
@@ -867,10 +875,10 @@ static void checkSwitches()
 
         if((i==warningStates) || (keyDown())) // check state against settings
         {
-#if SERIALVOICE
-  UCSR1B &= ~(1 << TXEN1) ; // disable TX pin
-  UCSR1B &= ~(1 << RXEN1) ; // disable RX
-#endif
+//#if SERIALVOICE
+//  UCSR1B &= ~(1 << TXEN1) ; // disable TX pin
+//  UCSR1B &= ~(1 << RXEN1) ; // disable RX
+//#endif
             return;  //wait for key release
         }
 
@@ -885,6 +893,73 @@ void putsDblSizeName( uint8_t y )
 	for(uint8_t i=0;i<sizeof(g_model.name);i++)
 		lcd_putcAtt(FW*2+i*2*FW-i-2, y, g_model.name[i],DBLSIZE);
 }
+
+
+
+#ifdef CPUM128
+
+static uint8_t switches_states = 0 ;
+
+// Can we sae flash by using :
+// uint8_t getCurrentSwitchStates()
+
+int8_t getMovedSwitch()
+{
+	uint8_t skipping = 0 ;
+  int8_t result = 0 ;
+
+  static uint16_t s_last_time = 0 ;
+
+	uint16_t time = get_tmr10ms() ;
+  if ( (uint16_t)(time - s_last_time) > 10)
+	{
+		skipping = 1 ;
+		switches_states = 0 ;
+	}
+  s_last_time = time ;
+
+  uint8_t mask = 0x80 ;
+  for (uint8_t i=MAX_PSWITCH-1; i>0; i--)
+	{
+  	bool next = getSwitch(i, 0, 0) ;
+
+		if ( skipping )
+		{
+			if ( next )
+			{
+				switches_states |= mask ;
+			}
+		}
+		else
+		{
+			uint8_t value = next ? mask : 0 ;
+			if ( ( switches_states ^ value ) & mask )
+			{ // State changed
+				switches_states ^= mask ;
+        result = next ? i : -i ;
+				if ( ( result <= -4 ) && ( result >= -6 ) )
+				{
+					result = 0 ;
+				}
+				break ;
+			}
+		}
+		mask >>= 1 ;
+  }
+	if ( result == 0 )
+	{
+		if ( getSwitch( 9, 0, 0) )
+		{
+			result = 9 ;
+		}
+	}
+
+  if ( skipping )
+    result = 0 ;
+
+  return result;
+}
+#endif
 
 #ifndef SIMU
 static void checkQuickSelect()
@@ -1172,7 +1247,7 @@ int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flag
 {
     int16_t newval = val;
     uint8_t kpl=KEY_RIGHT, kmi=KEY_LEFT, kother = -1;
-		uint8_t skipPause = 0 ;
+//		uint8_t skipPause = 0 ;
 
 		uint8_t event = Tevent ;
 //    if(event & _MSK_KEY_DBL){
@@ -1204,13 +1279,24 @@ int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flag
         s_editMode = false;
         newval=!val;
         killEvents(event);
-				skipPause = 1 ;
+//				skipPause = 1 ;
 				if ( event==EVT_KEY_BREAK(BTN_RE) )
 				{
 					RotaryState = ROTARY_MENU_UD ;
 				}
     }
 
+#ifdef CPUM128
+//  if (s_editMode>0 && (i_flags & INCDEC_SWITCH))
+  if ( i_flags & INCDEC_SWITCH )
+	{
+    int8_t swtch = getMovedSwitch();
+    if (swtch)
+		{
+      newval = swtch ;
+    }
+  }
+#endif
     //change values based on P1
 #ifndef NOPOTSCROLL
     newval -= P1values.p1valdiff;
@@ -1234,10 +1320,10 @@ int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flag
     }
     if(newval != val) {
         if(newval==0) {
-						if ( !skipPause )
-						{
+//						if ( !skipPause )
+//						{
           	  pauseEvents(event);
-						}
+//						}
 
             if (newval>val){
                 audioDefevent(AU_KEYPAD_UP);
@@ -1317,7 +1403,7 @@ void pushMenu(MenuFuncP newMenu)
     (*newMenu)(EVT_ENTRY);
 }
 
-uint8_t  g_vbat100mV = 74 ;
+uint8_t  g_vbat100mV ;
 volatile uint8_t tick10ms = 0;
 uint16_t g_LightOffCounter;
 uint8_t  stickMoved = 0;
@@ -2004,6 +2090,13 @@ static void getADC_osmp()
 //        for (uint8_t i=0; i<2;i++) {  // Going from 10bits to 11 bits.  Addition = n.  Loop 2 times
             ADMUX=adc_input|ADC_VREF_TYPE;
             // Start the AD conversion
+#ifdef CPUM128
+			asm(" rjmp 1f") ;
+			asm("1:") ;
+			asm(" rjmp 1f") ;
+			asm("1:") ;
+#endif
+
             ADCSRA|=0x40;
             // Wait for the AD conversion to complete
             while (ADCSRA & 0x40);
@@ -2015,13 +2108,27 @@ static void getADC_osmp()
             while (ADCSRA & 0x40);
 //        }
 
+#ifdef CPUM128
+            temp_ana += ADC;
+            ADCSRA|=0x40;
+            // Wait for the AD conversion to complete
+            while (ADCSRA & 0x40);
+            temp_ana += ADC;
+            ADCSRA|=0x40;
+            // Wait for the AD conversion to complete
+            while (ADCSRA & 0x40);
+            temp_ana += ADC;
+            temp_ana >>= 1 ;
+		        s_anaFilt[adc_input] = temp_ana ;
+#else
+
 //        temp_ana /= 2; // divide by 2^n to normalize result.
         //    if(adc_input == thro_rev_chan)
         //        temp_ana = 2048 -temp_ana;
 
         //		s_anaFilt[adc_input] = temp_ana[adc_input] / 2; // divide by 2^n to normalize result.
         s_anaFilt[adc_input] = temp_ana + ADC ;
-
+#endif
         //    if(IS_THROTTLE(adc_input) && g_eeGeneral.throttleReversed)
         //        s_anaFilt[adc_input] = 2048 - s_anaFilt[adc_input];
     }
@@ -2255,7 +2362,38 @@ int main(void)
     DDRF = 0x00;  PORTF = 0x00; //all F inputs anain - pullups are off
     //DDRG = 0x10;  PORTG = 0xff; //pullups + SIM_CTL=1 = phonejack = ppm_in
     DDRG = 0x14; PORTG = 0xfB; //pullups + SIM_CTL=1 = phonejack = ppm_in, Haptic output and off (0)
-    lcd_init();
+    
+#ifdef BLIGHT_DEBUG
+	{
+		uint32_t x ;
+		x = 0 ;
+		for ( ;; )
+		{
+			for ( x = 0 ; x < 500000 ; x += 1 )
+			{
+				PORTB |= 0x80 ;	// Backlight on
+	      wdt_reset() ;
+				asm(" nop") ;											// delay to allow input to settle
+				asm(" nop") ;											// delay to allow input to settle
+			}
+			for ( x = 0 ; x < 500000 ; x += 1 )
+			{
+				PORTB &= 0x7F ;	// Backlight off
+	      wdt_reset() ;
+				asm(" nop") ;											// delay to allow input to settle
+				asm(" nop") ;											// delay to allow input to settle
+				asm(" nop") ;											// delay to allow input to settle
+				asm(" nop") ;											// delay to allow input to settle
+				asm(" nop") ;											// delay to allow input to settle
+				asm(" nop") ;											// delay to allow input to settle
+
+			}
+		}
+	}
+
+#endif
+
+		lcd_init();
 
 //		PORTB |= (1<<OUT_B_LIGHT) ;				// Latch clock high
 //		PORTA_LCD_DAT = 0 ; // VOICE_CLOCK_BIT ;			// Latch data set
@@ -2266,9 +2404,6 @@ int main(void)
     JETI_Init();
 #endif
 
-#ifdef FRSKY
-    FRSKY_Init();
-#endif
 
 #ifdef ARDUPILOT
     ARDUPILOT_Init();
@@ -2323,7 +2458,12 @@ int main(void)
     lcdSetRefVolt(25);
     eeReadAll();
     uint8_t cModel = g_eeGeneral.currModel;
-    checkQuickSelect();
+    
+#ifdef FRSKY
+    FRSKY_Init();
+#endif
+		
+		checkQuickSelect();
 
 		lcdSetContrast() ;
 //    if(g_eeGeneral.lightSw || g_eeGeneral.lightAutoOff || g_eeGeneral.lightOnStickMove) // if lightswitch is defined or auto off
@@ -2364,13 +2504,14 @@ int main(void)
     checkMem();
     //setupAdc(); //before checkTHR
     getADC_osmp();
+    g_vbat100mV = anaIn(7) / 14 ;
     checkTHR();
     checkSwitches();
     checkAlarm();
     checkWarnings();
     clearKeyEvents(); //make sure no keys are down before proceeding
 
-    BandGap = 240 ;
+//    BandGap = 240 ;
 		putVoiceQueueUpper( g_model.modelVoice ) ;
     setupPulses();
     wdt_enable(WDTO_500MS);
@@ -2635,7 +2776,10 @@ void mainSequence()
 								if ( vspd < 0 )
 								{
 									vspd = -vspd ;
-          		    audio.event( AU_VARIO_DOWN ) ;
+									if (g_model.varioData.sinkTonesOff == 0)
+									{
+          		    	audio.event( AU_VARIO_DOWN ) ;
+									}
 								}
 								else
 								{
@@ -2657,6 +2801,14 @@ void mainSequence()
 								{
 									new_rate = 2 ;
 								}
+							}
+						}
+						else
+						{
+							if (g_model.varioData.sinkTonesOff == 1)
+							{
+								new_rate = 20 ;
+         		    audio.event( AU_VARIO_UP ) ;
 							}
 						}
 						varioRepeatRate = new_rate ;

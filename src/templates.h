@@ -71,7 +71,11 @@ extern const prog_char *const n_Templates[] ;
 
 
 void clearCurves();
+#ifdef NO_TEMPLATES
+void applyTemplate();
+#else
 void applyTemplate(uint8_t idx);
+#endif
 void clearMixes( void ) ;
 
 

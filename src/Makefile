@@ -84,7 +84,7 @@ TEMPLATES = YES
 
 NOPOTSCROLL =
 
-PHASES =
+PHASES = YES
 
 N2F = NO
 
@@ -176,9 +176,9 @@ ifeq ($(NOPOTSCROLL),YES)
 	SC_MOD=NPS
 endif
 
-ifeq ($(PHASES),YES)
-	PH_MOD=PH
-endif
+#ifeq ($(PHASES),YES)
+#	PH_MOD=PH
+#endif
 
 #--------------------------------------------------------------------------------
 
@@ -303,6 +303,10 @@ ifeq ($(LANG), FR)
 else
  ifeq ($(LANG), DE)
   CPPDEFS += -DLANG_DE
+ else
+  ifeq ($(LANG), NO)
+   CPPDEFS += -DLANG_NO
+  endif
  endif
 endif
 

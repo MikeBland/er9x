@@ -187,20 +187,31 @@ bool keyState(EnumKeys enuk)
   switch((uint8_t)enuk){
     case SW_ElevDR : xxx = PINE & (1<<INP_E_ElevDR);
     break ;
-    
-    //case SW_AileDR : return PINE & (1<<INP_E_AileDR);
-#if (!(defined(JETI) || defined(FRSKY) || defined(ARDUPILOT) || defined(NMEA)))
-    case SW_AileDR : xxx = PINE & (1<<INP_E_AileDR);
-    break ;
+
+#ifdef CPUM128
+    case SW_AileDR :
+			if ( g_eeGeneral.FrskyPins )
+			{
+				xxx = PINC & (1<<INP_C_AileDR) ;
+			}
+			else
+			{
+				xxx = PINE & (1<<INP_E_AileDR) ;
+			}
 #else
+    //case SW_AileDR : return PINE & (1<<INP_E_AileDR);
+ #if (!(defined(JETI) || defined(FRSKY) || defined(ARDUPILOT) || defined(NMEA)))
+    case SW_AileDR : xxx = PINE & (1<<INP_E_AileDR);
+ #else
     case SW_AileDR : xxx = PINC & (1<<INP_C_AileDR); //shad974: rerouted inputs to free up UART0
 			// Test bit 0 of PINC as well, temp fix for reacher10 broken pin on PINC bit 7
 //    								if ( ( PINC & 0x01 ) == 0 )
 //										{
 //											xxx = 0 ;											
 //										}
-    break ;
+ #endif
 #endif
+    break ;
 
 
     case SW_RuddDR : xxx = ping & (1<<INP_G_RuddDR);
@@ -219,12 +230,24 @@ bool keyState(EnumKeys enuk)
     break ;
     //case SW_ThrCt  : return PINE & (1<<INP_E_ThrCt);
 
-#if (!(defined(JETI) || defined(FRSKY) || defined(ARDUPILOT) || defined(NMEA)))
-     case SW_ThrCt  : xxx = PINE & (1<<INP_E_ThrCt);
+#ifdef CPUM128
+    case SW_ThrCt :
+			if ( g_eeGeneral.FrskyPins )
+			{
+				xxx = PINC & (1<<INP_C_ThrCt) ;
+			}
+			else
+			{
+				xxx = PINE & (1<<INP_E_ThrCt) ;
+			}
 #else
+ #if (!(defined(JETI) || defined(FRSKY) || defined(ARDUPILOT) || defined(NMEA)))
+     case SW_ThrCt  : xxx = PINE & (1<<INP_E_ThrCt);
+ #else
     case SW_ThrCt  : xxx = PINC & (1<<INP_C_ThrCt); //shad974: rerouted inputs to free up UART0
+ #endif
 #endif
-    break ;
+		break ;
 
     case SW_Trainer: xxx = PINE & (1<<INP_E_Trainer);
     break ;

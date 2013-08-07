@@ -368,10 +368,7 @@
 #define STR_STICK_LH_GAIN  "Stick LH Gain"
 #define STR_STICK_RV_GAIN  "Stick RV Gain"
 #define STR_STICK_RH_GAIN  "Stick RH Gain"
-
-
-
-
-
+#define STR_NO_SINK_TONES  "No Sink Tones"
+#define STR_FRSKY_MOD      "Frksy Mod Done"
 
 

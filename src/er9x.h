@@ -175,14 +175,12 @@ typedef uint32_t  prog_uint32_t __attribute__((__progmem__));//,deprecated("prog
 #define INP_E_AileDR  1
 #define INP_E_ThrCt   0
 
-#if (defined(JETI) || defined(FRSKY) || defined(ARDUPILOT) || defined(NMEA))
-#undef INP_E_ThrCt
-#undef INP_E_AileDR
+//#if (defined(JETI) || defined(FRSKY) || defined(ARDUPILOT) || defined(NMEA))
+//#undef INP_E_ThrCt
+//#undef INP_E_AileDR
 #define INP_C_ThrCt   6
 #define INP_C_AileDR  7
-#endif
-
-
+//#endif
 
 #define OUT_G_SIM_CTL  4 //1 : phone-jack=ppm_in
 #define INP_G_ID1      3
@@ -282,6 +280,7 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 //#define SW_BASE      SW_NC
 #define SW_BASE      SW_ThrCt
 #define SW_BASE_DIAG SW_ThrCt
+#define MAX_PSWITCH   (SW_Trainer-SW_ThrCt+1)  // 9 physical switches
 //#define SWITCHES_STR "  NC  ON THR RUD ELE ID0 ID1 ID2 AILGEARTRNR"
 #define MAX_DRSWITCH (1+SW_Trainer-SW_ThrCt+1+NUM_CSW)
 
@@ -409,10 +408,10 @@ uint8_t IS_EXPO_THROTTLE( uint8_t x ) ;
 #define PROTO_PPM16	     3
 #define PROTO_PPMSIM     4		// Always make this the last protocol
 #define PROT_MAX         4
-#define PROT_STR "PPM   PXX   DSM2  PPM16 PPMSIM"
-#define PROT_STR_LEN     6
-#define DSM2_STR "LP4/LP5  DSM2only DSM2/DSMX"
-#define DSM2_STR_LEN     9
+#define PROT_STR "\006PPM   PXX   DSM2  PPM16 PPMSIM"
+//#define PROT_STR_LEN     6
+#define DSM2_STR "\011LP4/LP5  DSM2only DSM2/DSMX"
+//#define DSM2_STR_LEN     9
 #define LPXDSM2          0
 #define DSM2only         1
 #define DSM2_DSMX        2
@@ -536,6 +535,7 @@ char idx2char(uint8_t idx);
 #define EE_GENERAL 1
 #define EE_MODEL   2
 #define EE_TRIM    4           // Store model because of trim
+#define INCDEC_SWITCH   0x08
 
 extern bool    checkIncDec_Ret;//global helper vars
 extern uint8_t s_editMode;     //global editmode
@@ -569,6 +569,19 @@ int8_t checkIncDec_hm0(int8_t i_val, int8_t i_max) ;
 #define CHECK_INCDEC_H_MODELVAR_0( var, max)     \
     var = checkIncDec_hm0(var,max)
 
+#ifdef CPUM128
+#define CHECK_INCDEC_MODELSWITCH( var, min, max) \
+  var = checkIncDec(var,min,max,EE_MODEL|INCDEC_SWITCH)
+
+#define CHECK_INCDEC_GENERALSWITCH( var, min, max) \
+  var = checkIncDec(var,min,max,EE_GENERAL|INCDEC_SWITCH)
+#else
+#define CHECK_INCDEC_MODELSWITCH( var, min, max) \
+    var = checkIncDec_hm(var,min,max)
+
+#define CHECK_INCDEC_GENERALSWITCH( var, min, max) \
+    var = checkIncDec_hg(var,min,max)
+#endif
 #define STORE_MODELVARS_TRIM   eeDirty(EE_MODEL|EE_TRIM)
 #define STORE_MODELVARS   eeDirty(EE_MODEL)
 #define STORE_GENERALVARS eeDirty(EE_GENERAL)
@@ -862,6 +875,8 @@ extern uint8_t telemItemValid( uint8_t index ) ;
 extern uint8_t Main_running ;
 extern const prog_char *AlertMessage ;
 extern int16_t m_to_ft( int16_t metres ) ;
+
+uint8_t getCurrentSwitchStates( void ) ;
 
 // Rotary encoder movement states
 #define	ROTARY_MENU_LR		0
