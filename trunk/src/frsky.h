@@ -254,7 +254,9 @@ void FRSKY_setModelAlarms(void) ;
 //void FRSKY_alarmPlay(uint8_t idx, uint8_t alarm) ;
 void resetTelemetry();
 
-
+#ifdef CPUM128
+void FRSKY_disable( void ) ;
+#endif
 
 
 #endif

@@ -44,14 +44,14 @@ void generalDefault()
 {
   memset(&g_eeGeneral,0,sizeof(g_eeGeneral));
   g_eeGeneral.myVers   =  MDVERS;
-  g_eeGeneral.currModel=  0;
+//  g_eeGeneral.currModel=  0;
   g_eeGeneral.contrast = 25;
   g_eeGeneral.vBatWarn = 90;
   g_eeGeneral.stickMode=  1;
   for (uint8_t i = 0; i < 7; ++i) {
     g_eeGeneral.calibMid[i]     = 0x200;
-    g_eeGeneral.calibSpanNeg[i] = 0x180;
-    g_eeGeneral.calibSpanPos[i] = 0x180;
+    g_eeGeneral.calibSpanNeg[i] = 0x300;
+    g_eeGeneral.calibSpanPos[i] = 0x300;
   }
   strncpy_P(g_eeGeneral.ownerName,PSTR(STR_ME),10);
   g_eeGeneral.chkSum = evalChkSum() ;
@@ -104,7 +104,11 @@ void modelDefaultWrite(uint8_t id)
   g_model.name[6]='0'+qr.rem;
 //  g_model.mdVers = MDVERS;
 
+#ifdef NO_TEMPLATES
+  applyTemplate(); //default 4 channel template
+#else
   applyTemplate(0); //default 4 channel template
+#endif
   theFile.writeRlc(FILE_MODEL(id),FILE_TYP_MODEL,(uint8_t*)&g_model,sizeof(g_model),200);
 }
 

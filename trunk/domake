@@ -30,14 +30,14 @@ mv er9x.hex ../er9x-frsky.hex
 
 
 
-echo
-echo "===== Making FRSKY - NOHELI/NOTEMPLATE Version ====="
-echo ">>> cleaning"
-make clean
-echo ">>>  making"
-make EXT=FRSKY TEMPLATES=NO HELI=NO PHASES=YES
-echo ">>>  moving"
-mv er9x.hex ../er9x-frsky-noht.hex
+#echo
+#echo "===== Making FRSKY - NOHELI/NOTEMPLATE Version ====="
+#echo ">>> cleaning"
+#make clean
+#echo ">>>  making"
+#make EXT=FRSKY TEMPLATES=NO HELI=NO PHASES=YES
+#echo ">>>  moving"
+#mv er9x.hex ../er9x-frsky-noht.hex
 
 
 
@@ -60,14 +60,14 @@ echo ">>>  moving"
 mv er9x.hex ../er9x-nmea.hex
 
 
-echo
-echo "===== Making MAIN - NOHELI/NOTEMPLATE Version ====="
-echo ">>> cleaning"
-make clean
-echo ">>>  making"
-make TEMPLATES=NO HELI=NO PHASES=YES
-echo ">>>  moving"
-mv er9x.hex ../er9x-noht.hex
+#echo
+#echo "===== Making MAIN - NOHELI/NOTEMPLATE Version ====="
+#echo ">>> cleaning"
+#make clean
+#echo ">>>  making"
+#make TEMPLATES=NO HELI=NO PHASES=YES
+#echo ">>>  moving"
+#mv er9x.hex ../er9x-noht.hex
 
 echo
 echo "===== Making MAIN Version ====="
@@ -87,14 +87,51 @@ make CPU=128 EXT=FRSKY PHASES=YES
 echo ">>>  moving"
 mv er9x.hex ../er9x-128.hex
 
+#echo
+#echo "===== Making 128 Version ====="
+#echo ">>> cleaning"
+#make clean
+#echo ">>>  making"
+#make CPU=128 PHASES=YES
+#echo ">>>  moving"
+#mv er9x.hex ../er9x-128-standard.hex
+
 echo
-echo "===== Making 128 Version ====="
+echo "===== Making FRSKY DE Version ====="
 echo ">>> cleaning"
 make clean
 echo ">>>  making"
-make CPU=128 PHASES=YES
+make EXT=FRSKY TEMPLATES=NO PHASES=YES LANG=DE
 echo ">>>  moving"
-mv er9x.hex ../er9x-128-standard.hex
+mv er9x.hex ../er9x-frsky-de.hex
+
+echo
+echo "===== Making MAIN DE Version ====="
+echo ">>> cleaning"
+make clean
+echo ">>>  making"
+make PHASES=YES LANG=DE
+echo ">>>  moving"
+mv er9x.hex ../er9x-de.hex
+
+echo
+echo "===== Making 128 DE Version ====="
+echo ">>> cleaning"
+make clean
+echo ">>>  making"
+make CPU=128 EXT=FRSKY PHASES=YES LANG=DE
+echo ">>>  moving"
+mv er9x.hex ../er9x-128-de.hex
+
+echo
+echo "===== Making MAIN NO Version ====="
+echo ">>> cleaning"
+make clean
+echo ">>>  making"
+make PHASES=YES LANG=NO
+echo ">>>  moving"
+mv er9x.hex ../er9x-no.hex
+
 
 echo ">>> cleaning"
 make clean 

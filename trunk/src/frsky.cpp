@@ -133,7 +133,7 @@ int16_t FrskyHubMax[HUBMINMAXLEN] ;
 
 uint8_t FrskyVolts[12];
 uint8_t FrskyBattCells=0;
-uint16_t Frsky_Amp_hour_prescale ;
+int16_t Frsky_Amp_hour_prescale ;
 
 #if defined(VARIO)
 struct t_vario VarioData ;
@@ -725,6 +725,10 @@ uint8_t FrskyDelay = 0 ;
 #ifndef SIMU
 static void FRSKY10mspoll(void)
 {
+#ifdef CPUM128
+	if ( g_eeGeneral.FrskyPins == 0 )
+		return ;
+#endif
   if (FrskyDelay)
   {
     FrskyDelay -= 1 ;
@@ -919,22 +923,36 @@ inline void FRSKY_EnableRXD(void)
   UCSR0B |= (1 << RXCIE0); // enable Interrupt
 }
 
-//#if 0
-//void FRSKY_DisableTXD(void)
-//{
-//  UCSR0B &= ~((1 << TXEN0) | (1 << UDRIE0)); // disable TX pin and interrupt
-//}
+#ifdef CPUM128
+void FRSKY_DisableTXD(void)
+{
+  UCSR0B &= ~((1 << TXEN0) | (1 << UDRIE0)); // disable TX pin and interrupt
+}
 
-//void FRSKY_DisableRXD(void)
-//{
-//  UCSR0B &= ~(1 << RXEN0);  // disable RX
-//  UCSR0B &= ~(1 << RXCIE0); // disable Interrupt
-//}
-//#endif
+void FRSKY_DisableRXD(void)
+{
+  UCSR0B &= ~(1 << RXEN0);  // disable RX
+  UCSR0B &= ~(1 << RXCIE0); // disable Interrupt
+  DDRE &= ~(1 << DDE0);   	// set RXD0 pin as input
+  PORTE |= (1 << PORTE0);		// enable pullup on RXD0 pin
+}
+
+void FRSKY_disable()
+{
+	FRSKY_DisableTXD() ;
+	FRSKY_DisableRXD() ;
+	
+}
+
+#endif
 
 void FRSKY_Init(void)
 {
   // clear frsky variables
+#ifdef CPUM128
+	if ( g_eeGeneral.FrskyPins == 0 )
+		return ;
+#endif
   memset(frskyAlarms, 0, sizeof(frskyAlarms));
   resetTelemetry();
 
@@ -1097,6 +1115,11 @@ void check_frsky()
 {
   // Used to detect presence of valid FrSky telemetry packets inside the
   // last FRSKY_TIMEOUT10ms 10ms intervals
+#ifdef CPUM128
+	if ( g_eeGeneral.FrskyPins == 0 )
+		return ;
+#endif
+	
 #ifndef SIMU
 	if (frskyStreaming > 0)
 	{
@@ -1128,8 +1151,13 @@ void check_frsky()
 	// 
   if (frskyUsrStreaming)
 	{
-		uint16_t ah_temp ;
-		ah_temp = Frsky_Amp_hour_prescale + FrskyHubData[FR_CURRENT] ;
+		int16_t ah_temp ;
+		ah_temp = FrskyHubData[FR_CURRENT] ;
+		if ( ah_temp < 0 )
+		{
+			ah_temp = 0 ;			
+		}
+		ah_temp += Frsky_Amp_hour_prescale ;
 		if ( ah_temp > 3600 )
 		{
 			ah_temp -= 3600 ;
@@ -1144,6 +1172,10 @@ void check_frsky()
 // New model loaded
 void FRSKY_setModelAlarms(void)
 {
+#ifdef CPUM128
+	if ( g_eeGeneral.FrskyPins == 0 )
+		return ;
+#endif
 	FrskyBattCells = 0 ;
   FrskyAlarmSendState |= 0x0F ;
 	

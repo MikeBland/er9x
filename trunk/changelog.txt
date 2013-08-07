@@ -10,6 +10,17 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 05-Aug-2013  MPB
+128 version - only one build, new option to set FRSKY MOD DONE
+128 version - select switch in menus by moving required switch
+Voice for over 1000, use 3 significant figures not 2
+Language builds + language headers
+Vario sink tones optional
+Fix move mix to empty channel 1
+Set default switches by setting switches and pressing MENU
+Flash savings
+
+******************************************
 CHANGELOG: 17-Jul-2013  MPB
 Add telemetry checking
 Display changed limits when AutoLimits is enabled

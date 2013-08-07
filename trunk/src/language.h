@@ -51,7 +51,11 @@
  #ifdef LANG_FR
   #include "fr.h"
  #else
-  #include "en.h"
+  #ifdef LANG_NO
+   #include "no.h"
+  #else
+   #include "en.h"
+  #endif
  #endif
 #endif
 
