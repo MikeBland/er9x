@@ -29,6 +29,7 @@
 *
 ****************************************************************************
 * Other Authors:
+ * - Torodd Indersund - main translator
  * - Andre Bernet
  * - Bertrand Songis
  * - Bryan J. Rentoul (Gruvin)
@@ -74,10 +75,10 @@
 #define STR_EE_LOW_MEM     "EEPROM lavt minne"
 #define STR_ALERT		       "ALERT"
 #define STR_THR_NOT_IDLE   "Gasspake ikke i null"
-#define STR_RST_THROTTLE   "Nullstille gasspake"
+#define STR_RST_THROTTLE   "Nullstill gasspake"
 #define STR_PRESS_KEY_SKIP "Trykk en knapp for å skippe"
 #define STR_ALARMS_DISABLE "Alarmer deaktivert"
-#define STR_OLD_VER_EEPROM " Gammel version EEPROM  Sjekk innst/rekalib"
+#define STR_OLD_VER_EEPROM "Gammel version EEPROM  Sjekk innst/rekalib"
 #define STR_RESET_SWITCHES "Nullstill brytere"
 #define STR_LOADING        "LASTER"
 #define STR_MESSAGE        "MELDING"
@@ -115,7 +116,7 @@
 #define STR_TELEM_ITEMS	   "\004----A1= A2= RSSITSSITim1Tim2Alt GaltGspdT1= T2= RPM FUELMah1Mah2CvltBattAmpsMah CtotFasVAccXAccYAccZVspdGvr1Gvr2Gvr3Gvr4Gvr5Gvr6Gvr7Fwat"
 #define STR_TELEM_SHORT    "\004----TIM1TIM2BATTGvr1Gvr2Gvr3Gvr4Gvr5Gvr6Gvr7"
 #define STR_GV             "GV"
-#define STR_OFF_ON         "OFFON "
+#define STR_OFF_ON         "av på "
 #define STR_HYPH_INV       "\003---INV"
 #define STR_VERSION        "VERSION"
 #define STR_TRAINER        "TRAINER"
@@ -226,7 +227,7 @@
 #define STR_23_US          "\023uS"
 // STR_PPMFRAME_MSEC before \015 max 9 chars, after max 4 chars
 #define STR_PPMFRAME_MSEC  "PPM FrLen\015mSec"
-#define STR_SEND_RX_NUM    "Send Rx Nummer [MENU]"
+#define STR_SEND_RX_NUM    "Bind  Range"
 #define STR_DSM_TYPE       "DSM Type"
 #define STR_PPM_1ST_CHAN   "PPM 1st Kanal"
 #define STR_SHIFT_SEL      "Shift Sel"
@@ -241,7 +242,7 @@
 #define STR_FL_MODE        "FL MODE"
 #define STR_SWITCH         "Brytere"
 #define STR_TRIMS          "Trims"
-#define STR_MODES          "MODuser"
+#define STR_MODES          "MODUSER"
 #define STR_SP_FM0         " FM0"
 #define STR_SP_FM          " FM"
 #define STR_HELI_SETUP     "HELI SETUP"
@@ -282,7 +283,7 @@
 #define STR_SOUND_MODE     "Lyd Modus"
 // STR_SPEAKER_OPTS indexed 10 chars each
 #define STR_SPEAKER_OPTS   "\012Beeper    ""PiSpkr    ""BeeprVoice""PiSpkVoice""MegaSound "
-#define STR_VOLUME         "Volume"
+#define STR_VOLUME         " Volum"
 #define STR_SPEAKER_PITCH  " Speaker Pitch"
 #define STR_HAPTICSTRENGTH " Viberator styrke"
 #define STR_CONTRAST       "Kontrast"
@@ -312,7 +313,11 @@
 #define STR_MODE           "Modus"
 
 // SWITCHES_STR 3 chars each
-#define SWITCHES_STR       "THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN""SW1""SW2""SW3""SW4""SW5""SW6""SW7""SW8""SW9""SWA""SWB""SWC"
+#if defined(CPUM128) || defined(CPUM2561)
+#define SWITCHES_STR       "\003THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN""SW1""SW2""SW3""SW4""SW5""SW6""SW7""SW8""SW9""SWA""SWB""SWCSWDSWESWFSWGSWHSWI"
+#else
+#define SWITCHES_STR       "\003THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN""SW1""SW2""SW3""SW4""SW5""SW6""SW7""SW8""SW9""SWA""SWB""SWC"
+#endif
 #define SWITCH_WARN_STR	   "Bryter advarsel"
 // CURV_STR indexed 3 chars each
 #define CURV_STR           "\003---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
@@ -336,44 +341,45 @@
 #define STR_SPD_KTS_MAX    "Spd=\011kts Max="
 #define STR_11_MPH         "\011mph"
 
+#define STR_SINK_TONES		 "Sink Tones"
+#define STR_FRSKY_MOD      "Frksy Mod Done"
 
 // ersky9x strings
 #define STR_ST_CARD_STAT   "SD CARD STAT"
-#define STR_4_READY        "\004Ready"
-#define STR_NOT            "NOT"
+#define STR_4_READY        "\004Klar"
+#define STR_NOT            "Ikke"
 #define STR_BOOT_REASON    "BOOT REASON"
 #define STR_6_WATCHDOG     "\006WATCHDOG"
-#define STR_5_UNEXPECTED   "\005UNEXPECTED"
+#define STR_5_UNEXPECTED   "\005UVENTET"
 #define STR_6_SHUTDOWN     "\006SHUTDOWN"
-#define STR_6_POWER_ON     "\006POWER ON"
+#define STR_6_POWER_ON     "\006POWER PÅ"
 // STR_MONTHS indexed 3 chars each
-#define STR_MONTHS         "\003XxxJanFebMarAprMayJunJulAugSepOctNovDec"
-#define STR_MENU_REFRESH   "[MENU] to refresh"
-#define STR_DATE_TIME      "DATE-TIME"
-#define STR_SEC            "Sec."
+#define STR_MONTHS         "\003XxxJanFebMarAprMaiJunJulAugSepOktNovDes"
+#define STR_MENU_REFRESH   "[MENU] for oppdatering"
+#define STR_DATE_TIME      "DATO-TID"
+#define STR_SEC            "Sek."
 #define STR_MIN_SET        "Min.\015Set"
-#define STR_HOUR_MENU_LONG "Hour\012MENU LONG"
-#define STR_DATE           "Date"
-#define STR_MONTH          "Month"
-#define STR_YEAR_TEMP      "Year\013Temp."
-#define STR_YEAR           "Year"
-#define STR_BATTERY        "BATTERY"
-#define STR_Battery        "Battery"
+#define STR_HOUR_MENU_LONG "Time\012MENU LONG"
+#define STR_DATE           "Dato"
+#define STR_MONTH          "Måned"
+#define STR_YEAR_TEMP      "År\013Temp."
+#define STR_YEAR           "År"
+#define STR_BATTERY        "BATTERI"
+#define STR_Battery        "Batteri"
 #define STR_CURRENT_MAX    "Current\016Max"
 #define STR_CPU_TEMP_MAX   "CPU temp.\014C Max\024C"
-#define STR_MEMORY_STAT    "MEMORY STAT"
-#define STR_GENERAL        "General"
-#define STR_Model          "Model"
+#define STR_MEMORY_STAT    "MINNE STAT"
+#define STR_GENERAL        "Generelt"
+#define STR_Model          "Modell"
 #define STR_RADIO_SETUP2   "RADIO SETUP2"
-#define STR_BRIGHTNESS     "Brightness"
-#define STR_CAPACITY_ALARM "Capacity Alarm"
+#define STR_BRIGHTNESS     "Lysstyrke"
+#define STR_CAPACITY_ALARM "Kapasitet Alarm"
 #define STR_BT_BAUDRATE    "Bt baudrate"
 #define STR_ROTARY_DIVISOR "Rotary Divisor"
 #define STR_STICK_LV_GAIN  "Stick LV Gain"
 #define STR_STICK_LH_GAIN  "Stick LH Gain"
 #define STR_STICK_RV_GAIN  "Stick RV Gain"
 #define STR_STICK_RH_GAIN  "Stick RH Gain"
-#define STR_NO_SINK_TONES  "No Sink Tones"
-#define STR_FRSKY_MOD      "Frksy Mod Done"
+
 
 

@@ -1,5 +1,6 @@
 /*
- * Authors - Bertrand Songis <bsongis@gmail.com>, Bryan J.Rentoul (Gruvin) <gruvin@gmail.com> and Philip Moss
+ * Authors - Mike Blandford
+ * Bertrand Songis <bsongis@gmail.com>, Bryan J.Rentoul (Gruvin) <gruvin@gmail.com> and Philip Moss
  *
  * Adapted from jeti.cpp code by Karl Szmutny <shadow@privy.de>
  *
@@ -33,6 +34,9 @@
 #define BYTESTUFF       0x7d
 #define STUFF_MASK      0x20
 #define PRIVATE					0x1B
+
+// SPORT defines
+#define DATA_FRAME         0x10
 
 #ifdef N2F
 	#define HUB_START_STOP      0x5e
@@ -88,10 +92,8 @@ const prog_uint8_t APM Fr_indices[] =
 
 uint8_t AltitudeDecimals ;
 int16_t WholeAltitude ;
-// debug
-//int16_t AltB ;
-//int16_t AltA ;
 
+#define FRSKY_SPORT_PACKET_SIZE		9
 
 uint8_t frskyRxBuffer[19];   // Receive buffer. 9 bytes (full packet), worst case 18 bytes with byte-stuffing (+1)
 
@@ -120,20 +122,25 @@ struct FrskyAlarm {
 };
 struct FrskyAlarm frskyAlarms[4];
 
-uint8_t Frsky_user_state ;
-uint8_t Frsky_user_stuff ;
-uint8_t Frsky_user_id ;
-uint8_t Frsky_user_lobyte ;
-uint8_t Frsky_user_hibyte ;
-uint8_t Frsky_user_ready ;
+struct t_frksy_user
+{
+	uint8_t state ;
+	uint8_t stuff ;
+	uint8_t id ;
+	uint8_t lobyte ;
+	uint8_t hibyte ;
+	uint8_t ready ;
+} Frsky_user;
+
 
 int16_t FrskyHubData[HUBDATALENGTH] ;  // All 38 words
-//int16_t FrskyHubMin[HUBMINMAXLEN] ;
-int16_t FrskyHubMax[HUBMINMAXLEN] ;
+struct t_hub_max_min FrskyHubMaxMin ;
 
 uint8_t FrskyVolts[12];
 uint8_t FrskyBattCells=0;
 int16_t Frsky_Amp_hour_prescale ;
+
+uint8_t FrskyTelemetryType ;
 
 #if defined(VARIO)
 struct t_vario VarioData ;
@@ -160,11 +167,21 @@ void evalVario(int16_t altitude_bp, uint16_t altitude_ap)
 #endif
 }
 
+void store_hub_data( uint8_t index, uint16_t value ) ;
+
+void store_indexed_hub_data( uint8_t index, uint16_t value )
+{
+  index = pgm_read_byte( &Fr_indices[index] ) & 0x7F ;
+	store_hub_data( index, value ) ;
+}
+
+NOINLINE void store_cell_data( uint8_t battnumber, uint16_t cell )
+{
+	FrskyVolts[battnumber] = ( cell & 0x0FFF ) / 10 ;
+}
 
 void store_hub_data( uint8_t index, uint16_t value )
 {
-//	int16_t result = (int16_t) value ;
-
 	if ( index == FR_ALT_BARO )
 	{
 		value *= 10 ;
@@ -188,6 +205,12 @@ void store_hub_data( uint8_t index, uint16_t value )
 		FrskyHubData[FR_ALT_BARO] = WholeAltitude + ( (WholeAltitude > 0) ? value : -value ) ;
 	}
 
+	if ( index == FR_SPORT_ALT )
+	{
+		index = FR_ALT_BARO ;         // For max and min
+		FrskyHubData[FR_ALT_BARO] = value ;
+	}
+	
 	if ( index < HUBDATALENGTH )
 	{
     if ( !g_model.FrSkyGpsAlt )         
@@ -221,12 +244,17 @@ void store_hub_data( uint8_t index, uint16_t value )
 
 		if ( index < HUBMINMAXLEN )
 		{
-			if ( FrskyHubMax[index] < FrskyHubData[index] )
-			{	FrskyHubMax[index] = FrskyHubData[index] ;
+			struct t_hub_max_min *maxMinPtr = &FrskyHubMaxMin ;
+			FORCE_INDIRECT( maxMinPtr) ;
+			
+			int16_t value = FrskyHubData[index] ;
+			if ( maxMinPtr->hubMax[index] < value )
+			{	maxMinPtr->hubMax[index] = value ;
 			}
-//			if ( FrskyHubMin[index] > FrskyHubData[index] )
-//			{	FrskyHubMin[index] = FrskyHubData[index] ;
-//			}	
+			int16_t min = maxMinPtr->hubMin[index] ;
+			if (!min || min > value)
+   	  { maxMinPtr->hubMin[index] = value ;
+			}	
 		}
 		if ( index == FR_CELL_V )			// Cell Voltage
 		{
@@ -244,7 +272,7 @@ void store_hub_data( uint8_t index, uint16_t value )
   				FrskyBattCells=battnumber+1;
   			}
   		}
-  		FrskyVolts[battnumber] = ( ( ( value & 0x0F ) << 8 ) + (value >> 8) ) / 10 ;
+			store_cell_data( battnumber, ( ( value & 0x0F ) << 8 ) + (value >> 8) ) ;
 		}
 		if ( index == FR_RPM )			// RPM
 		{
@@ -270,18 +298,21 @@ void store_hub_data( uint8_t index, uint16_t value )
 
 void frsky_proc_user_byte( uint8_t byte )
 {
+	struct t_frksy_user *fUserPtr = &Frsky_user ;
+	FORCE_INDIRECT( fUserPtr ) ;
+
 	if (g_model.FrSkyUsrProto == 0)  // FrSky Hub
 	{
 	
-  	if ( Frsky_user_state == 0 )
+  	if ( fUserPtr->state == 0 )
 		{ // Waiting for 0x5E
 			if ( byte == 0x5E )
 			{
-				Frsky_user_state = 1 ;
-				if ( Frsky_user_ready )
+				fUserPtr->state = 1 ;
+				if ( fUserPtr->ready )
 				{
-					Frsky_user_ready = 0 ;
-					store_hub_data( Frsky_user_id & 0x7F, ( Frsky_user_hibyte << 8 ) + Frsky_user_lobyte ) ;
+					fUserPtr->ready = 0 ;
+					store_indexed_hub_data( fUserPtr->id, ( fUserPtr->hibyte << 8 ) | fUserPtr->lobyte ) ;
 				}
 			}		
 		}
@@ -289,22 +320,22 @@ void frsky_proc_user_byte( uint8_t byte )
 		{ // In a packet
 			if ( byte == 0x5E )
 			{ // 
-				Frsky_user_state = 1 ;			
+				fUserPtr->state = 1 ;
 			}
 			else
 			{
 				if ( byte == 0x5D )
 				{
-					Frsky_user_stuff = 1 ;  // Byte stuffing active
+					fUserPtr->stuff = 1 ;  // Byte stuffing active
 				}
 				else
 				{
-					if ( Frsky_user_stuff )
+					if ( fUserPtr->stuff )
 					{
-						Frsky_user_stuff = 0 ;
+						fUserPtr->stuff = 0 ;
 						byte ^= 0x60 ;  // Unstuff
 					}
-  	      if ( Frsky_user_state == 1 )
+  	      if ( fUserPtr->state == 1 )
 					{
 						if ( byte > 57 )
 						{
@@ -318,19 +349,19 @@ void frsky_proc_user_byte( uint8_t byte )
 						{
 							byte = 0 ;	// Use a discard item							
 						}
-					  Frsky_user_id	= pgm_read_byte( &Fr_indices[byte] ) ;
-						Frsky_user_state = 2 ;
+					  fUserPtr->id	= byte ;
+						fUserPtr->state = 2 ;
 					}
-  	      else if ( Frsky_user_state == 2 )
+  	      else if ( fUserPtr->state == 2 )
 					{
-					  Frsky_user_lobyte	= byte ;
-						Frsky_user_state = 3 ;
+					  fUserPtr->lobyte	= byte ;
+						fUserPtr->state = 3 ;
 					}
 					else
 					{
-						Frsky_user_hibyte = byte ;
-						Frsky_user_ready = 1 ;
-						Frsky_user_state = 0 ;
+						fUserPtr->hibyte = byte ;
+						fUserPtr->ready = 1 ;
+						fUserPtr->state = 0 ;
 					}
 				}
 			}		 
@@ -340,12 +371,12 @@ void frsky_proc_user_byte( uint8_t byte )
 	{
     if ( frskyUsrStreaming < (FRSKY_USR_TIMEOUT10ms - 10))  // At least 100mS passed since last data received
 		{
-			Frsky_user_lobyte = byte ;
+			fUserPtr->lobyte = byte ;
 		}
 		else
 		{
 			int16_t value ;
-			value = ( byte << 8 ) + Frsky_user_lobyte ;
+			value = ( byte << 8 ) | fUserPtr->lobyte ;
 			store_hub_data( FR_ALT_BARO, value ) ;	 // Store altitude info
 #if defined(VARIO)
 			evalVario( value, 0 ) ;
@@ -370,7 +401,7 @@ static uint8_t frskyPushValue( uint8_t i, uint8_t value);
     - User Data packets
 */
 
-uint8_t LinkAveCount ;
+//uint8_t LinkAveCount ;
 
 void processFrskyPacket(uint8_t *packet)
 {
@@ -391,15 +422,15 @@ void processFrskyPacket(uint8_t *packet)
       break;
     case LINKPKT: // A1/A2/RSSI values
 			// From a scope, this seems to be sent every about every 35mS
-			LinkAveCount += 1 ;
+//			LinkAveCount += 1 ;
       frskyTelemetry[0].set(packet[1], FR_A1_COPY ); //FrskyHubData[] =  frskyTelemetry[0].value ;
       frskyTelemetry[1].set(packet[2], FR_A2_COPY ); //FrskyHubData[] =  frskyTelemetry[1].value ;
       frskyTelemetry[2].set(packet[3], FR_RXRSI_COPY );	//FrskyHubData[] =  frskyTelemetry[2].value ;
       frskyTelemetry[3].set(packet[4] / 2, FR_TXRSI_COPY ); //FrskyHubData[] =  frskyTelemetry[3].value ;
-			if ( LinkAveCount > 15 )
-			{
-				LinkAveCount = 0 ;
-			}
+//			if ( LinkAveCount > 15 )
+//			{
+//				LinkAveCount = 0 ;
+//			}
 //      frskyRSSI[0].set(packet[3]);
 //      frskyRSSI[1].set(packet[4] / 2);
       break;
@@ -457,6 +488,126 @@ void processFrskyPacket(uint8_t *packet)
 #define frskyDataStart   1
 #define frskyDataInFrame 2
 #define frskyDataXOR     3
+
+static bool checkSportPacket()
+{
+	uint8_t *packet = frskyRxBuffer ;
+  uint16_t crc = 0 ;
+  for ( uint8_t i=1; i<FRSKY_SPORT_PACKET_SIZE; i++)
+	{
+    crc += packet[i]; //0-1FF
+    crc += crc >> 8; //0-100
+    crc &= 0x00ff;
+    crc += crc >> 8; //0-0FF
+    crc &= 0x00ff;
+  }
+  return (crc == 0x00ff) ;
+}
+
+
+void processSportPacket()
+{
+	uint8_t *packet = frskyRxBuffer ;
+  uint8_t  prim   = packet[1];
+//  uint16_t appId  = *((uint16_t *)(packet+2)) ;
+	
+  if ( !checkSportPacket() )
+	{
+    return;
+	}
+  
+	frskyStreaming = FRSKY_TIMEOUT10ms * 3 ; // reset counter only if valid frsky packets are being detected
+
+	if ( prim == DATA_FRAME )
+	{
+		
+		if ( packet[3] == 0xF1 )
+		{ // Receiver specific
+			uint8_t value = packet[4] ;
+			switch ( packet[2] )
+			{
+				case 1 :
+      		frskyTelemetry[2].set(value, FR_RXRSI_COPY );	//FrskyHubData[] =  frskyTelemetry[2].value ;
+				break ;
+
+				case 2 :
+				case 4 :		// Battery from X8R
+		      frskyTelemetry[0].set(value, FR_A1_COPY ); //FrskyHubData[] =  frskyTelemetry[0].value ;
+				break ;
+  		    
+				case 3 :
+					frskyTelemetry[1].set(value, FR_A2_COPY ); //FrskyHubData[] =  frskyTelemetry[1].value ;
+				break ;
+    		  
+				case 5 : // SWR
+					frskyTelemetry[3].set(value, FR_TXRSI_COPY ); //FrskyHubData[] =  frskyTelemetry[3].value ;
+				break ;
+			}
+		}
+		else if ( packet[3] == 0 )
+		{ // old sensors
+      frskyUsrStreaming = 255 ; //FRSKY_USR_TIMEOUT10ms ; // reset counter only if valid frsky packets are being detected
+			uint16_t value = (*((uint16_t *)(packet+4))) ;
+			store_indexed_hub_data( packet[2], value ) ;
+		}
+		else
+		{ // new sensors
+      frskyUsrStreaming = 255 ; //FRSKY_USR_TIMEOUT10ms ; // reset counter only if valid frsky packets are being detected
+			uint8_t id = (packet[3] << 4) | ( packet[2] >> 4 ) ;
+			uint32_t value = (*((uint32_t *)(packet+4))) ;
+//			SportId = id ;
+//			SportValue = value ;
+			switch ( id )
+			{
+				case ALT_ID_8 :
+					value = (int32_t)value / 100 ;
+					store_hub_data( FR_SPORT_ALT, value ) ;
+				break ;
+
+				case VARIO_ID_8 :
+					store_hub_data( FR_VSPD, value ) ;
+				break ;
+
+#if defined(CPUM128) || defined(CPUM2561)
+				case BETA_ALT_ID_8 :
+					value = (int32_t)value >> 8 ;
+					value = (int32_t)value / 10 ;
+					store_hub_data( FR_SPORT_ALT, value ) ;
+				break ;
+#endif
+//				case BETA_VARIO_ID_8 :
+//					value = (int32_t)value >> 8 ;
+//					store_hub_data( FR_VSPD, value ) ;
+//				break ;
+
+				case CELLS_ID_8 :
+				{
+        	uint8_t battnumber = value ;
+					uint16_t cell ;
+  				FrskyBattCells = battnumber >> 4 ;
+					battnumber &= 0x0F ;
+					value >>= 8 ;
+					cell = value ;
+					store_cell_data( battnumber, cell ) ;
+					battnumber += 1 ;
+					value >>= 12 ;
+					cell = value ;
+					store_cell_data( battnumber, cell ) ;
+				}
+				break ;
+
+				case CURR_ID_8 :
+					store_hub_data( FR_CURRENT, value ) ;
+				break ;
+
+				case VFAS_ID_8 :
+					store_hub_data( FR_VOLTS, value / 10 ) ;
+				break ;
+			}
+		}
+	}
+}
+
 
 #ifndef N2F
 	#define PRIVATE_COUNT	4
@@ -535,10 +686,12 @@ ISR(USART0_RX_vect)
 
   data = UDR0; // USART data register 0
 
-  if (stat & ((1 << FE0) | (1 << DOR0) | (1 << UPE0)))
+	uint8_t numbytes = numPktBytes ;
+  
+	if (stat & ((1 << FE0) | (1 << DOR0) | (1 << UPE0)))
   { // discard buffer and start fresh on any comms error
 //    FrskyRxBufferReady = 0;
-    numPktBytes = 0;
+    numbytes = 0;
 //		Uerror = stat & ((1 << FE0) | (1 << DOR0) | (1 << UPE0)) ;
 //		Uecount += 1 ;
   } 
@@ -553,14 +706,14 @@ ISR(USART0_RX_vect)
 #ifdef N2F			// This code supports the native FrySky Sensor Hub protocol
           if (data == HUB_START_STOP) break; 	// Remain in userDataStart if possible 0x5e,0x5e doublet found.
 
-          frskyRxBuffer[numPktBytes++] = data;	//ID of field. 
+          frskyRxBuffer[numbytes++] = data;	//ID of field. 
           dataState = frskyDataInFrame;
           break;
 
         case frskyDataInFrame:
-	    if (numPktBytes > 4)			// failure, restart
+	    if (numbytes > 4)			// failure, restart
 	    {
-		  numPktBytes = 0;
+		  numbytes = 0;
                   dataState = frskyDataIdle;
 		  break;
 	    }
@@ -581,18 +734,18 @@ ISR(USART0_RX_vect)
           if (data == HUB_START_STOP) // end of field 0x5e detected, is used as start of next field
           {
 		  processFrskyPacket(frskyRxBuffer); // FrskyRxBufferReady = 1; packet is "5E ID Byte Byte "
-              numPktBytes = 0;
+              numbytes = 0;
               dataState = frskyDataStart;	
-              frskyRxBuffer[numPktBytes++] = data;	// put starting 5E into buffer
+              frskyRxBuffer[numbytes++] = data;	// put starting 5E into buffer
               break;
           }
 		//----------------
-          frskyRxBuffer[numPktBytes++] = data;
+          frskyRxBuffer[numbytes++] = data;
           break;
 
         case frskyDataXOR:
-          if (numPktBytes < 19)
-            frskyRxBuffer[numPktBytes++] = data ^ STUFF_MASK;
+          if (numbytes < 19)
+            frskyRxBuffer[numbytes++] = data ^ STUFF_MASK;
           dataState = frskyDataInFrame;
           break;
 
@@ -603,19 +756,27 @@ ISR(USART0_RX_vect)
         case frskyDataIdle:
           if (data == HUB_START_STOP)  // 0x5E
           {
-            numPktBytes = 0;
-            frskyRxBuffer[numPktBytes++] = data;	// put 5E into buffer 
+            numbytes = 0;
+            frskyRxBuffer[numbytes++] = data;	// put 5E into buffer 
             dataState = frskyDataStart;
           }
           break;
 
 //---------------------------------------------------------------------------------
 #else					// This is the original FrySky decoding
-          if (data == START_STOP) break; // Remain in userDataStart if possible 0x7e,0x7e doublet found.
+          if (data == START_STOP)
+					{
+						if ( FrskyTelemetryType )		// SPORT
+						{
+          		dataState = frskyDataInFrame ;
+            	numbytes = 0;
+						}
+					 	break ; // Remain in userDataStart if possible 0x7e,0x7e doublet found.
+					}
 
           dataState = frskyDataInFrame;
-          if (numPktBytes < 19)
-            frskyRxBuffer[numPktBytes++] = data;
+          if (numbytes < 19)
+            frskyRxBuffer[numbytes++] = data;
           break;
 
         case frskyDataInFrame:
@@ -626,26 +787,35 @@ ISR(USART0_RX_vect)
           }
           if (data == START_STOP) // end of frame detected
           {
-            processFrskyPacket(frskyRxBuffer); // FrskyRxBufferReady = 1;
-            dataState = frskyDataIdle;
+						if ( FrskyTelemetryType )		// SPORT
+						{						
+          		dataState = frskyDataInFrame ;
+            	numbytes = 0;
+						}
+						else
+						{
+	           	processFrskyPacket(frskyRxBuffer); // FrskyRxBufferReady = 1;
+          		dataState = frskyDataIdle ;
+						}
             break;
           }
-          frskyRxBuffer[numPktBytes++] = data;
+          if (numbytes < 19)
+	          frskyRxBuffer[numbytes++] = data;
           break;
 
         case frskyDataXOR:
           dataState = frskyDataInFrame;
-          if (numPktBytes < 19)
-            frskyRxBuffer[numPktBytes++] = data ^ STUFF_MASK;
+          if (numbytes < 19)
+            frskyRxBuffer[numbytes++] = data ^ STUFF_MASK;
           break;
 
         case frskyDataIdle:
           if (data == START_STOP)
           {
-            numPktBytes = 0;
+            numbytes = 0;
             dataState = frskyDataStart;
           }
-          if (data == PRIVATE)
+          else if (data == PRIVATE)
 					{
 						dataState = PRIVATE_COUNT ;
 					}
@@ -684,6 +854,18 @@ ISR(USART0_RX_vect)
       } // switch
 //    } // if (FrskyRxBufferReady == 0)
   }
+
+	if ( FrskyTelemetryType )		// SPORT
+	{
+  	if (numbytes >= FRSKY_SPORT_PACKET_SIZE)
+		{
+			processSportPacket() ;    	
+		  numbytes = 0 ;
+			dataState = frskyDataIdle;
+		}
+	}
+  numPktBytes = numbytes ;
+
 	cli() ;
   UCSR0B |= (1 << RXCIE0); // enable Interrupt
 }
@@ -725,7 +907,7 @@ uint8_t FrskyDelay = 0 ;
 #ifndef SIMU
 static void FRSKY10mspoll(void)
 {
-#ifdef CPUM128
+#if defined(CPUM128) || defined(CPUM2561)
 	if ( g_eeGeneral.FrskyPins == 0 )
 		return ;
 #endif
@@ -923,7 +1105,7 @@ inline void FRSKY_EnableRXD(void)
   UCSR0B |= (1 << RXCIE0); // enable Interrupt
 }
 
-#ifdef CPUM128
+#if defined(CPUM128) || defined(CPUM2561)
 void FRSKY_DisableTXD(void)
 {
   UCSR0B &= ~((1 << TXEN0) | (1 << UDRIE0)); // disable TX pin and interrupt
@@ -946,10 +1128,14 @@ void FRSKY_disable()
 
 #endif
 
-void FRSKY_Init(void)
+#define UBRRH_57600		0
+#define UBRRL_57600		34
+
+void FRSKY_Init( uint8_t brate)
 {
+	FrskyTelemetryType = brate ;
   // clear frsky variables
-#ifdef CPUM128
+#if defined(CPUM128) || defined(CPUM2561)
 	if ( g_eeGeneral.FrskyPins == 0 )
 		return ;
 #endif
@@ -966,9 +1152,18 @@ void FRSKY_Init(void)
 
 #include <util/setbaud.h>
 
-  UBRR0H = UBRRH_VALUE;
-  UBRR0L = UBRRL_VALUE;
-  UCSR0A &= ~(1 << U2X0); // disable double speed operation.
+	if ( brate == 0 )
+	{
+  	UCSR0A &= ~(1 << U2X0); // disable double speed operation.
+  	UBRR0L = UBRRL_VALUE;
+  	UBRR0H = UBRRH_VALUE;
+	}
+	else
+	{
+  	UCSR0A |= (1 << U2X0); // enable double speed operation.
+  	UBRR0L = UBRRL_57600 ;
+  	UBRR0H = UBRRH_57600 ;
+	}
 
   // set 8 N1
   UCSR0B = 0 | (0 << RXCIE0) | (0 << TXCIE0) | (0 << UDRIE0) | (0 << RXEN0) | (0 << TXEN0) | (0 << UCSZ02);
@@ -1036,9 +1231,17 @@ void FrskyData::set(uint8_t value, uint8_t copy)
 	raw = value;
 #else
 	averaging_total += value ;
-	if ( LinkAveCount > 15 )
+	uint8_t count = 16 ;
+	uint8_t shift = 4 ;
+	if ( FrskyTelemetryType )
 	{
-		raw = averaging_total >> 4 ;
+		 count = 2 ;
+		 shift = 1 ;
+	}
+	if ( ++averageCount >= count )
+	{
+		averageCount = 0 ;
+		raw = averaging_total >> shift ;
 #endif
   	if ( raw > offset )
 		{
@@ -1049,11 +1252,11 @@ void FrskyData::set(uint8_t value, uint8_t copy)
 			x = 0 ;
 		}
 		this->value = x ;
-		FrskyHubData[copy] = this->value ;
-   	if (max < value)
-   	  max = value;
-   	if (!min || min > value)
-   	  min = value;
+		store_hub_data( copy, this->value ) ;
+//   	if (max < value)
+//   	  max = value;
+//   	if (!min || min > value)
+//   	  min = value;
 #ifndef NMEA
 		averaging_total = 0 ;
 	}
@@ -1062,24 +1265,24 @@ void FrskyData::set(uint8_t value, uint8_t copy)
 
 void resetTelemetry()
 {
-	FrskyData *ptr_data = &frskyTelemetry[0] ;
-	FORCE_INDIRECT(ptr_data) ;
+//	FrskyData *ptr_data = &frskyTelemetry[0] ;
+//	FORCE_INDIRECT(ptr_data) ;
 
-	ptr_data[0].min = 0 ;
-	ptr_data[0].max = 0 ;
-	ptr_data[1].min = 0 ;
-	ptr_data[1].max = 0 ;
-	ptr_data[2].min = 0 ;
-	ptr_data[2].max = 0 ;
-	ptr_data[3].min = 0 ;
-	ptr_data[3].max = 0 ;
+//	ptr_data[0].min = 0 ;
+//	ptr_data[0].max = 0 ;
+//	ptr_data[1].min = 0 ;
+//	ptr_data[1].max = 0 ;
+//	ptr_data[2].min = 0 ;
+//	ptr_data[2].max = 0 ;
+//	ptr_data[3].min = 0 ;
+//	ptr_data[3].max = 0 ;
 	
 	FrskyHubData[FR_A1_MAH] = 0 ;
 	FrskyHubData[FR_A2_MAH] = 0 ;
 	FrskyHubData[FR_CELL_MIN] = 0 ;			// 0 volts
 	Frsky_Amp_hour_prescale = 0 ;
 	FrskyHubData[FR_AMP_MAH] = 0 ;
-//  memset(frskyRSSI, 0, sizeof(frskyRSSI));
+  memset( &FrskyHubMaxMin, 0, sizeof(FrskyHubMaxMin));
 }
 
 void current_check( uint8_t i )
@@ -1115,11 +1318,17 @@ void check_frsky()
 {
   // Used to detect presence of valid FrSky telemetry packets inside the
   // last FRSKY_TIMEOUT10ms 10ms intervals
-#ifdef CPUM128
+#if defined(CPUM128) || defined(CPUM2561)
 	if ( g_eeGeneral.FrskyPins == 0 )
 		return ;
 #endif
-	
+
+	uint8_t telemetryType = g_model.protocol == PROTO_PXX ;
+	if ( telemetryType != FrskyTelemetryType )
+	{
+		FRSKY_Init( telemetryType ) ;	
+	}
+	 
 #ifndef SIMU
 	if (frskyStreaming > 0)
 	{
@@ -1129,7 +1338,6 @@ void check_frsky()
 		}
 	}
   if (frskyUsrStreaming > 0) frskyUsrStreaming--;
-
 
   if ( FrskyAlarmSendState )
   {
@@ -1172,7 +1380,7 @@ void check_frsky()
 // New model loaded
 void FRSKY_setModelAlarms(void)
 {
-#ifdef CPUM128
+#if defined(CPUM128) || defined(CPUM2561)
 	if ( g_eeGeneral.FrskyPins == 0 )
 		return ;
 #endif

@@ -17,6 +17,8 @@
 #include "er9x.h"
 #include <stdlib.h>
 
+//#define LCD_2_CS		1
+
 #define DBL_FONT_SMALL	1
 
 #ifdef SIMU
@@ -521,6 +523,7 @@ void lcd_vline(uint8_t x,uint8_t y, int8_t h)
 }
 
 
+#ifndef LCD_2_CS
 void lcdSendCtl(uint8_t val)
 {
   PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_CS1);
@@ -626,3 +629,156 @@ void refreshDiplay()
 	LcdLock = 0 ;						// Free LCD data lines
 #endif
 }
+#endif
+
+#ifdef LCD_2_CS
+uint8_t toggle_e()
+{
+  uint8_t value ;
+  PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_E) ;
+  asm("rjmp .+0") ;
+  asm("rjmp .+0") ;
+  asm("nop") ;
+  value = PINA ;
+  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_E) ;
+  return value ;
+}
+
+
+#define delay_1us() _delay_us(1)
+void delay_1_5us(int ms)
+{
+  for(int i=0; i<ms; i++) delay_1us();
+}
+
+#define OUT_C_LCD_CS2   0
+
+static void lcdSendCtl(uint8_t val)
+{
+  uint8_t busy ;
+
+  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_CS1);
+
+  PORTC_LCD_CTRL |= (1<<OUT_C_LCD_RnW) ;    // read
+  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_A0);
+  DDRA = 0 ;
+  do
+  {
+    busy = toggle_e() ;
+  } while ( busy & 0x80 ) ;
+  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_RnW);
+  DDRA = 0xFF ;
+  PORTA_LCD_DAT = val;
+  toggle_e() ;
+  PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_CS1);
+
+  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_CS2);
+  PORTC_LCD_CTRL |= (1<<OUT_C_LCD_RnW) ;    // read
+  DDRA = 0 ;
+  do
+  {
+    busy = toggle_e() ;
+  } while ( busy & 0x80 ) ;
+  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_RnW);
+  DDRA = 0xFF ;
+  PORTA_LCD_DAT = val;
+  toggle_e() ;
+  PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_CS2);
+
+}
+
+
+uint8_t Hpos ;
+
+static void lcdSendDat(uint8_t val)
+{
+  uint8_t busy ;
+
+  if ( Hpos )
+  {
+    PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_CS1) ;
+  }
+  else
+  {
+    PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_CS2) ;
+  }
+  PORTC_LCD_CTRL |= (1<<OUT_C_LCD_RnW) ;    // read
+  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_A0);
+  DDRA = 0 ;
+  do
+  {
+    busy = toggle_e() ;
+  } while ( busy & 0x80 ) ;
+  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_RnW);
+  DDRA = 0xFF ;
+  PORTA_LCD_DAT = val;
+  PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_A0);
+  toggle_e() ;
+
+  PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_CS1);
+  PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_CS2);
+}
+
+
+void lcd_init()
+{
+  // /home/thus/txt/datasheets/lcd/KS0713.pdf
+  // ~/txt/flieger/ST7565RV17.pdf  from http://www.glyn.de/content.asp?wdid=132&sid=
+
+  PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_CS1);
+  PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_CS2);
+  PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_A0);
+  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_RES);  //LCD_RES
+  delay_1us();
+  delay_1us();//    f520  call  0xf4ce  delay_1us() ; 0x0xf4ce
+  PORTC_LCD_CTRL |= (1<<OUT_C_LCD_RES); //  f524  sbi 0x15, 2 IOADR-PORTC_LCD_CTRL; 21           1
+
+  lcdSendCtl(0xC0); //
+  lcdSendCtl(0x3F); //DON = 1: display ON
+
+  g_eeGeneral.contrast = 0x22;
+}
+
+void lcdSetContrast()
+{
+	lcdSetRefVolt(g_eeGeneral.contrast);
+}
+
+void lcdSetRefVolt(uint8_t val)
+{
+	LcdLock = 1 ;						// Lock LCD data lines
+  lcdSendCtl(0x81);
+  lcdSendCtl(val);
+	LcdLock = 0 ;						// Free LCD data lines
+}
+
+volatile uint8_t LcdLock ;
+//volatile uint8_t LcdTrims ;
+//uint8_t LcdTrimSwapped ;
+
+
+void refreshDiplay()
+{
+  uint8_t *p=displayBuf;
+
+	LcdLock = 1 ;						// Lock LCD data lines
+
+  for(uint8_t y=0; y < 8; y++) {
+    lcdSendCtl(0xC0); //
+    lcdSendCtl(0x40); //column addr 0
+    lcdSendCtl( y | 0xB8); //page addr y
+
+    for(uint8_t x=0; x<128; x++)
+    {
+      Hpos = x & 64 ;
+      lcdSendDat(*p);
+      p++;
+    }
+//    PORTA = 0xFF;  // Outputs high/pullups enabled
+  }
+	LcdLock = 0 ;						// Free LCD data lines
+}
+#endif
+
+
+

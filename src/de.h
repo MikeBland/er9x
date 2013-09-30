@@ -137,9 +137,9 @@
 #define STR_FRHUB_WSHHI    "\005FrHubWSHhi"
 #define STR_MET_IMP        "\003MetImp" // Metrisches System / Imperiales System
 #define STR_A_CHANNEL      "A  Kanal"
-#define STR_ALRM           "alrm"
+#define STR_ALRM           "Alrm"
 #define STR_TELEMETRY2     "TELEMETRIE2"
-#define STR_TX_RSSIALRM    "SnRSSIalrm" // Sender
+#define STR_TX_RSSIALRM    "SnRSSIAlrm" // Sender
 #define STR_NUM_BLADES     "Num Blaetter"
 #define STR_ALT_ALARM      "HoeAlarm"
 #define STR_OFF122400      "\003AUS122400"
@@ -167,7 +167,7 @@
 #define STR_15_ON          "\015An"
 #define STR_EDIT_MIX       "Bearb MISCHER " // Bearbeite Mischer
 #define STR_2SOURCE        "\002Quelle"
-#define STR_2WEIGHT        "\002Gewicht"
+#define STR_2WEIGHT        "\002Dual Rate"
 #define STR_FMTRIMVAL      "FmTrimVal"
 #define STR_OFFSET         "Offset"
 #define STR_2FIX_OFFSET    "\002Fix Offset"
@@ -201,25 +201,25 @@
 #define STR_4DR_LOW        "\004DR Tief"
 #define STR_4DR_HI         "\004DR Hoch"
 #define STR_2EXPO          "\002Expo"
-#define STR_DR_SW1         "DrSw1"
-#define STR_DR_SW2         "DrSw2"
+#define STR_DR_SW1         "DrSch1"
+#define STR_DR_SW2         "DrSch2"
 #define STR_DUP_MODEL      "KOPIERE MODELL"
 #define STR_DELETE_MODEL   "LOESCHE MODELL"
 #define STR_DUPLICATING    "Kopiere Modell"
 #define STR_SETUP          "EINST"
 #define STR_NAME           "Name"
-#define STR_VOICE_INDEX    "Ton Freq\021MENU"
-#define STR_TRIGGER        "Trigger"
-#define STR_TRIGGERB       "TriggerB"
+#define STR_VOICE_INDEX    "Tonfreq \021MENU"
+#define STR_TRIGGER        "Signal"
+#define STR_TRIGGERB       "SignalB"
 //STR_COUNT_DOWN_UP indexed, 10 chars each
 #define STR_COUNT_DOWN_UP  "\012Zaehl runtZaehl hoch"
-#define STR_T_TRIM         "T-Trim"
-#define STR_T_EXPO         "T-Expo"
+#define STR_T_TRIM         "G-Trim"
+#define STR_T_EXPO         "G-Expo"
 #define STR_TRIM_INC       "Trim Ink"
 // STR_TRIM_OPTIONS indexed 6 chars each
 #define STR_TRIM_OPTIONS   "\006Expon ExFeinFein  MittelGrob  "
 #define STR_TRIM_SWITCH    "Trim Sch"
-#define STR_BEEP_CENTRE    "Piep Frq" //Tonhöhe Frequenz
+#define STR_BEEP_CENTRE    "Piep Cen" // Zentrum
 #define STR_RETA123        "SHGQ123"
 #define STR_PROTO          "Proto" // Protokoll
 // STR_21_USEC after \021 max 4 chars
@@ -228,8 +228,8 @@
 // STR_23_US after \023 max 2 chars
 #define STR_23_US          "\023uS"
 // STR_PPMFRAME_MSEC before \015 max 9 chars, after max 4 chars
-#define STR_PPMFRAME_MSEC  "PPM FrLen\015mSek" // Puls Pausen Modulation
-#define STR_SEND_RX_NUM    "Send Em Nummer [MENU]"
+#define STR_PPMFRAME_MSEC  "PPM Laenge\015mSek" // Puls Pausen Modulation
+#define STR_SEND_RX_NUM    "Bind  Range"
 #define STR_DSM_TYPE       "DSM Typ" 
 #define STR_PPM_1ST_CHAN   "PPM 1. Kanal"
 #define STR_SHIFT_SEL      "Signalart" // Signalart
@@ -238,7 +238,7 @@
 #define STR_E_LIMITS       "E. Grenze" //Erweiterte Grenze
 #define STR_Trainer        "Trainer"
 #define STR_T2THTRIG       "GasStaT2" // 2. Timer startet wenn Gas um 5% bewegt
-#define STR_AUTO_LIMITS    "Auto Grenze"
+#define STR_AUTO_LIMITS    "Autogrenze"
 // STR_1_RETA indexed 1 char each
 #define STR_1_RETA         "\001SHGQ"
 #define STR_FL_MODE        "FL MODUS"
@@ -248,12 +248,12 @@
 #define STR_SP_FM0         " FM0"
 #define STR_SP_FM          " FM"
 #define STR_HELI_SETUP     "HELI EINST"
-#define STR_SWASH_TYPE     "Taumel Typ" 
-#define STR_COLLECTIVE     "Kollektive"
-#define STR_SWASH_RING     "Taumel Ring"
-#define STR_ELE_DIRECTION  "HOE Richtung"
-#define STR_AIL_DIRECTION  "QUE Richtung"
-#define STR_COL_DIRECTION  "KOL Richtung" //Kollektive
+#define STR_SWASH_TYPE     "Taumeltyp" 
+#define STR_COLLECTIVE     "Kollektiv"
+#define STR_SWASH_RING     "Anschlag"
+#define STR_ELE_DIRECTION  "HOE Umkehr"
+#define STR_AIL_DIRECTION  "QUE Umkehr"
+#define STR_COL_DIRECTION  "KOL Umkehr" //Kollektiv
 #define STR_MODEL_POPUP    "BEARBEI\0KOPIER\0BEWEGE\0LOESCH"
 #define STR_MODELSEL       "MODELWAHL"
 // STR_11_FREE after \011 max 4 chars
@@ -282,40 +282,44 @@
 #define STR_BEEPER         "Pieper"
 // STR_BEEP_MODES indexed 6 chars each
 #define STR_BEEP_MODES     "\006Lautls""TstAus""xKurz ""Kurz  ""Normal""Lang  ""xLang " // x = seh
-#define STR_SOUND_MODE     "Sound Modus"
+#define STR_SOUND_MODE     "Soundmodus"
 // STR_SPEAKER_OPTS indexed 10 chars each
 #define STR_SPEAKER_OPTS   "\012Pieper    ""PiLautspre""PieprTon  ""PieLautTon""MegaSound "
 #define STR_VOLUME         "Lautst"
-#define STR_SPEAKER_PITCH  " Tonhoehe"
-#define STR_HAPTICSTRENGTH " Haptische Staerke"
+#define STR_SPEAKER_PITCH  "Tonhoehe"
+#define STR_HAPTICSTRENGTH "Haptische Staerke"
 #define STR_CONTRAST       "Kontrast"
 #define STR_BATT_WARN      "Batterie Warnung" 
 // STR_INACT_ALARM m for minutes after \023 - single char
-#define STR_INACT_ALARM    "Inaktivitaets alarm\023m"
-#define STR_THR_REVERSE    "Gas umkehren"
+#define STR_INACT_ALARM    "Inaktivitatalarm\023m"
+#define STR_THR_REVERSE    "Gasumkehr"
 #define STR_MINUTE_BEEP    "Minutenton"
 #define STR_BEEP_COUNTDOWN "Piep Countdown"
-#define STR_FLASH_ON_BEEP  "Blitz auf Piep"
+#define STR_FLASH_ON_BEEP  "Blitz bei Piep"
 #define STR_LIGHT_SWITCH   "Lichtschalter"
 #define STR_LIGHT_INVERT   "Licht umkehren"
 #define STR_LIGHT_AFTER    "Licht aus nach"
-#define STR_LIGHT_STICK    "Licht an Stk Mv"
+#define STR_LIGHT_STICK    "Licht an Stkbeweg"
 #define STR_SPLASH_SCREEN  "Startbildschirm"
 #define STR_SPLASH_NAME    "Start Name"
 #define STR_THR_WARNING    "Gas Warnung"
-#define STR_DEAFULT_SW     "Standard Sch"
+#define STR_DEAFULT_SW     "Stdr.Schalt"
 #define STR_MEM_WARN       "Speicher Warnung"
 #define STR_ALARM_WARN     "Alarm Warnung"
 #define STR_POTSCROLL      "PotScroll"
 #define STR_STICKSCROLL    "StickScroll"
 #define STR_BANDGAP        "BandLuecke"
-#define STR_ENABLE_PPMSIM  "aktiviere PPMSIM"
+#define STR_ENABLE_PPMSIM  "Aktiviere PPMSIM"
 #define STR_CROSSTRIM      "KreuzTrim"
 #define STR_INT_FRSKY_ALRM "Int. Frsky alarm"
 #define STR_MODE           "Modus"
 
 // SWITCHES_STR 3 chars each
+#if defined(CPUM128) || defined(CPUM2561)
+#define SWITCHES_STR       "\003GAS""SEI""HOE""ID0""ID1""ID2""QUE""FWK""TRN""SW1""SW2""SW3""SW4""SW5""SW6""SW7""SW8""SW9""SWA""SWB""SWCSWDSWESWFSWGSWHSWI"
+#else
 #define SWITCHES_STR       "\003GAS""SEI""HOE""ID0""ID1""ID2""QUE""FWK""TRN""SW1""SW2""SW3""SW4""SW5""SW6""SW7""SW8""SW9""SWA""SWB""SWC"
+#endif
 #define SWITCH_WARN_STR	   "Schalter Warnung"
 // CURV_STR indexed 3 chars each
 #define CURV_STR           "\003---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
@@ -338,6 +342,10 @@
 #define STR_ALT_MAX        "Hoe=\011m   Max="
 #define STR_SPD_KTS_MAX    "Ges=\011kts Max="
 #define STR_11_MPH         "\011mph"
+
+#define STR_SINK_TONES		 "Sink Tones"
+//#define STR_NO_SINK_TONES  "Kein Sinkton"
+#define STR_FRSKY_MOD      "Frsky Mod Fertig"
 
 // ersky9x strings
 #define STR_ST_CARD_STAT   "SD CARD STAT"
@@ -375,8 +383,7 @@
 #define STR_STICK_LH_GAIN  "Stick LH Anstieg"
 #define STR_STICK_RV_GAIN  "Stick RV Anstieg"
 #define STR_STICK_RH_GAIN  "Stick RH Anstieg"
-#define STR_NO_SINK_TONES  "No Sink Tones"
-#define STR_FRSKY_MOD      "Frksy Mod Done"
+
 
 
 

@@ -93,7 +93,11 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
         //    channel = 0 ;
         //    PulseTotal = 0 ;
 
+#ifdef CPUM2561
+        TIMSK1 &= ~(1<<OCIE1A); //stop reentrance
+#else
         TIMSK &= ~(1<<OCIE1A); //stop reentrance
+#endif
         //        sei();		// Don't do this yet
         setupPulses();
         // For DSM2 problem, missed interrupt
@@ -107,7 +111,11 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
         if ( (g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16) )
         {
             //            cli();		// Not needed if sei() not done above
+#ifdef CPUM2561
+            TIMSK1 |= (1<<OCIE1A);
+#else
             TIMSK |= (1<<OCIE1A);
+#endif
             sei();
         }
     }
@@ -135,10 +143,17 @@ void setupPulses()
         // switch mode here
         TCCR1B = 0 ;			// Stop counter
         TCNT1 = 0 ;
+#ifdef CPUM2561
+        TIMSK1 &= ~( (1<<OCIE1A) | (1<<OCIE1B) | (1<<OCIE1C) | (1<<ICIE1) | (1<<TOIE1) ) ;	// All interrupts off
+//        TIMSK1 &= ~(1<<OCIE1C) ;		// COMPC1 off
+        TIFR1 = ( (1<<OCF1A) | (1<<OCF1B) | (1<<OCF1C) | (1<<ICF1) | (1<<TOV1) ) ;			// Clear all pending interrupts
+        TIFR3 = ( (1<<OCF3A) | (1<<OCF3B) | (1<<OCF3C) | (1<<ICF3) | (1<<TOV3) ) ;			// Clear all pending interrupts
+#else
         TIMSK &= ~0x3C ;	// All interrupts off
         ETIMSK &= ~(1<<OCIE1C) ;		// COMPC1 off
         TIFR = 0x3C ;			// Clear all pending interrupts
         ETIFR = 0x3F ;			// Clear all pending interrupts
+#endif
 
         switch(required_protocol)
         {
@@ -146,7 +161,11 @@ void setupPulses()
         case PROTO_PPM:
             set_timer3_capture() ;
             OCR1A = 40000 ;		// Next frame starts in 20 mS
-            TIMSK |= 0x10 ;		// Enable COMPA
+#ifdef CPUM2561
+            TIMSK1 |= (1<<OCIE1A) ;		// Enable COMPA
+#else
+            TIMSK |= (1<<OCIE1A) ;		// Enable COMPA
+#endif
             TCCR1A = (0<<WGM10) ;
             TCCR1B = (1 << WGM12) | (2<<CS10) ; // CTC OCRA, 16MHz / 8
             break;
@@ -154,8 +173,12 @@ void setupPulses()
             set_timer3_capture() ;
             OCR1B = 6000 ;		// Next frame starts in 3 mS
             OCR1C = 4000 ;		// Next frame setup in 2 mS
+#ifdef CPUM2561
+            TIMSK1 |= (1<<OCIE1B) | (1<<OCIE1C);	// Enable COMPB and COMPC
+#else
             TIMSK |= (1<<OCIE1B) ;	// Enable COMPB
             ETIMSK |= (1<<OCIE1C);	// Enable COMPC
+#endif
             TCCR1A  = 0;
             TCCR1B  = (2<<CS10);      //ICNC3 16MHz / 8
             break;
@@ -164,28 +187,52 @@ void setupPulses()
             OCR1C = 200 ;			// 100 uS
             TCNT1 = 300 ;			// Past the OCR1C value
             ICR1 = 44000 ;		// Next frame starts in 22 mS
-            TIMSK |= 0x20 ;		// Enable CAPT
+#ifdef CPUM2561
+            TIMSK1 |= (1<<ICIE1) ;		// Enable CAPT
+#else
+            TIMSK |= (1<<TICIE1) ;		// Enable CAPT
+#endif
+
+#ifdef CPUM2561
+            TIMSK1 |= (1<<OCIE1C);	// Enable COMPC
+#else
             ETIMSK |= (1<<OCIE1C);	// Enable COMPC
+#endif
             TCCR1A = (0<<WGM10) ;
             TCCR1B = (3 << WGM12) | (2<<CS10) ; // CTC ICR, 16MHz / 8
             break;
         case PROTO_PPM16 :
+				case PROTO_PPMSIM :
+					if ( required_protocol == PROTO_PPMSIM )
+					{
+            setupPulsesPPM(PROTO_PPMSIM);
+		        PORTB &= ~(1<<OUT_B_PPM);			// Hold PPM output low
+					}
+					else
+					{
             OCR1A = 40000 ;		// Next frame starts in 20 mS
-            TIMSK |= 0x10 ;		// Enable COMPA
+#ifdef CPUM2561
+            TIMSK1 |= (1<<OCIE1A) ;		// Enable COMPA
+#else
+            TIMSK |= (1<<OCIE1A) ;		// Enable COMPA
+#endif
             TCCR1A = (0<<WGM10) ;
             TCCR1B = (1 << WGM12) | (2<<CS10) ; // CTC OCRA, 16MHz / 8
             setupPulsesPPM(PROTO_PPM16);
-						OCR3A = 50000 ;
-            OCR3B = 5000 ;
-            set_timer3_ppm() ;
-            break ;
-        case PROTO_PPMSIM :
-            setupPulsesPPM(PROTO_PPMSIM);
-						OCR3A = 50000 ;
-            OCR3B = 5000 ;
-            set_timer3_ppm() ;
-		        PORTB &= ~(1<<OUT_B_PPM);			// Hold PPM output low
-            break ;
+					}
+					OCR3A = 50000 ;
+          OCR3B = 5000 ;
+          set_timer3_ppm() ;
+        break ;
+        
+//				case PROTO_PPMSIM :
+//            setupPulsesPPM(PROTO_PPMSIM);
+//		        PORTB &= ~(1<<OUT_B_PPM);			// Hold PPM output low
+						
+//						OCR3A = 50000 ;
+//            OCR3B = 5000 ;
+//            set_timer3_ppm() ;
+//            break ;
 				}
     }
     switch(required_protocol)
@@ -467,25 +514,41 @@ ISR(TIMER1_COMPB_vect) // PXX main interrupt
 
 void set_timer3_capture()
 {
+#ifdef CPUM2561
+    TIMSK3 &= ~( (1<<OCIE3A) | (1<<OCIE3B) | (1<<OCIE3C) ) ;	// Stop compare interrupts
+#else
     ETIMSK &= ~( (1<<OCIE3A) | (1<<OCIE3B) | (1<<OCIE3C) ) ;	// Stop compare interrupts
+#endif
     DDRE &= ~0x80;  PORTE |= 0x80 ;	// Bit 7 input + pullup
 
     TCCR3B = 0 ;			// Stop counter
     TCCR3A  = 0;
     TCCR3B  = (1<<ICNC3) | (2<<CS30);      //ICNC3 16MHz / 8
+#ifdef CPUM2561
+    TIMSK3 |= (1<<ICIE3);
+#else
     ETIMSK |= (1<<TICIE3);
+#endif
 }
 
 void set_timer3_ppm()
 {
+#ifdef CPUM2561
+    TIMSK3 &= ~( 1<<ICIE3) ;	// Stop capture interrupt
+#else
     ETIMSK &= ~( 1<<TICIE3) ;	// Stop capture interrupt
+#endif
     DDRE |= 0x80;					// Bit 7 output
 
     TCCR3B = 0 ;			// Stop counter
     TCCR3A = (0<<WGM10);
     TCCR3B = (1 << WGM12) | (2<<CS10); // CTC OCR1A, 16MHz / 8
 
+#ifdef CPUM2561
+    TIMSK3 |= ( (1<<OCIE3A) | (1<<OCIE3B) ); 			// enable immediately before mainloop
+#else
     ETIMSK |= ( (1<<OCIE3A) | (1<<OCIE3B) ); 			// enable immediately before mainloop
+#endif
 }
 
 
@@ -597,7 +660,7 @@ static void crc( uint8_t data )
 {
     //	uint8_t i ;
 
-    PcmControl.PcmCrc=(PcmControl.PcmCrc>>8)^pgm_read_word(&CRCTable[((uint8_t)PcmControl.PcmCrc^data) & 0xFF]);
+  PcmControl.PcmCrc=(PcmControl.PcmCrc<<8)^pgm_read_word(&CRCTable[((uint8_t)(PcmControl.PcmCrc>>8)^data) & 0xFF]);
 }
 
 
@@ -620,11 +683,11 @@ void putPcmPart( uint8_t value )
 
 static void putPcmFlush()
 {
-    while ( PcmControl.PcmBitCount != 0 )
-    {
+  while ( PcmControl.PcmBitCount != 0 )
+  {
   	putPcmPart( 0 ) ; // Empty
-    }
-    *PcmControl.PcmPtr = 0 ;				// Mark end
+  }
+  *PcmControl.PcmPtr = 0 ;				// Mark end
 }
 
 void putPcmBit( uint8_t bit )
@@ -678,7 +741,10 @@ void putPcmHead()
 
 uint16_t scaleForPXX( uint8_t i )
 {
-	return g_chans512[i] *3 / 4 + 2250 ;	
+	int16_t value ;
+	
+	value = g_chans512[i] *3 / 4 + 1024 ;	
+	return limit( 1, value, 2046 ) ;
 }
 
 
@@ -701,34 +767,47 @@ static void setupPulsesPXX()
     	ptrControl->PcmBitCount = ptrControl->PcmByte = 0 ;
     	ptrControl->PcmOnesCount = 0 ;
 		}
+    putPcmPart( 0xC0 ) ;
+    putPcmPart( 0xC0 ) ;
+    putPcmPart( 0xC0 ) ;
+    putPcmPart( 0xC0 ) ;
     putPcmHead(  ) ;  // sync byte
     putPcmByte( g_model.ppmNCH ) ;     // putPcmByte( g_model.rxnum ) ;  //
-    putPcmByte( pxxFlag ) ;     // First byte of flags
-    putPcmByte( 0 ) ;     // Second byte of flags
-    pxxFlag = 0;          // reset flag after send
-    for ( i = 0 ; i < 8 ; i += 2 )		// First 8 channels only
+
+  uint8_t flag1;
+  if (pxxFlag & PXX_SEND_RXNUM)
+	{
+    flag1 = (g_model.sub_protocol<< 6) | (g_model.country << 1) | pxxFlag ;
+  }
+  else
+	{
+    flag1 = (g_model.sub_protocol << 6) | pxxFlag ;
+	}	
+	 putPcmByte( flag1 ) ;     // First byte of flags
+
+		putPcmByte( 0 ) ;     // Second byte of flags
+		
+		uint8_t startChan = g_model.ppmStart ;
+    for ( i = 0 ; i < 4 ; i += 1 )		// First 8 channels only
     {																	// Next 8 channels would have 2048 added
-        chan = scaleForPXX(i) ;
-        chan_1 = scaleForPXX(i+1) ;
-//        if ( chan > 2047 )
-//        {
-//            chan = 2047 ;
-//        }
-//        if ( chan_1 > 2047 )
-//        {
-//            chan_1 = 2047 ;
-//        }
-        putPcmByte( chan ) ; // Low byte of channel
-        putPcmByte( ( ( chan >> 8 ) & 0x0F ) | ( chan_1 << 4) ) ;  // 4 bits each from 2 channels
-        putPcmByte( chan_1 >> 4 ) ;  // High byte of channel
+      chan = scaleForPXX( startChan ) ;
+      putPcmByte( chan ) ; // Low byte of channel
+			startChan += 1 ;
+      chan_1 = scaleForPXX( startChan ) ;
+			startChan += 1 ;
+			putPcmByte( ( ( chan >> 8 ) & 0x0F ) | ( chan_1 << 4) ) ;  // 4 bits each from 2 channels
+      putPcmByte( chan_1 >> 4 ) ;  // High byte of channel
     }
+		putPcmByte( 0 ) ;
     chan = PcmControl.PcmCrc ;		        // get the crc
     putPcmByte( chan >> 8 ) ; // Checksum hi
     putPcmByte( chan ) ; 			// Checksum lo
     putPcmHead(  ) ;      // sync byte
     putPcmFlush() ;
-    OCR1C += 40000 ;		// 20mS on
-    PORTB |= (1<<OUT_B_PPM);		// Idle is line high
+		volatile uint16_t *ptr = &OCR1C ;
+		FORCE_INDIRECT( ptr ) ;
+    *ptr += 36000 ;		// 18mS on
+    PORTB &= ~(1<<OUT_B_PPM);		// Idle is line low
 }
 
 

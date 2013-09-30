@@ -22,6 +22,9 @@
 
 #define GVARS	1
 #define STACK_TRACE				0
+#define ALT_ALARM		1
+
+#define FIX_MODE		1
 
 #include <inttypes.h>
 #include <string.h>
@@ -191,7 +194,14 @@ typedef uint32_t  prog_uint32_t __attribute__((__progmem__));//,deprecated("prog
 
 extern uint8_t SlaveMode ;
 
+#ifdef FIX_MODE
+extern const prog_uint8_t APM stickScramble[] ;
+//extern const prog_uint8_t APM modeFix[] ;
+uint8_t modeFixValue( uint8_t value ) ;
+#else
 extern const prog_uint8_t APM modn12x3[] ;
+#endif
+
 extern const prog_char APM Str_OFF[] ;
 extern const prog_char APM Str_ON[] ;
 extern const prog_char APM Str_Switch_warn[] ;
@@ -241,6 +251,8 @@ enum EnumKeys {
 }; 
 
 #define NUM_CSW  12 //number of custom switches
+#define EXTRA_CSW	6
+#define EXTRA_VOICE_SW	8
 
 extern const prog_char APM Str_Switches[] ;
 
@@ -282,7 +294,11 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define SW_BASE_DIAG SW_ThrCt
 #define MAX_PSWITCH   (SW_Trainer-SW_ThrCt+1)  // 9 physical switches
 //#define SWITCHES_STR "  NC  ON THR RUD ELE ID0 ID1 ID2 AILGEARTRNR"
+#if defined(CPUM128) || defined(CPUM2561)
+#define MAX_DRSWITCH (1+SW_Trainer-SW_ThrCt+1+NUM_CSW+EXTRA_CSW)
+#else
 #define MAX_DRSWITCH (1+SW_Trainer-SW_ThrCt+1+NUM_CSW)
+#endif
 
 #define SWP_RUD (SW_RuddDR-SW_BASE)
 #define SWP_ELE (SW_ElevDR-SW_BASE)
@@ -416,8 +432,19 @@ uint8_t IS_EXPO_THROTTLE( uint8_t x ) ;
 #define DSM2only         1
 #define DSM2_DSMX        2
 
+// PXX_SEND_RXNUM == BIND
 #define PXX_SEND_RXNUM     0x01
-#define PXX_SEND_FAILSAFE  0x02
+#define PXX_SEND_FAILSAFE  0x10
+#define PXX_RANGE_CHECK		 0x20
+
+#define PXX_PROTO_X16			 0
+#define PXX_PROTO_D8			 1
+#define PXX_PROTO_LR12		 2
+
+#define PXX_AMERICA				 0
+#define PXX_JAPAN					 1
+#define PXX_EUROPE				 2
+
 
 #define TRIM_EXTENDED_MAX	500
 
@@ -425,6 +452,8 @@ extern uint8_t pxxFlag;
 extern uint8_t stickMoved;
 
 uint16_t stickMoveValue( void ) ;
+
+#define NUM_VOL_LEVELS	8
 
 typedef void (*MenuFuncP)(uint8_t event);
 //typedef void (*getADCp)();
@@ -569,7 +598,7 @@ int8_t checkIncDec_hm0(int8_t i_val, int8_t i_max) ;
 #define CHECK_INCDEC_H_MODELVAR_0( var, max)     \
     var = checkIncDec_hm0(var,max)
 
-#ifdef CPUM128
+#if defined(CPUM128) || defined(CPUM2561)
 #define CHECK_INCDEC_MODELSWITCH( var, min, max) \
   var = checkIncDec(var,min,max,EE_MODEL|INCDEC_SWITCH)
 
@@ -593,8 +622,13 @@ extern volatile uint8_t LcdLock ;
 #define SPY_OFF   //PORTB &= ~(1<<OUT_B_LIGHT)
 
 
+#ifdef CPUM2561
+#define PULSEGEN_ON     TIMSK1 |=  (1<<OCIE1A)
+#define PULSEGEN_OFF    TIMSK1 &= ~(1<<OCIE1A)
+#else
 #define PULSEGEN_ON     TIMSK |=  (1<<OCIE1A)
 #define PULSEGEN_OFF    TIMSK &= ~(1<<OCIE1A)
+#endif
 
 #define BITMASK(bit) (1<<(bit))
 
@@ -744,6 +778,7 @@ extern int16_t intpol(int16_t, uint8_t);
 //extern uint16_t s_ana[8];
 extern uint16_t anaIn(uint8_t chan);
 extern int16_t calibratedStick[7];
+extern int8_t phyStick[4] ;
 extern int16_t ex_chans[NUM_CHNOUT];
 
 //void getADC_single();
@@ -782,6 +817,7 @@ extern uint8_t            g_beepCnt;
 //extern const PROGMEM char modi12x3[];
 extern union p2mhz_t pulses2MHz ;
 extern int16_t            g_ppmIns[8];
+extern uint8_t ppmInValid ;
 extern int16_t            g_chans512[NUM_CHNOUT];
 extern volatile uint8_t   tick10ms;
 
@@ -835,7 +871,9 @@ extern uint8_t sysFlags;
 //audio settungs are external to keep out clutter!
 #include "audio.h"
 
-extern void setVolume( void ) ;
+extern uint8_t CurrentVolume ;
+
+extern void setVolume( uint8_t value ) ;
 extern void putVoiceQueue( uint8_t value ) ;
 extern void putVoiceQueueLong( uint16_t value ) ;
 extern void	putVoiceQueueUpper( uint8_t value ) ;
@@ -919,7 +957,7 @@ union t_xmem
 //	struct MixTab s_mixTab[MAX_MIXERS+NUM_XCHNOUT+1] ;	
 	struct t_calib Cal_data ;
 	char buf[sizeof(g_model.name)+5];
-//#if defined(CPUM128)
+//#if defined(CPUM128) || defined(CPUM2561)
 //  uint8_t file_buffer[256];
 //#else
 //  uint8_t file_buffer[128];

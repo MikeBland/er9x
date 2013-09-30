@@ -35,8 +35,8 @@ def main(xbm)
 
   File.open("#{base}.lbm","w"){|f|
     col=0
-    f.printf("prog_uchar APM %s[] = {\n",base.sub(/.*\//,""))
-    f.printf("%d,%d,%d,\n",w/cols,h/rows,(w/cols*h/rows/8) % 256)
+#    f.printf("prog_uchar APM %s[] = {\n",base.sub(/.*\//,""))
+#    f.printf("%d,%d,%d,\n",w/cols,h/rows,(w/cols*h/rows/8) % 256)
     rows.times{|row|
       (hb/rows).times{|yb| yb
         w.times{|xp|
@@ -45,7 +45,7 @@ def main(xbm)
         f.puts
       }
     }
-    f.printf("};\n")
+#    f.printf("};\n")
   }
 end
 
