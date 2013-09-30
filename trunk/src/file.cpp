@@ -31,7 +31,7 @@
 // bs=16  128 blocks    verlust link:128  16files:16*8  128     sum 256
 // bs=32   64 blocks    verlust link: 64  16files:16*16 256     sum 320
 //
-#if defined(CPUM128)
+#if defined(CPUM128) || defined(CPUM2561)
 //#define EEFS_VERS 4
 //#define EEFS_VERS64 4
 //#define EESIZE     2048
@@ -209,7 +209,7 @@ bool EeFsOpen()
 {
   eeprom_read_block(&eeFs,0,sizeof(eeFs));
 
-#if defined(CPUM128)
+#if defined(CPUM128) || defined(CPUM2561)
 	uint8_t i ;
 	uint8_t j ;
 	if ( ( eeFs.version == EEFS_VERS64) && ( eeFs.mySize  == sizeof(eeFs) ) )

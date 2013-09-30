@@ -54,7 +54,14 @@ ModelData  g_model;
 const prog_char *AlertMessage ;
 uint8_t Main_running ;
 uint8_t SlaveMode ;
+#if defined(CPUM128) || defined(CPUM2561)
+uint8_t Vs_state[NUM_CHNOUT+EXTRA_VOICE_SW] ;
+#else
 uint8_t Vs_state[NUM_CHNOUT] ;
+#endif
+uint8_t CurrentVolume ;
+
+uint8_t ppmInValid = 0 ;
 
 struct t_rotary Rotary ;
 
@@ -78,7 +85,11 @@ uint8_t sysFlags = 0;
 
 struct t_alarmControl AlarmControl = { 100, 0, 10, 2 } ;
 
+#if defined(CPUM128) || defined(CPUM2561)
+int16_t  CsTimer[NUM_CSW+EXTRA_CSW] ;
+#else
 int16_t  CsTimer[NUM_CSW] ;
+#endif
 
 const prog_char APM Str_Alert[] = STR_ALERT ;
 const prog_char APM Str_Switches[] = SWITCHES_STR ;
@@ -91,7 +102,24 @@ const prog_char APM Str_Switches[] = SWITCHES_STR ;
 const prog_char APM Str_OFF[] =  STR_OFF ;
 const prog_char APM Str_ON[] = STR_ON ;
 
-const prog_char APM modi12x3[]=                         
+#ifdef FIX_MODE
+const prog_char APM modi12x3[]= "\004RUD ELE THR AIL " ;
+const prog_uint8_t APM stickScramble[]= {
+    0, 1, 2, 3,
+    0, 2, 1, 3,
+    3, 1, 2, 0,
+    3, 2, 1, 0 };
+
+//const prog_uint8_t APM modeFix[] =
+//{
+//    1, 2, 3, 4,		// mode 1
+//    1, 3, 2, 4,		// mode 2
+//    4, 2, 3, 1,		// mode 3
+//    4, 3, 2, 1		// mode 4
+//} ;
+
+#else
+const prog_char APM modi12x3[]= 
 STR_STICK_NAMES;
 //"RUD THR ELE AIL "
 //"AIL ELE THR RUD "
@@ -103,12 +131,18 @@ const prog_uint8_t APM modn12x3[]= {
     1, 3, 2, 4,
     4, 2, 3, 1,
     4, 3, 2, 1 };
-
 //R=1
 //E=2
 //T=3
 //A=4
+#endif
 
+#ifdef FIX_MODE
+uint8_t modeFixValue( uint8_t value )
+{
+	return pgm_read_byte(stickScramble+g_eeGeneral.stickMode*4+value)+1 ;
+}
+#endif
 
 uint8_t CS_STATE( uint8_t x)
 {
@@ -167,7 +201,11 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
     if(idx==0)
         lcd_putsnAtt(x,y,PSTR("----"),4,att);
     else if(idx<=4)
+#ifdef FIX_MODE
+        lcd_putsAttIdx(x,y,modi12x3,(idx-1),att) ;
+#else
         lcd_putsnAtt(x,y,&modi12x3[(pgm_read_byte(modn12x3+g_eeGeneral.stickMode*4+(idx-1))-1)*4],4,att);
+#endif
     else if(idx<=chanLimit)
 #if GVARS
         lcd_putsAttIdx(x,y,PSTR(STR_CHANS_GV),(idx-5),att);
@@ -369,7 +407,11 @@ int16_t getValue(uint8_t i)
     return 0;
 }
 
+#if defined(CPUM128) || defined(CPUM2561)
+bool Last_switch[NUM_CSW+EXTRA_CSW] ;
+#else
 bool Last_switch[NUM_CSW] ;
+#endif
 
 bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 {
@@ -392,7 +434,11 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
     uint8_t dir = swtch>0;
     uint8_t aswtch = abs(swtch) ;
 
+#if defined(CPUM128) || defined(CPUM2561)
+    if(aswtch<(MAX_DRSWITCH-NUM_CSW-EXTRA_CSW))
+#else
     if(aswtch<(MAX_DRSWITCH-NUM_CSW))
+#endif
 		{
 			aswtch = keyState((EnumKeys)(SW_BASE+aswtch-1)) ;
 			return !dir ? (!aswtch) : aswtch ;
@@ -403,9 +449,164 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
     //input -> 1..4 -> sticks,  5..8 pots
     //MAX,FULL - disregard
     //ppm
+#if defined(CPUM128) || defined(CPUM2561)
+    cs_index = aswtch-(MAX_DRSWITCH-NUM_CSW-EXTRA_CSW);
+#else
     cs_index = aswtch-(MAX_DRSWITCH-NUM_CSW);
-    CSwData &cs = g_model.customSw[cs_index];
-    if(!cs.func) return false;
+#endif
+		
+#if defined(CPUM128) || defined(CPUM2561)
+		if ( cs_index >= NUM_CSW )
+		{
+			CxSwData *cs = &g_model.xcustomSw[cs_index-NUM_CSW];
+			if(!cs->func) return false;
+
+    	if ( level>4 )
+    	{
+    	    ret_value = Last_switch[cs_index] ;
+    	    return swtch>0 ? ret_value : !ret_value ;
+    	}
+
+    	int8_t a = cs->v1;
+    	int8_t b = cs->v2;
+    	int16_t x = 0;
+    	int16_t y = 0;
+			uint8_t valid = 1 ;
+
+    	// init values only if needed
+    	uint8_t s = CS_STATE(cs->func);
+
+    	if(s == CS_VOFS)
+    	{
+    	    x = getValue(cs->v1-1);
+	#ifdef FRSKY
+    	    if (cs->v1 > CHOUT_BASE+NUM_CHNOUT)
+					{
+						uint8_t idx = cs->v1-CHOUT_BASE-NUM_CHNOUT-1 ;
+    	      y = convertTelemConstant( idx, cs->v2 ) ;
+						valid = telemItemValid( idx ) ;
+					}
+    	    else
+	#endif
+    	        y = calc100toRESX(cs->v2);
+    	}
+    	else if(s == CS_VCOMP)
+    	{
+    	    x = getValue(cs->v1-1);
+    	    y = getValue(cs->v2-1);
+    	}
+
+    	switch ((uint8_t)cs->func) {
+    	case (CS_VPOS):
+    	    ret_value = (x>y);
+    	    break;
+    	case (CS_VNEG):
+    	    ret_value = (x<y) ;
+    	    break;
+    	case (CS_APOS):
+    	{
+    	    ret_value = (abs(x)>y) ;
+    	}
+    	//      return swtch>0 ? (abs(x)>y) : !(abs(x)>y);
+    	break;
+    	case (CS_ANEG):
+    	{
+    	    ret_value = (abs(x)<y) ;
+    	}
+    	//      return swtch>0 ? (abs(x)<y) : !(abs(x)<y);
+    	break;
+
+    	//  case (CS_AND):
+    	//      return (getSwitch(a,0,level+1) && getSwitch(b,0,level+1));
+    	//      break;
+    	//  case (CS_OR):
+    	//      return (getSwitch(a,0,level+1) || getSwitch(b,0,level+1));
+    	//      break;
+    	//  case (CS_XOR):
+    	//      return (getSwitch(a,0,level+1) ^ getSwitch(b,0,level+1));
+    	//      break;
+    	case (CS_AND):
+    	case (CS_OR):
+    	case (CS_XOR):
+    	{
+    	    bool res1 = getSwitch(a,0,level+1) ;
+    	    bool res2 = getSwitch(b,0,level+1) ;
+    	    if ( cs->func == CS_AND )
+    	    {
+    	        ret_value = res1 && res2 ;
+    	    }
+    	    else if ( cs->func == CS_OR )
+    	    {
+    	        ret_value = res1 || res2 ;
+    	    }
+    	    else  // CS_XOR
+    	    {
+    	        ret_value = res1 ^ res2 ;
+    	    }
+    	}
+    	break;
+
+    	case (CS_EQUAL):
+    	    ret_value = (x==y);
+    	    break;
+    	case (CS_NEQUAL):
+    	    ret_value = (x!=y);
+    	    break;
+    	case (CS_GREATER):
+    	    ret_value = (x>y);
+    	    break;
+    	case (CS_LESS):
+    	    ret_value = (x<y);
+    	    break;
+    	case (CS_EGREATER):
+    	    ret_value = (x>=y);
+    	    break;
+    	case (CS_ELESS):
+    	    ret_value = (x<=y);
+    	    break;
+    	case (CS_TIME):
+    	    ret_value = CsTimer[cs_index] >= 0 ;
+    	    break;
+    	default:
+    	    ret_value = false;
+    	    break;
+    	}
+			if ( valid == 0 )			// Catch telemetry values not present
+			{
+    	  ret_value = false;
+			}
+			if ( ret_value )
+			{
+				if ( cs->andsw )
+				{
+					int8_t x ;
+					x = cs->andsw ;
+					if ( x > 8 )
+					{
+						x += 1 ;
+					}
+					if ( x < -8 )
+					{
+						x -= 1 ;
+					}
+					if ( x > 9+NUM_CSW+EXTRA_CSW )
+					{
+						x = 9 ;			// Tag TRN on the end, keep EEPROM values
+					}
+					if ( x < -(9+NUM_CSW+EXTRA_CSW) )
+					{
+						x = -9 ;			// Tag TRN on the end, keep EEPROM values
+					}
+    	  	ret_value = getSwitch( x, 0, level+1) ;
+				}
+			}
+    	Last_switch[cs_index] = ret_value ;
+    	return swtch>0 ? ret_value : !ret_value ;
+		}
+#endif
+		CSwData *cs = &g_model.customSw[cs_index];
+    
+		if(!cs->func) return false;
 
     if ( level>4 )
     {
@@ -413,36 +614,36 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
         return swtch>0 ? ret_value : !ret_value ;
     }
 
-    int8_t a = cs.v1;
-    int8_t b = cs.v2;
+    int8_t a = cs->v1;
+    int8_t b = cs->v2;
     int16_t x = 0;
     int16_t y = 0;
 		uint8_t valid = 1 ;
 
     // init values only if needed
-    uint8_t s = CS_STATE(cs.func);
+    uint8_t s = CS_STATE(cs->func);
 
     if(s == CS_VOFS)
     {
-        x = getValue(cs.v1-1);
+        x = getValue(cs->v1-1);
 #ifdef FRSKY
-        if (cs.v1 > CHOUT_BASE+NUM_CHNOUT)
+        if (cs->v1 > CHOUT_BASE+NUM_CHNOUT)
 				{
-					uint8_t idx = cs.v1-CHOUT_BASE-NUM_CHNOUT-1 ;
-          y = convertTelemConstant( idx, cs.v2 ) ;
+					uint8_t idx = cs->v1-CHOUT_BASE-NUM_CHNOUT-1 ;
+          y = convertTelemConstant( idx, cs->v2 ) ;
 					valid = telemItemValid( idx ) ;
 				}
         else
 #endif
-            y = calc100toRESX(cs.v2);
+            y = calc100toRESX(cs->v2);
     }
     else if(s == CS_VCOMP)
     {
-        x = getValue(cs.v1-1);
-        y = getValue(cs.v2-1);
+        x = getValue(cs->v1-1);
+        y = getValue(cs->v2-1);
     }
 
-    switch ((uint8_t)cs.func) {
+    switch ((uint8_t)cs->func) {
     case (CS_VPOS):
         ret_value = (x>y);
         break;
@@ -477,11 +678,11 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
     {
         bool res1 = getSwitch(a,0,level+1) ;
         bool res2 = getSwitch(b,0,level+1) ;
-        if ( cs.func == CS_AND )
+        if ( cs->func == CS_AND )
         {
             ret_value = res1 && res2 ;
         }
-        else if ( cs.func == CS_OR )
+        else if ( cs->func == CS_OR )
         {
             ret_value = res1 || res2 ;
         }
@@ -523,10 +724,10 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 		}
 		if ( ret_value )
 		{
-			if ( cs.andsw )
+			if ( cs->andsw )
 			{
 				int8_t x ;
-				x = cs.andsw ;
+				x = cs->andsw ;
 				if ( x > 8 )
 				{
 					x += 1 ;
@@ -813,7 +1014,7 @@ static void checkSwitches()
         if(x & SWP_RUDB)
             putWarnSwitch(2 + 3*FW + FW/2, 1 );
         if(x & SWP_ELEB)
-            putWarnSwitch(2 + 7*FW, 1 );
+            putWarnSwitch(2 + 7*FW, 2 );
 
         if(x & SWP_IL5)
         {
@@ -896,7 +1097,7 @@ void putsDblSizeName( uint8_t y )
 
 
 
-#ifdef CPUM128
+#if defined(CPUM128) || defined(CPUM2561)
 
 static uint8_t switches_states = 0 ;
 
@@ -1041,7 +1242,6 @@ void alert(const prog_char * s, bool defaults)
 		AlertMessage = s ;
 		return ;
 	}
-	
 	almess( s, ALERT_TYPE ) ;
   
 	lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
@@ -1056,6 +1256,7 @@ void alert(const prog_char * s, bool defaults)
 #endif
         if(keyDown())
         {
+				    clearKeyEvents() ;
             return;  //wait for key release
         }
         if(heartbeat == 0x3)
@@ -1181,6 +1382,11 @@ static uint8_t checkTrim(uint8_t event)
     {
         //LH_DWN LH_UP LV_DWN LV_UP RV_DWN RV_UP RH_DWN RH_UP
         uint8_t idx = (uint8_t)k/2;
+
+// SORT idx for stickmode if FIX_MODE on
+#ifdef FIX_MODE
+				idx = pgm_read_byte(stickScramble+g_eeGeneral.stickMode*4+idx ) ;
+#endif
 				if ( g_eeGeneral.crosstrim )
 				{
 					idx = 3 - idx ;			
@@ -1192,7 +1398,11 @@ static uint8_t checkTrim(uint8_t event)
         int8_t tm = *TrimPtr[idx] ;
 #endif
         int8_t  v = (s==0) ? (abs(tm)/4)+1 : s;
+#ifdef FIX_MODE
+        bool thrChan = (1 == idx) ;
+#else
         bool thrChan = ((2-(g_eeGeneral.stickMode&1)) == idx);
+#endif
         bool thro = (thrChan && (g_model.thrTrim));
         if(thro) v = 4; // if throttle trim and trim trottle then step=4
         if(thrChan && g_eeGeneral.throttleReversed) v = -v;  // throttle reversed = trim reversed
@@ -1286,7 +1496,7 @@ int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flag
 				}
     }
 
-#ifdef CPUM128
+#if defined(CPUM128) || defined(CPUM2561)
 //  if (s_editMode>0 && (i_flags & INCDEC_SWITCH))
   if ( i_flags & INCDEC_SWITCH )
 	{
@@ -1483,9 +1693,10 @@ void putVoiceQueue( uint8_t value )
 	putVoiceQueueLong( value ) ;
 }
 
-void setVolume()
+void setVolume( uint8_t value )
 {
-	putVoiceQueueLong( g_eeGeneral.volume + 0xFFF7 ) ;
+	CurrentVolume = value ;
+	putVoiceQueueLong( value + 0xFFF0 ) ;
 }
 
 void putVoiceQueueLong( uint16_t value )
@@ -1699,7 +1910,12 @@ uint8_t calcStickScroll( uint8_t index )
 		index ^= 3 ;
 	}
 	
+#ifdef FIX_MODE
+	value = phyStick[index] ;
+	value /= 8 ;
+#else
 	value = (calibratedStick[index] * 2) >> 8 ; // same as / 128
+#endif
 
 	direction = value > 0 ? 0x80 : 0 ;
 	if ( value < 0 )
@@ -1733,7 +1949,7 @@ void perMain()
     //    lastTMR = time10ms;
 
     perOut(g_chans512, 0);
-    if(tick10ms == 0) return ; //make sure the rest happen only every 10ms.
+    if(t10ms == 0) return ; //make sure the rest happen only every 10ms.
 
 		{
 			struct t_timerg *tptr ;
@@ -1752,6 +1968,10 @@ void perMain()
     	}
 		}
 
+		if ( ppmInValid )
+		{
+			ppmInValid -= 1 ;
+		}
 
     eeCheck();
 
@@ -1798,6 +2018,9 @@ void perMain()
 		}
     
 		doBackLightVoice( evt | protary->Rotary_diff ) ;
+// Handle volume
+		uint8_t requiredVolume ;
+		requiredVolume = g_eeGeneral.volume+7 ;
 
 		if ( g_menuStack[g_menuStackPtr] == menuProc0)
 		{
@@ -1819,6 +2042,27 @@ void perMain()
 				}
 				protary->Rotary_diff = 0 ;
 			}
+			
+			if ( g_model.anaVolume )	// Only check if on main screen
+			{
+				uint16_t v ;
+				uint16_t divisor ;
+				if ( g_model.anaVolume < 4 )
+				{
+					v = calibratedStick[g_model.anaVolume+3] + 1024 ;
+					divisor = 2048 ;
+				}
+				else
+				{
+					v = g_model.gvars[g_model.anaVolume].gvar + 125 ;
+					divisor = 250 ;
+				}
+				requiredVolume = v * (NUM_VOL_LEVELS-1) / divisor ;
+			}
+		}
+		if ( requiredVolume != CurrentVolume )
+		{
+			setVolume( requiredVolume ) ;
 		}
 		
 		if ( g_eeGeneral.stickScroll && StickScrollAllowed )
@@ -1891,36 +2135,57 @@ void perMain()
 		{
 			if ( g_model.gvars[i].gvsource )
 			{
-				if ( g_model.gvars[i].gvsource <= 4 )
+				int16_t value ;
+				uint8_t src = g_model.gvars[i].gvsource ;
+				if ( src <= 4 )
 				{
-					g_model.gvars[i].gvar = *TrimPtr[ convert_mode_helper(g_model.gvars[i].gvsource) - 1 ] ;
+//					value = *TrimPtr[ convert_mode_helper(src) - 1 ] ;
+#ifdef FIX_MODE
+					value = getTrimValue( CurrentPhase, src - 1 ) ;
+#else
+					value = getTrimValue( CurrentPhase, convert_mode_helper(src) - 1 ) ;
+#endif
 				}
-			  else if ( g_model.gvars[i].gvsource == 5 )	// REN
+			  else if ( src == 5 )	// REN
 				{
-					g_model.gvars[i].gvar = Rotary.RotaryControl ;
+					value = Rotary.RotaryControl ;
 				}
-				else if ( g_model.gvars[i].gvsource <= 9 )	// Stick
+				else if ( src <= 9 )	// Stick
 				{
-					g_model.gvars[i].gvar = limit( -125, calibratedStick[ convert_mode_helper(g_model.gvars[i].gvsource-5) - 1 ] / 8, 125 ) ;
+#ifdef FIX_MODE
+					value = calibratedStick[ src-5 - 1 ] / 8 ;
+#else
+					value = calibratedStick[ convert_mode_helper( src-5) - 1 ] / 8 ;
+#endif
 				}
-				else if ( g_model.gvars[i].gvsource <= 12 )	// Pot
+				else if ( src <= 12 )	// Pot
 				{
-					g_model.gvars[i].gvar = limit( -125, calibratedStick[ (g_model.gvars[i].gvsource-6)] / 8, 125 ) ;
+					value = calibratedStick[ ( src-6)] / 8 ;
 				}
-				else if ( g_model.gvars[i].gvsource <= 28 )	// Chans
+				else// if ( g_model.gvars[i].gvsource <= 28 )	// Chans
 				{
-					g_model.gvars[i].gvar = limit( -125, ex_chans[g_model.gvars[i].gvsource-13] / 10, 125 ) ;
+					value = ex_chans[src-13] / 10 ;
 				}
+				g_model.gvars[i].gvar = limit( -125, value, 125 ) ;
 			}
 		}
 #endif
 
+			static uint8_t alertKey ;
 			if ( AlertMessage )
 			{
 				almess( AlertMessage, ALERT_TYPE ) ;
-    	  if(keyDown())
+				uint8_t key = keyDown() ;
+				if ( alertKey )
 				{
-					AlertMessage = 0 ;
+					if( key == 0 )
+					{
+						AlertMessage = 0 ;
+					}
+				}
+				else if ( key )
+				{
+					alertKey = 1 ;
 				}
 	//    	if ( stickMoved )
 	//			{
@@ -1929,6 +2194,7 @@ void perMain()
 			}
 			else
 			{
+				alertKey = 0 ;
 				Tevent = evt ;
     		g_menuStack[g_menuStackPtr](evt);
 			}
@@ -1996,6 +2262,7 @@ void perMain()
 
 
     stickMoved = 0; //reset this flag
+
 }
 
 int16_t g_ppmIns[8];
@@ -2090,7 +2357,7 @@ static void getADC_osmp()
 //        for (uint8_t i=0; i<2;i++) {  // Going from 10bits to 11 bits.  Addition = n.  Loop 2 times
             ADMUX=adc_input|ADC_VREF_TYPE;
             // Start the AD conversion
-#ifdef CPUM128
+#if defined(CPUM128) || defined(CPUM2561)
 			asm(" rjmp 1f") ;
 			asm("1:") ;
 			asm(" rjmp 1f") ;
@@ -2108,7 +2375,7 @@ static void getADC_osmp()
             while (ADCSRA & 0x40);
 //        }
 
-#ifdef CPUM128
+#if defined(CPUM128) || defined(CPUM2561)
             temp_ana += ADC;
             ADCSRA|=0x40;
             // Wait for the AD conversion to complete
@@ -2200,7 +2467,11 @@ static uint16_t getTmr16KHz()
 ISR(TIMER2_OVF_vect, ISR_NOBLOCK) //10ms timer
 {
   cli();
+#ifdef CPUM2561
+  TIMSK2 &= ~ (1<<TOIE2) ; //stop reentrance
+#else
   TIMSK &= ~ (1<<TOIE2) ; //stop reentrance
+#endif
   sei();
   
 	AUDIO_DRIVER();  // the tone generator
@@ -2246,15 +2517,26 @@ ISR(TIMER2_OVF_vect, ISR_NOBLOCK) //10ms timer
 		}
 	}
   cli();
+#ifdef CPUM2561
+  TIMSK2 |= (1<<TOIE2) ;
+#else
   TIMSK |= (1<<TOIE2) ;
+#endif
   sei();
 }
 
 // Clocks every 10 mS
+#ifdef CPUM2561
+ISR(TIMER0_COMPA_vect, ISR_NOBLOCK) //10ms timer
+#else
 ISR(TIMER0_COMP_vect, ISR_NOBLOCK) //10ms timer
+#endif
 { 
+#ifdef CPUM2561
+  OCR0A += 156 ;			// Interrupt every 128 uS
+#else
   OCR0 += 156 ;			// Interrupt every 128 uS
-
+#endif
 //  static uint8_t cnt10ms = 77; // execute 10ms code once every 78 ISRs
 //  if (cnt10ms-- == 0) { // BEGIN { ... every 10ms ... }
 //    // Begin 10ms event
@@ -2297,7 +2579,11 @@ ISR(TIMER3_CAPT_vect, ISR_NOBLOCK) //capture ppm in 16MHz / 8 = 2MHz
 {
     uint16_t capture=ICR3;
     cli();
+#ifdef CPUM2561
+    TIMSK3 &= ~(1<<ICIE3); //stop reentrance
+#else
     ETIMSK &= ~(1<<TICIE3); //stop reentrance
+#endif
     sei();
 
     static uint16_t lastCapt;
@@ -2314,6 +2600,7 @@ ISR(TIMER3_CAPT_vect, ISR_NOBLOCK) //capture ppm in 16MHz / 8 = 2MHz
 			{
   	  	if(val>800 && val<2200)
 				{
+					ppmInValid = 100 ;
   		    g_ppmIns[ppmInState++ - 1] =
   	  	    (int16_t)(val - 1500)* (uint8_t)(g_eeGeneral.PPM_Multiplier+10)/10; //+-500 != 512, but close enough.
 
@@ -2324,7 +2611,11 @@ ISR(TIMER3_CAPT_vect, ISR_NOBLOCK) //capture ppm in 16MHz / 8 = 2MHz
   	}
 
     cli();
+#ifdef CPUM2561
+    TIMSK3 |= (1<<ICIE3);
+#else
     ETIMSK |= (1<<TICIE3);
+#endif
     sei();
 }
 
@@ -2362,6 +2653,14 @@ int main(void)
     DDRF = 0x00;  PORTF = 0x00; //all F inputs anain - pullups are off
     //DDRG = 0x10;  PORTG = 0xff; //pullups + SIM_CTL=1 = phonejack = ppm_in
     DDRG = 0x14; PORTG = 0xfB; //pullups + SIM_CTL=1 = phonejack = ppm_in, Haptic output and off (0)
+
+#ifdef CPUM2561
+  uint8_t mcusr = MCUSR; // save the WDT (etc) flags
+  MCUSR = 0; // must be zeroed before disabling the WDT
+#else
+  uint8_t mcusr = MCUCSR;
+  MCUCSR = 0;
+#endif
     
 #ifdef BLIGHT_DEBUG
 	{
@@ -2419,12 +2718,19 @@ int main(void)
 
     // TCNT0         10ms = 16MHz/160000  periodic timer
     //TCCR0  = (1<<WGM01)|(7 << CS00);//  CTC mode, clk/1024
+#ifdef CPUM2561
+    TCCR0B  = (5 << CS00);//  Norm mode, clk/1024
+    OCR0A   = 156;
+		TIMSK0 |= (1<<OCIE0A) | (1<<TOIE0) ;
+    
+		TCCR2B  = (2 << CS00);//  Norm mode, clk/8
+		TIMSK2 |= (1<<TOIE2) ;
+#else
     TCCR0  = (7 << CS00);//  Norm mode, clk/1024
     OCR0   = 156;
     TCCR2  = (2 << CS00);//  Norm mode, clk/8
-    
 		TIMSK |= (1<<OCIE0) | (1<<TOIE0) | (1<<TOIE2) ;
-
+#endif
     // TCNT1 2MHz Pulse generator
     TCCR1A = (0<<WGM10);
     TCCR1B = (1 << WGM12) | (2<<CS10); // CTC OCR1A, 16MHz / 8
@@ -2432,7 +2738,11 @@ int main(void)
 
     TCCR3A  = 0;
     TCCR3B  = (1<<ICNC3) | (2<<CS30);      //ICNC3 16MHz / 8
+#ifdef CPUM2561
+    TIMSK3 |= (1<<ICIE3);
+#else
     ETIMSK |= (1<<TICIE3);
+#endif
 
 #if STACK_TRACE
     // Init Stack while interrupts are disabled
@@ -2460,7 +2770,7 @@ int main(void)
     uint8_t cModel = g_eeGeneral.currModel;
     
 #ifdef FRSKY
-    FRSKY_Init();
+    FRSKY_Init( 0 ) ;
 #endif
 		
 		checkQuickSelect();
@@ -2491,9 +2801,12 @@ int main(void)
 		}
     // moved here and logic added to only play statup tone if splash screen enabled.
     // that way we save a bit, but keep the option for end users!
-		setVolume() ;
+		setVolume(g_eeGeneral.volume+7) ;
 //		putVoiceQueueLong( g_eeGeneral.volume + 0xFFF7 ) ;
-    if(!g_eeGeneral.disableSplashScreen)
+    
+  if ( ( mcusr & (1<<WDRF) ) == 0 )
+	{
+		if(!g_eeGeneral.disableSplashScreen)
     {
 	    if( g_eeGeneral.speakerMode )		// Not just beeper
 			{
@@ -2510,9 +2823,9 @@ int main(void)
     checkAlarm();
     checkWarnings();
     clearKeyEvents(); //make sure no keys are down before proceeding
-
 //    BandGap = 240 ;
 		putVoiceQueueUpper( g_model.modelVoice ) ;
+	}
     setupPulses();
     wdt_enable(WDTO_500MS);
     perOut(g_chans512, 0);
@@ -2535,7 +2848,11 @@ int main(void)
 
     // This bit depends on protocol
     OCR1A = 2000 ;        // set to 1mS
-    TIFR = 1 << OCF1A ;   // Clear pending interrupt
+#ifdef CPUM2561
+    TIFR1 = 1 << OCF1A ;   // Clear pending interrupt
+#else
+		TIFR = 1 << OCF1A ;   // Clear pending interrupt
+#endif
 
 		Main_running = 1 ;
     PULSEGEN_ON; // Pulse generator enable immediately before mainloop
@@ -2605,12 +2922,22 @@ void mainSequence()
     
 		timer += 1 ;
 
+#if defined(CPUM128) || defined(CPUM2561)
+		for ( i = numSafety ; i < NUM_CHNOUT+EXTRA_VOICE_SW ; i += 1 )
+#else
 		for ( i = numSafety ; i < NUM_CHNOUT ; i += 1 )
+#endif
 		{
 			uint8_t curent_state ;
 			uint8_t mode ;
 			uint8_t value ;
     	SafetySwData *sd = &g_model.safetySw[i];
+#if defined(CPUM128) || defined(CPUM2561)
+    	if ( i >= NUM_CHNOUT )
+			{
+				sd = &g_model.xvoiceSw[i-NUM_CHNOUT];
+			}
+#endif
 
 			mode = sd->opt.vs.vmode ;
 			value = sd->opt.vs.vval ;
@@ -2675,8 +3002,8 @@ void mainSequence()
 		
 		for ( i = 0 ; i < NUM_CSW ; i += 1 )
 		{
-    	CSwData &cs = g_model.customSw[i];
-    	uint8_t cstate = CS_STATE(cs.func);
+    	CSwData *cs = &g_model.customSw[i];
+    	uint8_t cstate = CS_STATE(cs->func);
 
     	if(cstate == CS_TIMER)
 			{
@@ -2685,7 +3012,7 @@ void mainSequence()
 				if ( y == 0 )
 				{
 					int8_t z ;
-					z = cs.v1 ;
+					z = cs->v1 ;
 					if ( z >= 0 )
 					{
 						z = -z-1 ;
@@ -2701,7 +3028,7 @@ void mainSequence()
 					if ( ++y == 0 )
 					{
 						int8_t z ;
-						z = cs.v2 ;
+						z = cs->v2 ;
 						if ( z >= 0 )
 						{
 							z += 1 ;
@@ -2717,10 +3044,10 @@ void mainSequence()
 				{
 					y -= 1 ;
 				}
-				if ( cs.andsw )
+				if ( cs->andsw )
 				{
 					int8_t x ;
-					x = cs.andsw ;
+					x = cs->andsw ;
 					if ( x > 8 )
 					{
 						x += 1 ;
@@ -2733,6 +3060,82 @@ void mainSequence()
 				CsTimer[i] = y ;
 			}
 		}
+
+#if defined(CPUM128) || defined(CPUM2561)
+		for ( i = NUM_CSW ; i < NUM_CSW+EXTRA_CSW ; i += 1 )
+		{
+    	CxSwData *cs = &g_model.xcustomSw[i-NUM_CSW];
+    	
+			uint8_t cstate = CS_STATE(cs->func);
+
+    	if(cstate == CS_TIMER)
+			{
+				int16_t y ;
+				y = CsTimer[i] ;
+				if ( y == 0 )
+				{
+					int8_t z ;
+					z = cs->v1 ;
+					if ( z >= 0 )
+					{
+						z = -z-1 ;
+						y = z * 10 ;					
+					}
+					else
+					{
+						y = z ;
+					}
+				}
+				else if ( y < 0 )
+				{
+					if ( ++y == 0 )
+					{
+						int8_t z ;
+						z = cs->v2 ;
+						if ( z >= 0 )
+						{
+							z += 1 ;
+							y = z * 10 - 1  ;
+						}
+						else
+						{
+							y = -z-1 ;
+						}
+					}
+				}
+				else  // if ( CsTimer[i] > 0 )
+				{
+					y -= 1 ;
+				}
+				if ( cs->andsw )
+				{
+					int8_t x ;
+					x = cs->andsw ;
+					if ( x > 8 )
+					{
+						x += 1 ;
+					}
+					if ( x < -8 )
+					{
+						x -= 1 ;
+					}
+					if ( x > 9+NUM_CSW )
+					{
+						x = 9 ;			// Tag TRN on the end, keep EEPROM values
+					}
+					if ( x < -(9+NUM_CSW) )
+					{
+						x = -9 ;			// Tag TRN on the end, keep EEPROM values
+					}
+	        if (getSwitch( x, 0, 0) == 0 )
+				  {
+						y = -1 ;
+					}	
+				}
+				CsTimer[i] = y ;
+			}
+		}
+#endif
 		AlarmControl.VoiceCheckFlag = 0 ;
 		
 #ifdef FRSKY
@@ -2776,7 +3179,7 @@ void mainSequence()
 								if ( vspd < 0 )
 								{
 									vspd = -vspd ;
-									if (g_model.varioData.sinkTonesOff == 0)
+									if (g_model.varioData.sinkTones )
 									{
           		    	audio.event( AU_VARIO_DOWN ) ;
 									}
@@ -2805,7 +3208,7 @@ void mainSequence()
 						}
 						else
 						{
-							if (g_model.varioData.sinkTonesOff == 1)
+							if (g_model.varioData.sinkTones == 0 )
 							{
 								new_rate = 20 ;
          		    audio.event( AU_VARIO_UP ) ;
@@ -2830,6 +3233,7 @@ void mainSequence()
 #ifdef FRSKY
       if (frskyUsrStreaming)
       {
+#if ALT_ALARM
           int16_t limit ; //= g_model.FrSkyAltAlarm ;
           int16_t altitude ;
           if ( g_model.FrSkyAltAlarm )
@@ -2859,6 +3263,7 @@ void mainSequence()
                   audioDefevent(AU_WARNING2) ;
               }
           }
+#endif
 					uint16_t total_volts = 0 ;
 					uint8_t audio_sounded = 0 ;
 					uint8_t low_cell = 220 ;		// 4.4V
@@ -3061,10 +3466,14 @@ uint8_t IS_EXPO_THROTTLE( uint8_t x )
 
 uint8_t IS_THROTTLE( uint8_t x )
 {
+#ifdef FIX_MODE
+	return x == 2 ;
+#else
 	uint8_t y ;
 	y = g_eeGeneral.stickMode&1 ;
 	y = 2 - y ;
 	return (((y) == x) && (x<4)) ;
+#endif
 }
 
 int16_t calc100toRESX(int8_t x)

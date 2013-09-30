@@ -25,7 +25,11 @@ static inline void __attribute__ ((always_inline))
 eeprom_write_byte_cmp (uint8_t dat, uint16_t pointer_eeprom)
 {
   //see /home/thus/work/avr/avrsdk4/avr-libc-1.4.4/libc/misc/eeprom.S:98 143
+#ifdef CPUM2561
+  while(EECR & (1<<EEPE)) /* make sure EEPROM is ready */
+#else
   while(EECR & (1<<EEWE)) /* make sure EEPROM is ready */
+#endif
   {
     if (Ee_lock & EE_TRIM_LOCK)    // Only if writing trim changes
     {
@@ -40,8 +44,13 @@ eeprom_write_byte_cmp (uint8_t dat, uint16_t pointer_eeprom)
   EEDR  = dat;
   uint8_t flags=SREG;
   cli();
+#ifdef CPUM2561
+  EECR |= 1<<EEMPE;
+  EECR |= 1<<EEPE;
+#else
   EECR |= 1<<EEMWE;
   EECR |= 1<<EEWE;
+#endif
   SREG = flags;
 }
 
@@ -188,7 +197,7 @@ bool keyState(EnumKeys enuk)
     case SW_ElevDR : xxx = PINE & (1<<INP_E_ElevDR);
     break ;
 
-#ifdef CPUM128
+#if defined(CPUM128) || defined(CPUM2561)
     case SW_AileDR :
 			if ( g_eeGeneral.FrskyPins )
 			{
@@ -230,7 +239,7 @@ bool keyState(EnumKeys enuk)
     break ;
     //case SW_ThrCt  : return PINE & (1<<INP_E_ThrCt);
 
-#ifdef CPUM128
+#if defined(CPUM128) || defined(CPUM2561)
     case SW_ThrCt :
 			if ( g_eeGeneral.FrskyPins )
 			{

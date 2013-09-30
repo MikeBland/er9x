@@ -289,7 +289,7 @@ ifeq ($(PHASES),YES)
 endif
 
 ifeq ($(CPU), 2561)
- CPPDEFS += -DCPUM128
+ CPPDEFS += -DCPUM2561
  CPPDEFS += -DPHASES
 endif
 
@@ -609,15 +609,15 @@ stamp:
 	@echo "#define MOD_VERS \"$(EXT_MOD) $(HT_MOD) $(BEEPER_MOD) $(CPU_MOD) $(SC_MOD) \"" >> stamp-er9x.h
 #	@cat stamp-er9x.h
 
-font.lbm: font_6x1.xbm
-	@echo
-	@echo "Convert font from xbm to lbm:"
-	$(XBM2LBM) $<
+#font.lbm: font_6x1.xbm
+#	@echo
+#	@echo "Convert font from xbm to lbm:"
+#	$(XBM2LBM) $<
 
-font_dblsize.lbm: font_dblsize.xbm
-	@echo
-	@echo "Convert doublesize font from xbm to lbm:"
-	$(XBM2LBM) $<
+#font_dblsize.lbm: font_dblsize.xbm
+#	@echo
+#	@echo "Convert doublesize font from xbm to lbm:"
+#	$(XBM2LBM) $<
 
 sticks.lbm: sticks_4x1.xbm
 	@echo

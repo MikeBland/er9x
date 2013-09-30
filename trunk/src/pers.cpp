@@ -156,6 +156,10 @@ bool eeModelExists(uint8_t id)
     return EFile::exists(FILE_MODEL(id));
 }
 
+#ifdef FIX_MODE
+extern MixData *mixaddress( uint8_t idx ) ;
+#endif
+
 void eeLoadModel(uint8_t id)
 {
   if(id<MAX_MODELS)
@@ -187,6 +191,29 @@ void eeLoadModel(uint8_t id)
   FrskyAlarmSendState |= 0x40 ;		// Get RSSI Alarms
         FRSKY_setModelAlarms();
 #endif
+#ifdef FIX_MODE
+
+// check for updating mix sources
+		if ( g_model.modelVersion < 2 )
+		{
+    	for(uint8_t i=0;i<MAX_MIXERS;i++)
+			{
+        MixData *md = mixaddress( i ) ;
+        if (md->srcRaw)
+				{
+        	if (md->srcRaw <= 4)		// Stick
+					{
+						md->srcRaw = modeFixValue( md->srcRaw-1 ) ;
+					}
+				}
+			}
+			alert(PSTR("CHECK MIX SOURCES"));
+			g_model.modelVersion = 2 ;
+      eeDirty( EE_MODEL ) ;
+			eeWaitComplete() ;
+		}
+#endif
+
   }
 }
 

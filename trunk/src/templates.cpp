@@ -117,10 +117,12 @@ void setSwitch(uint8_t idx, uint8_t func, int8_t v1, int8_t v2)
 
 #endif
 
+#ifndef FIX_MODE
 NOINLINE uint8_t convert_mode_helper(uint8_t x)
 {
     return pgm_read_byte(modn12x3 + g_eeGeneral.stickMode*4 + (x) - 1) ;
 }
+#endif
 
 #ifndef NO_TEMPLATES
 const prog_int8_t heli_ar1[] PROGMEM = {-100, 20, 30, 70, 90};
