@@ -560,7 +560,7 @@ void processSportPacket()
 			switch ( id )
 			{
 				case ALT_ID_8 :
-					value = (int32_t)value / 100 ;
+					value = (int32_t)value / 10 ;
 					store_hub_data( FR_SPORT_ALT, value ) ;
 				break ;
 

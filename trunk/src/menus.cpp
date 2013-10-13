@@ -1445,12 +1445,17 @@ void menuProcLimits(uint8_t event)
 
 uint8_t y = 0;
 uint8_t k = 0;
-int8_t  sub    = mstate2.m_posVert - 1;
+uint8_t  sub    = mstate2.m_posVert - 1;
 uint8_t subSub = g_posHorz;
     uint8_t t_pgOfs ;
 
 t_pgOfs = evalOffset(sub, 6);
 
+	if ( sub < NUM_CHNOUT )
+	{
+    lcd_outdez( 13*FW, 0, g_chans512[sub]/2 + 1500 ) ;
+	}
+	
 	switch(event)
 	{
     case EVT_KEY_LONG(KEY_MENU):
@@ -1880,7 +1885,7 @@ blink = s_editMode ? BLINK : INVERS ;
 
  		attr = 0 ;
 		lcd_puts_Pleft(4*FH, PSTR(STR_NUM_BLADES));
-  	if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_MODELVAR(g_model.numBlades, 1, 50);}
+  	if(sub==subN) { attr = INVERS ; CHECK_INCDEC_H_MODELVAR(g_model.numBlades, 1, 127);}
 		lcd_outdezAtt( 14*FW, 4*FH, g_model.numBlades, attr) ;
   	subN++;
   
@@ -5831,21 +5836,29 @@ const static prog_uint8_t APM xt[4] = {128*1/4+2, 4, 128-4, 128*3/4-2};
             int8_t val = max((int8_t)-(TL+1),min((int8_t)(TL+1),(int8_t)(*TrimPtr[i]/4)));
 #endif
 //            if(vert[i]){
-            if( (i == 1) || ( i == 2 )){
-                ym=31;
-                lcd_vline(xm,   ym-TL, TL*2);
+            if( (i == 1) || ( i == 2 ))
+						{
+              ym=31;
+              lcd_vline(xm,   ym-TL, TL*2);
 
-                if(((g_eeGeneral.stickMode&1) != (i&1)) || !(g_model.thrTrim)){
-                    lcd_vline(xm-1, ym-1,  3);
-                    lcd_vline(xm+1, ym-1,  3);
-                }
-                ym -= val;
-            }else{
-                ym=59;
-                lcd_hline(xm-TL,ym,    TL*2);
-                lcd_hline(xm-1, ym-1,  3);
-                lcd_hline(xm-1, ym+1,  3);
-                xm += val;
+#ifdef FIX_MODE
+              if((i == 1) || !(g_model.thrTrim))
+#else
+              if(((g_eeGeneral.stickMode&1) != (i&1)) || !(g_model.thrTrim))
+#endif
+							{
+                lcd_vline(xm-1, ym-1,  3);
+                lcd_vline(xm+1, ym-1,  3);
+              }
+              ym -= val;
+            }
+						else
+						{
+              ym=59;
+              lcd_hline(xm-TL,ym,    TL*2);
+              lcd_hline(xm-1, ym-1,  3);
+              lcd_hline(xm-1, ym+1,  3);
+              xm += val;
             }
             DO_SQUARE(xm,ym,7) ;
         }
@@ -5862,11 +5875,23 @@ const static prog_uint8_t APM xt[4] = {128*1/4+2, 4, 128-4, 128*3/4-2};
     }
 #endif
 
-    if(view<e_inputs1) {
+    if(view<e_inputs1)
+		{
+//#if defined(CPUM128) || defined(CPUM2561)
+//	    lcd_hlineStip(38, 33, 54, 0x55 ) ;
+//  	  lcd_hlineStip(38, 34, 54, 0x55 ) ;
+//    	lcd_hlineStip(38 + io_subview * 18, 33, 18, 0xAA ) ;
+//	    lcd_hlineStip(38 + io_subview * 18, 34, 18, 0xAA ) ;
+//#endif			
         for(uint8_t i=0; i<8; i++)
         {
             uint8_t x0,y0;
+//#if defined(CPUM128) || defined(CPUM2561)
+//						uint8_t chan = 8 * io_subview + i ;
+//			      int16_t val = g_chans512[chan];
+//#else
             int16_t val = g_chans512[i];
+//#endif
             //val += g_model.limitData[i].reverse ? g_model.limitData[i].offset : -g_model.limitData[i].offset;
             switch(view)
             {
@@ -5881,7 +5906,8 @@ const static prog_uint8_t APM xt[4] = {128*1/4+2, 4, 128-4, 128*3/4-2};
 #define WBAR2 (50/2)
                 x0       = i<4 ? 128/4+2 : 128*3/4-2;
                 y0       = 38+(i%4)*5;
-                int8_t l = (abs(val) * WBAR2 + 512) / 1024;
+    						int16_t limit = (g_model.extendedLimits ? 1280 : 1024);
+                int8_t l = (abs(val) * WBAR2 + 512) / limit ;
                 if(l>WBAR2)  l =  WBAR2;  // prevent bars from going over the end - comment for debugging
 
                 lcd_hlineStip(x0-WBAR2,y0,WBAR2*2+1,0x55);
@@ -6257,8 +6283,8 @@ void perOut(int16_t *chanOut, uint8_t att)
     
 		{
         uint8_t ele_stick, ail_stick ;
-        ele_stick = ELE_STICK ;
-        ail_stick = AIL_STICK ;
+        ele_stick = 1 ; //ELE_STICK ;
+        ail_stick = 3 ; //AIL_STICK ;
         //===========Swash Ring================
         if(g_model.swashRingValue)
         {
@@ -6309,7 +6335,7 @@ void perOut(int16_t *chanOut, uint8_t att)
 						{
 							int8_t t = v/16 ;
 #ifdef FIX_MODE
-							uint8_t mask = 1 << i ;
+							uint8_t mask = 1 << index ;
 #else
 							uint8_t mask = 1<<(CONVERT_MODE((i+1))-1) ;
 #endif
@@ -6331,7 +6357,7 @@ void perOut(int16_t *chanOut, uint8_t att)
 										{
 											if ( ppmInValid )
 											{
-                        uint8_t chStud = td->srcChn;
+                        uint8_t chStud = pgm_read_byte(stickScramble+stickIndex+td->srcChn);
                         int16_t vStud  = (g_ppmIns[chStud]- g_eeGeneral.trainer.calib[chStud]) /* *2 */ ;
                         vStud /= 2 ;		// Only 2, because no *2 above
                         vStud *= td->studWeight ;
@@ -6353,52 +6379,33 @@ void perOut(int16_t *chanOut, uint8_t att)
                 uint8_t expoDrOn = get_dr_state(i);
                 uint8_t stkDir = v>0 ? DR_RIGHT : DR_LEFT;
 
-                if(IS_EXPO_THROTTLE(i)){
+                if(IS_EXPO_THROTTLE(index)){
 #if GVARS
-                    v  = 2*expo((v+RESX)/2,REG100_100(g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_RIGHT]));
+                    v  = 2*expo((v+RESX)/2,REG100_100(g_model.expoData[index].expo[expoDrOn][DR_EXPO][DR_RIGHT]));
 #else
-                    v  = 2*expo((v+RESX)/2,g_model.expoData[i].expo[expoDrOn][DR_EXPO][DR_RIGHT]);
+                    v  = 2*expo((v+RESX)/2,g_model.expoData[index].expo[expoDrOn][DR_EXPO][DR_RIGHT]);
 #endif                    
 										stkDir = DR_RIGHT;
                 }
                 else
 #if GVARS
-                    v  = expo(v,REG100_100(g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkDir]));
+                    v  = expo(v,REG100_100(g_model.expoData[index].expo[expoDrOn][DR_EXPO][stkDir]));
 #else
-                    v  = expo(v,g_model.expoData[i].expo[expoDrOn][DR_EXPO][stkDir]);
+                    v  = expo(v,g_model.expoData[index].expo[expoDrOn][DR_EXPO][stkDir]);
 #endif                    
 
 #if GVARS
-                int32_t x = (int32_t)v * (REG(g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][stkDir]+100, 0, 100))/100;
+                int32_t x = (int32_t)v * (REG(g_model.expoData[index].expo[expoDrOn][DR_WEIGHT][stkDir]+100, 0, 100))/100;
 #else
-                int32_t x = (int32_t)v * (g_model.expoData[i].expo[expoDrOn][DR_WEIGHT][stkDir]+100)/100;
+                int32_t x = (int32_t)v * (g_model.expoData[index].expo[expoDrOn][DR_WEIGHT][stkDir]+100)/100;
 #endif                    
                 v = (int16_t)x;
-                if (IS_EXPO_THROTTLE(i)) v -= RESX;
+                if (IS_EXPO_THROTTLE(index)) v -= RESX;
 
-                //do trim -> throttle trim if applicable
-                int32_t vv = 2*RESX;
-		            if(IS_THROTTLE(i) && g_model.thrTrim)
-								{
-									int8_t ttrim ;
 #ifdef PHASES		
-									ttrim = getTrimValue( CurrentPhase, i ) ;
+                trimA[i] = getTrimValue( CurrentPhase, i )*2 ;
 #else
-									ttrim = *TrimPtr[i] ;
-#endif
-									if(g_eeGeneral.throttleReversed)
-									{
-										ttrim = -ttrim ;
-									}
-									vv = ((int32_t)ttrim+125)*(RESX-v)/(2*RESX);
-								}
-//                if(IS_THROTTLE(i) && g_model.thrTrim) vv = ((int32_t)*TrimPtr[i]+125)*(RESX-v)/(2*RESX);
-
-                //trim
-#ifdef PHASES		
-                trimA[i] = (vv==2*RESX) ? getTrimValue( CurrentPhase, i )*2 : (int16_t)vv*2; //    if throttle trim -> trim low end
-#else
-                trimA[i] = (vv==2*RESX) ? *TrimPtr[i]*2 : (int16_t)vv*2; //    if throttle trim -> trim low end
+                trimA[i] = *TrimPtr[i]*2 ;
 #endif
             }
 #ifdef FIX_MODE
@@ -6410,7 +6417,7 @@ void perOut(int16_t *chanOut, uint8_t att)
 						{ //zero input for setStickCenter()
    				    if ( i < 4 )
 							{
- 				        if(!IS_THROTTLE(i))
+ 				        if(!IS_THROTTLE(index))
 								{
  									if(att&(NO_INPUT|NO_STICKS) )
 									{
@@ -6431,6 +6438,21 @@ void perOut(int16_t *chanOut, uint8_t att)
     				}
 
         }
+				//    if throttle trim -> trim low end
+        if(g_model.thrTrim)
+				{
+					int8_t ttrim ;
+#ifdef PHASES		
+					ttrim = getTrimValue( CurrentPhase, 2 ) ;
+#else
+					ttrim = *TrimPtr[2] ;
+#endif
+					if(g_eeGeneral.throttleReversed)
+					{
+						ttrim = -ttrim ;
+					}
+         	trimA[2] = ((int32_t)ttrim+125)*(RESX-Output.anas[2])/(RESX) ;
+				}
 
         //===========BEEP CENTER================
         anaCenter &= g_model.beepANACenter;
@@ -6565,7 +6587,10 @@ void perOut(int16_t *chanOut, uint8_t att)
         uint8_t swTog;
         uint8_t swon = Output.swOn[i] ;
 
-        //swOn[i]=false;
+        // if (md->swtch && source == PPMx && PpmInValid == 0
+				// then treat switch as false ???				
+				
+				//swOn[i]=false;
         if(!getSwitch(md->swtch,1)){ // switch on?  if no switch selected => on
             swTog = swon ;
             swon = false;

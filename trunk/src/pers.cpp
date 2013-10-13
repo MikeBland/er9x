@@ -86,10 +86,12 @@ static bool eeLoadGeneral()
 //  }
 
   if(g_eeGeneral.myVers<MDVERS)
-      sysFlags |= sysFLAG_OLD_EEPROM; // if old EEPROM - Raise flag
+	{
+    sysFlags |= sysFLAG_OLD_EEPROM; // if old EEPROM - Raise flag
 
-  g_eeGeneral.myVers   =  MDVERS; // update myvers
-
+  	g_eeGeneral.myVers   =  MDVERS; // update myvers
+		STORE_GENERALVARS;
+	}
 //  if(sz>(sizeof(EEGeneral)-20)) for(uint8_t i=0; i<12;i++) sum+=g_eeGeneral.calibMid[i];
   return g_eeGeneral.chkSum == evalChkSum() ;
 }
