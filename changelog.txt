@@ -10,7 +10,22 @@ description here
 ====================================================================================
 
 ******************************************
-CHANGELOG: 30-Sep-2013  MPB
+CHANGELOG: 13-Oct-2013  MPB (r805)
+Correct sink tones sense
+Increase RPM blade count to 127
+Fix cyclic pitch bug on different stick modes
+Fix trainer bug on stick modes
+Force store of general setup on auto EEPROM upgrade
+Fix beep centre bug
+Fix HP vario SPort scaling
+Add channel uS display to limits menu
+Scale output bars if extended limits enabled
+Fix expo/dr bug due to stick modes change
+Fix throttle trim bug due to stick modes change
+Fix encoder button not changing on/off values
+
+******************************************
+CHANGELOG: 30-Sep-2013  MPB (r804)
 Volume control
 Fix Switch warning display bug
 2561 CPU support
@@ -29,7 +44,7 @@ Auto update mix sources when loading old eeprom model
 Disable trainer if no trainer ppm input
 
 ******************************************
-CHANGELOG: 05-Aug-2013  MPB
+CHANGELOG: 05-Aug-2013  MPB (r803)
 128 version - only one build, new option to set FRSKY MOD DONE
 128 version - select switch in menus by moving required switch
 Voice for over 1000, use 3 significant figures not 2
@@ -40,14 +55,14 @@ Set default switches by setting switches and pressing MENU
 Flash savings
 
 ******************************************
-CHANGELOG: 17-Jul-2013  MPB
+CHANGELOG: 17-Jul-2013  MPB (r801, r802)
 Add telemetry checking
 Display changed limits when AutoLimits is enabled
 Fix flight Mode labels
 Protect PPM sync pulse length
 
 ******************************************
-CHANGELOG: 10-Jul-2013  MPB
+CHANGELOG: 10-Jul-2013  MPB (r800)
 Fix FrSky user packet count
 
 ******************************************

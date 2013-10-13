@@ -1399,7 +1399,7 @@ static uint8_t checkTrim(uint8_t event)
 #endif
         int8_t  v = (s==0) ? (abs(tm)/4)+1 : s;
 #ifdef FIX_MODE
-        bool thrChan = (1 == idx) ;
+        bool thrChan = (2 == idx) ;
 #else
         bool thrChan = ((2-(g_eeGeneral.stickMode&1)) == idx);
 #endif
@@ -1494,6 +1494,7 @@ int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flag
 				{
 					RotaryState = ROTARY_MENU_UD ;
 				}
+				event = 0 ;
     }
 
 #if defined(CPUM128) || defined(CPUM2561)
@@ -3179,7 +3180,7 @@ void mainSequence()
 								if ( vspd < 0 )
 								{
 									vspd = -vspd ;
-									if (g_model.varioData.sinkTones )
+									if (!g_model.varioData.sinkTones )
 									{
           		    	audio.event( AU_VARIO_DOWN ) ;
 									}
