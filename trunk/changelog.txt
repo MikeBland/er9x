@@ -10,6 +10,12 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 15-Oct-2013  MPB (r806)
+Fix DR/EXPO bug
+Trim switch ignore switch going off
+Throttle trim more resolution
+
+******************************************
 CHANGELOG: 13-Oct-2013  MPB (r805)
 Correct sink tones sense
 Increase RPM blade count to 127

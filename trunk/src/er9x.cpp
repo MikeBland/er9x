@@ -804,6 +804,12 @@ static void doSplash()
         lcd_img(0, 0, s9xsplash,0);
         if(!g_eeGeneral.hideNameOnSplash)
             lcd_putsnAtt(0*FW, 7*FH, g_eeGeneral.ownerName ,sizeof(g_eeGeneral.ownerName),BSS);
+    
+// Next code is debug for trim reboot problem
+//#ifdef CPUM2561
+//extern uint8_t SaveMcusr ;
+//				lcd_outhex4( 0*FW, 6*FH, SaveMcusr ) ;
+//#endif
 
         refreshDiplay();
 				lcdSetContrast() ;
@@ -1378,7 +1384,7 @@ static uint8_t checkTrim(uint8_t event)
 		}
 
 
-    if((k>=0) && (k<8))// && (event & _MSK_KEY_REPT))
+	  if( (k>=0) && (k<8) && !IS_KEY_BREAK(event)) // && (event & _MSK_KEY_REPT))
     {
         //LH_DWN LH_UP LV_DWN LV_UP RV_DWN RV_UP RH_DWN RH_UP
         uint8_t idx = (uint8_t)k/2;
@@ -1404,7 +1410,7 @@ static uint8_t checkTrim(uint8_t event)
         bool thrChan = ((2-(g_eeGeneral.stickMode&1)) == idx);
 #endif
         bool thro = (thrChan && (g_model.thrTrim));
-        if(thro) v = 4; // if throttle trim and trim trottle then step=4
+        if(thro) v = 2 ; // if throttle trim and trim trottle then step=2
         if(thrChan && g_eeGeneral.throttleReversed) v = -v;  // throttle reversed = trim reversed
         int16_t x = (k&1) ? tm + v : tm - v;   // positive = k&1
 
@@ -2449,6 +2455,7 @@ static void getADC_bandgap()
 
 volatile uint8_t g_tmr16KHz;
 
+
 #ifndef SIMU
 ISR(TIMER0_OVF_vect, ISR_NOBLOCK) //continuous timer 16ms (16MHz/1024)
 {
@@ -2639,9 +2646,9 @@ unsigned int stack_free()
 }
 #endif
 
-
-
-
+#ifdef CPUM2561
+uint8_t SaveMcusr ;
+#endif
 
 int main(void)
 {
@@ -2657,12 +2664,20 @@ int main(void)
 
 #ifdef CPUM2561
   uint8_t mcusr = MCUSR; // save the WDT (etc) flags
+	SaveMcusr = mcusr ;
   MCUSR = 0; // must be zeroed before disabling the WDT
 #else
   uint8_t mcusr = MCUCSR;
   MCUCSR = 0;
 #endif
-    
+
+#ifdef CPUM2561
+	if ( mcusr == 0 )
+	{
+    wdt_enable(WDTO_60MS) ;
+	}
+#endif
+
 #ifdef BLIGHT_DEBUG
 	{
 		uint32_t x ;

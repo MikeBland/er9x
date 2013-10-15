@@ -5408,7 +5408,13 @@ void menuProcStatistic2(uint8_t event)
     lcd_outhex4( 10*FW+3, 5*FH, stack_free() ) ;
  #endif
 #endif
-    lcd_puts_Pleft( 7*FH, PSTR("\003[MENU] to refresh"));
+
+#ifdef CPUM2561
+extern uint8_t SaveMcusr ;
+    lcd_outhex4( 17*FW, 6*FH, SaveMcusr ) ;
+#endif
+    
+		lcd_puts_Pleft( 7*FH, PSTR("\003[MENU] to refresh"));
 }
 
 #ifdef JETI
@@ -6376,7 +6382,7 @@ void perOut(int16_t *chanOut, uint8_t att)
                     v = int32_t(v)*g_model.swashRingValue*RESX/(int32_t(d)*100);
                 //===========Swash Ring================
 
-                uint8_t expoDrOn = get_dr_state(i);
+                uint8_t expoDrOn = get_dr_state(index);
                 uint8_t stkDir = v>0 ? DR_RIGHT : DR_LEFT;
 
                 if(IS_EXPO_THROTTLE(index)){
