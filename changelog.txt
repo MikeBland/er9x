@@ -10,6 +10,11 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 27-Oct-2013  MPB (r807)
+Add ppm in monitoring in mixer
+Improve model version update
+
+******************************************
 CHANGELOG: 15-Oct-2013  MPB (r806)
 Fix DR/EXPO bug
 Trim switch ignore switch going off

@@ -6593,11 +6593,16 @@ void perOut(int16_t *chanOut, uint8_t att)
         uint8_t swTog;
         uint8_t swon = Output.swOn[i] ;
 
-        // if (md->swtch && source == PPMx && PpmInValid == 0
-				// then treat switch as false ???				
+				bool t_switch = getSwitch(md->swtch,1) ;
+        if (md->swtch && (md->srcRaw >= PPM_BASE) && (md->srcRaw < PPM_BASE+NUM_PPM)	&& (ppmInValid == 0) )
+				{
+					// then treat switch as false ???				
+					t_switch = 0 ;
+				}	
 				
 				//swOn[i]=false;
-        if(!getSwitch(md->swtch,1)){ // switch on?  if no switch selected => on
+        if(!t_switch)
+				{ // switch on?  if no switch selected => on
             swTog = swon ;
             swon = false;
             //            if(md->srcRaw==MIX_MAX) act[i] = 0;// MAX back to 0 for slow up
