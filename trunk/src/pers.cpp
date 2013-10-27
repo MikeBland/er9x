@@ -209,12 +209,79 @@ void eeLoadModel(uint8_t id)
 					}
 				}
 			}
+
+
+			for (uint8_t i = 0 ; i < NUM_CSW ; i += 1 )
+			{
+    		CSwData *cs = &g_model.customSw[i];
+    		uint8_t cstate = CS_STATE(cs->func);
+				uint8_t t = 0 ;
+    		if(cstate == CS_VOFS)
+				{
+					t = 1 ;
+				}
+				else if(cstate == CS_VCOMP)
+				{
+					t = 1 ;
+      		if (cs->v2)
+					{
+    		    if (cs->v2 <= 4)		// Stick
+						{
+    	    		cs->v2 = modeFixValue( cs->v2-1 ) ;
+						}
+					}
+				}
+				if ( t )
+				{
+      		if (cs->v1)
+					{
+    		    if (cs->v1 <= 4)		// Stick
+						{
+    	    		cs->v1 = modeFixValue( cs->v1-1 ) ;
+						}
+					}
+				}
+			}
+
+#if defined(CPUM128) || defined(CPUM2561)
+			for (uint8_t i = NUM_CSW ; i < NUM_CSW+EXTRA_CSW ; i += 1 )
+			{
+	    	CxSwData *cs = &g_model.xcustomSw[i-NUM_CSW];
+    		uint8_t cstate = CS_STATE(cs->func);
+				uint8_t t = 0 ;
+    		if(cstate == CS_VOFS)
+				{
+					t = 1 ;
+				}
+				else if(cstate == CS_VCOMP)
+				{
+					t = 1 ;
+      		if (cs->v2)
+					{
+    		    if (cs->v2 <= 4)		// Stick
+						{
+    	    		cs->v2 = modeFixValue( cs->v2-1 ) ;
+						}
+					}
+				}
+				if ( t )
+				{
+      		if (cs->v1)
+					{
+    		    if (cs->v1 <= 4)		// Stick
+						{
+    	    		cs->v1 = modeFixValue( cs->v1-1 ) ;
+						}
+					}
+				}
+			}
+#endif	// CPUs
 			alert(PSTR("CHECK MIX SOURCES"));
 			g_model.modelVersion = 2 ;
       eeDirty( EE_MODEL ) ;
 			eeWaitComplete() ;
 		}
-#endif
+#endif	// FIX_MODE
 
   }
 }
