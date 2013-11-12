@@ -35,6 +35,7 @@ void set_timer3_ppm( void ) ;
 //void setupPulsesPPM16( uint8_t proto ) ;
 void setupPulsesPPM( uint8_t proto ) ;
 static void setupPulsesPXX( void ) ;
+static void sendByteDsm2(uint8_t b) ;
 
 //uint16_t PulseTotal ;
 
@@ -122,6 +123,12 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
     heartbeat |= HEART_TIMER2Mhz;
 }
 
+void startPulses()
+{
+	Current_protocol = g_model.protocol + 10 ;		// Not the same!
+	setupPulses() ;
+}
+
 void setupPulses()
 {
 	uint8_t required_protocol ;
@@ -171,7 +178,7 @@ void setupPulses()
             break;
         case PROTO_PXX:
             set_timer3_capture() ;
-            OCR1B = 6000 ;		// Next frame starts in 3 mS
+            OCR1B = 7000 ;		// Next frame starts in 3.5 mS
             OCR1C = 4000 ;		// Next frame setup in 2 mS
 #ifdef CPUM2561
             TIMSK1 |= (1<<OCIE1B) | (1<<OCIE1C);	// Enable COMPB and COMPC
@@ -363,7 +370,7 @@ normal:
 //}
 
 #define BITLEN_DSM2 (8*2) //125000 Baud
-void sendByteDsm2(uint8_t b) //max 10changes 0 10 10 10 10 1
+static void sendByteDsm2(uint8_t b) //max 10changes 0 10 10 10 10 1
 {
     bool    lev = 0;
     uint8_t len = BITLEN_DSM2; //max val: 9*16 < 256
@@ -466,18 +473,18 @@ ISR(TIMER1_COMPC_vect) // DSM2 or PXX end of frame
 
     if ( g_model.protocol == PROTO_DSM2 )
     {
-        // DSM2
-        ICR1 = 41536 ; //next frame starts in 22 msec 41536 = 2*(22000 - 14*11*8)
-  	if (OCR1C<255) OCR1C = 39000;  //delay setup pulses by 19.5 msec to reduce sytem latency
-  	else
-  	{
-            OCR1C=200;
-            setupPulses();
-  	}
+      // DSM2
+      ICR1 = 41536 ; //next frame starts in 22 msec 41536 = 2*(22000 - 14*11*8)
+	  	if (OCR1C<255) OCR1C = 39000;  //delay setup pulses by 19.5 msec to reduce sytem latency
+  		else
+	  	{
+        OCR1C=200;
+        setupPulses();
+  		}
     }
     else		// must be PXX
     {
-        setupPulses() ;
+      setupPulses() ;
     }
 }
 
@@ -500,7 +507,13 @@ ISR(TIMER1_COMPB_vect) // PXX main interrupt
     {
         if ( *(++pulses2MHzptr) == 0 )
         {
-            OCR1B = OCR1C + 2000 ;		// 1mS on from OCR1B
+//            OCR1B -= 48 ; // = OCR1C + 3000 ;		// 1.5mS on from OCR1C
+						// disable COMPB interrupt
+#ifdef CPUM2561
+    TIMSK1 &= ~(1<<OCIE1B) ;	// COMPB interrupt off
+#else
+    TIMSK &= ~(1<<OCIE1B) ;	// COMPB interrupt off
+#endif
         }
     }
     else
@@ -743,18 +756,30 @@ uint16_t scaleForPXX( uint8_t i )
 {
 	int16_t value ;
 	
-	value = g_chans512[i] *3 / 4 + 1024 ;	
+	value = ( ( i < 16 ) ? g_chans512[i] *3 / 4 : 0 ) + 1024 ;
 	return limit( 1, value, 2046 ) ;
 }
 
+//uint16_t PxxStart ;
+//uint16_t PxxTime ;
 
+static uint8_t pass ;
 //void setUpPulsesPCM()
 static void setupPulsesPXX()
 {
     uint8_t i ;
     uint16_t chan ;
     uint16_t chan_1 ;
+		uint8_t lpass = pass ;
 
+#ifdef CPUM2561
+    TIMSK1 &= ~( (1<<OCIE1B) | (1<<OCIE1C) ) ;	// COMPC & B interrupts off
+#else
+    TIMSK &= ~(1<<OCIE1B) ;	// COMPB interrupt off
+    ETIMSK &= ~(1<<OCIE1C) ;	// COMPC interrupt off
+#endif
+
+//		PxxStart = TCNT1 ;
 		{
 			struct t_pcm_control *ptrControl ;
 
@@ -762,20 +787,22 @@ static void setupPulsesPXX()
 			FORCE_INDIRECT(ptrControl) ;
     
 			pulses2MHzptr = pulses2MHz.pbyte ;
-    	ptrControl->PcmPtr = pulses2MHz.pbyte ;
+    	ptrControl->PcmPtr = pulses2MHz.pbyte + 1 ;		// past preamble
     	ptrControl->PcmCrc = 0 ;
     	ptrControl->PcmBitCount = ptrControl->PcmByte = 0 ;
     	ptrControl->PcmOnesCount = 0 ;
 		}
-    putPcmPart( 0xC0 ) ;
-    putPcmPart( 0xC0 ) ;
-    putPcmPart( 0xC0 ) ;
-    putPcmPart( 0xC0 ) ;
+
+			pulses2MHz.pbyte[0] = 0xFF ;		// Preamble
+//    putPcmPart( 0xC0 ) ;
+//    putPcmPart( 0xC0 ) ;
+//    putPcmPart( 0xC0 ) ;
+//    putPcmPart( 0xC0 ) ;
     putPcmHead(  ) ;  // sync byte
     putPcmByte( g_model.ppmNCH ) ;     // putPcmByte( g_model.rxnum ) ;  //
 
   uint8_t flag1;
-  if (pxxFlag & PXX_SEND_RXNUM)
+  if (pxxFlag & PXX_BIND)
 	{
     flag1 = (g_model.sub_protocol<< 6) | (g_model.country << 1) | pxxFlag ;
   }
@@ -788,12 +815,24 @@ static void setupPulsesPXX()
 		putPcmByte( 0 ) ;     // Second byte of flags
 		
 		uint8_t startChan = g_model.ppmStart ;
+		if ( lpass & 1 )
+		{
+			startChan += 8 ;			
+		}
     for ( i = 0 ; i < 4 ; i += 1 )		// First 8 channels only
     {																	// Next 8 channels would have 2048 added
       chan = scaleForPXX( startChan ) ;
+			if ( lpass & 1 )
+			{
+				chan += 2048 ;
+			}
       putPcmByte( chan ) ; // Low byte of channel
 			startChan += 1 ;
       chan_1 = scaleForPXX( startChan ) ;
+			if ( lpass & 1 )
+			{
+				chan_1 += 2048 ;
+			}
 			startChan += 1 ;
 			putPcmByte( ( ( chan >> 8 ) & 0x0F ) | ( chan_1 << 4) ) ;  // 4 bits each from 2 channels
       putPcmByte( chan_1 >> 4 ) ;  // High byte of channel
@@ -806,8 +845,26 @@ static void setupPulsesPXX()
     putPcmFlush() ;
 		volatile uint16_t *ptr = &OCR1C ;
 		FORCE_INDIRECT( ptr ) ;
-    *ptr += 36000 ;		// 18mS on
-    PORTB &= ~(1<<OUT_B_PPM);		// Idle is line low
+		{
+			uint16_t ocrc ;
+			ocrc = *ptr ;
+    	OCR1B = ocrc + 3000 ;		// 1.5mS on from OCR1C
+			*ptr = ocrc + 18000 ;		// 18mS on, 9mS needed if 16 channels
+		}
+//    OCR1B = *ptr + 3000 ;		// 1.5mS on from OCR1C
+//    *ptr += 18000 ;		// 18mS on, 9mS needed if 16 channels
+    PORTB |= (1<<OUT_B_PPM);		// Idle is line high
+#ifdef CPUM2561
+    TIFR1 = (1<<OCF1B) | (1<<OCF1C) ;			// Clear pending interrupts
+    TIMSK1 |= (1<<OCIE1B) | (1<<OCIE1C);	// Enable COMPB and COMPC
+#else
+    TIFR = (1<<OCF1B) ;			// Clear pending interrupt
+    ETIFR = (1<<OCF1C) ;			// Clear pending interrupt
+    TIMSK |= (1<<OCIE1B) ;	// Enable COMPB
+    ETIMSK |= (1<<OCIE1C);	// Enable COMPC
+#endif
+		pass = lpass + 1 ;
+//		PxxTime = TCNT1 - PxxStart ;
 }
 
 

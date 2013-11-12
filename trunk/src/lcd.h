@@ -19,6 +19,34 @@
 
 #include "er9x.h"
 
+/* set this to 1 if you know what you're doing */
+#define LCD_OTHER		0
+
+// to select either stock LCD controller or SSD1306 OLED controller
+ #define SSD1306         0       // Stock(ST7565/NT7532)=0, SSD1306=1
+
+#if LCD_OTHER
+ #if SSD1306
+  #define EXTERNAL_VCC    0       // use external VCC (disable charge pump)
+  #define lcd_minContrast 10
+  #define lcd_maxContrast 0xFF
+  # if EXTERNAL_VCC
+  #define lcd_nomContrast 0xCF
+  # else
+  #define lcd_nomContrast 0x9F
+  #endif
+ #else
+  #define lcd_minContrast 10
+  #define lcd_maxContrast 45
+  #define lcd_nomContrast 25
+ #endif
+#else
+ #define lcd_minContrast 10
+ #define lcd_maxContrast 45
+ #define lcd_nomContrast 25
+#endif
+
+
 #define DISPLAY_W 128
 #define DISPLAY_H  64
 #define FW          6

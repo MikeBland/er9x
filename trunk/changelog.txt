@@ -10,6 +10,17 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 12-Nov-2013  MPB (r808)
+Channel order moved to radio setup
+Add CH% to timer triggers
+Fix timer 2 speed bug
+128/2561 add display of all channels
+Handle menu switching better
+PXX support 16 channels output
+Fix HELI bug
+lcd additions for serial lcds (for custom txs)
+
+******************************************
 CHANGELOG: 27-Oct-2013  MPB (r807)
 Add ppm in monitoring in mixer
 Improve model version update

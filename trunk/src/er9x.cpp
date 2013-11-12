@@ -17,6 +17,8 @@
 #include "er9x.h"
 #include <stdlib.h>
 #include "language.h"
+#include "pulses.h"
+#include "lcd.h"
 
 // Next two lines swapped as new complier/linker reverses them in memory!
 const
@@ -269,17 +271,31 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t type )
   int8_t tm = g_model.tmrMode;
 	if ( type < 2 )		// 0 or 1
 	{
-    if(abs(tm)<TMR_VAROFS) {
-        lcd_putsAttIdx(  x, y, PSTR(STR_TMR_MODE),abs(tm),attr);
+		uint8_t abstm = tm ;
+		if (tm<0)
+		{
+			abstm = -tm ;
+		}
+    if(abstm<TMR_VAROFS) {
+        lcd_putsAttIdx(  x, y, PSTR(STR_TMR_MODE),abstm,attr);
         if(tm<(-TMRMODE_ABS)) lcd_putcAtt(x-1*FW,  y,'!',attr);
 //        return;
     }
 
-    else if(abs(tm)<(TMR_VAROFS+MAX_DRSWITCH-1)) { //normal on-off
+    else if(abstm<(TMR_VAROFS+MAX_DRSWITCH-1)) { //normal on-off
         putsDrSwitches( x-1*FW,y,tm>0 ? tm-(TMR_VAROFS-1) : tm+(TMR_VAROFS-1),attr);
 //        return;
     }
-
+	  else if(tm>=(TMR_VAROFS+MAX_DRSWITCH-1+MAX_DRSWITCH-1)) // CH%
+		{
+  		tm -= (TMR_VAROFS+MAX_DRSWITCH-1+MAX_DRSWITCH-1) - 7 ;
+      lcd_putsAttIdx(  x, y, PSTR( CURV_STR), tm, attr ) ;
+			if ( tm < (9+7) )	// Allow for 7 offset above
+			{
+				x -= FW ;		
+			}
+  		lcd_putcAtt(x+3*FW,  y,'%',attr);
+		}	
 		else
 		{
     	lcd_putcAtt(x+3*FW,  y,'m',attr);
@@ -432,7 +448,11 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 		}
 
     uint8_t dir = swtch>0;
-    uint8_t aswtch = abs(swtch) ;
+    uint8_t aswtch = swtch ;
+		if ( swtch < 0 )
+		{
+			aswtch = -swtch ;			
+		}		 
 
 #if defined(CPUM128) || defined(CPUM2561)
     if(aswtch<(MAX_DRSWITCH-NUM_CSW-EXTRA_CSW))
@@ -1210,6 +1230,7 @@ uint8_t StickScrollTimer ;
 MenuFuncP g_menuStack[5];
 
 uint8_t  g_menuStackPtr = 0;
+uint8_t  EnterMenu = 0 ;
 //uint8_t  g_beepCnt;
 //uint8_t  g_beepVal[5];
 
@@ -1250,7 +1271,7 @@ void alert(const prog_char * s, bool defaults)
 	}
 	almess( s, ALERT_TYPE ) ;
   
-	lcdSetRefVolt(defaults ? 25 : g_eeGeneral.contrast);
+	lcdSetRefVolt(defaults ? lcd_nomContrast : g_eeGeneral.contrast);
   audioVoiceDefevent(AU_ERROR, V_ALERT);
 
     clearKeyEvents();
@@ -1590,10 +1611,10 @@ MenuFuncP lastPopMenu()
 
 void popMenu(bool uppermost)
 {
-    if(g_menuStackPtr>0 || uppermost){
+    if(g_menuStackPtr>0 || uppermost)
+		{
         g_menuStackPtr = uppermost ? 0 : g_menuStackPtr-1;
-        audioDefevent(AU_MENUS);
-        (*g_menuStack[g_menuStackPtr])(EVT_ENTRY_UP);
+				EnterMenu = EVT_ENTRY_UP ;
     }else{
         alert(PSTR(STR_MSTACK_UFLOW));
     }
@@ -1602,8 +1623,7 @@ void popMenu(bool uppermost)
 void chainMenu(MenuFuncP newMenu)
 {
     g_menuStack[g_menuStackPtr] = newMenu;
-    (*newMenu)(EVT_ENTRY);
-    audioDefevent(AU_MENUS);
+		EnterMenu = EVT_ENTRY ;
 }
 void pushMenu(MenuFuncP newMenu)
 {
@@ -1615,9 +1635,8 @@ void pushMenu(MenuFuncP newMenu)
         alert(PSTR(STR_MSTACK_OFLOW));
         return;
     }
-    audioDefevent(AU_MENUS);
+		EnterMenu = EVT_ENTRY ;
     g_menuStack[++g_menuStackPtr] = newMenu;
-    (*newMenu)(EVT_ENTRY);
 }
 
 uint8_t  g_vbat100mV ;
@@ -1941,6 +1960,8 @@ uint8_t calcStickScroll( uint8_t index )
 	return value | direction ;
 }
 
+//uint16_t MixCounter ;
+//uint16_t MixRate ;
 
 void perMain()
 {
@@ -1956,7 +1977,8 @@ void perMain()
     //    lastTMR = time10ms;
 
     perOut(g_chans512, 0);
-    if(t10ms == 0) return ; //make sure the rest happen only every 10ms.
+//		MixCounter += 1 ;
+    if(tick10ms == 0) return ; //make sure the rest happen only every 10ms.
 
 		{
 			struct t_timerg *tptr ;
@@ -2202,6 +2224,13 @@ void perMain()
 			else
 			{
 				alertKey = 0 ;
+
+				if ( EnterMenu )
+				{
+					evt = EnterMenu ;
+					EnterMenu = 0 ;
+					audioDefevent(AU_MENUS);
+				}
 				Tevent = evt ;
     		g_menuStack[g_menuStackPtr](evt);
 			}
@@ -2781,7 +2810,7 @@ int main(void)
 
     g_menuStack[0] =  menuProc0;
 
-    lcdSetRefVolt(25);
+   lcdSetRefVolt(lcd_nomContrast);
     eeReadAll();
     uint8_t cModel = g_eeGeneral.currModel;
     
@@ -2842,9 +2871,9 @@ int main(void)
 //    BandGap = 240 ;
 		putVoiceQueueUpper( g_model.modelVoice ) ;
 	}
-    setupPulses();
-    wdt_enable(WDTO_500MS);
     perOut(g_chans512, 0);
+		startPulses() ;
+    wdt_enable(WDTO_500MS);
 
 //    pushMenu(menuProcModelSelect);
 //    popMenu(true);  
@@ -2863,15 +2892,17 @@ int main(void)
 #endif
 
     // This bit depends on protocol
-    OCR1A = 2000 ;        // set to 1mS
-#ifdef CPUM2561
-    TIFR1 = 1 << OCF1A ;   // Clear pending interrupt
-#else
-		TIFR = 1 << OCF1A ;   // Clear pending interrupt
-#endif
-
+//    if ( (g_model.protocol == PROTO_PPM) || (g_model.protocol == PROTO_PPM16) )
+//		{
+//	    OCR1A = 2000 ;        // set to 1mS
+//#ifdef CPUM2561
+//  	  TIFR1 = 1 << OCF1A ;   // Clear pending interrupt
+//#else
+//			TIFR = 1 << OCF1A ;   // Clear pending interrupt
+//#endif
+//	    PULSEGEN_ON; // Pulse generator enable immediately before mainloop
+//		}
 		Main_running = 1 ;
-    PULSEGEN_ON; // Pulse generator enable immediately before mainloop
     while(1){
         //uint16_t old10ms=get_tmr10ms();
         mainSequence() ;
@@ -3245,7 +3276,8 @@ void mainSequence()
       // Check for alarms here
       // Including Altitude limit
 //				Debug3 = 1 ;
-
+//		MixRate = MixCounter ;
+//		MixCounter = 0 ;
 #ifdef FRSKY
       if (frskyUsrStreaming)
       {

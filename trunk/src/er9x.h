@@ -432,8 +432,7 @@ uint8_t IS_EXPO_THROTTLE( uint8_t x ) ;
 #define DSM2only         1
 #define DSM2_DSMX        2
 
-// PXX_SEND_RXNUM == BIND
-#define PXX_SEND_RXNUM     0x01
+#define PXX_BIND					 0x01
 #define PXX_SEND_FAILSAFE  0x10
 #define PXX_RANGE_CHECK		 0x20
 
@@ -499,8 +498,8 @@ void mainSequence() ;
 
 #define NO_TRAINER 0x01
 #define NO_INPUT   0x02
-#define NO_TRIMS   0x04
-#define NO_STICKS  0x08
+//#define NO_TRIMS   0x04
+//#define NO_STICKS  0x08
 
 void perOut(int16_t *chanOut, uint8_t att);
 ///   Liefert den Zustand des Switches 'swtch'. Die Numerierung erfolgt ab 1
