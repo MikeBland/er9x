@@ -45,7 +45,7 @@ void generalDefault()
   memset(&g_eeGeneral,0,sizeof(g_eeGeneral));
   g_eeGeneral.myVers   =  MDVERS;
 //  g_eeGeneral.currModel=  0;
-  g_eeGeneral.contrast = 25;
+  g_eeGeneral.contrast = lcd_nomContrast;
   g_eeGeneral.vBatWarn = 90;
   g_eeGeneral.stickMode=  1;
   for (uint8_t i = 0; i < 7; ++i) {

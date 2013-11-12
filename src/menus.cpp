@@ -872,6 +872,8 @@ void MState2::check_submenu_simple(uint8_t event, uint8_t maxrow)
     check_simple(event, 0, 0, 0, maxrow);
 }
 
+//extern uint16_t MixRate ;
+
 static void DisplayScreenIndex(uint8_t index, uint8_t count, uint8_t attr)
 {
 		uint8_t x ;
@@ -884,6 +886,8 @@ static void DisplayScreenIndex(uint8_t index, uint8_t count, uint8_t attr)
     lcd_putcAtt(x,0,'/',attr);
     lcd_outdezAtt(x-1,0,index+1,attr);
 //		lcd_putc( x-12, 0, RotaryState + '0' ) ;
+//    lcd_outdezAtt(64,0,MixRate,0) ;
+
 }
 
 uint8_t g_posHorz ;
@@ -1616,6 +1620,12 @@ uint8_t onoffMenuItem_g( uint8_t value, uint8_t y, const prog_char *s, uint8_t c
     return value ;
 }
 
+uint8_t offonMenuItem_g( uint8_t value, uint8_t y, const prog_char *s, uint8_t condition )
+{
+	return 1-onoffMenuItem_g( 1-value, y, s, condition ) ;
+}
+
+
 uint8_t onoffMenuItem_m( uint8_t value, uint8_t y, const prog_char *s, uint8_t condition )
 {
     if(condition) CHECK_INCDEC_H_MODELVAR_0( value, 1);
@@ -2033,7 +2043,7 @@ void menuProcGlobals(uint8_t event)
 #ifndef NO_TEMPLATES
 void menuProcTemplates(uint8_t event)  //Issue 73
 {
-    SIMPLE_MENU(STR_TEMPLATES, menuTabModel, e_Templates, NUM_TEMPLATES+3);
+    SIMPLE_MENU(STR_TEMPLATES, menuTabModel, e_Templates, NUM_TEMPLATES+2);
 
     uint8_t t_pgOfs ;
     uint8_t y = 0;
@@ -2073,22 +2083,6 @@ void menuProcTemplates(uint8_t event)  //Issue 73
 
     if(y>7*FH) return;
     uint8_t attr = s_noHi ? 0 : ((sub==NUM_TEMPLATES) ? INVERS : 0);
-    lcd_puts_Pleft( y,PSTR(STR_CHAN_ORDER));//   RAET->AETR
-
-    {
-        uint8_t i ;
-        for ( i = 1 ; i <= 4 ; i += 1 )
-        {
-            lcd_putsnAtt((14+i)*FW, y, PSTR(STR_SP_RETA)+CHANNEL_ORDER(i),1,attr);
-        }
-    }
-
-
-    if(attr) CHECK_INCDEC_H_GENVAR_0( g_eeGeneral.templateSetup, 23);
-    y+=FH;
-
-    if(y>7*FH) return;
-    attr = s_noHi ? 0 : ((sub==NUM_TEMPLATES+1) ? INVERS : 0);
     lcd_putsAtt(  1*FW,y,PSTR(STR_CLEAR_MIXES),attr);
     y+=FH;
 
@@ -3608,7 +3602,7 @@ void menuDeleteDupModel(uint8_t event)
 void menuRangeBind(uint8_t event)
 {
 	static uint8_t timer ;
-	uint8_t flag = pxxFlag & PXX_SEND_RXNUM ;
+	uint8_t flag = pxxFlag & PXX_BIND ;
 	lcd_puts_Pleft( 3*FH, (flag) ? PSTR("\006BINDING") : PSTR("RANGE CHECK RSSI:") ) ;
   if ( event == EVT_KEY_FIRST(KEY_EXIT) )
 	{
@@ -3783,7 +3777,7 @@ void menuProcModel(uint8_t event)
     	if(sub==subN)
 			{
    			attr = INVERS ;
-    	  CHECK_INCDEC_MODELSWITCH( g_model.tmrMode ,-(13+2*MAX_DRSWITCH),(13+2*MAX_DRSWITCH));
+    	  CHECK_INCDEC_MODELSWITCH( g_model.tmrMode ,-(13+2*MAX_DRSWITCH),(13+2*MAX_DRSWITCH)+16);
 			}
     	putsTmrMode(10*FW,y,attr, 1 ) ;
     	if((y+=FH)>7*FH) break ;
@@ -3934,7 +3928,7 @@ void menuProcModel(uint8_t event)
 					if ( subSub == 0 )
 					{
 						lcd_char_inverse( 0, y, 4*FW, 0 ) ;
-						newFlag = PXX_SEND_RXNUM ;
+						newFlag = PXX_BIND ;
 					}
 					else
 					{
@@ -4737,15 +4731,15 @@ void menuProcSetup(uint8_t event)
 
 #ifndef NOPOTSCROLL
 	#ifdef FRSKY
-	#define DEFAULT_COUNT_ITEMS ( 31 + COUNT_EXTRA )
+	#define DEFAULT_COUNT_ITEMS ( 32 + COUNT_EXTRA )
 	#else
-	#define DEFAULT_COUNT_ITEMS ( 30 + COUNT_EXTRA )
+	#define DEFAULT_COUNT_ITEMS ( 31 + COUNT_EXTRA )
 	#endif
 #else
 	#ifdef FRSKY
-	#define DEFAULT_COUNT_ITEMS ( 30 + COUNT_EXTRA )
+	#define DEFAULT_COUNT_ITEMS ( 31 + COUNT_EXTRA )
 	#else
-	#define DEFAULT_COUNT_ITEMS ( 29 + COUNT_EXTRA )
+	#define DEFAULT_COUNT_ITEMS ( 30 + COUNT_EXTRA )
 	#endif
 #endif
 
@@ -4880,7 +4874,7 @@ void menuProcSetup(uint8_t event)
         lcd_puts_Pleft( y,PSTR(STR_CONTRAST));
         if(sub==subN) {
 						attr = INVERS | LEFT ;
-            CHECK_INCDEC_H_GENVAR( g_eeGeneral.contrast, 10, 45);
+            CHECK_INCDEC_H_GENVAR( g_eeGeneral.contrast, lcd_minContrast, lcd_maxContrast) ;
 						lcdSetContrast() ;
         }
         lcd_outdezAtt(PARAM_OFS,y,g_eeGeneral.contrast,attr);
@@ -4966,26 +4960,26 @@ void menuProcSetup(uint8_t event)
 		}
 
     if(t_pgOfs<subN) {
-        uint8_t b = 1-g_eeGeneral.disableSplashScreen;
-        g_eeGeneral.disableSplashScreen = 1-onoffMenuItem_g( b, y, PSTR(STR_SPLASH_SCREEN), sub==subN ) ;
+        uint8_t b = g_eeGeneral.disableSplashScreen;
+        g_eeGeneral.disableSplashScreen = offonMenuItem_g( b, y, PSTR(STR_SPLASH_SCREEN), sub==subN ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 
     if(t_pgOfs<subN) {
-        uint8_t b = 1-g_eeGeneral.hideNameOnSplash;
-        g_eeGeneral.hideNameOnSplash = 1-onoffMenuItem_g( b, y, PSTR(STR_SPLASH_NAME), sub==subN ) ;
+        uint8_t b = g_eeGeneral.hideNameOnSplash;
+        g_eeGeneral.hideNameOnSplash = offonMenuItem_g( b, y, PSTR(STR_SPLASH_NAME), sub==subN ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 
     if(t_pgOfs<subN) {
-        uint8_t b = 1-g_eeGeneral.disableThrottleWarning;
-        g_eeGeneral.disableThrottleWarning = 1-onoffMenuItem_g( b, y, PSTR(STR_THR_WARNING), sub==subN ) ;
+        uint8_t b = g_eeGeneral.disableThrottleWarning;
+        g_eeGeneral.disableThrottleWarning = offonMenuItem_g( b, y, PSTR(STR_THR_WARNING), sub==subN ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 
     if(t_pgOfs<subN) {
-        uint8_t b = 1-g_eeGeneral.disableSwitchWarning;
-        g_eeGeneral.disableSwitchWarning = 1-onoffMenuItem_g( b, y, Str_Switch_warn, sub==subN ) ;
+        uint8_t b = g_eeGeneral.disableSwitchWarning;
+        g_eeGeneral.disableSwitchWarning = offonMenuItem_g( b, y, Str_Switch_warn, sub==subN ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 
@@ -5014,16 +5008,16 @@ void menuProcSetup(uint8_t event)
 
 
     if(t_pgOfs<subN) {
-        uint8_t b = 1-g_eeGeneral.disableMemoryWarning;
-        g_eeGeneral.disableMemoryWarning = 1-onoffMenuItem_g( b, y, PSTR(STR_MEM_WARN), sub==subN ) ;
+        uint8_t b = g_eeGeneral.disableMemoryWarning;
+        g_eeGeneral.disableMemoryWarning = offonMenuItem_g( b, y, PSTR(STR_MEM_WARN), sub==subN ) ;
         //						;
         //        }
         if((y+=FH)>7*FH) return;
     }subN++;
 
     if(t_pgOfs<subN) {
-        uint8_t b = 1-g_eeGeneral.disableAlarmWarning;
-        g_eeGeneral.disableAlarmWarning = 1-onoffMenuItem_g( b, y, PSTR(STR_ALARM_WARN), sub==subN ) ;
+        uint8_t b = g_eeGeneral.disableAlarmWarning;
+        g_eeGeneral.disableAlarmWarning = offonMenuItem_g( b, y, PSTR(STR_ALARM_WARN), sub==subN ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 
@@ -5032,8 +5026,8 @@ void menuProcSetup(uint8_t event)
     if(t_pgOfs<subN)
     {
         uint8_t b ;
-        b = 1-g_eeGeneral.disablePotScroll ;
-        g_eeGeneral.disablePotScroll = 1-onoffMenuItem_g( b, y, PSTR(STR_POTSCROLL), sub==subN ) ;
+        b = g_eeGeneral.disablePotScroll ;
+        g_eeGeneral.disablePotScroll = offonMenuItem_g( b, y, PSTR(STR_POTSCROLL), sub==subN ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 #endif
@@ -5047,8 +5041,8 @@ void menuProcSetup(uint8_t event)
 		if(t_pgOfs<subN)
     {
         uint8_t b ;
-        b = 1-g_eeGeneral.disableBG ;
-        g_eeGeneral.disableBG = 1-onoffMenuItem_g( b, y, PSTR(STR_BANDGAP), sub==subN ) ;
+        b = g_eeGeneral.disableBG ;
+        g_eeGeneral.disableBG = offonMenuItem_g( b, y, PSTR(STR_BANDGAP), sub==subN ) ;
         if((y+=FH)>7*FH) return;
     }subN++;
 
@@ -5104,6 +5098,24 @@ void menuProcSetup(uint8_t event)
  #endif
 #endif
 
+    if(t_pgOfs<subN)
+		{
+			uint8_t attr = sub==subN ? INVERS : 0 ;
+	    lcd_puts_Pleft( y, PSTR(STR_CHAN_ORDER) ) ;//   RAET->AETR
+			uint8_t bch = pgm_read_byte(bchout_ar + g_eeGeneral.templateSetup) ;
+      for ( uint8_t i = 4 ; i > 0 ; i -= 1 )
+			{
+				uint8_t letter ;
+				letter = pgm_read_byte( PSTR(STR_SP_RETA)+(bch & 3) + 1 ) ;
+  			lcd_putcAtt( (14+i)*FW, y, letter, attr ) ;
+				bch >>= 2 ;
+			}
+	    if(attr) CHECK_INCDEC_H_GENVAR_0( g_eeGeneral.templateSetup, 23 ) ;
+			if((y+=FH)>7*FH) return ;
+    }
+		subN++;
+
+
     if(t_pgOfs<subN) {
         lcd_puts_P( 1*FW, y, PSTR(STR_MODE));//sub==3?INVERS:0);
         if(y<7*FH) {for(uint8_t i=0; i<4; i++) lcd_img((6+4*i)*FW, y, sticks,i); }
@@ -5145,30 +5157,38 @@ void menuProcSetup(uint8_t event)
 #define TMR_BEEPING 2
 #define TMR_STOPPED 3
 
-extern struct t_timerg *timeraddress( void ) ;
-
 void timer(uint8_t val)
 {
     int8_t tm = g_model.tmrMode;
   	int8_t tmb ;
 		uint8_t switch_b ;
 	struct t_timerg *tptr ;
+	uint8_t abstm = tm ;
+	if (tm<0)
+	{
+		abstm = -tm ;
+	}
 
 	tptr = &TimerG ;
 	FORCE_INDIRECT(tptr) ;
 
     tmb = g_model.tmrModeB ;
 
-    if(abs(tm)>=(TMR_VAROFS+MAX_DRSWITCH-1)){ //toggeled switch//abs(g_model.tmrMode)<(10+MAX_DRSWITCH-1)
-        if(!( tptr->sw_toggled | tptr->s_sum | tptr->s_cnt | tptr->s_time | tptr->lastSwPos)) tptr->lastSwPos = tm < 0;  // if initializing then init the lastSwPos
-        uint8_t swPos = getSwitch(tm>0 ? tm-(TMR_VAROFS+MAX_DRSWITCH-1-1) : tm+(TMR_VAROFS+MAX_DRSWITCH-1-1) ,0);
-        if(swPos && !tptr->lastSwPos)
-				{
-					tptr->sw_toggled = !tptr->sw_toggled;  //if switch is flipped first time -> change counter state
-				}
-        tptr->lastSwPos = swPos;
+ 	  if( tm>=(TMR_VAROFS+MAX_DRSWITCH-1)+MAX_DRSWITCH-1) // Cxx%
+		{
+			int16_t ival = g_chans512[tm-(TMR_VAROFS+MAX_DRSWITCH-1+MAX_DRSWITCH-1)] ;
+      val = (ival+RESX ) / (RESX/16) ;
+		}		
+  	else if (abstm >= (TMR_VAROFS+MAX_DRSWITCH-1))
+		{ //toggeled switch//abs(g_model.tmrMode)<(10+MAX_DRSWITCH-1)
+    	if(!( tptr->sw_toggled | tptr->s_sum | tptr->s_cnt | tptr->s_time | tptr->lastSwPos)) tptr->lastSwPos = tm < 0;  // if initializing then init the lastSwPos
+    	uint8_t swPos = getSwitch(tm>0 ? tm-(TMR_VAROFS+MAX_DRSWITCH-1-1) : tm+(TMR_VAROFS+MAX_DRSWITCH-1-1) ,0);
+    	if(swPos && !tptr->lastSwPos)
+			{
+				tptr->sw_toggled = !tptr->sw_toggled;  //if switch is flipped first time -> change counter state
+			}
+    	tptr->lastSwPos = swPos;
     }
-		
    	switch_b = tmb ? getSwitch( tmb ,0) : 1 ; //normal switch
 		
 		if ( switch_b == 0 )
@@ -5185,10 +5205,10 @@ void timer(uint8_t val)
     tptr->s_sum  -= val*tptr->s_cnt; //rest
     tptr->s_cnt   = 0;
 
-    if(abs(tm)<TMR_VAROFS) tptr->sw_toggled = false; // not switch - sw timer off
-    else if(abs(tm)<(TMR_VAROFS+MAX_DRSWITCH-1)) tptr->sw_toggled = getSwitch((tm>0 ? tm-(TMR_VAROFS-1) : tm+(TMR_VAROFS-1)) ,0); //normal switch
+    if(abstm<TMR_VAROFS) tptr->sw_toggled = false; // not switch - sw timer off
+    else if(abstm<(TMR_VAROFS+MAX_DRSWITCH-1)) tptr->sw_toggled = getSwitch((tm>0 ? tm-(TMR_VAROFS-1) : tm+(TMR_VAROFS-1)) ,0); //normal switch
 
-    uint8_t tmrM = abs(g_model.tmrMode);
+    uint8_t tmrM = abstm ;
 
     tptr->s_timeCumTot               += 1;
     tptr->s_timeCumAbs               += 1;
@@ -5208,7 +5228,8 @@ void timer(uint8_t val)
     	else tptr->s_timerVal[0] -= tptr->s_timeCumSw ; //switch
 		}	
     else if(tmrM<TMR_VAROFS) tptr->s_timerVal[0] -= (tmrM&1) ? tptr->s_timeCum16ThrP/16 : tptr->s_timeCumThr;// stick% : stick
-    else tptr->s_timerVal[0] -= tptr->s_timeCumSw; //switch
+  	else if(tmrM>=(TMR_VAROFS+MAX_DRSWITCH-1+MAX_DRSWITCH-1)) tptr->s_timerVal[0] -= tptr->s_timeCum16ThrP/16 ; // Cxx%
+		else tptr->s_timerVal[0] -= tptr->s_timeCumSw; //switch
 
     switch(tptr->s_timerState)
     {
@@ -5401,6 +5422,10 @@ void menuProcStatistic2(uint8_t event)
     lcd_outdez(14*FW , 3*FH, (ptrLat->g_tmr1Latency_max - ptrLat->g_tmr1Latency_min) /2 );
     lcd_puts_Pleft( 4*FH, PSTR("tmain\017ms"));
     lcd_outdezAtt(14*FW , 4*FH, (g_timeMain*25)/4 ,PREC2);	// g_timeMain*100)/16
+
+//extern uint16_t PxxTime ;
+//    lcd_outdezAtt(15*FW+3,5*FH,MixRate,0) ;
+//    lcd_outdezAtt(7*FW+3,5*FH,PxxTime,0) ;
 
 #ifndef SIMU
  #if STACK_TRACE
@@ -5654,12 +5679,16 @@ void menuProc0(uint8_t event)
         killEvents(event);
         break;
     case EVT_KEY_BREAK(KEY_RIGHT):
+#if defined(CPUM128) || defined(CPUM2561)
+        if(view <= e_inputs1)
+#else
         if(view == e_inputs1)
+#endif
 				{
 					int8_t x ;
 					x = inputs_subview ;
 #if defined(CPUM128) || defined(CPUM2561)
-					if ( ++x > 3 ) x = 0 ;
+					if ( ++x > ((view == e_inputs1) ? 3 : 1) ) x = 0 ;
 #else
 					if ( ++x > 2 ) x = 0 ;
 #endif
@@ -5676,12 +5705,16 @@ void menuProc0(uint8_t event)
 #endif
         break;
     case EVT_KEY_BREAK(KEY_LEFT):
+#if defined(CPUM128) || defined(CPUM2561)
+        if(view <= e_inputs1)
+#else
         if(view == e_inputs1)
+#endif
 				{
 					int8_t x ;
 					x = inputs_subview ;
 #if defined(CPUM128) || defined(CPUM2561)
-					if ( --x < 0 ) x = 3 ;
+					if ( --x < 0 ) x = (view == e_inputs1) ? 3 : 1 ;
 #else
 					if ( --x < 0 ) x = 2 ;
 #endif
@@ -5883,21 +5916,25 @@ const static prog_uint8_t APM xt[4] = {128*1/4+2, 4, 128-4, 128*3/4-2};
 
     if(view<e_inputs1)
 		{
-//#if defined(CPUM128) || defined(CPUM2561)
-//	    lcd_hlineStip(38, 33, 54, 0x55 ) ;
-//  	  lcd_hlineStip(38, 34, 54, 0x55 ) ;
-//    	lcd_hlineStip(38 + io_subview * 18, 33, 18, 0xAA ) ;
-//	    lcd_hlineStip(38 + io_subview * 18, 34, 18, 0xAA ) ;
-//#endif			
+#if defined(CPUM128) || defined(CPUM2561)
+			if ( inputs_subview > 1 )
+			{
+				inputs_subview = 0 ;
+			}
+	    lcd_hlineStip(46, 33, 36, 0x55 ) ;
+  	  lcd_hlineStip(46, 34, 36, 0x55 ) ;
+    	lcd_hlineStip(46 + inputs_subview * 18, 33, 18, 0xAA ) ;
+	    lcd_hlineStip(46 + inputs_subview * 18, 34, 18, 0xAA ) ;
+#endif			
         for(uint8_t i=0; i<8; i++)
         {
             uint8_t x0,y0;
-//#if defined(CPUM128) || defined(CPUM2561)
-//						uint8_t chan = 8 * io_subview + i ;
-//			      int16_t val = g_chans512[chan];
-//#else
+#if defined(CPUM128) || defined(CPUM2561)
+						uint8_t chan = 8 * inputs_subview + i ;
+			      int16_t val = g_chans512[chan];
+#else
             int16_t val = g_chans512[i];
-//#endif
+#endif
             //val += g_model.limitData[i].reverse ? g_model.limitData[i].offset : -g_model.limitData[i].offset;
             switch(view)
             {
@@ -6296,7 +6333,7 @@ void perOut(int16_t *chanOut, uint8_t att)
         {
             uint32_t v = (int32_t(calibratedStick[ele_stick])*calibratedStick[ele_stick] +
                           int32_t(calibratedStick[ail_stick])*calibratedStick[ail_stick]);
-            uint32_t q = int32_t(RESX)*g_model.swashRingValue/100;
+						uint32_t q = calc100toRESX(g_model.swashRingValue) ;
             q *= q;
             if(v>q)
                 d = isqrt32(v);
@@ -6378,8 +6415,8 @@ void perOut(int16_t *chanOut, uint8_t att)
                 }
 
                 //===========Swash Ring================
-                if(d && (i==ele_stick || i==ail_stick))
-                    v = int32_t(v)*g_model.swashRingValue*RESX/(int32_t(d)*100);
+                if(d && (index==ele_stick || index==ail_stick))
+                    v = int32_t(v)*calc100toRESX(g_model.swashRingValue)/int32_t(d) ;
                 //===========Swash Ring================
 
                 uint8_t expoDrOn = get_dr_state(index);
@@ -6419,25 +6456,21 @@ void perOut(int16_t *chanOut, uint8_t att)
 #else
             Output.anas[i] = v; //set values for mixer
 #endif
-    				if(att&(NO_INPUT|NO_STICKS|NO_TRIMS) )
+    				if(att&NO_INPUT)
 						{ //zero input for setStickCenter()
    				    if ( i < 4 )
 							{
  				        if(!IS_THROTTLE(index))
 								{
- 									if(att&(NO_INPUT|NO_STICKS) )
+									if ( ( v > (RESX/100 ) ) || ( v < -(RESX/100) ) )
 									{
-										if ( ( v > (RESX/100 ) ) || ( v < -(RESX/100) ) )
-										{
 #ifdef FIX_MODE
-					            Output.anas[index] = 0; //set values for mixer
+				            Output.anas[index] = 0; //set values for mixer
 #else
-											Output.anas[i]  = 0 ;
+										Output.anas[i]  = 0 ;
 #endif
-										}
 									}
-									if(att&(NO_INPUT|NO_TRIMS) )
-			            	trimA[i] = 0;
+		            	trimA[i] = 0;
  				        }
    				    	Output.anas[i+PPM_BASE] = 0 ;
    				    }
@@ -6486,15 +6519,16 @@ void perOut(int16_t *chanOut, uint8_t att)
         //===========Swash Ring================
         if(g_model.swashRingValue)
         {
-            uint32_t v = ((int32_t)Output.anas[ele_stick]*Output.anas[ele_stick] + (int32_t)Output.anas[ail_stick]*Output.anas[ail_stick]);
-            uint32_t q = (int32_t)RESX*g_model.swashRingValue/100;
-            q *= q;
-            if(v>q)
-            {
-                uint16_t d = isqrt32(v);
-                Output.anas[ele_stick] = (int32_t)Output.anas[ele_stick]*g_model.swashRingValue*RESX/((int32_t)d*100);
-                Output.anas[ail_stick] = (int32_t)Output.anas[ail_stick]*g_model.swashRingValue*RESX/((int32_t)d*100);
-            }
+          uint32_t v = ((int32_t)Output.anas[ele_stick]*Output.anas[ele_stick] + (int32_t)Output.anas[ail_stick]*Output.anas[ail_stick]);
+		      int16_t tmp = calc100toRESX(g_model.swashRingValue) ;
+          uint32_t q ;
+          q = (int32_t)tmp * tmp ;
+          if(v>q)
+          {
+            uint16_t d = isqrt32(v);
+            Output.anas[ele_stick] = (int32_t)Output.anas[ele_stick]*tmp/((int32_t)d) ;
+            Output.anas[ail_stick] = (int32_t)Output.anas[ail_stick]*tmp/((int32_t)d) ;
+          }
         }
 
 //#define REZ_SWASH_X(x)  ((x) - (x)/8 - (x)/128 - (x)/512)   //  1024*sin(60) ~= 886
@@ -6507,18 +6541,12 @@ void perOut(int16_t *chanOut, uint8_t att)
             int16_t vp = 0 ;
             int16_t vr = 0 ;
 
-            if( !(att & (NO_INPUT | NO_STICKS) ) )  //zero input for setStickCenter()
+            if( !(att & NO_INPUT) )  //zero input for setStickCenter()
 						{
-            	vp += Output.anas[ele_stick] ;
-            	vr += Output.anas[ail_stick] ;
+            	vp += Output.anas[ele_stick] + trimA[ele_stick] ;
+            	vr += Output.anas[ail_stick] + trimA[ail_stick] ;
 						}
             
-						if( !(att & (NO_INPUT | NO_TRIMS) ) )  //zero input for setStickCenter()
-						{
-            	vp += trimA[ele_stick] ;
-            	vr += trimA[ail_stick] ;
-						}
-
             int16_t vc = 0;
 						int16_t *panas = Output.anas ;
 						FORCE_INDIRECT(panas) ;
@@ -6700,7 +6728,15 @@ void perOut(int16_t *chanOut, uint8_t att)
                 if(tick10ms) {
                     int32_t rate = (int32_t)DEL_MULT*2048*100;
 #if GVARS
-                    if(mixweight) rate /= abs(mixweight);
+                    if(mixweight)
+										{
+											uint8_t mweight = mixweight ;
+											if ( mixweight < 0 )
+											{
+												mweight = -mixweight ;
+											}
+											rate /= mweight ;
+										}
 #else
                     if(md->weight) rate /= abs(md->weight);
 #endif

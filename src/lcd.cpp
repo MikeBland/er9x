@@ -523,6 +523,252 @@ void lcd_vline(uint8_t x,uint8_t y, int8_t h)
 }
 
 
+
+#if LCD_OTHER
+
+// Supports 4W serial LCD interface and SSD1306 OLED controller
+// - Hyun-Taek Chang (flybabo@att.net), Feb 2013
+
+// to select either stock LCD controller or SSD1306 OLED controller
+ #define SSD1306         0       // Stock(ST7565/NT7532)=0, SSD1306=1
+
+// controller independent options
+ #define SERIAL_LCD      0       // parallel=0, 4W_serial=1
+ #define ROTATE_SCREEN   0       // don't-rotate-screen=0, rotate-180-degree=1
+ #define REVERSE_VIDEO   0       // don't-reverse-video=0, reverse-video=1
+
+ #if (SSD1306 || ROTATE_SCREEN)
+  #define COLUMN_START_LO 0x00
+ #else  // ST7565
+  #define COLUMN_START_LO 0x04        // skip first 4 columns
+ #endif
+
+ #if (SSD1306 || ROTATE_SCREEN)
+ #define COLUMN_START_LO 0x00
+ #else  // ST7565
+ #define COLUMN_START_LO 0x04        // skip first 4 columns
+ #endif
+
+// force inline expansion
+#define ALWAYS_INLINE   __attribute__((always_inline))
+
+static void lcdSendByte(uint8_t val, uint8_t v0, uint8_t v1) ALWAYS_INLINE;
+static void lcdEndSend() ALWAYS_INLINE;
+
+static void lcdEndSend()
+{
+  PORTC_LCD_CTRL |= (1<<OUT_C_LCD_CS1); // disable chip select
+}
+
+#if SERIAL_LCD
+// Serial LCD module's SCLK(clock) and SI(data) must be connected
+// to Atmega's PC4 and PC5, respectively.
+#define OUT_C_LCD_SCL OUT_C_LCD_RnW     // PC4
+#define OUT_C_LCD_SI  OUT_C_LCD_E       // PC5
+
+static void lcdSendBit(uint8_t b, uint8_t v0, uint8_t v1) ALWAYS_INLINE;
+
+// NOTE: ST7565 SCLK min period is 50ns (100ns?)
+// single bit write takes 5 cycles = 312.5ns @16MHz clock
+static void lcdSendBit(uint8_t b, uint8_t v0, uint8_t v1)
+{
+  PORTC_LCD_CTRL = v0;                  // out 0x15, r19  ; 1 cycle
+  if (b != 0)                           // sbrc r24, 7    ; 1 cycle
+    PORTC_LCD_CTRL = v1;                // out 0x15, r18  ; 1 cycle
+  PORTC_LCD_CTRL |= (1<<OUT_C_LCD_SCL); // sbi 0x15, 4    ; 2 cycles
+}
+
+static void lcdSendByte(uint8_t val, uint8_t v0, uint8_t v1)
+{
+  lcdSendBit((val & 0x80), v0, v1);
+  lcdSendBit((val & 0x40), v0, v1);
+  lcdSendBit((val & 0x20), v0, v1);
+  lcdSendBit((val & 0x10), v0, v1);
+  lcdSendBit((val & 0x08), v0, v1);
+  lcdSendBit((val & 0x04), v0, v1);
+  lcdSendBit((val & 0x02), v0, v1);
+  lcdSendBit((val & 0x01), v0, v1);
+}
+
+static void lcdSendCtl(uint8_t val)
+{
+  uint8_t v0c = 0xC5; // PC7=1,PC6=1,SI=0,SCL=0,A0=0,RES=1,CS1=0,PC0=1
+  uint8_t v1c = 0xE5; // PC7=1,PC6=1,SI=1,SCL=0,A0=0,RES=1,CS1=0,PC0=1
+  for (uint8_t n = 8; n > 0; n--) {
+    lcdSendBit((val & 0x80), v0c, v1c);
+    val <<= 1;
+  }
+  lcdEndSend();
+}
+
+#else    // PARALLEL_LCD
+
+static void lcdStartSend() ALWAYS_INLINE;
+
+static void lcdStartSend()
+{
+  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_CS1);  // enable chip select
+  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_RnW);  // enable write 
+}
+
+static void lcdSendByte(uint8_t val, uint8_t = 0, uint8_t = 0)
+{
+  PORTA_LCD_DAT = val;
+  PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_E);    // rise enable
+  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_E);    // fall enable
+}
+
+static void lcdSendCtl(uint8_t val)
+{
+  lcdStartSend();
+  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_A0);   // set to control mode
+  lcdSendByte(val);
+  lcdEndSend();
+}
+#endif
+
+#define delay_1us() _delay_us(1)
+#define delay_2us() _delay_us(2)
+static void delay_1_5us(int ms)
+{
+  for(int i=0; i<ms; i++) delay_1us();
+}
+
+const static prog_uchar APM Lcdinit[] =
+{
+#if SSD1306
+  0xAE,         // DON = 0: display OFF
+  0xD5, 0x80,   // set display clock 100 frames/sec
+  0xA8, 0x3F,   // set multiplex ratio 1/64 duty
+  0xD3, 0x00,   // set display offset 0
+# if EXTERNAL_VCC
+  0x8D, 0x10,   // disable embedded DC/DC converter
+  0xD9, 0x22,   // set precharge, discharge 2 clocks each
+# else
+  0x8D, 0x14,   // enable embedded DC/DC conveter
+  0xD9, 0xF1,   // set precharge 15 clocks, discharge 1 clock
+# endif
+  0xDA, 0x12,   // set COM pins hardware configuration
+  0xDB, 0x40,   // set VCOMH deselect level -undocumented
+# if ROTATE_SCREEN
+  0xA1,         // ADC = 1: reverse direction(SEG128->SEG1)
+  0xC8,         // SHL = 1: reverse direction (COM64->COM1)
+# else
+  0xA0,         // ADC = 0: normal direction(SEG1->SEG128)
+  0xC0,         // SHL = 0: normal direction (COM1->COM64)
+# endif
+#else  // !SSD1306 == ST7565 (stock LCD controller)
+  0xE2,         // Initialize the internal functions
+  0xAE,         // DON = 0: display OFF
+  0xA4,         // Disable entire display-ON
+  0xA2,         // Select LCD bias=0
+  0x2F,         // Control power circuit operation VC=VR=VF=1
+  0x25,         // Select int resistance ratio R2 R1 R0 =5
+# if ROTATE_SCREEN
+  0xA0,         // ADC = 0: normal direction(SEG1->SEG132/SEG128)
+  0xC8,         // SHL = 1: reverse direction (COM64->COM1)
+# else
+  0xA1,         // ADC = 1: reverse direction(SEG132/SEG128->SEG1)
+  0xC0,         // SHL = 0: normal direction (COM1->COM64)
+# endif
+#endif // SSD1306
+#if REVERSE_VIDEO
+  0xA7,         // REV = 1: reverse display
+#else
+  0xA6,         // REV = 0: non-reverse display
+#endif // REVERSE_VIDEO
+  0xAF          // DON = 1: display ON
+};	
+
+
+void lcd_init()
+{
+  // /home/thus/txt/datasheets/lcd/KS0713.pdf
+  // ~/txt/flieger/ST7565RV17.pdf  from http://www.glyn.de/content.asp?wdid=132&sid=
+
+  LcdLock = 1 ;            // Lock LCD data lines
+  PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_RES);  //LCD_RES
+  delay_2us();
+  PORTC_LCD_CTRL |= (1<<OUT_C_LCD_RES); //  f524  sbi 0x15, 2 IOADR-PORTC_LCD_CTRL; 21           1
+  delay_1_5us(1500);
+  for (uint8_t i = 0; i < sizeof(Lcdinit); i++) {
+    lcdSendCtl(pgm_read_byte(&Lcdinit[i]));
+  }
+  g_eeGeneral.contrast = lcd_nomContrast;
+  LcdLock = 0 ;            // Free LCD data lines
+
+}
+
+
+void lcdSetContrast()
+{
+  lcdSetRefVolt(g_eeGeneral.contrast);
+}
+
+void lcdSetRefVolt(uint8_t val)
+{
+  LcdLock = 1 ;            // Lock LCD data lines
+  lcdSendCtl(0x81);
+  lcdSendCtl(val);
+  LcdLock = 0 ;            // Free LCD data lines
+}
+
+volatile uint8_t LcdLock ;
+
+void refreshDiplay()
+{
+#ifdef SIMU
+  memcpy(lcd_buf, displayBuf, sizeof(displayBuf));
+  lcd_refresh = true;
+
+#else
+  LcdLock = 1 ;             // Lock LCD data lines
+  uint8_t *p=displayBuf;
+#if SERIAL_LCD
+  const uint8_t v0c = 0xC5; // PC7=1,PC6=1,SI=0,SCL=0,A0=0,RES=1,CS1=0,PC0=1
+  const uint8_t v1c = 0xE5; // PC7=1,PC6=1,SI=1,SCL=0,A0=0,RES=1,CS1=0,PC0=1
+  const uint8_t v0d = 0xCD; // PC7=1,PC6=1,SI=0,SCL=0,A0=1,RES=1,CS1=0,PC0=1
+  const uint8_t v1d = 0xED; // PC7=1,PC6=1,SI=1,SCL=0,A0=1,RES=1,CS1=0,PC0=1
+  for(uint8_t y=0xB0; y < 0xB8; y++) {
+    lcdSendByte(COLUMN_START_LO, v0c, v1c);
+    lcdSendByte(0x10, v0c, v1c);  //column addr 0
+    lcdSendByte(y, v0c, v1c);     //page addr y
+
+    for(uint8_t x=32; x>0; x--){
+       lcdSendByte(*p++, v0d, v1d);
+       lcdSendByte(*p++, v0d, v1d);
+       lcdSendByte(*p++, v0d, v1d);
+       lcdSendByte(*p++, v0d, v1d);
+    }
+  }
+#else
+  lcdStartSend();
+  for(uint8_t y=0xB0; y < 0xB8; y++) {
+    PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_A0); // switch to ctl send mode
+
+    lcdSendByte(COLUMN_START_LO);
+    lcdSendByte(0x10);  //column addr 0
+    lcdSendByte(y);     //page addr y
+
+    PORTC_LCD_CTRL |= (1<<OUT_C_LCD_A0);  // switch to data send mode
+
+    for(uint8_t x=32; x>0; x--){
+       lcdSendByte(*p++);
+       lcdSendByte(*p++);
+       lcdSendByte(*p++);
+       lcdSendByte(*p++);
+    }
+  }
+#endif
+  lcdEndSend();
+  LcdLock = 0 ;            // Free LCD data lines
+#endif
+}
+
+
+#else	// !defined(LCD_OTHER)
+
+
 #ifndef LCD_2_CS
 void lcdSendCtl(uint8_t val)
 {
@@ -565,7 +811,7 @@ void lcd_init()
 	{
 	  lcdSendCtl(pgm_read_byte(&Lcdinit[i]) ) ;
 	}
-  g_eeGeneral.contrast = 0x22;
+  g_eeGeneral.contrast = lcd_nomContrast ;
 	LcdLock = 0 ;						// Free LCD data lines
 
 }
@@ -780,5 +1026,6 @@ void refreshDiplay()
 }
 #endif
 
+#endif  // LCD_OTHER
 
 
