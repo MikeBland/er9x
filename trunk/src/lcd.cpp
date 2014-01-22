@@ -31,6 +31,9 @@ uint8_t lcd_lastPos;
 uint8_t displayBuf[DISPLAY_W*DISPLAY_H/8];
 #define DISPLAY_END (displayBuf+sizeof(displayBuf))
 
+const prog_uint8_t APM _bitmask[]= { 1,2,4,8,16,32,64,128 } ;
+
+#define XBITMASK(bit) pgm_read_byte( _bitmask + bit )
 
 const prog_uchar APM font[] = {
 #include "font.lbm"
@@ -52,6 +55,37 @@ void lcd_clear()
 }
 
 
+void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
+{
+	div_t qr ;
+
+	if ( tme<0 )
+	{
+		lcd_putcAtt( x - ((att&DBLSIZE) ? FWNUM*6-2 : FWNUM*3),    y, '-',att);
+		tme = -tme;
+	}
+
+	lcd_putcAtt(x, y, ':',att&att2);
+	qr = div( tme, 60 ) ;
+	lcd_outdezNAtt(x/*+ ((att&DBLSIZE) ? 2 : 0)*/, y, (uint16_t)qr.quot, LEADING0|att,2);
+	x += (att&DBLSIZE) ? FWNUM*6-4 : FW*3-3;
+	lcd_outdezNAtt(x, y, (uint16_t)qr.rem, LEADING0|att2,2);
+}
+
+void putsVolts(uint8_t x,uint8_t y, uint8_t volts, uint8_t att)
+{
+	lcd_outdezAtt(x, y, volts, att|PREC1);
+	if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, 'v', att);
+}
+
+
+void putsVBat(uint8_t x,uint8_t y,uint8_t att)
+{
+    //att |= g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0;
+	putsVolts(x, y, g_vbat100mV, att);
+}
+
+
 void lcd_img(uint8_t i_x,uint8_t i_y,const prog_uchar * imgdat,uint8_t idx/*,uint8_t mode*/)
 {
   const prog_uchar  *q = imgdat;
@@ -70,15 +104,15 @@ void lcd_img(uint8_t i_x,uint8_t i_y,const prog_uchar * imgdat,uint8_t idx/*,uin
   }
 }
 
-uint8_t lcd_putc(uint8_t x,uint8_t y,const char c)
+uint8_t lcd_putc(uint8_t x,uint8_t y,const char c )
 {
   return lcd_putcAtt(x,y,c,0);
 }
 
-/// invers: 0 no 1=yes 2=blink
+// invers: 0 no 1=yes 2=blink
 uint8_t lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
 {
-    uint8_t *p    = &displayBuf[ y / 8 * DISPLAY_W + x ];
+  uint8_t *p    = &displayBuf[ y / 8 * DISPLAY_W + x ];
     //uint8_t *pmax = &displayBuf[ DISPLAY_H/8 * DISPLAY_W ];
 		if ( c < 22 )		// Move to specific x position (c)*FW
 		{
@@ -92,13 +126,12 @@ uint8_t lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
 		x += FW ;
     const prog_uchar    *q = &font_5x8_x20_x7f[(c-0x20)*5];
     bool         inv = (mode & INVERS) ? true : (mode & BLINK ? BLINK_ON_PHASE : false);
-    if(mode&DBLSIZE)
-    {
-			if ( (c!=0x2E)) x+=FW; //check for decimal point
+	if(mode&DBLSIZE)
+  {
+		if ( (c!=0x2E)) x+=FW; //check for decimal point
 	/* each letter consists of ten top bytes followed by
 	 * five bottom by ten bottom bytes (20 bytes per 
 	 * char) */
-
 		  unsigned char c_mapped ;
 
 #ifdef DBL_FONT_SMALL
@@ -143,7 +176,7 @@ uint8_t lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
 //                b4=~b4;
             }
 
-            if(&p[DISPLAY_W+1] < DISPLAY_END){
+            if(p < DISPLAY_END-(DISPLAY_W+1)){
                 p[0]=b1;
 //                p[1]=b2;
                 p[DISPLAY_W] = b3;
@@ -161,17 +194,18 @@ uint8_t lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
 //        }
 //        if(p<DISPLAY_END) *p = inv ? ~0 : 0;
 //        if((p+DISPLAY_W)<DISPLAY_END) *(p+DISPLAY_W) = inv ? ~0 : 0;
-    }
-    else
-    {
-        uint8_t condense=0;
+  }
+  else
+  {
+		uint8_t condense=0;
 
-        if (mode & CONDENSED) {
-            *p = inv ? ~0 : 0;
-						p += 1 ;
-            condense=1;
-	    	x += FWNUM-FW ;
-	}
+		if (mode & CONDENSED)
+		{
+			*p = inv ? ~0 : 0;
+			p += 1 ;
+			condense=1;
+			x += FWNUM-FW ;
+		}
 
         for(char i=5; i!=0; i--){
             uint8_t b = pgm_read_byte(q++);
@@ -203,7 +237,6 @@ void lcd_putsAttIdx(uint8_t x,uint8_t y,const prog_char * s,uint8_t idx,uint8_t 
 void lcd_putsnAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t len,uint8_t mode)
 {
 	uint8_t source ;
-//	uint8_t size ;
 	source = mode & BSS ;
 //	size = mode & DBLSIZE ;
   while(len!=0) {
@@ -219,20 +252,12 @@ void lcd_putsn_P(uint8_t x,uint8_t y,const prog_char * s,uint8_t len)
   lcd_putsnAtt( x,y,s,len,0);
 }
 
-//uint8_t lcd_puts2Att(uint8_t x,uint8_t y,const prog_char * s,const prog_char * t ,uint8_t mode)
-//{
-//	x = lcd_putsAtt( x, y, s, mode ) ;
-//	return lcd_putsAtt( x, y, t, mode ) ;	
-//}
-
 uint8_t lcd_putsAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t mode)
 {
 	uint8_t source ;
-//	uint8_t size ;
 	source = mode & BSS ;
-//	size = mode & DBLSIZE ;
-  //while(char c=pgm_read_byte(s++)) {
-  while(1) {
+  while(1)
+	{
     char c = (source) ? *s++ : pgm_read_byte(s++);
     if(!c) break;
     x = lcd_putcAtt(x,y,c,mode);
@@ -251,10 +276,13 @@ void lcd_puts_P(uint8_t x,uint8_t y,const prog_char * s)
 {
   lcd_putsAtt( x, y, s, 0);
 }
+
+
 void lcd_outhex4(uint8_t x,uint8_t y,uint16_t val)
 {
+	uint8_t i ;
   x+=FWNUM*4;
-  for(int i=0; i<4; i++)
+  for(i=0; i<4; i++)
   {
     x-=FWNUM;
     char c = val & 0xf;
@@ -263,18 +291,18 @@ void lcd_outhex4(uint8_t x,uint8_t y,uint16_t val)
     val>>=4;
   }
 }
-void lcd_outdez(uint8_t x,uint8_t y,int16_t val)
+void lcd_outdez( uint8_t x, uint8_t y, int16_t val)
 {
   lcd_outdezAtt(x,y,val,0);
 }
 
-void lcd_outdezAtt(uint8_t x,uint8_t y,int16_t val,uint8_t mode)
+void lcd_outdezAtt( uint8_t x, uint8_t y, int16_t val, uint8_t mode )
 {
   lcd_outdezNAtt( x,y,val,mode,5);
 }
 
 #define PREC(n) ((n&0x20) ? ((n&0x10) ? 2 : 1) : 0)
-uint8_t lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
+uint8_t lcd_outdezNAtt( uint8_t x, uint8_t y, int32_t val, uint8_t mode, int8_t len )
 {
   uint8_t fw = FWNUM;
   uint8_t prec = PREC(mode);
@@ -468,27 +496,43 @@ void lcd_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h )
  	lcd_hline(x+1, y, w-2 ) ;
 }
 
+uint8_t plotType = PLOT_XOR ;
+
+void lcd_write_bits( uint8_t *p, uint8_t mask )
+{
+  if(p<DISPLAY_END)
+	{
+		uint8_t temp = *p ;
+		if ( plotType != PLOT_XOR )
+		{
+			temp |= mask ;
+		}
+		if ( plotType != PLOT_BLACK )
+		{
+			temp ^= mask ;
+		}
+		*p = temp ;
+	}
+}
+
 void lcd_plot(uint8_t x,uint8_t y)
 {
-  //  if(y>=64)  return;
-  //  if(x>=128) return;
-  //  displayBuf[ y / 8 * DISPLAY_W + x ] ^= BITMASK(y%8);
   uint8_t *p   = &displayBuf[ y / 8 * DISPLAY_W + x ];
-  if(p<DISPLAY_END) *p ^= BITMASK(y%8);
+	lcd_write_bits( p, XBITMASK(y%8) ) ;
 }
+
 void lcd_hlineStip(unsigned char x,unsigned char y, signed char w,uint8_t pat)
 {
   if(w<0) {x+=w; w=-w;}
   uint8_t *p  = &displayBuf[ y / 8 * DISPLAY_W + x ];
-  uint8_t msk = BITMASK(y%8);
+  uint8_t msk = XBITMASK(y%8);
   while(w){
     if ( p>=DISPLAY_END)
     {
       break ;			
     }
     if(pat&1) {
-      //lcd_plot(x,y);
-      *p ^= msk;
+			lcd_write_bits( p, msk ) ;
       pat = (pat >> 1) | 0x80;
     }else{
       pat = pat >> 1;
@@ -506,42 +550,49 @@ void lcd_hline(uint8_t x,uint8_t y, int8_t w)
 void lcd_vline(uint8_t x,uint8_t y, int8_t h)
 {
 //    while ((y+h)>=DISPLAY_H) h--;
-		uint8_t y1 ;
-    uint8_t *p  = &displayBuf[ y / 8 * DISPLAY_W + x ];
-		y1 = y + h ;
-    uint8_t *q  = &displayBuf[ y1 / 8 * DISPLAY_W + x ];
-    *p ^= ~(BITMASK(y%8)-1);
-    while(p<q){
-        p  += DISPLAY_W;
-        if ( p>=DISPLAY_END)
-        {
-          break ;			
-        }
-        *p ^= 0xff;
-    }
-    if(p<DISPLAY_END) *p ^= ~(BITMASK((y+h)%8)-1);
+  if (h<0) { y+=h; h=-h; }
+  uint8_t *p  = &displayBuf[ y / 8 * DISPLAY_W + x ];
+  y &= 0x07 ;
+	if ( y )
+	{
+    uint8_t msk = ~(XBITMASK(y)-1) ;
+    h -= 8-y ;
+    if (h < 0)
+      msk -= ~(XBITMASK(8+h)-1) ;
+		lcd_write_bits( p, msk ) ;
+    p += DISPLAY_W ;
+	}
+    
+  while( h >= 8 )
+	{
+		h -= 8 ;
+		lcd_write_bits( p, 0xFF ) ;
+    p += DISPLAY_W ;
+  }
+    
+	if ( h > 0 )
+	{
+  	lcd_write_bits( p, (XBITMASK(h)-1) ) ;
+	}
 }
 
-
+uint8_t EepromActive ;
 
 #if LCD_OTHER
 
 // Supports 4W serial LCD interface and SSD1306 OLED controller
 // - Hyun-Taek Chang (flybabo@att.net), Feb 2013
 
-// to select either stock LCD controller or SSD1306 OLED controller
- #define SSD1306         0       // Stock(ST7565/NT7532)=0, SSD1306=1
-
 // controller independent options
- #define SERIAL_LCD      0       // parallel=0, 4W_serial=1
- #define ROTATE_SCREEN   0       // don't-rotate-screen=0, rotate-180-degree=1
- #define REVERSE_VIDEO   0       // don't-reverse-video=0, reverse-video=1
+#define SERIAL_LCD      0       // parallel=0, 4W_serial=1
+#define ROTATE_SCREEN   0       // don't-rotate-screen=0, rotate-180-degree=1
+#define REVERSE_VIDEO   0       // don't-reverse-video=0, reverse-video=1
 
- #if (SSD1306 || ROTATE_SCREEN)
+#if (SSD1306 || ROTATE_SCREEN)
   #define COLUMN_START_LO 0x00
- #else  // ST7565
+#else  // ST7565
   #define COLUMN_START_LO 0x04        // skip first 4 columns
- #endif
+#endif
 
  #if (SSD1306 || ROTATE_SCREEN)
  #define COLUMN_START_LO 0x00
@@ -717,6 +768,10 @@ volatile uint8_t LcdLock ;
 
 void refreshDiplay()
 {
+	if ( EepromActive && BLINK_ON_PHASE )
+	{
+		lcd_hline( 0, 0, EepromActive - '0' + 6 ) ;
+	}
 #ifdef SIMU
   memcpy(lcd_buf, displayBuf, sizeof(displayBuf));
   lcd_refresh = true;
@@ -837,6 +892,10 @@ volatile uint8_t LcdLock ;
 
 void refreshDiplay()
 {
+	if ( EepromActive && BLINK_ON_PHASE )
+	{
+		lcd_hline( 0, 0, EepromActive - '0' + 6 ) ;
+	}
 #ifdef SIMU
   memcpy(lcd_buf, displayBuf, sizeof(displayBuf));
   lcd_refresh = true;
@@ -844,10 +903,10 @@ void refreshDiplay()
 
 	LcdLock = 1 ;						// Lock LCD data lines
   uint8_t *p=displayBuf;
-  for(uint8_t y=0; y < 8; y++) {
+  for(uint8_t y=0xB0; y < 0xB8; y++) {
     lcdSendCtl(0x04);
     lcdSendCtl(0x10); //column addr 0
-    lcdSendCtl( y | 0xB0); //page addr y
+    lcdSendCtl( y ); //page addr y
     
 		PORTC_LCD_CTRL &= ~(1<<OUT_C_LCD_CS1);
     PORTC_LCD_CTRL |=  (1<<OUT_C_LCD_A0);

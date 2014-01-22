@@ -408,11 +408,11 @@ void setupPulsesDsm2(uint8_t chns)
 		dsmdat0copy = dsmDat[0] ;		// Fetch byte once, saves flash
     if (dsmdat0copy&BadData)  //first time through, setup header
     {
-			if ( g_model.ppmNCH == LPXDSM2 )
+			if ( g_model.sub_protocol == LPXDSM2 )
 			{
         dsmdat0copy= 0x80;
 			}
-			else if ( g_model.ppmNCH == DSM2only )
+			else if ( g_model.sub_protocol == DSM2only )
 			{
         dsmdat0copy= 0x90;
 			}
@@ -427,7 +427,8 @@ void setupPulsesDsm2(uint8_t chns)
 
 		dsmDat[0] = dsmdat0copy ;		// Put byte back
 
-    dsmDat[1]=g_eeGeneral.currModel+1;  //DSM2 Header second byte for model match
+//    dsmDat[1]=g_eeGeneral.currModel+1;  //DSM2 Header second byte for model match
+    dsmDat[1] = g_model.ppmNCH ;  //DSM2 Header second byte for model match
     for(uint8_t i=0; i<chns; i++)
     {
 		    uint16_t pulse = limit(0, ((g_chans512[i]*13)>>5)+512,1023);

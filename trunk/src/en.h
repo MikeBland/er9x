@@ -73,7 +73,7 @@
 // ********
 #define STR_LIMITS		     "LIMITS"
 #define STR_EE_LOW_MEM     "EEPROM low mem"
-#define STR_ALERT		       "ALERT"
+#define STR_ALERT	        "ALERT"
 #define STR_THR_NOT_IDLE   "Throttle not idle"
 #define STR_RST_THROTTLE   "Reset throttle"
 #define STR_PRESS_KEY_SKIP "Press any key to skip"
@@ -113,7 +113,7 @@
 
 // menus.cpp
 // ***********
-#define STR_TELEM_ITEMS	   "\004----A1= A2= RSSITSSITim1Tim2Alt GaltGspdT1= T2= RPM FUELMah1Mah2CvltBattAmpsMah CtotFasVAccXAccYAccZVspdGvr1Gvr2Gvr3Gvr4Gvr5Gvr6Gvr7Fwat"
+#define STR_TELEM_ITEMS	   "\004----A1= A2= RSSITSSITim1Tim2Alt GaltGspdT1= T2= RPM FUELMah1Mah2CvltBattAmpsMah CtotFasVAccXAccYAccZVspdGvr1Gvr2Gvr3Gvr4Gvr5Gvr6Gvr7FwatRxV Hdg "
 #define STR_TELEM_SHORT    "\004----TIM1TIM2BATTGvr1Gvr2Gvr3Gvr4Gvr5Gvr6Gvr7"
 #define STR_GV             "GV"
 #define STR_OFF_ON         "OFFON "
@@ -128,7 +128,7 @@
 #define STR_VALUE          "Value"
 #define STR_PRESET         "PRESET"
 #define STR_CV             "CV"
-#define STR_LIMITS         "LIMITS"
+#define STR_XLIMITS         "LIMITS"
 #define STR_COPY_TRIM      "COPY TRIM [MENU]"
 #define STR_TELEMETRY      "TELEMETRY"
 #define STR_USR_PROTO      "UsrProto"
@@ -335,7 +335,7 @@
 #define STR_TTM            "TTm"
 #define STR_FUEL           "Fuel"
 #define STR_12_RPM         "\012RPM"
-#define STR_LAT_EQ         "Lat="
+#define STR_LAT_EQ         "Lat=\022Hdg"
 #define STR_LON_EQ         "Lon="
 #define STR_ALT_MAX        "Alt=\011m   Max="
 #define STR_SPD_KTS_MAX    "Spd=\011kts Max="
@@ -380,4 +380,6 @@
 #define STR_STICK_LH_GAIN  "Stick LH Gain"
 #define STR_STICK_RV_GAIN  "Stick RV Gain"
 #define STR_STICK_RH_GAIN  "Stick RH Gain"
+
+
 
