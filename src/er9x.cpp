@@ -53,6 +53,7 @@ static void getADC_osmp( void ) ;
 EEGeneral  g_eeGeneral;
 ModelData  g_model;
 
+extern uint8_t scroll_disabled ;
 const prog_char *AlertMessage ;
 uint8_t Main_running ;
 uint8_t SlaveMode ;
@@ -162,32 +163,6 @@ LimitData *limitaddress( uint8_t idx )
 }
 
 
-void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
-{
-	div_t qr ;
-
-    if ( tme<0 )
-    {
-        lcd_putcAtt( x - ((att&DBLSIZE) ? FWNUM*6-2 : FWNUM*3),    y, '-',att);
-        tme = -tme;
-    }
-
-    lcd_putcAtt(x, y, ':',att&att2);
-		qr = div( tme, 60 ) ;
-    lcd_outdezNAtt(x/*+ ((att&DBLSIZE) ? 2 : 0)*/, y, (uint16_t)qr.quot, LEADING0|att,2);
-    x += (att&DBLSIZE) ? FWNUM*6-4 : FW*3-3;
-    lcd_outdezNAtt(x, y, (uint16_t)qr.rem, LEADING0|att2,2);
-}
-void putsVolts(uint8_t x,uint8_t y, uint8_t volts, uint8_t att)
-{
-    lcd_outdezAtt(x, y, volts, att|PREC1);
-    if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, 'v', att);
-}
-void putsVBat(uint8_t x,uint8_t y,uint8_t att)
-{
-    //att |= g_vbat100mV < g_eeGeneral.vBatWarn ? BLINK : 0;
-    putsVolts(x, y, g_vbat100mV, att);
-}
 void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
 {
 	uint8_t chanLimit = NUM_XCHNRAW ;
@@ -404,7 +379,8 @@ uint8_t putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8
 
 int16_t getValue(uint8_t i)
 {
-    if(i<PPM_BASE) return calibratedStick[i];//-512..512
+    if(i<7) return calibratedStick[i];//-512..512
+    if(i<PPM_BASE) return 0 ;
 		else if(i<CHOUT_BASE)
 		{
 			int16_t x ;
@@ -1033,7 +1009,7 @@ static void checkSwitches()
         //first row - THR, GEA, AIL, ELE, ID0/1/2
         uint8_t x = i ^ warningStates ;
 
-		    alertMessages( Str_Switch_warn, PSTR(STR_RESET_SWITCHES) ) ;
+		    alertMessages( PSTR(STR_SWITCH_WARN), PSTR(STR_RESET_SWITCHES) ) ;
 
         if(x & SWP_THRB)
             putWarnSwitch(2 + 0*FW, 0 );
@@ -1127,7 +1103,7 @@ void putsDblSizeName( uint8_t y )
 
 static uint8_t switches_states = 0 ;
 
-// Can we sae flash by using :
+// Can we save flash by using :
 // uint8_t getCurrentSwitchStates()
 
 int8_t getMovedSwitch()
@@ -1511,8 +1487,10 @@ int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flag
         killEvents(kmi);
         killEvents(kpl);
     }
-    if(i_min==0 && i_max==1 && (event==EVT_KEY_FIRST(KEY_MENU) || event==EVT_KEY_BREAK(BTN_RE)) )
-    {
+    if(i_min==0 && i_max==1)
+		{
+			if (event==EVT_KEY_FIRST(KEY_MENU) || event==EVT_KEY_BREAK(BTN_RE))
+	    {
         s_editMode = false;
         newval=!val;
         killEvents(event);
@@ -1522,7 +1500,12 @@ int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flag
 					RotaryState = ROTARY_MENU_UD ;
 				}
 				event = 0 ;
-    }
+	    }
+			else
+			{
+				newval &= 1 ;
+			}
+		}
 
 #if defined(CPUM128) || defined(CPUM2561)
 //  if (s_editMode>0 && (i_flags & INCDEC_SWITCH))
@@ -2026,7 +2009,7 @@ void perMain()
         ptrp1->p1val = c6 ;
     }
     ptrp1->p1valprev = c6 ;
-    if ( g_eeGeneral.disablePotScroll )
+    if ( g_eeGeneral.disablePotScroll || (scroll_disabled) )
     {
         p1d = 0 ;
     }
@@ -2335,21 +2318,30 @@ uint16_t anaIn(uint8_t chan)
     //static prog_char APM crossAna[]={4,2,3,1,5,6,7,0}; // wenn schon Tabelle, dann muss sich auch lohnen
 
 //    const static prog_char APM crossAna[]={3,1,2,0,4,5,6,7};
+	uint8_t pchan = chan ;
 	if ( chan == 3 )
 	{
-		chan = 0 ;		
+		pchan = 0 ;		
 	}
 	else
 	{
 		if ( chan == 0 )
 		{
-			chan = 3 ;			
+			pchan = 3 ;			
 		}
 	}
 //    volatile uint16_t *p = &s_anaFilt[chan];
     //  AutoLock autoLock;
 //    return  *p;
-		return s_anaFilt[chan] ;
+  uint16_t temp = s_anaFilt[pchan] ;
+	if ( chan < 4 )	// A stick
+	{
+		if ( g_eeGeneral.stickReverse & ( 1 << chan ) )
+		{
+			temp = 2048 - temp ;
+		}
+	}
+	return temp ;
 }
 
 
@@ -2422,7 +2414,6 @@ static void getADC_osmp()
             while (ADCSRA & 0x40);
             temp_ana += ADC;
             temp_ana >>= 1 ;
-		        s_anaFilt[adc_input] = temp_ana ;
 #else
 
 //        temp_ana /= 2; // divide by 2^n to normalize result.
@@ -2430,8 +2421,9 @@ static void getADC_osmp()
         //        temp_ana = 2048 -temp_ana;
 
         //		s_anaFilt[adc_input] = temp_ana[adc_input] / 2; // divide by 2^n to normalize result.
-        s_anaFilt[adc_input] = temp_ana + ADC ;
+				temp_ana += ADC ;
 #endif
+        s_anaFilt[adc_input] = temp_ana ;
         //    if(IS_THROTTLE(adc_input) && g_eeGeneral.throttleReversed)
         //        s_anaFilt[adc_input] = 2048 - s_anaFilt[adc_input];
     }
@@ -2759,7 +2751,7 @@ int main(void)
 
 
     ADMUX=ADC_VREF_TYPE;
-    ADCSRA=0x85;
+    ADCSRA=0x85 ;
 
     // TCNT0         10ms = 16MHz/160000  periodic timer
     //TCCR0  = (1<<WGM01)|(7 << CS00);//  CTC mode, clk/1024

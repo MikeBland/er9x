@@ -10,6 +10,23 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 22-Jan-2014  MPB (r809)
+Add LCD plotting options
+Add EEPROM telltale (top left corner)
+Curve and EXPO display changes
+Fix expo edit with potscroll bug
+Fix template menu clear mixes bug
+Add short slow/delay mix option
+Add stick reverse option
+DSM changes to put RxNumber kept with model
+Add Hdg (heading) to GPS display
+Add 'sticky' throttle safety switch
+default model version to 2, trimInc to "fine"
+LEFT/RIGHT toggle an ON/OFF value
+Fix trainer channel mapping
+Add RxV (X8R) and HDG to telemetry values
+
+******************************************
 CHANGELOG: 12-Nov-2013  MPB (r808)
 Channel order moved to radio setup
 Add CH% to timer triggers

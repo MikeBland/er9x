@@ -104,7 +104,8 @@ void modelDefaultWrite(uint8_t id)
 	qr = div( id+1, 10 ) ;
   g_model.name[5]='0'+qr.quot;
   g_model.name[6]='0'+qr.rem;
-//  g_model.mdVers = MDVERS;
+  g_model.modelVersion = 2 ;
+	g_model.trimInc = 2 ;
 
 #ifdef NO_TEMPLATES
   applyTemplate(); //default 4 channel template
@@ -341,15 +342,18 @@ void eeReadAll()
 }
 
 
+static uint8_t  s_eeLongTimer ;
 static uint8_t  s_eeDirtyMsk;
 static uint16_t s_eeDirtyTime10ms;
 void eeDirty(uint8_t msk)
 {
-  if(!msk) return;
-  s_eeDirtyMsk      |= msk;
+	uint8_t lmask = msk & 7 ;
+  if(!lmask) return;
+  s_eeDirtyMsk      |= lmask;
   s_eeDirtyTime10ms  = get_tmr10ms() ;
+	s_eeLongTimer = msk >> 4 ;
 }
-#define WRITE_DELAY_10MS 100
+#define WRITE_DELAY_10MS 200
 
 uint8_t Ee_lock = 0 ;
 extern uint8_t heartbeat;
@@ -368,12 +372,27 @@ void eeWaitComplete()
   }
 }
 
+extern uint8_t EepromActive ;
 
 void eeCheck(bool immediately)
 {
+	EepromActive = 0 ;
   uint8_t msk  = s_eeDirtyMsk;
   if(!msk) return;
-  if( !immediately && (( get_tmr10ms() - s_eeDirtyTime10ms) < WRITE_DELAY_10MS)) return;
+	EepromActive = '1' + s_eeLongTimer ;
+  if( !immediately )
+	{
+		if ( ( get_tmr10ms() - s_eeDirtyTime10ms) < WRITE_DELAY_10MS) return ;
+		if ( s_eeLongTimer )
+		{
+			if ( --s_eeLongTimer )
+			{
+  			s_eeDirtyTime10ms  = get_tmr10ms() ;
+				return ;
+			}
+		}
+	}
+	s_eeLongTimer = 0 ;
   if ( Ee_lock ) return ;
   Ee_lock = EE_LOCK ;      	// Lock eeprom writing from recursion
   if ( msk & EE_TRIM )
@@ -381,9 +400,12 @@ void eeCheck(bool immediately)
     Ee_lock |= EE_TRIM_LOCK ;    // So the lower levels know what is happening
   }
   
-  s_eeDirtyMsk = 0;
 
-  if(msk & EE_GENERAL){
+  if(msk & EE_GENERAL)
+	{
+		EepromActive = '2' ;
+		
+  	s_eeDirtyMsk &= ~EE_GENERAL ;
     if(theWriteFile.writeRlc(FILE_TMP, FILE_TYP_GENERAL, (uint8_t*)&g_eeGeneral,
                         sizeof(EEGeneral),20) == sizeof(EEGeneral))
     {
@@ -404,7 +426,10 @@ void eeCheck(bool immediately)
     }
     //first finish GENERAL, then MODEL !!avoid Toggle effect
   }
-  else if(msk & EE_MODEL){
+  else if(msk & EE_MODEL)
+	{
+		EepromActive = '3' ;
+  	s_eeDirtyMsk &= ~(EE_MODEL | EE_TRIM) ;
     if(theWriteFile.writeRlc(FILE_TMP, FILE_TYP_MODEL, (uint8_t*)&g_model,
                         sizeof(g_model),20) == sizeof(g_model))
     {

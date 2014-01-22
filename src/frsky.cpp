@@ -530,8 +530,11 @@ void processSportPacket()
       		frskyTelemetry[2].set(value, FR_RXRSI_COPY );	//FrskyHubData[] =  frskyTelemetry[2].value ;
 				break ;
 
-				case 2 :
 				case 4 :		// Battery from X8R
+//		      frskyTelemetry[0].set(value, FR_A1_COPY ); //FrskyHubData[] =  frskyTelemetry[0].value ;
+					store_hub_data( FR_RXV, value ) ;
+//				break ;
+				case 2 :
 		      frskyTelemetry[0].set(value, FR_A1_COPY ); //FrskyHubData[] =  frskyTelemetry[0].value ;
 				break ;
   		    

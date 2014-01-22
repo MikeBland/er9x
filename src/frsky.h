@@ -61,7 +61,8 @@
 #define FR_CELLS_TOT	37
 #define FR_VOLTS			38
 #define FR_VSPD				39
-#define FR_TRASH			40	// Used for invalid id
+#define FR_RXV				40
+#define FR_TRASH			41	// Used for invalid id
 
 #define FR_SPORT_ALT	0xFF
 

@@ -22,18 +22,18 @@
 /* set this to 1 if you know what you're doing */
 #define LCD_OTHER		0
 
-// to select either stock LCD controller or SSD1306 OLED controller
- #define SSD1306         0       // Stock(ST7565/NT7532)=0, SSD1306=1
-
 #if LCD_OTHER
+ // to select either stock LCD controller or SSD1306 OLED controller
+ #define SSD1306        0         // Stock(ST7565/NT7532)=0, SSD1306=1
+																	
  #if SSD1306
   #define EXTERNAL_VCC    0       // use external VCC (disable charge pump)
   #define lcd_minContrast 10
   #define lcd_maxContrast 0xFF
-  # if EXTERNAL_VCC
-  #define lcd_nomContrast 0xCF
-  # else
-  #define lcd_nomContrast 0x9F
+  #if EXTERNAL_VCC
+   #define lcd_nomContrast 0xCF
+  #else
+   #define lcd_nomContrast 0x9F
   #endif
  #else
   #define lcd_minContrast 10
@@ -75,6 +75,12 @@
 
 extern uint8_t lcd_lastPos;
 
+#define PLOT_XOR		0
+#define PLOT_BLACK	1
+#define PLOT_WHITE	2
+
+extern uint8_t plotType ;
+
 //extern unsigned char font_5x8_x20_x7f[];
 extern unsigned char displayBuf[DISPLAY_W*DISPLAY_H/8];
 
@@ -108,7 +114,7 @@ extern void lcd_img(uint8_t i_x,uint8_t i_y,const prog_uchar * imgdat,uint8_t id
 extern void lcd_init();
 extern void lcd_clear();
 extern void refreshDiplay();
-void lcdSetContrast( void ) ;
+extern void lcdSetContrast( void ) ;
 extern void lcdSetRefVolt(unsigned char val);
 #define BLINK_ON_PHASE (g_blinkTmr10ms & (1<<6))
 //#define BLINK_SYNC      g_blinkTmr10ms = (3<<5)
