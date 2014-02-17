@@ -122,7 +122,7 @@ struct FrskyAlarm {
 };
 struct FrskyAlarm frskyAlarms[4];
 
-struct t_frksy_user
+struct t_frsky_user
 {
 	uint8_t state ;
 	uint8_t stuff ;
@@ -239,7 +239,15 @@ void store_hub_data( uint8_t index, uint16_t value )
 
 		if ( index == FR_CURRENT )			// FAS current
 		{
-			FrskyHubData[index] -= g_model.frsky.FASoffset ;			
+			if ( value > g_model.frsky.FASoffset )
+			{
+				value -= g_model.frsky.FASoffset ;
+			}
+			else
+			{
+				value = 0 ;
+			}
+			FrskyHubData[index] = value ;
 		}
 
 		if ( index < HUBMINMAXLEN )
@@ -298,7 +306,7 @@ void store_hub_data( uint8_t index, uint16_t value )
 
 void frsky_proc_user_byte( uint8_t byte )
 {
-	struct t_frksy_user *fUserPtr = &Frsky_user ;
+	struct t_frsky_user *fUserPtr = &Frsky_user ;
 	FORCE_INDIRECT( fUserPtr ) ;
 
 	if (g_model.FrSkyUsrProto == 0)  // FrSky Hub

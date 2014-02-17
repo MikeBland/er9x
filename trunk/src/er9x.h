@@ -25,6 +25,7 @@
 #define ALT_ALARM		1
 
 #define FIX_MODE		1
+#define FMODE_TRIM	1
 
 #include <inttypes.h>
 #include <string.h>
@@ -386,9 +387,11 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define THRCHK_DEADBAND 16
 #define SPLASH_TIMEOUT  (4*100)  //400 msec - 4 seconds
 
-//#define IS_THROTTLE(x)  (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4))
-
+#ifdef FIX_MODE
+#define IS_THROTTLE(x)  ((x) == 2) // (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4))
+#else
 uint8_t IS_THROTTLE( uint8_t x ) ;
+#endif
 uint8_t IS_EXPO_THROTTLE( uint8_t x ) ;
 
 #define NUM_KEYS BTN_RE+1
@@ -498,9 +501,12 @@ void mainSequence() ;
 
 #define NO_TRAINER 0x01
 #define NO_INPUT   0x02
+#define FADE_FIRST	0x20
+#define FADE_LAST		0x40
 //#define NO_TRIMS   0x04
 //#define NO_STICKS  0x08
 
+void perOutPhase( int16_t *chanOut, uint8_t att ) ;
 void perOut(int16_t *chanOut, uint8_t att);
 ///   Liefert den Zustand des Switches 'swtch'. Die Numerierung erfolgt ab 1
 ///   (1=SW_ON, 2=SW_ThrCt, 10=SW_Trainer). 0 Bedeutet not conected.
@@ -981,6 +987,13 @@ struct t_rotary
 } ;
 
 extern struct t_rotary Rotary ;
+
+struct t_latency
+{
+	uint8_t g_tmr1Latency_min ;
+	uint8_t g_tmr1Latency_max ;
+	uint16_t g_timeMain ;
+} ;
 
 
 #endif // er9x_h

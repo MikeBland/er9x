@@ -864,7 +864,15 @@ static void setupPulsesPXX()
     TIMSK |= (1<<OCIE1B) ;	// Enable COMPB
     ETIMSK |= (1<<OCIE1C);	// Enable COMPC
 #endif
-		pass = lpass + 1 ;
+		if (g_model.sub_protocol == 1 )		// D8
+		{
+			lpass = 0 ;
+		}
+		else
+		{
+			lpass += 1 ;
+		}
+		pass = lpass ;
 //		PxxTime = TCNT1 - PxxStart ;
 }
 

@@ -10,6 +10,15 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 17-Feb-2014  MPB (r810)
+Added "THIS" as mix source
+Code shrinking!
+Flight Mode control of mixes
+Flight Mode fading
+Instatrim bug fixes
+In PXX D8 mode, only send 8 channels
+
+******************************************
 CHANGELOG: 22-Jan-2014  MPB (r809)
 Add LCD plotting options
 Add EEPROM telltale (top left corner)
