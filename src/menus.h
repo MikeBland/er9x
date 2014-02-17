@@ -96,6 +96,12 @@ static MState2 mstate2; \
 const static prog_uint8_t APM mstate_tab[] = __VA_ARGS__; \
 mstate2.check(event,0,NULL,0,mstate_tab,DIM(mstate_tab)-1,lines_count-1)
 
+#define SUBMENU_NOTITLE(lines_count, ...) \
+static MState2 mstate2; \
+static const prog_uint8_t APM mstate_tab[] = __VA_ARGS__; \
+mstate2.check(event,0,NULL,0,mstate_tab,DIM(mstate_tab)-1,lines_count-1)
+
+
 #define SIMPLE_SUBMENU_NOTITLE(lines_count) \
 static MState2 mstate2; \
 mstate2.check_submenu_simple(event,lines_count-1)
@@ -109,12 +115,5 @@ SIMPLE_SUBMENU_NOTITLE(lines_count-1)
 //#else
 //#define displayGVar(x, y, v) lcd_outdez8(x, y, v)
 //#endif
-
-struct t_latency
-{
-	uint8_t g_tmr1Latency_min ;
-	uint8_t g_tmr1Latency_max ;
-} ;
-
 
 #endif

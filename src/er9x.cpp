@@ -106,7 +106,7 @@ const prog_char APM Str_OFF[] =  STR_OFF ;
 const prog_char APM Str_ON[] = STR_ON ;
 
 #ifdef FIX_MODE
-const prog_char APM modi12x3[]= "\004RUD ELE THR AIL " ;
+const prog_char APM modi12x3[]= "\004"STR_STICK_NAMES ;
 const prog_uint8_t APM stickScramble[]= {
     0, 1, 2, 3,
     0, 2, 1, 3,
@@ -169,7 +169,7 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
 	if ( att & MIX_SOURCE )
 	{
 #if GVARS
-		chanLimit += MAX_GVARS + 1 ;
+		chanLimit += MAX_GVARS + 1 + 1 ;
 #else
 		chanLimit += 1 ;
 #endif
@@ -1227,7 +1227,7 @@ void almess( const prog_char * s, uint8_t type )
 	{
 		h = PSTR(STR_MESSAGE) ;
 	}
-  lcd_putsAtt(64-5*FW,0*FH, h,DBLSIZE);
+  lcd_putsAtt(64-7*FW,0*FH, h,DBLSIZE);
   refreshDiplay();
 }
 
@@ -1276,6 +1276,7 @@ void alert(const prog_char * s, bool defaults)
     }
 }
 
+#ifdef FMODE_TRIM
 int8_t *TrimPtr[4] = 
 {
     &g_model.trim[0],
@@ -1283,6 +1284,7 @@ int8_t *TrimPtr[4] =
     &g_model.trim[2],
     &g_model.trim[3]
 } ;
+#endif
 
 #ifdef PHASES		
 uint8_t getFlightPhase()
@@ -1309,7 +1311,11 @@ int16_t getRawTrimValue( uint8_t phase, uint8_t idx )
 	}	
 	else
 	{
+#ifdef FMODE_TRIM
 		return *TrimPtr[idx] ;
+#else    
+		return g_model.trim[idx] ;
+#endif
 	}
 }
 
@@ -1348,6 +1354,12 @@ void setTrimValue(uint8_t phase, uint8_t idx, int16_t trim)
 	}
 	if ( phase )
 	{
+    if(trim < -125 || trim > 125)
+//    if(trim < -500 || trim > 500)
+		{
+			trim = ( trim > 0 ) ? 125 : -125 ;
+//			trim = ( trim > 0 ) ? 500 : -500 ; For later addition
+		}	
   	g_model.phaseData[phase-1].trim[idx] = trim - ( TRIM_EXTENDED_MAX + 1 ) ;
 	}
 	else
@@ -1356,7 +1368,11 @@ void setTrimValue(uint8_t phase, uint8_t idx, int16_t trim)
 		{
 			trim = ( trim > 0 ) ? 125 : -125 ;
 		}	
+#ifdef FMODE_TRIM
    	*TrimPtr[idx] = trim ;
+#else    
+		g_model.trim[idx] = trim ;
+#endif
 	}
   STORE_MODELVARS_TRIM ;
 }
@@ -1398,7 +1414,11 @@ static uint8_t checkTrim(uint8_t event)
 				uint8_t phaseNo = getTrimFlightPhase( CurrentPhase, idx ) ;
     		int16_t tm = getTrimValue( phaseNo, idx ) ;
 #else
+#ifdef FMODE_TRIM
         int8_t tm = *TrimPtr[idx] ;
+#else    
+        int8_t tm = g_model.trim[idx] ;
+#endif
 #endif
         int8_t  v = (s==0) ? (abs(tm)/4)+1 : s;
 #ifdef FIX_MODE
@@ -1415,7 +1435,11 @@ static uint8_t checkTrim(uint8_t event)
 #ifdef PHASES		
 						setTrimValue( phaseNo, idx, 0 ) ;
 #else
+#ifdef FMODE_TRIM
             *TrimPtr[idx]=0;
+#else    
+						g_model.trim[idx] = 0 ;
+#endif
 #endif
             killEvents(event);
             audioDefevent(AU_TRIM_MIDDLE);
@@ -1424,20 +1448,28 @@ static uint8_t checkTrim(uint8_t event)
 #ifdef PHASES		
 						setTrimValue( phaseNo, idx, x ) ;
 #else
+#ifdef FMODE_TRIM
             *TrimPtr[idx] = (int8_t)x;
+#else    
+						g_model.trim[idx] = (int8_t)x ;
+#endif
             STORE_MODELVARS_TRIM;
 #endif
             //if(event & _MSK_KEY_REPT) warble = true;
-            if(x <= 125 && x >= -125){
+//            if(x <= 125 && x >= -125){
                 audio.event(AU_TRIM_MOVE,(abs(x)/4)+60);
-            }
+//            }
         }
         else
         {
 #ifdef PHASES		
 						setTrimValue( phaseNo, idx, (x>0) ? 125 : -125 ) ;
 #else
+#ifdef FMODE_TRIM
             *TrimPtr[idx] = (x<0) ? -125 : 125;
+#else    
+						g_model.trim[idx] = (x<0) ? -125 : 125 ;
+#endif
             STORE_MODELVARS_TRIM;
 #endif
             if(x <= 125 && x >= -125){
@@ -1959,7 +1991,7 @@ void perMain()
     //    tick10ms = (time10ms != lastTMR);
     //    lastTMR = time10ms;
 
-    perOut(g_chans512, 0);
+    perOutPhase(g_chans512, 0);
 //		MixCounter += 1 ;
     if(tick10ms == 0) return ; //make sure the rest happen only every 10ms.
 
@@ -2648,7 +2680,7 @@ ISR(TIMER3_CAPT_vect, ISR_NOBLOCK) //capture ppm in 16MHz / 8 = 2MHz
     sei();
 }
 
-extern uint16_t g_timeMain;
+extern struct t_latency g_latency ;
 //void main(void) __attribute__((noreturn));
 
 #if STACK_TRACE
@@ -2863,6 +2895,7 @@ int main(void)
 //    BandGap = 240 ;
 		putVoiceQueueUpper( g_model.modelVoice ) ;
 	}
+		CurrentPhase = 0 ;
     perOut(g_chans512, 0);
 		startPulses() ;
     wdt_enable(WDTO_500MS);
@@ -2952,7 +2985,7 @@ void mainSequence()
       heartbeat = 0;
   }
   t0 = getTmr16KHz() - t0;
-  if ( t0 > g_timeMain ) g_timeMain = t0 ;
+  if ( t0 > g_latency.g_timeMain ) g_latency.g_timeMain = t0 ;
   
   if ( AlarmControl.VoiceCheckFlag )		// Every 100 mS
   {
@@ -3360,12 +3393,13 @@ void mainSequence()
 //            else if( level[3] == alarm_yellow) FRSKY_alarmPlay(1,1);
 
 					// Check for current alarm
+					struct t_FrSkyChannelData *aaa = &g_model.frsky.channels[0] ;
         	for (int i=0; i<2; i++)
 					{
 						// To be enhanced by checking the type as well
-       		  if (g_model.frsky.channels[i].opt.alarm.ratio)
+       		  if (aaa->opt.alarm.ratio)
 						{
-     		      if ( g_model.frsky.channels[i].opt.alarm.type == 3 )		// Current (A)
+     		      if ( aaa->opt.alarm.type == 3 )		// Current (A)
 							{
 								if ( g_model.frsky.frskyAlarmLimit )
 								{
@@ -3383,6 +3417,7 @@ void mainSequence()
 								}
 							}
        		  }
+						aaa += 1 ;
         	}
       }
 #endif
@@ -3504,17 +3539,15 @@ uint8_t IS_EXPO_THROTTLE( uint8_t x )
 	return 0 ;
 }
 
+#ifndef FIX_MODE
 uint8_t IS_THROTTLE( uint8_t x )
 {
-#ifdef FIX_MODE
-	return x == 2 ;
-#else
 	uint8_t y ;
 	y = g_eeGeneral.stickMode&1 ;
 	y = 2 - y ;
 	return (((y) == x) && (x<4)) ;
-#endif
 }
+#endif
 
 int16_t calc100toRESX(int8_t x)
 {

@@ -172,10 +172,15 @@ PACK(typedef struct t_MixData {
     uint8_t mltpx:2;           // multiplex method 0=+ 1=* 2=replace
     uint8_t lateOffset:1;      // Add offset later
     uint8_t mixWarn:2;         // mixer warning
+#ifdef FMODE_TRIM
     uint8_t enableFmTrim:1;
+#else
+    uint8_t spareenableFmTrim:1;
+#endif
     uint8_t differential:1;
     int8_t  sOffset;
-    int8_t  res ;
+		uint8_t modeControl:5 ;
+    uint8_t res:3 ;
 }) MixData;
 
 

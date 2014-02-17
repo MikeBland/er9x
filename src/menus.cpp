@@ -1271,7 +1271,7 @@ void drawFunction( uint8_t xpos, uint8_t function )
 }
 
 
-int8_t *curveAddress( uint8_t idx )
+NOINLINE static int8_t *curveAddress( uint8_t idx )
 {
   uint8_t cv9 = idx >= MAX_CURVE5 ;
 	return cv9 ? g_model.curves9[idx-MAX_CURVE5] : g_model.curves5[idx] ;
@@ -1508,11 +1508,15 @@ void menuProcCurve(uint8_t event)
 
 void setStickCenter() // copy state of 3 primary to subtrim
 {
-    int16_t zero_chans512_before[NUM_CHNOUT];
-    int16_t zero_chans512_after[NUM_CHNOUT];
+	uint8_t thisPhase ;
+  int16_t zero_chans512_before[NUM_CHNOUT];
+  int16_t zero_chans512_after[NUM_CHNOUT];
 
-    perOut(zero_chans512_before,NO_TRAINER+NO_INPUT); // do output loop - zero input channels
-    perOut(zero_chans512_after,NO_TRAINER); // do output loop - zero input channels
+	thisPhase = getFlightPhase() ;
+	CurrentPhase = thisPhase ;
+
+    perOut(zero_chans512_before,NO_TRAINER | NO_INPUT | FADE_FIRST | FADE_LAST); // do output loop - zero input channels
+    perOut(zero_chans512_after,NO_TRAINER | FADE_FIRST | FADE_LAST); // do output loop - zero input channels
 
     for(uint8_t i=0; i<NUM_CHNOUT; i++)
     {
@@ -1523,11 +1527,23 @@ void setStickCenter() // copy state of 3 primary to subtrim
         g_model.limitData[i].offset = max(min(v,(int16_t)1000),(int16_t)-1000); // make sure the offset doesn't go haywire
     }
 
-    // For this operation, keep using the 'MASTER' trims
-    for(uint8_t i=0; i<4; i++)
-        if(!IS_THROTTLE(i)) g_model.trim[i] = 0;// set trims to zero.
-    STORE_MODELVARS_TRIM;
-    audioDefevent(AU_WARNING2);
+  for(uint8_t i=0; i<4; i++)
+	{
+		if(!IS_THROTTLE(i))
+		{
+			int16_t original_trim = getTrimValue(thisPhase, i);
+      for (uint8_t phase=0; phase<MAX_MODES; phase +=  1)
+			{
+        int16_t trim = getRawTrimValue(phase, i);
+        if (trim <= TRIM_EXTENDED_MAX)
+				{
+          setTrimValue(phase, i, trim - original_trim);
+				}
+			}
+		}
+	}
+  STORE_MODELVARS_TRIM;
+  audioDefevent(AU_WARNING2);
 }
 
 void menuProcLimits(uint8_t event)
@@ -2768,7 +2784,7 @@ uint8_t PopupActive ;
 
 void menuProcMixOne(uint8_t event)
 {
-    SIMPLE_SUBMENU_NOTITLE(15);
+    SUBMENU_NOTITLE(16, { 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 0 } ) ;
     uint8_t x = TITLEP( PSTR(STR_EDIT_MIX));
 //    uint8_t x = TITLEP(s_currMixInsMode ? PSTR("INSERT MIX ") : PSTR("EDIT MIX "));
 
@@ -2794,7 +2810,7 @@ void menuProcMixOne(uint8_t event)
             lcd_puts_Pleft(  y,PSTR(STR_2SOURCE));
             putsChnRaw(   FW*14,y,md2->srcRaw, attr| MIX_SOURCE);
 #if GVARS
-            if(attr) CHECK_INCDEC_H_MODELVAR( md2->srcRaw, 1,NUM_XCHNRAW+1+MAX_GVARS );
+            if(attr) CHECK_INCDEC_H_MODELVAR( md2->srcRaw, 1,NUM_XCHNRAW+1+MAX_GVARS+1 );
 #else
             if(attr) CHECK_INCDEC_H_MODELVAR( md2->srcRaw, 1,NUM_XCHNRAW+1);
 #endif
@@ -2809,7 +2825,11 @@ void menuProcMixOne(uint8_t event)
 #endif
             break;
         case 2:
+#ifdef FMODE_TRIM
             lcd_puts_P(  2*FW,y,md2->enableFmTrim ? PSTR(STR_FMTRIMVAL) : PSTR(STR_OFFSET));
+#else
+            lcd_puts_P(  2*FW,y,PSTR(STR_OFFSET));
+#endif
 #if GVARS
 						md2->sOffset = gvarMenuItem( FW*16, y, md2->sOffset, -125, 125, attr ) ;
 #else
@@ -2821,7 +2841,9 @@ void menuProcMixOne(uint8_t event)
 						md2->lateOffset = onoffMenuItem_m( md2->lateOffset, y, PSTR(STR_2FIX_OFFSET), attr ) ;
             break;
         case 4:
+#ifdef FMODE_TRIM
 						md2->enableFmTrim = onoffMenuItem_m( md2->enableFmTrim, y, PSTR(STR_FLMODETRIM), attr ) ;
+#endif
 						break;
         case 5:
 						md2->carryTrim = 1-onoffMenuItem_m( 1-md2->carryTrim, y, PSTR(STR_2TRIM), attr ) ;
@@ -2859,6 +2881,28 @@ void menuProcMixOne(uint8_t event)
 //            if(attr) CHECK_INCDEC_H_MODELVAR( md2->swtch, -MAX_DRSWITCH, MAX_DRSWITCH);
             break;
         case 9:
+					{
+						uint8_t b = 1 ;
+            lcd_puts_Pleft( y, PSTR("\002MODES"));
+  					for ( uint8_t p = 0 ; p<MAX_MODES+1 ; p++ )
+						{
+							uint8_t z = md2->modeControl ;
+    					lcd_putcAtt( (9+p)*(FW+1), y, '0'+p, ( z & b ) ? 0 : INVERS ) ;
+							if( attr && ( g_posHorz == p ) )
+							{
+								lcd_rect( (9+p)*(FW+1)-1, y-1, FW+2, 9 ) ;
+								if ( event==EVT_KEY_BREAK(KEY_MENU) || event==EVT_KEY_BREAK(BTN_RE) ) 
+								{
+									md2->modeControl ^= b ;
+      						eeDirty(EE_MODEL) ;
+    							s_editMode = false ;
+								}
+							}
+							b <<= 1 ;
+						}
+					}
+        break ;
+        case 10:
             lcd_puts_Pleft(  y,PSTR(STR_2WARNING));
 						b = md2->mixWarn ;
             if(b)
@@ -2867,21 +2911,21 @@ void menuProcMixOne(uint8_t event)
                 lcd_putsAtt(  FW*13,y,Str_OFF,attr);
             if(attr) { CHECK_INCDEC_H_MODELVAR_0( b, 3); md2->mixWarn = b ; }
             break;
-        case 10:
+        case 11:
             lcd_puts_Pleft(  y,PSTR(STR_2MULTIPLEX));
             lcd_putsAttIdx(13*FW, y,PSTR(STR_ADD_MULT_REP),md2->mltpx,attr);
             if(attr) CHECK_INCDEC_H_MODELVAR_0( md2->mltpx, 2); //!! bitfield
             break;
-        case 11:
+        case 12:
 						md2->delayDown = editSlowDelay( y, attr, md2->delayDown, PSTR(STR_2DELAY_DOWN) ) ;
             break;
-        case 12:
+        case 13:
 						md2->delayUp = editSlowDelay( y, attr, md2->delayUp, PSTR(STR_2DELAY_UP) ) ;
             break;
-        case 13:
+        case 14:
 						md2->speedDown = editSlowDelay( y, attr, md2->speedDown, PSTR(STR_2SLOW_DOWN) ) ;
             break;
-        case 14:
+        case 15:
 						md2->speedUp = editSlowDelay( y, attr, md2->speedUp, PSTR(STR_2SLOW_UP) ) ;
             break;
 //        case 13:
@@ -3362,7 +3406,8 @@ void menuProcMix(uint8_t event)
       			insertMix(s_currMixIdx, 0 ) ;
   	    		s_moveMode=false;
 	      		pushMenu(menuProcMixOne) ;
-						return ;
+						break ;
+//						return ;
       		}
 				}
 			}
@@ -4212,48 +4257,62 @@ void putsTrimMode( uint8_t x, uint8_t y, uint8_t phase, uint8_t idx, uint8_t att
 void menuPhaseOne(uint8_t event)
 {
   PhaseData *phase = &g_model.phaseData[s_currIdx] ;
-  SUBMENU( STR_FL_MODE, 2, { 0, 3 /*, 0*/} ) ;
+  SUBMENU( STR_FL_MODE, 4, { 0, 3, 0 /*, 0*/} ) ;
   lcd_putc( 8*FW, 0, '1'+s_currIdx ) ;
 
   uint8_t sub = mstate2.m_posVert;
 //  int8_t editMode = s_editMode;
 	
-  for (uint8_t i = 0 ; i < 2 ; i += 1 )
+  for (uint8_t i = 0 ; i < 4 ; i += 1 )
 	{
     uint8_t y = (i+1) * FH;
 		uint8_t attr = (sub==i ? ( s_editMode ? BLINK : INVERS) : 0);
     
-		if ( i == 0 )
+		switch(i)
 		{
-			lcd_puts_Pleft( y, PSTR(STR_SWITCH) ) ;
-			phase->swtch = edit_dr_switch( 8*FW, y, phase->swtch, attr, attr ) ;
-		}
-		else
-		{
-			lcd_puts_Pleft( y, PSTR(STR_TRIMS) ) ;
-      for ( uint8_t t = 0 ; t<NUM_STICKS ; t += 1 )
-			{
-        putsTrimMode( (8+t)*FW, y, s_currIdx+1, t, (g_posHorz==t) ? attr : 0 ) ;
-#ifndef NOPOTSCROLL
-        if (attr && g_posHorz==t && ( s_editing ) )
-#else
-        if (attr && g_posHorz==t && ( s_editMode ) )
-#endif
+      case 0 : // switch
+				lcd_puts_Pleft( y, PSTR(STR_SWITCH) ) ;
+				phase->swtch = edit_dr_switch( 8*FW, y, phase->swtch, attr, attr ) ;
+			break;
+
+      case 1 : // trims
+				lcd_puts_Pleft( y, PSTR(STR_TRIMS) ) ;
+      	for ( uint8_t t = 0 ; t<NUM_STICKS ; t += 1 )
 				{
-  		    int16_t v = phase->trim[t] + ( TRIM_EXTENDED_MAX + 1 ) ;
-          if (v < TRIM_EXTENDED_MAX)
+      	  putsTrimMode( (10+t)*FW, y, s_currIdx+1, t, (g_posHorz==t) ? attr : 0 ) ;
+	#ifndef NOPOTSCROLL
+      	  if (attr && g_posHorz==t && ( s_editing ) )
+	#else
+      	  if (attr && g_posHorz==t && ( s_editMode ) )
+	#endif
 					{
-						v = TRIM_EXTENDED_MAX;
-					}
-          v = checkIncDec16( v, TRIM_EXTENDED_MAX, TRIM_EXTENDED_MAX+MAX_MODES, EE_MODEL ) ;
+  			    int16_t v = phase->trim[t] + ( TRIM_EXTENDED_MAX + 1 ) ;
+      	    if (v < TRIM_EXTENDED_MAX)
+						{
+							v = TRIM_EXTENDED_MAX;
+						}
+      	    v = checkIncDec16( v, TRIM_EXTENDED_MAX, TRIM_EXTENDED_MAX+MAX_MODES, EE_MODEL ) ;
             
-					if (checkIncDec_Ret)
-					{
-            if (v == TRIM_EXTENDED_MAX) v = 0 ;
-						phase->trim[t] = v - ( TRIM_EXTENDED_MAX + 1 ) ;
-          }
-        }
-      }
+						if (checkIncDec_Ret)
+						{
+      	      if (v == TRIM_EXTENDED_MAX) v = 0 ;
+							phase->trim[t] = v - ( TRIM_EXTENDED_MAX + 1 ) ;
+      	    }
+      	  }
+      	}
+      break;
+      
+			case 2 : // fadeIn
+				lcd_puts_Pleft( y, PSTR("Fade In") ) ;
+    		lcd_outdezAtt(12*FW, y, phase->fadeIn * 5, attr | PREC1 ) ;
+  			if( attr ) CHECK_INCDEC_H_MODELVAR_0( phase->fadeIn, 15 ) ;
+			break ;
+      
+			case 3 : // fadeOut
+				lcd_puts_Pleft( y, PSTR("Fade Out") ) ;
+		    lcd_outdezAtt(12*FW, y, phase->fadeOut * 5, attr | PREC1 ) ;
+  			if( attr ) CHECK_INCDEC_H_MODELVAR_0( phase->fadeOut, 15 ) ;
+			break ;
 	  }
 	}
 }
@@ -4288,9 +4347,9 @@ void menuModelPhases(uint8_t event)
     for ( i = 1 ; i <= 4 ; i += 1 )
     {
 #ifdef FIX_MODE
-	  	lcd_putsAttIdx( (14+i)*FW, 2*FH, PSTR(STR_1_RETA), i-1, 0 ) ;
+	  	lcd_putsAttIdx( (9+i)*FW, 2*FH, PSTR(STR_1_RETA), i-1, 0 ) ;
 #else
-  		lcd_putsAttIdx( (14+i)*FW, 2*FH, PSTR(STR_1_RETA), pgm_read_byte(modn12x3+g_eeGeneral.stickMode*4+(i-1))-1, 0 ) ;
+  		lcd_putsAttIdx( (9+i)*FW, 2*FH, PSTR(STR_1_RETA), pgm_read_byte(modn12x3+g_eeGeneral.stickMode*4+(i-1))-1, 0 ) ;
 #endif
     }
   }
@@ -4302,11 +4361,17 @@ void menuModelPhases(uint8_t event)
     attr = (i == sub) ? INVERS : 0 ;
     lcd_puts_Pleft( y, PSTR(STR_SP_FM) ) ;
     lcd_putc( 3*FW, y, '0'+i ) ;
-    putsDrSwitches( 7*FW, y, p->swtch, attr ) ;
+    putsDrSwitches( 4*FW, y, p->swtch, attr ) ;
     for ( uint8_t t = 0 ; t < NUM_STICKS ; t += 1 )
 		{
-			putsTrimMode( (15+t)*FW, y, i, t, attr ) ;
+			putsTrimMode( (10+t)*FW, y, i, t, attr ) ;
 		}
+		if ( p->fadeIn || p->fadeOut )
+		{
+	    lcd_putcAtt( 20*FW+1, y, '*', attr ) ;
+		}
+//    lcd_outdezAtt(17*FW, y, p->fadeIn * 5, attr | PREC1 ) ;
+//    lcd_outdezAtt(21*FW, y, p->fadeOut * 5, attr | PREC1 ) ;
 	}
 
 	i = getFlightPhase() + 2 ;
@@ -5542,7 +5607,6 @@ void trace()   // called in perOut - once envery 0.01sec
 extern unsigned int stack_free() ;
 
 struct t_latency g_latency = { 0xFF, 0 } ;
-uint16_t g_timeMain;
 
 void menuProcStatistic2(uint8_t event)
 {
@@ -5555,7 +5619,7 @@ void menuProcStatistic2(uint8_t event)
     case EVT_KEY_FIRST(KEY_MENU):
         ptrLat->g_tmr1Latency_min = 0xff;
         ptrLat->g_tmr1Latency_max = 0;
-        g_timeMain    = 0;
+        ptrLat->g_timeMain    = 0;
         audioDefevent(AU_MENUS);
         break;
     case EVT_KEY_FIRST(KEY_DOWN):
@@ -5575,7 +5639,7 @@ void menuProcStatistic2(uint8_t event)
     lcd_puts_Pleft( 3*FH, PSTR("tmr1 Jitter\017us"));
     lcd_outdez(14*FW , 3*FH, (ptrLat->g_tmr1Latency_max - ptrLat->g_tmr1Latency_min) /2 );
     lcd_puts_Pleft( 4*FH, PSTR("tmain\017ms"));
-    lcd_outdezAtt(14*FW , 4*FH, (g_timeMain*25)/4 ,PREC2);	// g_timeMain*100)/16
+    lcd_outdezAtt(14*FW , 4*FH, (ptrLat->g_timeMain*25)/4 ,PREC2);	// g_timeMain*100)/16
 
 //extern uint16_t PxxTime ;
 //    lcd_outdezAtt(15*FW+3,5*FH,MixRate,0) ;
@@ -5715,7 +5779,9 @@ NOINLINE void resetTimer1(void)
 //    TimerG.s_timeCum16ThrP=0;
 //}
 
+#ifdef FMODE_TRIM
 extern int8_t *TrimPtr[4] ;
+#endif
 #ifdef FRSKY
 int16_t AltOffset = 0 ;
 #endif
@@ -6026,7 +6092,12 @@ const static prog_uint8_t APM xt[4] = {128*1/4+2, 4, 128-4, 128*3/4-2};
 #ifdef PHASES		
 			  	  int8_t val = max((int8_t)-(TL+1),min((int8_t)(TL+1),(int8_t)(getTrimValue( CurrentPhase, i )/4)));
 #else
+#ifdef FMODE_TRIM
             int8_t val = max((int8_t)-(TL+1),min((int8_t)(TL+1),(int8_t)(*TrimPtr[i]/4)));
+#else
+            int8_t val = max((int8_t)-(TL+1),min((int8_t)(TL+1),(int8_t)(g_model.trim[i]/4)));
+#endif
+
 #endif
 //            if(vert[i]){
             if( (i == 1) || ( i == 2 ))
@@ -6162,7 +6233,7 @@ const static prog_uint8_t APM xt[4] = {128*1/4+2, 4, 128-4, 128*3/4-2};
                 lcd_puts_P(11 * FW - 2, 6*FH, Str_TXeq );
 			
                 lcd_outdezAtt(3 * FW - 2, 5*FH, frskyTelemetry[2].value, DBLSIZE|LEFT);
-                lcd_outdezAtt(14 * FW - 4, 5*FH, frskyTelemetry[3].value, DBLSIZE|LEFT);
+                lcd_outdezAtt(14 * FW - 4, 5*FH, frskyTelemetry[FR_TXRSI_COPY].value, DBLSIZE|LEFT);
 								
 								struct t_hub_max_min *maxMinPtr = &FrskyHubMaxMin ;
 								FORCE_INDIRECT( maxMinPtr) ;
@@ -6448,11 +6519,7 @@ uint8_t  bpanaCenter = 0;
 struct t_output
 {
 	uint16_t sDelay[MAX_MIXERS] ;
-#ifndef SIMU	
-	__int24	 act   [MAX_MIXERS] ;
-#else
 	int32_t  act   [MAX_MIXERS] ;
-#endif
 	uint8_t  swOn  [MAX_MIXERS] ;
 #if GVARS
 	int16_t  anas [NUM_XCHNRAW+1+MAX_GVARS] ;		// To allow for 3POS
@@ -6464,6 +6531,157 @@ struct t_output
 #ifdef PHASES		
 uint8_t	CurrentPhase = 0 ;
 #endif
+struct t_fade
+{
+	uint8_t  fadePhases ;
+	uint16_t fadeRate ;
+	uint16_t fadeWeight ;
+	uint16_t fadeScale[MAX_MODES+1] ;
+	int32_t  fade[NUM_CHNOUT];
+} Fade ;
+
+static void inactivityCheck()
+{
+	struct t_inactivity *PtrInactivity = &Inactivity ;
+	FORCE_INDIRECT(PtrInactivity) ;
+
+  if(s_noHi) s_noHi--;
+  uint16_t tsum = stickMoveValue() ;
+  if (tsum != PtrInactivity->inacSum)
+	{
+    PtrInactivity->inacSum = tsum;
+    PtrInactivity->inacCounter = 0;
+    stickMoved = 1;  // reset in perMain
+  }
+  else
+	{
+		uint8_t timer = g_eeGeneral.inactivityTimer + 10 ;
+		if( ( timer) && (g_vbat100mV>49))
+  	{
+      if (++PtrInactivity->inacPrescale > 15 )
+      {
+      	PtrInactivity->inacCounter++;
+      	PtrInactivity->inacPrescale = 0 ;
+      	if(PtrInactivity->inacCounter>(uint16_t)((timer)*(100*60/16)))
+      	  if((PtrInactivity->inacCounter&0x1F)==1)
+					{
+							setVolume(NUM_VOL_LEVELS-2) ;		// Nearly full volume
+      	      audioVoiceDefevent( AU_INACTIVITY, V_INACTIVE ) ;
+//										setVolume(g_eeGeneral.volume+7) ;			// Back to required volume
+      	  }
+      }
+		}
+  }
+}
+
+
+void perOutPhase( int16_t *chanOut, uint8_t att ) 
+{
+	static uint8_t lastPhase ;
+	uint8_t thisPhase ;
+	struct t_fade *pFade ;
+	pFade = &Fade ;
+	FORCE_INDIRECT( pFade ) ;
+
+	thisPhase = getFlightPhase() ;
+	if ( thisPhase != lastPhase )
+	{
+		uint8_t time1 = 0 ;
+		uint8_t time2 ;
+		
+		if ( lastPhase )
+		{
+      time1 = g_model.phaseData[(uint8_t)(lastPhase-1)].fadeOut ;
+		}
+		if ( thisPhase )
+		{
+      time2= g_model.phaseData[(uint8_t)(thisPhase-1)].fadeIn ;
+			if ( time2 > time1 )
+			{
+        time1 = time2 ;
+			}
+		}
+		if ( time1 )
+		{
+			pFade->fadeRate = (25600 / 50) / time1 ;
+			pFade->fadePhases |= ( 1 << lastPhase ) | ( 1 << thisPhase ) ;
+		}
+		lastPhase = thisPhase ;
+	}
+	att |= FADE_FIRST ;
+	if ( pFade->fadePhases )
+	{
+		pFade->fadeWeight = 0 ;
+		uint8_t fadeMask = 1 ;
+    for (uint8_t p=0; p<MAX_MODES+1; p++)
+		{
+			if ( pFade->fadePhases & fadeMask )
+			{
+				if ( p != thisPhase )
+				{
+					CurrentPhase = p ;
+					pFade->fadeWeight += pFade->fadeScale[p] ;
+					perOut( chanOut, att ) ;
+					att &= ~FADE_FIRST ;				
+				}
+			}
+			fadeMask <<= 1 ;
+		}	
+	}
+	else
+	{
+		pFade->fadeScale[thisPhase] = 25600 ;
+	}
+	pFade->fadeWeight += pFade->fadeScale[thisPhase] ;
+	CurrentPhase = thisPhase ;
+	perOut( chanOut, att | FADE_LAST ) ;
+	
+	if ( pFade->fadePhases && tick10ms )
+	{
+		uint8_t fadeMask = 1 ;
+    for (uint8_t p=0; p<MAX_MODES+1; p+=1)
+		{
+			uint16_t l_fadeScale = pFade->fadeScale[p] ;
+			
+			if ( pFade->fadePhases & fadeMask )
+			{
+				uint16_t x = pFade->fadeRate * tick10ms ;
+				if ( p != thisPhase )
+				{
+          if ( l_fadeScale > x )
+					{
+						l_fadeScale -= x ;
+					}
+					else
+					{
+						l_fadeScale = 0 ;
+						pFade->fadePhases &= ~fadeMask ;						
+					}
+				}
+				else
+				{
+          if ( 25600 - l_fadeScale > x )
+					{
+						l_fadeScale += x ;
+					}
+					else
+					{
+						l_fadeScale = 25600 ;
+						pFade->fadePhases &= ~fadeMask ;						
+					}
+				}
+			}
+			else
+			{
+				l_fadeScale = 0 ;
+			}
+			pFade->fadeScale[p] = l_fadeScale ;
+			fadeMask <<= 1 ;
+		}
+	}
+
+
+}
 
 void perOut(int16_t *chanOut, uint8_t att)
 {
@@ -6471,45 +6689,10 @@ void perOut(int16_t *chanOut, uint8_t att)
     uint8_t  anaCenter = 0;
     uint16_t d = 0;
 
-    if(tick10ms)
-		{
-			struct t_inactivity *PtrInactivity = &Inactivity ;
-			FORCE_INDIRECT(PtrInactivity) ;
-
-        if(s_noHi) s_noHi--;
-        uint16_t tsum = stickMoveValue() ;
-        if (tsum != PtrInactivity->inacSum)
-				{
-          PtrInactivity->inacSum = tsum;
-    			PtrInactivity->inacCounter = 0;
-          stickMoved = 1;  // reset in perMain
-        }
-        else
-				{
-					uint8_t timer = g_eeGeneral.inactivityTimer + 10 ;
-					if( ( timer) && (g_vbat100mV>49))
-  	      {
-            if (++PtrInactivity->inacPrescale > 15 )
-            {
-              PtrInactivity->inacCounter++;
-              PtrInactivity->inacPrescale = 0 ;
-      	      if(PtrInactivity->inacCounter>(uint16_t)((timer)*(100*60/16)))
-                if((PtrInactivity->inacCounter&0x1F)==1)
-								{
-										setVolume(NUM_VOL_LEVELS-2) ;		// Nearly full volume
-                    audioVoiceDefevent( AU_INACTIVITY, V_INACTIVE ) ;
-//										setVolume(g_eeGeneral.volume+7) ;			// Back to required volume
-                }
-            }
-					}
-        }
-    }
-
-#ifdef PHASES		
-		CurrentPhase = getFlightPhase() ;
-#endif
+//#ifdef PHASES		
+//		CurrentPhase = getFlightPhase() ;
+//#endif
     
-		{
         uint8_t ele_stick, ail_stick ;
         ele_stick = 1 ; //ELE_STICK ;
         ail_stick = 3 ; //AIL_STICK ;
@@ -6634,14 +6817,21 @@ void perOut(int16_t *chanOut, uint8_t att)
 #ifdef PHASES		
                 trimA[i] = getTrimValue( CurrentPhase, i )*2 ;
 #else
+#ifdef FMODE_TRIM
                 trimA[i] = *TrimPtr[i]*2 ;
+#else
+                trimA[i] = g_model.trim[i]*2 ;
+#endif
 #endif
             }
+						if ( att & FADE_FIRST )
+						{
 #ifdef FIX_MODE
-            Output.anas[index] = v; //set values for mixer
+            	Output.anas[index] = v; //set values for mixer
 #else
-            Output.anas[i] = v; //set values for mixer
+            	Output.anas[i] = v; //set values for mixer
 #endif
+						}
     				if(att&NO_INPUT)
 						{ //zero input for setStickCenter()
    				    if ( i < 4 )
@@ -6656,7 +6846,7 @@ void perOut(int16_t *chanOut, uint8_t att)
 										Output.anas[i]  = 0 ;
 #endif
 									}
-		            	trimA[i] = 0;
+		            	trimA[index] = 0;
  				        }
    				    	Output.anas[i+PPM_BASE] = 0 ;
    				    }
@@ -6670,7 +6860,11 @@ void perOut(int16_t *chanOut, uint8_t att)
 #ifdef PHASES		
 					ttrim = getTrimValue( CurrentPhase, 2 ) ;
 #else
+#ifdef FMODE_TRIM
 					ttrim = *TrimPtr[2] ;
+#else
+					ttrim = g_model.trim[2] ;
+#endif
 #endif
 					if(g_eeGeneral.throttleReversed)
 					{
@@ -6678,6 +6872,8 @@ void perOut(int16_t *chanOut, uint8_t att)
 					}
          	trimA[2] = ((int32_t)ttrim+125)*(RESX-Output.anas[2])/(RESX) ;
 				}
+			if ( att & FADE_FIRST )
+			{
 
         //===========BEEP CENTER================
         anaCenter &= g_model.beepANACenter;
@@ -6778,10 +6974,13 @@ void perOut(int16_t *chanOut, uint8_t att)
                 break;
             }
         }
-    }
 
-    if(tick10ms) trace(); //trace thr 0..32  (/32)
-
+  		  if(tick10ms)
+				{
+					inactivityCheck() ;
+					trace(); //trace thr 0..32  (/32)
+				}
+	    }
     memset(chans,0,sizeof(chans));        // All outputs to 0
 
 
@@ -6789,10 +6988,12 @@ void perOut(int16_t *chanOut, uint8_t att)
     //========== MIXER LOOP ===============
 
     // Set the trim pointers back to the master set
+#ifdef FMODE_TRIM
     TrimPtr[0] = &g_model.trim[0] ;
     TrimPtr[1] = &g_model.trim[1] ;
     TrimPtr[2] = &g_model.trim[2] ;
     TrimPtr[3] = &g_model.trim[3] ;
+#endif
 
     for(uint8_t i=0;i<MAX_MIXERS;i++){
         MixData *md = mixaddress( i ) ;
@@ -6814,15 +7015,27 @@ void perOut(int16_t *chanOut, uint8_t att)
 					t_switch = 0 ;
 				}	
 				
+        if ( t_switch )
+				{
+					if ( md->modeControl & ( 1 << CurrentPhase ) )
+					{
+						t_switch = 0 ;
+					}
+				}
+
+        uint8_t k = md->srcRaw ;
+				
+#define DEL_MULT 256
 				//swOn[i]=false;
         if(!t_switch)
 				{ // switch on?  if no switch selected => on
             swTog = swon ;
             swon = false;
-            //            if(md->srcRaw==MIX_MAX) act[i] = 0;// MAX back to 0 for slow up
-            //            if(md->srcRaw!=MIX_FULL) continue;// if not FULL - next loop
-            //            v = -RESX; // switch is off  => FULL=-RESX
-
+            if (k == MIX_3POS+MAX_GVARS+1)
+						{
+							int32_t temp = chans[md->destCh-1] * ((int32_t)DEL_MULT * 256 / 100 ) ;
+							Output.act[i] =  temp >> 8 ;
+						}
             if(md->srcRaw!=MIX_MAX && md->srcRaw!=MIX_FULL) continue;// if not MAX or FULL - next loop
             if(md->mltpx==MLTPX_REP) continue; // if switch is off and REPLACE then off
             v = (md->srcRaw == MIX_FULL ? -RESX : 0); // switch is off and it is either MAX=0 or FULL=-512
@@ -6830,10 +7043,12 @@ void perOut(int16_t *chanOut, uint8_t att)
         else {
             swTog = !swon ;
             swon = true;
-            uint8_t k = md->srcRaw-1;
+            k -= 1 ;
             v = Output.anas[k]; //Switch is on. MAX=FULL=512 or value.
             if(k>=CHOUT_BASE && (k<i)) v = chans[k]; // if we've already calculated the value - take it instead // anas[i+CHOUT_BASE] = chans[i]
+            if (k == MIX_3POS+MAX_GVARS) v = chans[md->destCh-1] / 100 ;
             if(md->mixWarn) mixWarning |= 1<<(md->mixWarn-1); // Mix warning
+#ifdef FMODE_TRIM
             if ( md->enableFmTrim )
             {
                 if ( md->srcRaw <= 4 )
@@ -6841,11 +7056,16 @@ void perOut(int16_t *chanOut, uint8_t att)
                     TrimPtr[md->srcRaw-1] = &md->sOffset ;		// Use the value stored here for the trim
                 }
             }
+#endif
         }
         Output.swOn[i] = swon ;
 
         //========== INPUT OFFSET ===============
+#ifdef FMODE_TRIM
         if ( ( md->enableFmTrim == 0 ) && ( md->lateOffset == 0 ) )
+#else
+        if ( md->lateOffset == 0 )
+#endif
         {
 #if GVARS
             if(md->sOffset) v += calc100toRESX( REG( md->sOffset, -125, 125 )	) ;
@@ -6858,18 +7078,21 @@ void perOut(int16_t *chanOut, uint8_t att)
         if (md->speedUp || md->speedDown || md->delayUp || md->delayDown)  // there are delay values
         {
 					uint8_t timing = g_model.mixTime ? 20 : 100 ;
-#define DEL_MULT 256
 					uint16_t my_delay = Output.sDelay[i] ;
 					int32_t tact = Output.act[i] ;
-            //if(init) {
-            //act[i]=(int32_t)v*DEL_MULT;
-            //swTog = false;
-            //}
 #if DEL_MULT == 256
 						int16_t diff = v-(tact>>8) ;
 #else
             int16_t diff = v-tact/DEL_MULT;
 #endif
+
+						if ( ( diff > 10 ) || ( diff < -10 ) )
+						{
+							if ( my_delay == 0 )
+							{
+								swTog = 1 ;
+							}
+						}
 
             if(swTog) {
                 //need to know which "v" will give "anas".
@@ -6878,7 +7101,6 @@ void perOut(int16_t *chanOut, uint8_t att)
                 if(md->mltpx==MLTPX_REP)
                 {
                     tact = (int32_t)Output.anas[md->destCh-1+CHOUT_BASE]*DEL_MULT * 100 ;
-//                    Output.act[i] *=100;
 #if GVARS
                     if(mixweight) tact /= mixweight ;
 #else
@@ -6928,7 +7150,6 @@ void perOut(int16_t *chanOut, uint8_t att)
                     if(md->weight) rate /= abs(md->weight);
 #endif
 
-// The next few lines could replace the long line act[i] = etc. - needs testing
 										int16_t speed ;
                     if ( diff>0 )
 										{
@@ -6941,8 +7162,6 @@ void perOut(int16_t *chanOut, uint8_t att)
 										}
 										tact = (speed) ? tact+(rate)/((int16_t)timing*speed) : (int32_t)v*DEL_MULT ;
 
-//										tact = (diff>0) ? ((md->speedUp>0)   ? tact+(rate)/((int16_t)100*md->speedUp)   :  (int32_t)v*DEL_MULT) :
-//                                        ((md->speedDown>0) ? tact-(rate)/((int16_t)100*md->speedDown) :  (int32_t)v*DEL_MULT) ;
                 }
 								{
 #if DEL_MULT == 256
@@ -6963,7 +7182,8 @@ void perOut(int16_t *chanOut, uint8_t att)
               tact=(int32_t)v*DEL_MULT;
             }
 					Output.act[i] = tact ;
-        }
+        
+				}
 
 
         //========== CURVES ===============
@@ -7034,7 +7254,11 @@ void perOut(int16_t *chanOut, uint8_t att)
         int32_t dv = (int32_t)v*md->weight;
 #endif
         //========== lateOffset ===============
+#ifdef FMODE_TRIM
 				if ( ( md->enableFmTrim == 0 ) && ( md->lateOffset ) )
+#else
+				if ( md->lateOffset )
+#endif
         {
 #if GVARS
             if(md->sOffset) dv += calc100toRESX( REG( md->sOffset, -125, 125 )	) * 100L ;
@@ -7044,7 +7268,6 @@ void perOut(int16_t *chanOut, uint8_t att)
         }
 
 				int32_t *ptr ;			// Save calculating address several times
-//				__int24 *ptr ;			// Save calculating address several times
 				ptr = &chans[md->destCh-1] ;
         switch((uint8_t)md->mltpx){
         case MLTPX_REP:
@@ -7053,8 +7276,6 @@ void perOut(int16_t *chanOut, uint8_t att)
 						dv /= 100 ;
 						dv *= *ptr ;
             dv /= RESXl;
-//            chans[md->destCh-1] *= dv/100l;
-//            chans[md->destCh-1] /= RESXl;
             break;
         default:  // MLTPX_ADD
 						dv += *ptr ;
@@ -7094,7 +7315,30 @@ void perOut(int16_t *chanOut, uint8_t att)
         // interpolate value with min/max so we get smooth motion from center to stop
         // this limits based on v original values and min=-1024, max=1024  RESX=1024
 
-        LimitData *limit = limitaddress( i ) ;
+        int32_t q = chans[i];// + (int32_t)g_model.limitData[i].offset*100; // offset before limit
+
+				if ( Fade.fadePhases )
+				{
+					int32_t l_fade = Fade.fade[i] ;
+					if ( att & FADE_FIRST )
+					{
+						l_fade = 0 ;
+					}
+					l_fade += ( q / 100 ) * Fade.fadeScale[CurrentPhase] ;
+					Fade.fade[i] = l_fade ;
+			
+					if ( ( att & FADE_LAST ) == 0 )
+					{
+						continue ;
+					}
+					l_fade /= Fade.fadeWeight ;
+					q = l_fade * 100 ;
+				}
+    	  chans[i] = q / 100 ; // chans back to -1024..1024
+        
+				ex_chans[i] = chans[i]; //for getswitch
+        
+				LimitData *limit = limitaddress( i ) ;
 				int16_t ofs = limit->offset;
 				int16_t xofs = ofs ;
 				if ( xofs > g_model.sub_trim_limit )
@@ -7118,11 +7362,6 @@ void perOut(int16_t *chanOut, uint8_t att)
 				if(ofs>lim_p) ofs = lim_p;
         if(ofs<lim_n) ofs = lim_n;
 
-        int32_t q = chans[i];// + (int32_t)g_model.limitData[i].offset*100; // offset before limit
-
-//        chans[i] /= 100; // chans back to -1024..1024
-        ex_chans[i] = chans[i] = q/100 ; //for getswitch
-
         if(q)
 				{
 					int16_t temp = (q<0) ? ((int16_t)ofs-lim_n) : ((int16_t)lim_p-ofs) ;
@@ -7134,8 +7373,8 @@ void perOut(int16_t *chanOut, uint8_t att)
   			result += q ; // we convert value to a 16bit value
 				
         lim_p = calc1000toRESX(lim_p);
-        lim_n = calc1000toRESX(lim_n);
         if(result>lim_p) result = lim_p;
+        lim_n = calc1000toRESX(lim_n);
         if(result<lim_n) result = lim_n;
 
         if(limit->reverse) result = -result ;// finally do the reverse.
@@ -7165,9 +7404,9 @@ void perOut(int16_t *chanOut, uint8_t att)
 										sticky = 0 ;
 									}
 #ifdef FIX_MODE
-									else if ( calibratedStick[2] < -1010 )
+									else if ( calibratedStick[2] < -1004 )
 #else
-									else if ( calibratedStick[THR_STICK] < -1010 )
+									else if ( calibratedStick[THR_STICK] < -1004 )
 #endif
 									{
 										sticky = 1 ;
