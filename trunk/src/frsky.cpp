@@ -17,6 +17,7 @@
 
 #include "er9x.h"
 #include "frsky.h"
+#include "menus.h"
 
 // Enumerate FrSky packet codes
 #define LINKPKT         0xfe
@@ -352,6 +353,10 @@ void frsky_proc_user_byte( uint8_t byte )
 						if ( byte == 48 )
 						{
 							byte = FR_VSPD ;		// Move Vario							
+						}
+						if ( byte == 57 )
+						{
+							byte = FR_VOLTS ;		// Move Oxsensor voltage
 						}
 						if ( byte > sizeof(Fr_indices) )
 						{
@@ -1296,33 +1301,33 @@ void resetTelemetry()
   memset( &FrskyHubMaxMin, 0, sizeof(FrskyHubMaxMin));
 }
 
-void current_check( uint8_t i )
-{
-	Frsky_current_info *ptr_current ;
-	uint8_t cvalue ;
+//void current_check( uint8_t i )
+//{
+//	Frsky_current_info *ptr_current ;
+//	uint8_t cvalue ;
 
-	ptr_current = &Frsky_current[0] ;
-	FORCE_INDIRECT(ptr_current) ;
-	cvalue = frskyTelemetry[0].value ;
-	if ( i )
-	{
-		ptr_current += 1 ;
-		cvalue = frskyTelemetry[1].value ;
-	}
-  // value * ratio / 100 gives 10ths of amps
-  // add this every 10 ms, when over 3600, we have 1 mAh
-  // so subtract 3600 and add 1 to mAh total
-  // alternatively, add up the raw value, and use 3600 * 100 / ratio for 1mAh
+//	ptr_current = &Frsky_current[0] ;
+//	FORCE_INDIRECT(ptr_current) ;
+//	cvalue = frskyTelemetry[0].value ;
+//	if ( i )
+//	{
+//		ptr_current += 1 ;
+//		cvalue = frskyTelemetry[1].value ;
+//	}
+//  // value * ratio / 100 gives 10ths of amps
+//  // add this every 10 ms, when over 3600, we have 1 mAh
+//  // so subtract 3600 and add 1 to mAh total
+//  // alternatively, add up the raw value, and use 3600 * 100 / ratio for 1mAh
 			
-	if ( (  ptr_current->Amp_hour_prescale += cvalue ) > ptr_current->Amp_hour_boundary )
-	{
-		 ptr_current->Amp_hour_prescale -= ptr_current->Amp_hour_boundary ;
-		int16_t *ptr_hub = &FrskyHubData[FR_A1_MAH+i] ;
-		FORCE_INDIRECT(ptr_hub) ;
+//	if ( (  ptr_current->Amp_hour_prescale += cvalue ) > ptr_current->Amp_hour_boundary )
+//	{
+//		 ptr_current->Amp_hour_prescale -= ptr_current->Amp_hour_boundary ;
+//		int16_t *ptr_hub = &FrskyHubData[FR_A1_MAH+i] ;
+//		FORCE_INDIRECT(ptr_hub) ;
 
-		*ptr_hub += 1 ;
-	}
-}
+//		*ptr_hub += 1 ;
+//	}
+//}
 
 // Called every 10 mS in interrupt routine
 void check_frsky()
@@ -1357,21 +1362,56 @@ void check_frsky()
 
 #endif
 
-  if (frskyStreaming)
-	{
-  	if ( g_model.frsky.channels[0].opt.alarm.type == 3 )		// Current (A)
-			current_check( 0 ) ;
-  	if ( g_model.frsky.channels[1].opt.alarm.type == 3 )		// Current (A)
-			current_check( 1 ) ;
-	}
 
-	// FrSky Current sensor (in amps, 1dp)
-	// add this every 10 ms, when over 3600, we have 1 mAh
-	// 
-  if (frskyUsrStreaming)
-	{
+	// Flight pack mAh
+	if ( g_model.currentSource )
+	{ // We have a source
+		uint16_t current = 0 ;		// in 1/10ths amps
+
+
+		if ( g_model.currentSource <= 2 )	// A1/A2
+		{
+			if ( frskyStreaming )
+			{
+				uint8_t index = FR_A1_COPY+g_model.currentSource-1 ;
+				current = FrskyHubData[index] ;
+				current *= g_model.frsky.channels[index].opt.scale.ratio ;
+				current /= 100 ;
+			}
+		}
+		else if ( g_model.currentSource == 3 )	// FASV
+		{
+  		if (frskyUsrStreaming)
+		  {
+				current = FrskyHubData[FR_CURRENT] ;
+			}
+		}
+#ifdef SCALERS
+		else	// Scaler
+		{
+			uint8_t num_decimals ;
+			uint8_t index ;
+			index = g_model.currentSource - 4 ;
+
+			if ( telemItemValid( index + TEL_ITEM_SC1 ) )
+			{
+				current = calc_scaler( index, 0, &num_decimals) ;
+				if ( num_decimals == 0 )
+				{
+					current *= 10 ;
+				}
+				else if ( num_decimals == 2 )
+				{
+					current /= 10 ;
+				}
+			}
+		}
+#endif
+
 		int16_t ah_temp ;
-		ah_temp = FrskyHubData[FR_CURRENT] ;
+		ah_temp = current ;
+
+
 		if ( ah_temp < 0 )
 		{
 			ah_temp = 0 ;			
@@ -1381,11 +1421,44 @@ void check_frsky()
 		{
 			ah_temp -= 3600 ;
 			int16_t *ptr_hub = &FrskyHubData[FR_AMP_MAH] ;
-			FORCE_INDIRECT(ptr_hub) ;
 			*ptr_hub += 1 ;
+			FrskyHubData[FR_A1_MAH] += 1 ;
+			FrskyHubData[FR_A2_MAH] += 1 ;
 		}
 		Frsky_Amp_hour_prescale = ah_temp ;
 	}
+
+
+
+//  if (frskyStreaming)
+//	{
+//  	if ( g_model.frsky.channels[0].opt.alarm.type == 3 )		// Current (A)
+//			current_check( 0 ) ;
+//  	if ( g_model.frsky.channels[1].opt.alarm.type == 3 )		// Current (A)
+//			current_check( 1 ) ;
+//	}
+
+//	// FrSky Current sensor (in amps, 1dp)
+//	// add this every 10 ms, when over 3600, we have 1 mAh
+//	// 
+//  if (frskyUsrStreaming)
+//	{
+//		int16_t ah_temp ;
+//		ah_temp = FrskyHubData[FR_CURRENT] ;
+//		if ( ah_temp < 0 )
+//		{
+//			ah_temp = 0 ;			
+//		}
+//		ah_temp += Frsky_Amp_hour_prescale ;
+//		if ( ah_temp > 3600 )
+//		{
+//			ah_temp -= 3600 ;
+//			int16_t *ptr_hub = &FrskyHubData[FR_AMP_MAH] ;
+//			FORCE_INDIRECT(ptr_hub) ;
+//			*ptr_hub += 1 ;
+//		}
+//		Frsky_Amp_hour_prescale = ah_temp ;
+//	}
 }
 
 // New model loaded
@@ -1399,8 +1472,8 @@ void FRSKY_setModelAlarms(void)
   FrskyAlarmSendState |= 0x0F ;
 	
 #ifndef SIMU
-  Frsky_current[0].Amp_hour_boundary = 360000L/ g_model.frsky.channels[0].opt.alarm.ratio ;
-	Frsky_current[1].Amp_hour_boundary = 360000L/ g_model.frsky.channels[1].opt.alarm.ratio ;
+//  Frsky_current[0].Amp_hour_boundary = 360000L/ g_model.frsky.channels[0].opt.alarm.ratio ;
+//	Frsky_current[1].Amp_hour_boundary = 360000L/ g_model.frsky.channels[1].opt.alarm.ratio ;
 #endif
 }
 

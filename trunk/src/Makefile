@@ -86,6 +86,8 @@ NOPOTSCROLL =
 
 PHASES = YES
 
+CUSTOM9X = NO
+
 N2F = NO
 
 # BEEPER. Values = BUZZER or BUZZER_MOD  or SPEAKER
@@ -286,6 +288,10 @@ endif
 
 ifeq ($(PHASES),YES)
  CPPDEFS += -DPHASES
+endif
+
+ifeq ($(CUSTOM9X),YES)
+ CPPDEFS += -DCUSTOM9X
 endif
 
 ifeq ($(CPU), 2561)

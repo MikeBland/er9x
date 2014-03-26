@@ -40,12 +40,12 @@ EFile theWriteFile; //separate write file
       memset (pDst+(sizeSrc), 0,  (sizeDst)-(sizeSrc));
 #define fullCopy(size) partCopy(size,size)
 */
-void generalDefault()
+void eeGeneralDefault()
 {
   memset(&g_eeGeneral,0,sizeof(g_eeGeneral));
   g_eeGeneral.myVers   =  MDVERS;
 //  g_eeGeneral.currModel=  0;
-  g_eeGeneral.contrast = lcd_nomContrast;
+  g_eeGeneral.contrast = LCD_NOMCONTRAST;
   g_eeGeneral.vBatWarn = 90;
   g_eeGeneral.stickMode=  1;
   for (uint8_t i = 0; i < 7; ++i) {
@@ -104,7 +104,11 @@ void modelDefaultWrite(uint8_t id)
 	qr = div( id+1, 10 ) ;
   g_model.name[5]='0'+qr.quot;
   g_model.name[6]='0'+qr.rem;
+#ifdef VERSION3
+  g_model.modelVersion = 3 ;
+#else
   g_model.modelVersion = 2 ;
+#endif
 	g_model.trimInc = 2 ;
 
 #ifdef NO_TEMPLATES
@@ -277,13 +281,57 @@ void eeLoadModel(uint8_t id)
 				}
 			}
 #endif	// CPUs
-			alert(PSTR("CHECK MIX SOURCES"));
+	    memmove( &Xmem.texpoData, &g_model.expoData, sizeof(Xmem.texpoData) ) ;
+			for (uint8_t i = 0 ; i < 4 ; i += 1 )
+			{
+				uint8_t dest = modeFixValue( i ) - 1 ;
+	    	memmove( &g_model.expoData[dest], &Xmem.texpoData[i], sizeof(Xmem.texpoData[0]) ) ;
+			}
+
+// sort expo/dr here
+
+			alert(PSTR("CHECK MIX/DR SOURCES"));
 			g_model.modelVersion = 2 ;
       eeDirty( EE_MODEL ) ;
 			eeWaitComplete() ;
 		}
 #endif	// FIX_MODE
 
+#ifdef VERSION3
+		if ( g_model.modelVersion < 3 )
+		{
+			for (uint8_t i = 0 ; i < NUM_CSW ; i += 1 )
+			{
+    		CSwData *cs = &g_model.customSw[i];
+				if ( cs->func == CS_LATCH )
+				{
+					cs->func = CS_GREATER ;
+				}
+				if ( cs->func == CS_FLIP )
+				{
+					cs->func = CS_LESS ;
+				}
+			}
+
+#if defined(CPUM128) || defined(CPUM2561)
+			for (uint8_t i = NUM_CSW ; i < NUM_CSW+EXTRA_CSW ; i += 1 )
+			{
+	    	CxSwData *cs = &g_model.xcustomSw[i-NUM_CSW];
+				if ( cs->func == CS_LATCH )
+				{
+					cs->func = CS_GREATER ;
+				}
+				if ( cs->func == CS_FLIP )
+				{
+					cs->func = CS_LESS ;
+				}
+			}
+#endif	// CPUs
+			g_model.modelVersion = 3 ;
+      eeDirty( EE_MODEL ) ;
+			eeWaitComplete() ;
+		}
+#endif
   }
 }
 
@@ -316,29 +364,51 @@ bool eeDuplicateModel(uint8_t id)
   //todo error handling
   return true;
 }
-void eeReadAll()
+
+bool eeReadGeneral()
 {
-  if(!EeFsOpen()  ||
-     EeFsck() < 0 ||
-     !eeLoadGeneral()
-  )
-  {
-    alert(PSTR(STR_BAD_EEPROM), true);
-    message(PSTR(STR_EE_FORMAT));
-    EeFsFormat();
-    //alert(PSTR("format ok"));
-    generalDefault();
-    // alert(PSTR("default ok"));
+  return (EeFsOpen() && EeFsck() >= 0 && eeLoadGeneral()) ;
+}
 
-    uint16_t sz = theFile.writeRlc(FILE_GENERAL,FILE_TYP_GENERAL,(uint8_t*)&g_eeGeneral,sizeof(EEGeneral),200);
-    if(sz!=sizeof(EEGeneral)) alert(PSTR(STR_GENWR_ERROR));
+//void eeReadAll()
+//{
+//  if(!EeFsOpen()  ||
+//     EeFsck() < 0 ||
+//     !eeLoadGeneral()
+//  )
+//  {
+//    alert(PSTR(STR_BAD_EEPROM), true);
+//    message(PSTR(STR_EE_FORMAT));
+//    EeFsFormat();
+//    //alert(PSTR("format ok"));
+//    generalDefault();
+//    // alert(PSTR("default ok"));
 
-    modelDefaultWrite(0);
-    //alert(PSTR("modef ok"));
-    //alert(PSTR("modwrite ok"));
+//    uint16_t sz = theFile.writeRlc(FILE_GENERAL,FILE_TYP_GENERAL,(uint8_t*)&g_eeGeneral,sizeof(EEGeneral),200);
+//    if(sz!=sizeof(EEGeneral)) alert(PSTR(STR_GENWR_ERROR));
 
-  }
-  eeLoadModel(g_eeGeneral.currModel);
+//    modelDefaultWrite(0);
+//    //alert(PSTR("modef ok"));
+//    //alert(PSTR("modwrite ok"));
+
+//  }
+//  eeLoadModel(g_eeGeneral.currModel);
+//}
+
+void eeWriteGeneral()
+{
+  alert(PSTR(STR_BAD_EEPROM), true);
+  message(PSTR(STR_EE_FORMAT));
+  EeFsFormat();
+  //alert(PSTR("format ok"));
+  // alert(PSTR("default ok"));
+
+  uint16_t sz = theFile.writeRlc(FILE_GENERAL,FILE_TYP_GENERAL,(uint8_t*)&g_eeGeneral,sizeof(EEGeneral),200);
+  if(sz!=sizeof(EEGeneral)) alert(PSTR(STR_GENWR_ERROR));
+
+  modelDefaultWrite(0);
+  //alert(PSTR("modef ok"));
+  //alert(PSTR("modwrite ok"));
 }
 
 

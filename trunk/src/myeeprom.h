@@ -129,7 +129,10 @@ PACK(typedef struct t_EEGeneral {
     uint8_t   res[3];
     uint8_t   crosstrim:1 ;
     uint8_t   FrskyPins:1 ;
-    uint8_t   spare1:6 ;
+    uint8_t   rotateScreen:1 ;
+    uint8_t   serialLCD:1 ;
+    uint8_t   SSD1306:1 ;
+    uint8_t   spare1:3 ;
 		uint8_t		stickReverse ;
 }) EEGeneral;
 
@@ -294,15 +297,20 @@ PACK(typedef struct t_Vario
 //  uint8_t  val ;
 //}) voiceSwData ;
 
-PACK(typedef struct t_Scaler
+// Scale a value
+PACK(typedef struct t_scale
 {
-	int8_t source ;
-	uint8_t flags ;
-// other??
-	uint8_t units ;
+  uint8_t source ;
+	int16_t offset ;
+	uint8_t mult ;
+	uint8_t div ;
+	uint8_t unit ;
+	uint8_t neg:1 ;
+	uint8_t precision:2 ;
+	uint8_t offsetLast:1 ;
+	uint8_t spare:4 ;
+	uint8_t name[4] ;
 }) ScaleData ;
-
-
 
 PACK(typedef struct t_ModelData {
     char      name[MODEL_NAME_LEN];             // 10 must be first for eeLoadModelName
@@ -364,6 +372,11 @@ PACK(typedef struct t_ModelData {
 		int8_t pxxFailsafe[16] ;
 		SafetySwData xvoiceSw[EXTRA_VOICE_SW] ;
     CxSwData xcustomSw[EXTRA_CSW];
+	uint8_t   currentSource ;
+	uint8_t   altSource ;
+	uint8_t phaseNames[MAX_MODES][6] ;
+	ScaleData Scalers[NUM_SCALERS] ;
+
 //		uint8_t   altSource ;
 }) ModelData;
 

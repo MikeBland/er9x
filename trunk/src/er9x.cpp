@@ -19,6 +19,7 @@
 #include "language.h"
 #include "pulses.h"
 #include "lcd.h"
+#include "menus.h"
 
 // Next two lines swapped as new complier/linker reverses them in memory!
 const
@@ -40,6 +41,12 @@ mode4 ail thr ele rud
 
 extern int16_t AltOffset ;
 
+#if defined(CPUM128) || defined(CPUM2561)
+uint8_t Last_switch[NUM_CSW+EXTRA_CSW] ;
+#else
+uint8_t Last_switch[NUM_CSW] ;
+#endif
+
 static void checkMem( void );
 static void checkTHR( void );
 ///   Pr�ft beim Einschalten ob alle Switches 'off' sind.
@@ -47,7 +54,7 @@ static void checkSwitches( void );
 
 #ifndef SIMU
 static void checkQuickSelect( void ); // Quick model select on startup
-static void getADC_osmp( void ) ;
+void getADC_osmp( void ) ;
 #endif
 
 EEGeneral  g_eeGeneral;
@@ -149,7 +156,11 @@ uint8_t modeFixValue( uint8_t value )
 
 uint8_t CS_STATE( uint8_t x)
 {
+#ifdef VERSION3
+	return ((x)<CS_AND ? CS_VOFS : ((((x)<CS_EQUAL) || ((x)==CS_LATCH)|| ((x)==CS_FLIP)) ? CS_VBOOL : ((x)<CS_TIME ? CS_VCOMP : CS_TIMER))) ;
+#else	
 	return ((x)<CS_AND ? CS_VOFS : ((x)<CS_EQUAL ? CS_VBOOL : ((x)<CS_TIME ? CS_VCOMP : CS_TIMER))) ;
+#endif
 }
 
 MixData *mixaddress( uint8_t idx )
@@ -166,7 +177,8 @@ LimitData *limitaddress( uint8_t idx )
 void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
 {
 	uint8_t chanLimit = NUM_XCHNRAW ;
-	if ( att & MIX_SOURCE )
+	uint8_t mix = att & MIX_SOURCE ;
+	if ( mix )
 	{
 #if GVARS
 		chanLimit += MAX_GVARS + 1 + 1 ;
@@ -191,7 +203,15 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
 #endif
 #ifdef FRSKY
     else
-        lcd_putsAttIdx(x,y,Str_telemItems,(idx-NUM_XCHNRAW),att);
+		{
+#if defined(CPUM128) || defined(CPUM2561)
+			if ( mix )
+			{
+				idx += TEL_ITEM_SC1-(chanLimit-NUM_XCHNRAW) ;
+			}
+#endif
+  	  lcd_putsAttIdx(x,y,Str_telemItems,(idx-NUM_XCHNRAW),att);
+		}
 #endif
 }
 
@@ -399,18 +419,10 @@ int16_t getValue(uint8_t i)
     return 0;
 }
 
-#if defined(CPUM128) || defined(CPUM2561)
-bool Last_switch[NUM_CSW+EXTRA_CSW] ;
-#else
-bool Last_switch[NUM_CSW] ;
-#endif
-
 bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 {
     bool ret_value ;
     uint8_t cs_index ;
-
-    if(level>5) return false; //prevent recursive loop going too deep
 
     switch(swtch){
     case  0:            return  nc;
@@ -459,7 +471,7 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 
     	if ( level>4 )
     	{
-    	    ret_value = Last_switch[cs_index] ;
+			    ret_value = Last_switch[cs_index] & 1 ;
     	    return swtch>0 ? ret_value : !ret_value ;
     	}
 
@@ -554,15 +566,23 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
     	case (CS_LESS):
     	    ret_value = (x<y);
     	    break;
+#ifndef VERSION3
     	case (CS_EGREATER):
     	    ret_value = (x>=y);
     	    break;
     	case (CS_ELESS):
     	    ret_value = (x<=y);
     	    break;
+#endif
     	case (CS_TIME):
     	    ret_value = CsTimer[cs_index] >= 0 ;
     	    break;
+#ifdef VERSION3
+		  case (CS_LATCH) :
+  		case (CS_FLIP) :
+  		  ret_value = Last_switch[cs_index] & 1 ;
+  		break ;
+#endif
     	default:
     	    ret_value = false;
     	    break;
@@ -573,10 +593,10 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 			}
 			if ( ret_value )
 			{
-				if ( cs->andsw )
+				int8_t x ;
+				x = cs->andsw ;
+				if ( x )
 				{
-					int8_t x ;
-					x = cs->andsw ;
 					if ( x > 8 )
 					{
 						x += 1 ;
@@ -596,7 +616,14 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
     	  	ret_value = getSwitch( x, 0, level+1) ;
 				}
 			}
-    	Last_switch[cs_index] = ret_value ;
+#ifdef VERSION3
+			if ( cs->func < CS_LATCH )
+			{
+#endif
+				Last_switch[cs_index] = ret_value ;
+#ifdef VERSION3
+			}
+#endif
     	return swtch>0 ? ret_value : !ret_value ;
 		}
 #endif
@@ -606,7 +633,7 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 
     if ( level>4 )
     {
-        ret_value = Last_switch[cs_index] ;
+    		ret_value = Last_switch[cs_index] & 1 ;
         return swtch>0 ? ret_value : !ret_value ;
     }
 
@@ -701,15 +728,23 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
     case (CS_LESS):
         ret_value = (x<y);
         break;
+#ifndef VERSION3
     case (CS_EGREATER):
         ret_value = (x>=y);
         break;
     case (CS_ELESS):
         ret_value = (x<=y);
         break;
+#endif
     case (CS_TIME):
         ret_value = CsTimer[cs_index] >= 0 ;
         break;
+#ifdef VERSION3
+  	case (CS_LATCH) :
+  	case (CS_FLIP) :
+    	ret_value = Last_switch[cs_index] & 1 ;
+	  break ;
+#endif
     default:
         ret_value = false;
         break;
@@ -720,10 +755,10 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
 		}
 		if ( ret_value )
 		{
-			if ( cs->andsw )
+			int8_t x ;
+			x = cs->andsw ;
+			if ( x )
 			{
-				int8_t x ;
-				x = cs->andsw ;
 				if ( x > 8 )
 				{
 					x += 1 ;
@@ -731,7 +766,14 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
       	ret_value = getSwitch( x, 0, level+1) ;
 			}
 		}
-    Last_switch[cs_index] = ret_value ;
+#ifdef VERSION3
+		if ( cs->func < CS_LATCH )
+		{
+#endif
+			Last_switch[cs_index] = ret_value ;
+#ifdef VERSION3
+		}
+#endif
     return swtch>0 ? ret_value : !ret_value ;
 
 }
@@ -808,7 +850,7 @@ static void doSplash()
 //#endif
 
         refreshDiplay();
-				lcdSetContrast() ;
+//				lcdSetContrast() ;
 
         clearKeyEvents();
 
@@ -861,7 +903,7 @@ void alertMessages( const prog_char * s, const prog_char * t )
     lcd_puts_Pleft(4*FH,s);
     lcd_puts_Pleft(5*FH,t);
     lcd_puts_Pleft(6*FH,  PSTR(STR_PRESS_KEY_SKIP) ) ;
-		lcdSetContrast() ;
+//		lcdSetContrast() ;
 }
 
 
@@ -1235,7 +1277,7 @@ void almess( const prog_char * s, uint8_t type )
 void message(const prog_char * s)
 {
 	almess( s, MESS_TYPE ) ;
-	lcdSetContrast() ;
+//	lcdSetContrast() ;
 }
 
 void alert(const prog_char * s, bool defaults)
@@ -1247,7 +1289,7 @@ void alert(const prog_char * s, bool defaults)
 	}
 	almess( s, ALERT_TYPE ) ;
   
-	lcdSetRefVolt(defaults ? lcd_nomContrast : g_eeGeneral.contrast);
+	lcdSetRefVolt(defaults ? LCD_NOMCONTRAST : g_eeGeneral.contrast);
   audioVoiceDefevent(AU_ERROR, V_ALERT);
 
     clearKeyEvents();
@@ -2407,7 +2449,7 @@ uint16_t anaIn(uint8_t chan)
   s_ana[chan] = (ADC + s_ana[chan]) >> 1;
   */
 
-static void getADC_osmp()
+void getADC_osmp()
 {
     //  uint16_t temp_ana[8] = {0};
     uint16_t temp_ana ;
@@ -2761,8 +2803,6 @@ int main(void)
 
 #endif
 
-		lcd_init();
-
 //		PORTB |= (1<<OUT_B_LIGHT) ;				// Latch clock high
 //		PORTA_LCD_DAT = 0 ; // VOICE_CLOCK_BIT ;			// Latch data set
 //		Voice.VoiceLatch = 0 ; // VOICE_CLOCK_BIT ;
@@ -2834,9 +2874,19 @@ int main(void)
 
     g_menuStack[0] =  menuProc0;
 
-   lcdSetRefVolt(lcd_nomContrast);
-    eeReadAll();
-    uint8_t cModel = g_eeGeneral.currModel;
+	if (eeReadGeneral())
+	{
+		lcd_init() ;   // initialize LCD module after reading eeprom
+  }
+	else
+  {
+    eeGeneralDefault(); // init g_eeGeneral with default values
+    lcd_init();         // initialize LCD module for ALERT box
+    eeWriteGeneral();   // format/write back to eeprom
+	}
+	uint8_t cModel = g_eeGeneral.currModel;
+	eeLoadModel( cModel ) ;
+  
     
 #ifdef FRSKY
     FRSKY_Init( 0 ) ;
@@ -2844,7 +2894,7 @@ int main(void)
 		
 		checkQuickSelect();
 
-		lcdSetContrast() ;
+//		lcdSetContrast() ;
 //    if(g_eeGeneral.lightSw || g_eeGeneral.lightAutoOff || g_eeGeneral.lightOnStickMove) // if lightswitch is defined or auto off
 //        BACKLIGHT_ON;
 //    else
@@ -2904,7 +2954,7 @@ int main(void)
 //    popMenu(true);  
     g_menuStack[1] = menuProcModelSelect ;	// this is so the first instance of [MENU LONG] doesn't freak out!
 
-		lcdSetContrast() ;
+//		lcdSetContrast() ;
 
     if(cModel!=g_eeGeneral.currModel)
     {
@@ -2959,7 +3009,9 @@ int16_t getAltbaroWithOffset()
 
 void mainSequence()
 {
-  uint16_t t0 = getTmr16KHz();
+	CalcScaleNest = 0 ;
+  
+	uint16_t t0 = getTmr16KHz();
 	uint8_t numSafety = 16 - g_model.numVoice ;
   //      getADC[g_eeGeneral.filterInput]();
 //    if ( g_eeGeneral.filterInput == 1)
@@ -3131,6 +3183,44 @@ void mainSequence()
 				}
 				CsTimer[i] = y ;
 			}
+#ifdef VERSION3
+			if ( cs->func == CS_LATCH )
+			{
+		    if (getSwitch( cs->v1, 0, 0) )
+				{
+					Last_switch[i] = 1 ;
+				}
+				else
+				{
+			    if (getSwitch( cs->v2, 0, 0) )
+					{
+						Last_switch[i] = 0 ;
+					}
+				}
+			}
+			if ( cs->func == CS_FLIP )
+			{
+		    if (getSwitch( cs->v1, 0, 0) )
+				{
+					if ( ( Last_switch[i] & 2 ) == 0 )
+					{
+						// Clock it!
+			      if (getSwitch( cs->v2, 0, 0) )
+						{
+							Last_switch[i] = 3 ;
+						}
+						else
+						{
+							Last_switch[i] = 2 ;
+						}
+					}
+				}
+				else
+				{
+					Last_switch[i] &= ~2 ;
+				}
+			}
+#endif
 		}
 
 #if defined(CPUM128) || defined(CPUM2561)
@@ -3206,6 +3296,44 @@ void mainSequence()
 				}
 				CsTimer[i] = y ;
 			}
+#ifdef VERSION3
+			if ( cs->func == CS_LATCH )
+			{
+		    if (getSwitch( cs->v1, 0, 0) )
+				{
+					Last_switch[i] = 1 ;
+				}
+				else
+				{
+			    if (getSwitch( cs->v2, 0, 0) )
+					{
+						Last_switch[i] = 0 ;
+					}
+				}
+			}
+			if ( cs->func == CS_FLIP )
+			{
+		    if (getSwitch( cs->v1, 0, 0) )
+				{
+					if ( ( Last_switch[i] & 2 ) == 0 )
+					{
+						// Clock it!
+			      if (getSwitch( cs->v2, 0, 0) )
+						{
+							Last_switch[i] = 3 ;
+						}
+						else
+						{
+							Last_switch[i] = 2 ;
+						}
+					}
+				}
+				else
+				{
+					Last_switch[i] &= ~2 ;
+				}
+			}
+#endif
 		}
 #endif
 		AlarmControl.VoiceCheckFlag = 0 ;
@@ -3393,32 +3521,50 @@ void mainSequence()
 //            else if( level[3] == alarm_yellow) FRSKY_alarmPlay(1,1);
 
 					// Check for current alarm
-					struct t_FrSkyChannelData *aaa = &g_model.frsky.channels[0] ;
-        	for (int i=0; i<2; i++)
+					if ( g_model.currentSource )
 					{
-						// To be enhanced by checking the type as well
-       		  if (aaa->opt.alarm.ratio)
+						if ( g_model.frsky.frskyAlarmLimit )
 						{
-     		      if ( aaa->opt.alarm.type == 3 )		// Current (A)
+							if ( ( FrskyHubData[FR_AMP_MAH] >> 6 ) >= g_model.frsky.frskyAlarmLimit )
 							{
-								if ( g_model.frsky.frskyAlarmLimit )
+								if ( g_eeGeneral.speakerMode & 2 )
 								{
-    		          if ( (  getTelemetryValue(FR_A1_MAH+i) >> 6 ) >= g_model.frsky.frskyAlarmLimit )
-									{
-										if ( g_eeGeneral.speakerMode & 2 )
-										{
-											putVoiceQueue( V_CAPACITY ) ;
-										}
-										else
-										{
-											audio.event( g_model.frsky.frskyAlarmSound ) ;
-										}
-									}
+									putVoiceQueue( V_CAPACITY ) ;
+								}
+								else
+								{
+									audio.event( g_model.frsky.frskyAlarmSound ) ;
 								}
 							}
-       		  }
-						aaa += 1 ;
-        	}
+						}
+					}
+				
+//					struct t_FrSkyChannelData *aaa = &g_model.frsky.channels[0] ;
+//        	for (int i=0; i<2; i++)
+//					{
+//						// To be enhanced by checking the type as well
+//       		  if (aaa->opt.alarm.ratio)
+//						{
+//     		      if ( aaa->opt.alarm.type == 3 )		// Current (A)
+//							{
+//								if ( g_model.frsky.frskyAlarmLimit )
+//								{
+//    		          if ( (  getTelemetryValue(FR_A1_MAH+i) >> 6 ) >= g_model.frsky.frskyAlarmLimit )
+//									{
+//										if ( g_eeGeneral.speakerMode & 2 )
+//										{
+//											putVoiceQueue( V_CAPACITY ) ;
+//										}
+//										else
+//										{
+//											audio.event( g_model.frsky.frskyAlarmSound ) ;
+//										}
+//									}
+//								}
+//							}
+//       		  }
+//						aaa += 1 ;
+//        	}
       }
 #endif
 
@@ -3426,51 +3572,54 @@ void mainSequence()
 			// Carried out evey 100 mS
 			{
 				static uint8_t periodCounter ;
+				uint8_t pCounter = periodCounter ;
 					
-				periodCounter += 0x11 ;
-				periodCounter &= 0xF7 ;
-				if ( periodCounter > 0x5F )
+				pCounter += 0x11 ;
+				if ( ( pCounter & 0x0F ) > 11 )
 				{
-					periodCounter &= 0x0F ;
+					pCounter &= 0xF0 ;
 				}
+				periodCounter = pCounter ;
 				for ( i = 0 ; i < numSafety ; i += 1 )
 				{
     			SafetySwData *sd = &g_model.safetySw[i] ;
 					if (sd->opt.ss.mode == 1)
 					{
-						if(getSwitch( sd->opt.ss.swtch,0))
+						if ( ( pCounter & 0x30 ) == 0 )
 						{
-							audio.event( ((g_eeGeneral.speakerMode & 1) == 0) ? 1 : sd->opt.ss.val ) ;
+							if(getSwitch( sd->opt.ss.swtch,0))
+							{
+								audio.event( ((g_eeGeneral.speakerMode & 1) == 0) ? 1 : sd->opt.ss.val ) ;
+							}
 						}
 					}
 					if (sd->opt.ss.mode == 2)
 					{
-						uint8_t pCounter = periodCounter ;
 						if ( sd->opt.ss.swtch > MAX_DRSWITCH )
 						{
 							switch ( sd->opt.ss.swtch - MAX_DRSWITCH -1 )
 							{
 								case 0 :
-									if ( ( pCounter & 3 ) == 0 )
+									if ( ( pCounter & 0x70 ) == 0 )
 									{
 										voice_telem_item( sd->opt.ss.val ) ;
 									}
 								break ;
 								case 1 :
-									if ( ( pCounter & 0xF0 ) == 0 )
+									if ( ( pCounter & 0x0F ) == 0 )
 									{
 										voice_telem_item( sd->opt.ss.val ) ;
 									}
 								break ;
 								case 2 :
-									if ( ( pCounter & 7 ) == 2 )
+									if ( ( pCounter & 0xF0 ) == 0x20 )
 									{
 										voice_telem_item( sd->opt.ss.val ) ;
 									}
 								break ;
 							}
 						}
-						else if ( ( pCounter & 1 ) == 0 )		// Every 4 seconds
+						else if ( ( pCounter & 0x30 ) == 0 )		// Every 4 seconds
 						{
 							if(getSwitch( sd->opt.ss.swtch,0))
 							{
