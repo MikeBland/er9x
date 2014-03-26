@@ -115,7 +115,7 @@
 
 // menus.cpp
 // ***********
-#define STR_TELEM_ITEMS	   "\004----A1= A2= RSSITSSITim1Tim2HoehGHoeGGesT1= T2= UPM TANKMah1Mah2CvltAkkuAmpsMah CtotFasVBesXBesYBesZVGesGvr1Gvr2Gvr3Gvr4Gvr5Gvr6Gvr7FwatRxV Hdg "
+#define STR_TELEM_ITEMS	   "\004----A1= A2= RSSITSSITim1Tim2HoehGHoeGGesT1= T2= UPM TANKMah1Mah2CvltAkkuAmpsMah CtotFasVBesXBesYBesZVGesGvr1Gvr2Gvr3Gvr4Gvr5Gvr6Gvr7FwatRxV Hdg A3= A4= SC1 SC2 SC3 SC4 "
 #define STR_TELEM_SHORT    "\004----TIM1TIM2AKKUGvr1Gvr2Gvr3Gvr4Gvr5Gvr6Gvr7"
 #define STR_GV             "GV"
 #define STR_OFF_ON         "AUSAN "
@@ -324,7 +324,11 @@
 // CURV_STR indexed 3 chars each
 #define CURV_STR           "\003---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
 // CSWITCH_STR indexed 7 chars each
+#ifdef VERSION3
+#define CSWITCH_STR        "\007----   v>ofs  v<ofs  |v|>ofs|v|<ofsUND    ODER   XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""Latch  ""F-Flop ZeitAus"
+#else
 #define CSWITCH_STR        "\007----   v>ofs  v<ofs  |v|>ofs|v|<ofsUND    ODER   XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""v1>=v2 ""v1<=v2 ZeitAus"
+#endif
 
 #define SWASH_TYPE_STR     "\006---   ""120   ""120X  ""140   ""90    "
 

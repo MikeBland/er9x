@@ -69,7 +69,7 @@ struct MState2
   void init(){m_posVert=0;};
   void check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8_t menuTabSize, const prog_uint8_t *subTab, uint8_t subTabMax, uint8_t maxrow);
   void check_simple(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8_t menuTabSize, uint8_t maxrow);
-  void check_submenu_simple(uint8_t event, uint8_t maxrow);
+  //void check_submenu_simple(uint8_t event, uint8_t maxrow);
 };
 
 uint8_t evalOffset(int8_t sub, uint8_t max) ;
@@ -115,5 +115,81 @@ SIMPLE_SUBMENU_NOTITLE(lines_count-1)
 //#else
 //#define displayGVar(x, y, v) lcd_outdez8(x, y, v)
 //#endif
+
+extern uint8_t CalcScaleNest ;
+extern int16_t calc_scaler( uint8_t index, uint8_t *unit, uint8_t *num_decimals) ;
+
+#define V_SC1			-15
+#define V_SC2			-14
+#define V_SC3			-13
+#define V_SC4			-12
+
+#define FR_WATT		-11
+
+#define V_GVAR1		-10
+#define V_GVAR2		-9
+#define V_GVAR3		-8
+#define V_GVAR4		-7
+#define V_GVAR5		-6
+#define V_GVAR6		-5
+#define V_GVAR7		-4
+
+#define BATTERY		-3
+#define TIMER1		-2
+#define TIMER2		-1
+
+#define TEL_ITEM_A1			0
+#define TEL_ITEM_A2			1
+#define TEL_ITEM_RSSI		2
+#define TEL_ITEM_TSSI		3
+#define TEL_ITEM_TIM1		4
+#define TEL_ITEM_TIM2		5
+#define TEL_ITEM_BALT		6
+#define TEL_ITEM_GALT		7
+#define TEL_ITEM_GSPD		8
+#define TEL_ITEM_T1			9
+#define TEL_ITEM_T2			10
+#define TEL_ITEM_RPM		11
+#define TEL_ITEM_FUEL		12
+#define TEL_ITEM_MAH1		13
+#define TEL_ITEM_MAH2		14
+#define TEL_ITEM_CVLT		15
+#define TEL_ITEM_BATT		16
+#define TEL_ITEM_AMPS		17
+#define TEL_ITEM_MAHC		18
+#define TEL_ITEM_CTOT		19
+#define TEL_ITEM_FASV		20
+#define TEL_ITEM_ACCX		21
+#define TEL_ITEM_ACCY		22
+#define TEL_ITEM_ACCZ		23
+#define TEL_ITEM_VSPD		24
+#define TEL_ITEM_GVAR1	25
+#define TEL_ITEM_GVAR2	26
+#define TEL_ITEM_GVAR3	27
+#define TEL_ITEM_GVAR4	28
+#define TEL_ITEM_GVAR5	29
+#define TEL_ITEM_GVAR6	30
+#define TEL_ITEM_GVAR7	31
+#define TEL_ITEM_FWATT	32
+#define TEL_ITEM_RXV		33
+#define TEL_ITEM_GHDG		34
+#define TEL_ITEM_A3			35
+#define TEL_ITEM_A4			36
+#define TEL_ITEM_SC1		37
+#define TEL_ITEM_SC2		38
+#define TEL_ITEM_SC3		39
+#define TEL_ITEM_SC4		40
+
+
+// units
+#define U_FEET			0
+#define U_VOLTS			1
+#define	U_DEGREES_C 2
+#define	U_DEGREES_F 3
+#define	U_CAPACITY	4
+#define U_AMPS			5
+#define	U_METRES		6
+#define	U_WATTS			7
+
 
 #endif

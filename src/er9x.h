@@ -19,6 +19,7 @@
 //#define VARIO	1
 
 #define VERS 1
+//#define VERSION3	1
 
 #define GVARS	1
 #define STACK_TRACE				0
@@ -26,6 +27,15 @@
 
 #define FIX_MODE		1
 #define FMODE_TRIM	1
+
+/* Building an er9x hex for custom transmitter */
+#ifdef CUSTOM9X
+#define LCD_OTHER   1
+#define LCD_EEPE    1
+#else
+#define LCD_OTHER   0    /* turn on these if you know what you're doing */
+#define LCD_EEPE    0
+#endif
 
 #include <inttypes.h>
 #include <string.h>
@@ -100,6 +110,11 @@ typedef uint32_t  prog_uint32_t __attribute__((__progmem__));//,deprecated("prog
 //#define eeprom_write_block eeWriteBlockCmp
 
 #endif
+
+#if defined(CPUM128) || defined(CPUM2561)
+#define	SCALERS
+#endif
+
 
 #include "file.h"
 //
@@ -273,10 +288,15 @@ extern const prog_char APM Str_Switches[] ;
 #define CS_NEQUAL    (uint8_t)9
 #define CS_GREATER   (uint8_t)10
 #define CS_LESS      (uint8_t)11
-#define CS_EGREATER  (uint8_t)12
-#define CS_ELESS     (uint8_t)13
+#ifdef VERSION3
+#define CS_LATCH  	 (uint8_t)12
+#define CS_FLIP    	 (uint8_t)13
+#else
+#define CS_EGREATER   (uint8_t)12
+#define CS_ELESS      (uint8_t)13
+#endif
 #define CS_TIME	     (uint8_t)14
-#define CS_MAXF      (uint8_t)14  //max function
+#define CS_MAXF      14  //max function
 
 #define CS_VOFS       (uint8_t)0
 #define CS_VBOOL      (uint8_t)1
@@ -660,8 +680,10 @@ void eeWriteBlockCmp(const void *i_pointer_ram, uint16_t i_pointer_eeprom, size_
 void eeWaitComplete();
 void eeDirty(uint8_t msk);
 void eeCheck(bool immediately=false);
-//void eeWriteGeneral();
-void eeReadAll();
+void eeGeneralDefault();
+bool eeReadGeneral();
+void eeWriteGeneral();
+//void eeReadAll();
 void eeLoadModelName(uint8_t id,char*buf,uint8_t len);
 //uint16_t eeFileSize(uint8_t id);
 void eeLoadModel(uint8_t id);
@@ -681,6 +703,8 @@ bool eeModelExists(uint8_t id);
 //#define NUM_XCHNRAW (CHOUT_BASE+NUM_CHNOUT+1) // NUMCH + P1P2P3+ AIL/RUD/ELE/THR + MAX/FULL + CYC1/CYC2/CYC3 +3POS
 ///number of real output channels (CH1-CH8) plus virtual output channels X1-X4
 #define NUM_XCHNOUT (NUM_CHNOUT) //(NUM_CHNOUT)//+NUM_VIRT)
+
+#define NUM_SCALERS	4
 
 #define MIX_3POS	(NUM_XCHNRAW+1)
 
@@ -786,7 +810,7 @@ extern int16_t calibratedStick[7];
 extern int8_t phyStick[4] ;
 extern int16_t ex_chans[NUM_CHNOUT];
 
-//void getADC_single();
+void getADC_osmp();
 //void getADC_filt();
 
 //void checkTHR();
@@ -847,9 +871,14 @@ extern const prog_uchar APM s9xsplash[] ;
 extern const prog_char APM Str_telemItems[] ;
 extern const prog_int8_t APM TelemIndex[] ;
 extern int16_t convertTelemConstant( int8_t channel, int8_t value) ;
+extern int16_t getValue(uint8_t i) ;
 
 #ifdef FRSKY
-#define NUM_TELEM_ITEMS 35
+#if defined(CPUM128) || defined(CPUM2561)
+#define NUM_TELEM_ITEMS 41
+#else
+#define NUM_TELEM_ITEMS 37
+#endif
 #else
 #define NUM_TELEM_ITEMS 10
 #endif
@@ -962,6 +991,7 @@ union t_xmem
 //	struct MixTab s_mixTab[MAX_MIXERS+NUM_XCHNOUT+1] ;	
 	struct t_calib Cal_data ;
 	char buf[sizeof(g_model.name)+5];
+	ExpoData texpoData[4] ;
 //#if defined(CPUM128) || defined(CPUM2561)
 //  uint8_t file_buffer[256];
 //#else

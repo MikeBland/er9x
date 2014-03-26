@@ -10,6 +10,15 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 26-Mar-2014  MPB (r811)
+Telemetry - accept OXsensor voltage
+Add Scalers for '128/'2561
+Add telemetry items for A3 and A4 (SPort)
+Add custom LCD support
+Fix EXPO/DR bugs on upgrading
+FMx displayed on main screen for active flight mode.
+
+******************************************
 CHANGELOG: 17-Feb-2014  MPB (r810)
 Added "THIS" as mix source
 Code shrinking!
