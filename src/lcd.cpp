@@ -89,8 +89,11 @@ void putsVBat(uint8_t x,uint8_t y,uint8_t att)
 void lcd_img(uint8_t i_x,uint8_t i_y,const prog_uchar * imgdat,uint8_t idx/*,uint8_t mode*/)
 {
   const prog_uchar  *q = imgdat;
+
   uint8_t w    = pgm_read_byte(q++);
-  uint8_t hb   = (pgm_read_byte(q++)+7)/8;
+  uint8_t hb   = pgm_read_byte(q++) ;
+	hb += 7 ;
+	hb /= 8 ;
   uint8_t sze1 = pgm_read_byte(q++);
   q += idx*sze1;
 //  bool    inv  = (mode & INVERS) ? true : (mode & BLINK ? BLINK_ON_PHASE : false);
@@ -112,7 +115,11 @@ uint8_t lcd_putc(uint8_t x,uint8_t y,const char c )
 // invers: 0 no 1=yes 2=blink
 uint8_t lcd_putcAtt(uint8_t x,uint8_t y,const char c,uint8_t mode)
 {
-  uint8_t *p    = &displayBuf[ y / 8 * DISPLAY_W + x ];
+#if (DISPLAY_W==128)
+  uint8_t *p  = &displayBuf[ (y & 0xF8) * 16 + x ];
+#else  
+	uint8_t *p  = &displayBuf[ y / 8 * DISPLAY_W + x ];
+#endif
     //uint8_t *pmax = &displayBuf[ DISPLAY_H/8 * DISPLAY_W ];
 		if ( c < 22 )		// Move to specific x position (c)*FW
 		{
@@ -241,6 +248,10 @@ void lcd_putsnAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t len,uint8_t mo
 //	size = mode & DBLSIZE ;
   while(len!=0) {
     char c = (source) ? *s++ : pgm_read_byte(s++);
+		if ( c == 0 )
+		{
+			return ;
+		}
     x = lcd_putcAtt(x,y,c,mode);
 //    x+=FW;
 //		if ((size)&& (c!=0x2E)) x+=FW; //check for decimal point
@@ -476,7 +487,11 @@ void lcd_char_inverse( uint8_t x, uint8_t y, uint8_t w, uint8_t blink )
 		return ;
 	}
 	uint8_t end = x + w ;
-  uint8_t *p = &displayBuf[ y / 8 * DISPLAY_W + x ];
+#if (DISPLAY_W==128)
+  uint8_t *p  = &displayBuf[ (y & 0xF8) * 16 + x ];
+#else  
+	uint8_t *p  = &displayBuf[ y / 8 * DISPLAY_W + x ];
+#endif
 
 	while ( x < end )
 	{
@@ -517,14 +532,22 @@ void lcd_write_bits( uint8_t *p, uint8_t mask )
 
 void lcd_plot(uint8_t x,uint8_t y)
 {
-  uint8_t *p   = &displayBuf[ y / 8 * DISPLAY_W + x ];
+#if (DISPLAY_W==128)
+  uint8_t *p  = &displayBuf[ (y & 0xF8) * 16 + x ];
+#else  
+	uint8_t *p  = &displayBuf[ y / 8 * DISPLAY_W + x ];
+#endif
 	lcd_write_bits( p, XBITMASK(y%8) ) ;
 }
 
 void lcd_hlineStip(unsigned char x,unsigned char y, signed char w,uint8_t pat)
 {
   if(w<0) {x+=w; w=-w;}
-  uint8_t *p  = &displayBuf[ y / 8 * DISPLAY_W + x ];
+#if (DISPLAY_W==128)
+  uint8_t *p  = &displayBuf[ (y & 0xF8) * 16 + x ];
+#else  
+	uint8_t *p  = &displayBuf[ y / 8 * DISPLAY_W + x ];
+#endif
   uint8_t msk = XBITMASK(y%8);
   while(w){
     if ( p>=DISPLAY_END)
@@ -551,7 +574,11 @@ void lcd_vline(uint8_t x,uint8_t y, int8_t h)
 {
 //    while ((y+h)>=DISPLAY_H) h--;
   if (h<0) { y+=h; h=-h; }
-  uint8_t *p  = &displayBuf[ y / 8 * DISPLAY_W + x ];
+#if (DISPLAY_W==128)
+  uint8_t *p  = &displayBuf[ (y & 0xF8) * 16 + x ];
+#else  
+	uint8_t *p  = &displayBuf[ y / 8 * DISPLAY_W + x ];
+#endif
   y &= 0x07 ;
 	if ( y )
 	{
@@ -789,7 +816,7 @@ void lcdSetRefVolt(uint8_t val)
 {
   LcdLock = 1 ;            // Lock LCD data lines
   lcdSendCtl(0x81);
-#if SSD1306
+#if _SSD1306
   lcdSendCtl((val << 2) + 3);  // [3-255]
 #else
   lcdSendCtl(val);             // [0-63]

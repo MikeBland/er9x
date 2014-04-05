@@ -276,7 +276,7 @@ uint16_t B3_comp_value ;
 void setupPulsesPPM( uint8_t proto )
 {
 #define PPM_CENTER 1500*2
-  int16_t PPM_range = g_model.extendedLimits ? 640*2 : 512*2;   //range of 0.7..1.7msec
+  int16_t PPM_range ;
   
 	uint8_t startChan = g_model.ppmStart ;
 	  
@@ -295,6 +295,7 @@ void setupPulsesPPM( uint8_t proto )
 	{
 		*ptr++ = q ;
 	}
+  PPM_range = g_model.extendedLimits ? 640*2 : 512*2;   //range of 0.7..1.7msec
 	for( uint8_t i = (proto == PROTO_PPM16) ? p-8 : startChan ;i<p ; i++ )
   { //NUM_CHNOUT
 //    int16_t v = max(min(g_chans512[i],PPM_range),-PPM_range) + PPM_CENTER;
