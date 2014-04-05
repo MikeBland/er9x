@@ -141,8 +141,10 @@
 #define STR_TELEMETRY2     "TELEMETRIE2"
 #define STR_TX_RSSIALRM    "SnRSSIAlrm" // Sender
 #define STR_NUM_BLADES     "Num Blaetter"
+#if ALT_ALARM
 #define STR_ALT_ALARM      "HoeAlarm"
 #define STR_OFF122400      "\003AUS122400"
+#endif
 #define STR_VOLT_THRES     "MaxSpannung"
 #define STR_GPS_ALTMAIN    "GPSHoeheHalten"
 #define STR_CUSTOM_DISP    "Ind. Bildschirm"
@@ -168,7 +170,9 @@
 #define STR_EDIT_MIX       "Bearb MISCHER " // Bearbeite Mischer
 #define STR_2SOURCE        "\002Quelle"
 #define STR_2WEIGHT        "\002Dual Rate"
+#ifdef FMODE_TRIM
 #define STR_FMTRIMVAL      "FmTrimVal"
+#endif
 #define STR_OFFSET         "Offset"
 #define STR_2FIX_OFFSET    "\002Fix Offset"
 #define STR_FLMODETRIM     "\002FlModustrim"

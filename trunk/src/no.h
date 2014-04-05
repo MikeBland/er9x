@@ -139,8 +139,10 @@
 #define STR_TELEMETRY2     "TELEMETRY2"
 #define STR_TX_RSSIALRM    "TxRSSIalrm"
 #define STR_NUM_BLADES     "Num Blades"
+#if ALT_ALARM
 #define STR_ALT_ALARM      "AltAlarm"
 #define STR_OFF122400      "\003OFF122400"
+#endif
 #define STR_VOLT_THRES     "Volt Thres="
 #define STR_GPS_ALTMAIN    "GpsAltMain"
 #define STR_CUSTOM_DISP    "Custom Display"
@@ -166,7 +168,9 @@
 #define STR_EDIT_MIX       "Rediger MIX "
 #define STR_2SOURCE        "\002Kilde"
 #define STR_2WEIGHT        "\002Vekt"
+#ifdef FMODE_TRIM
 #define STR_FMTRIMVAL      "FmTrimVal"
+#endif
 #define STR_OFFSET         "Offset"
 #define STR_2FIX_OFFSET    "\002Fix Offset"
 #define STR_FLMODETRIM     "\002FlModetrim"

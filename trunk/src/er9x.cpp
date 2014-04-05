@@ -1651,6 +1651,11 @@ int8_t checkIncDec_hm0( int8_t i_val, int8_t i_max)
     return checkIncDec( i_val,0,i_max,EE_MODEL);
 }
 
+int16_t checkIncDec_hmu0( int16_t i_val, uint8_t i_max)
+{
+  return checkIncDec16( i_val,0,i_max,EE_MODEL) ;
+}
+
 int8_t checkIncDec_hg( int8_t i_val, int8_t i_min, int8_t i_max)
 {
     return checkIncDec( i_val,i_min,i_max,EE_GENERAL);
@@ -3476,6 +3481,7 @@ void mainSequence()
 							low_cell = FrskyVolts[k] ;
 						}
 
+#if VOLT_THRESHOLD
 						if ( audio_sounded == 0 )
 						{
 	        		if ( FrskyVolts[k] < g_model.frSkyVoltThreshold )
@@ -3484,6 +3490,7 @@ void mainSequence()
 								audio_sounded = 1 ;
 			        }
 						}
+#endif
 	  			}
 					// Now we have total volts available
 					FrskyHubData[FR_CELLS_TOT] = total_volts / 5 ;
@@ -3521,6 +3528,7 @@ void mainSequence()
 //            else if( level[3] == alarm_yellow) FRSKY_alarmPlay(1,1);
 
 					// Check for current alarm
+#ifdef MAH_LIMIT			
 					if ( g_model.currentSource )
 					{
 						if ( g_model.frsky.frskyAlarmLimit )
@@ -3538,6 +3546,7 @@ void mainSequence()
 							}
 						}
 					}
+#endif // MAH_LIMIT
 				
 //					struct t_FrSkyChannelData *aaa = &g_model.frsky.channels[0] ;
 //        	for (int i=0; i<2; i++)

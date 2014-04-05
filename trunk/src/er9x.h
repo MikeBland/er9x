@@ -22,11 +22,17 @@
 //#define VERSION3	1
 
 #define GVARS	1
-#define STACK_TRACE				0
-#define ALT_ALARM		1
-
 #define FIX_MODE		1
+#define STACK_TRACE				0
+
+#define VOLT_THRESHOLD 1
+#define MAH_LIMIT		1
+#define ALT_ALARM		1
 #define FMODE_TRIM	1
+#if defined(CPUM128) || defined(CPUM2561)
+#define	SCALERS
+#endif
+
 
 /* Building an er9x hex for custom transmitter */
 #ifdef CUSTOM9X
@@ -110,11 +116,6 @@ typedef uint32_t  prog_uint32_t __attribute__((__progmem__));//,deprecated("prog
 //#define eeprom_write_block eeWriteBlockCmp
 
 #endif
-
-#if defined(CPUM128) || defined(CPUM2561)
-#define	SCALERS
-#endif
-
 
 #include "file.h"
 //
@@ -610,6 +611,7 @@ int8_t checkIncDec_hm( int8_t i_val, int8_t i_min, int8_t i_max);
 int8_t checkIncDec_hg( int8_t i_val, int8_t i_min, int8_t i_max);
 int8_t checkIncDec_hg0( int8_t i_val, int8_t i_max) ;
 int8_t checkIncDec_hm0(int8_t i_val, int8_t i_max) ;
+int16_t checkIncDec_hmu0(int16_t i_val, uint8_t i_max) ;
 
 #define CHECK_INCDEC_H_GENVAR( var, min, max)     \
     var = checkIncDec_hg(var,min,max)

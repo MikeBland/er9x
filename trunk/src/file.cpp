@@ -205,10 +205,15 @@ void EeFsFormat()
   eeFs.freeList = FIRSTBLK;
   EeFsFlush();
 }
+
 bool EeFsOpen()
 {
   eeprom_read_block(&eeFs,0,sizeof(eeFs));
 
+	if ( eeFs.mySize == 0 )
+	{
+		eeFs.mySize = sizeof(eeFs) ;
+	}
 #if defined(CPUM128) || defined(CPUM2561)
 	uint8_t i ;
 	uint8_t j ;
