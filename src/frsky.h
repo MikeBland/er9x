@@ -67,6 +67,7 @@
 #define FR_TRASH			43	// Used for invalid id
 
 #define FR_SPORT_ALT	0xFF
+#define FR_SPORT_GALT	0xFE
 
 #define HUBDATALENGTH 44
 #define HUBMINMAXLEN	9			// Items with a min and max field
@@ -179,6 +180,29 @@ DataID Meaning       Unit   Range   Note
 #define BATT_ID            0xf104
 #define SWR_ID             0xf105
 
+// MAVLINK values for IDs
+//#define FR_ID_SPEED               0x0830 
+//#define FR_ID_VFAS                 0x0210 
+//#define FR_ID_CURRENT         0x0200 
+//#define FR_ID_RPM                  0x050F      
+//#define FR_ID_ALTITUDE         0x0100
+//#define FR_ID_FUEL                 0x0600   
+//#define FR_ID_ADC1                0xF102   
+//#define FR_ID_ADC2                0xF103      
+//#define FR_ID_LATLONG         0x0800
+//#define FR_ID_CAP_USED       0x0600
+//#define FR_ID_VARIO               0x0110
+//#define FR_ID_CELLS              0x0300     
+//#define FR_ID_CELLS_LAST   0x030F      
+//#define FR_ID_HEADING          0x0840
+//#define FR_ID_ACCX               0x0700
+//#define FR_ID_ACCY               0x0710
+//#define FR_ID_ACCZ               0x0720
+//#define FR_ID_T1                     0x0400
+//#define FR_ID_T2                     0x0410
+//#define FR_ID_GPS_ALT          0x0820
+
+
 // Sensors
 #define ALT_FIRST_ID       0x0100
 #define ALT_LAST_ID        0x010f
@@ -219,6 +243,9 @@ DataID Meaning       Unit   Range   Note
 #define GPS_SPEED_FIRST_ID 0x0830
 #define GPS_SPEED_LAST_ID  0x083f
 #define GPS_SPEED_ID_8		0x83
+#define GPS_ALT_FIRST_ID 0x0820
+#define GPS_ALT_LAST_ID  0x082f
+#define GPS_ALT_ID_8		0x82
 
 
 #define BETA_VARIO_ID      0x8030

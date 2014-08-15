@@ -165,7 +165,7 @@
 #define STR_VS             "VS" // ?
 #define STR_VOICE_OPT      "\006AN    AUS   BEIDE 15Sek 30Sek 60Sek Eigene"
 #define STR_CUST_SWITCH    "IND. SCHALTER" // Individueller Schalter
-#define STR_S              "S"
+//#define STR_S              "S"
 #define STR_15_ON          "\015An"
 #define STR_EDIT_MIX       "Bearb MISCHER " // Bearbeite Mischer
 #define STR_2SOURCE        "\002Quelle"
@@ -281,7 +281,7 @@
 #define STR_MULTIPLIER     "Multiplika"
 #define STR_CAL            "Kal"
 #define STR_MODE_SRC_SW    "\003mode\012% que sch" // Quelle Schalter
-#define STR_RADIO_SETUP    "FUNK EINST"
+#define STR_RADIO_SETUP    "General"
 #define STR_OWNER_NAME     "Nutzername"
 #define STR_BEEPER         "Pieper"
 // STR_BEEP_MODES indexed 6 chars each
@@ -354,6 +354,7 @@
 #define STR_SINK_TONES		 "Sink Tones"
 //#define STR_NO_SINK_TONES  "Kein Sinkton"
 #define STR_FRSKY_MOD      "Frsky Mod Fertig"
+#define STR_TEZ_R90				 "TelemetrEZ>r89"
 
 // ersky9x strings
 #define STR_ST_CARD_STAT   "SD CARD STAT"
@@ -392,6 +393,6 @@
 #define STR_STICK_RV_GAIN  "Stick RV Anstieg"
 #define STR_STICK_RH_GAIN  "Stick RH Anstieg"
 
-
+#define STR_DISPLAY					"Display"
 
 

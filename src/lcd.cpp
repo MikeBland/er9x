@@ -452,6 +452,7 @@ uint8_t lcd_outdezNAtt( uint8_t x, uint8_t y, int32_t val, uint8_t mode, int8_t 
     lcd_hline(xn, y+2*FH-3, ln);
   }
   if(negative) lcd_putcAtt(x-fw,y,'-',mode);
+	asm("") ;
 	return 0 ;		// Stops compiler creating two sets of POPS, saves flash
 }
 
@@ -500,8 +501,12 @@ void lcd_char_inverse( uint8_t x, uint8_t y, uint8_t w, uint8_t blink )
 	}
 }
 
+uint8_t plotType = PLOT_XOR ;
+
 void lcd_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h )
 {
+	uint8_t oldPlotType = plotType ;
+	plotType = PLOT_BLACK ;
   lcd_vline(x, y, h ) ;
 	if ( w > 1 )
 	{
@@ -509,9 +514,9 @@ void lcd_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h )
 	}
  	lcd_hline(x+1, y+h-1, w-2 ) ;
  	lcd_hline(x+1, y, w-2 ) ;
+	plotType = oldPlotType ;
 }
 
-uint8_t plotType = PLOT_XOR ;
 
 void lcd_write_bits( uint8_t *p, uint8_t mask )
 {
@@ -601,6 +606,7 @@ void lcd_vline(uint8_t x,uint8_t y, int8_t h)
 	{
   	lcd_write_bits( p, (XBITMASK(h)-1) ) ;
 	}
+	asm("") ;
 }
 
 uint8_t EepromActive ;

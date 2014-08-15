@@ -157,7 +157,7 @@
 #define STR_VS             "VS"
 #define STR_VOICE_OPT      "\006ON    OFF   BOTH  15Secs30Secs60SecsVaribl"
 #define STR_CUST_SWITCH    "CUSTOM SWITCHES"
-#define STR_S              "S"
+//#define STR_S              "S"
 #define STR_15_ON          "\015On"
 #define STR_EDIT_MIX       "EDIT MIX "
 #define STR_2SOURCE        "\002Source"
@@ -273,7 +273,7 @@
 #define STR_MULTIPLIER     "Multiplier"
 #define STR_CAL            "Cal"
 #define STR_MODE_SRC_SW    "\003mode\012% src  sw"
-#define STR_RADIO_SETUP    "RADIO SETUP"
+#define STR_RADIO_SETUP    "General"
 #define STR_OWNER_NAME     "Owner Name"
 #define STR_BEEPER         "Beeper"
 // STR_BEEP_MODES indexed 6 chars each
@@ -378,5 +378,6 @@
 #define STR_STICK_RH_GAIN  "Stick RH Gain"
 #define STR_NO_SINK_TONES  "No Sink Tones"
 #define STR_FRSKY_MOD      "Frsky Mod Done"
+#define STR_TEZ_R90				 "TelemetrEZ>r89"
 
 

@@ -72,6 +72,10 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
     //    {
     //      uint16_t rest ;
     //      rest = PPM_frame - PulseTotal ;
+		//			if ( rest < 9000 )
+		//			{
+		//				rest = 9000 ;
+		//			}
     //      *pulsePtr = rest ;
     //    }
     //    channel += 1 ;
@@ -261,6 +265,9 @@ void setupPulses()
         break ;
     }
     //    SPY_OFF;
+//extern void nothing() ;
+//	nothing() ;
+	asm("") ;
 }
 
 //inline int16_t reduceRange(int16_t x)  // for in case we want to have room for subtrims
@@ -703,6 +710,7 @@ static void putPcmFlush()
   	putPcmPart( 0 ) ; // Empty
   }
   *PcmControl.PcmPtr = 0 ;				// Mark end
+	asm("") ;
 }
 
 void putPcmBit( uint8_t bit )
@@ -875,6 +883,7 @@ static void setupPulsesPXX()
 		}
 		pass = lpass ;
 //		PxxTime = TCNT1 - PxxStart ;
+	asm("") ;
 }
 
 

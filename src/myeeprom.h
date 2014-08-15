@@ -132,7 +132,8 @@ PACK(typedef struct t_EEGeneral {
     uint8_t   rotateScreen:1 ;
     uint8_t   serialLCD:1 ;
     uint8_t   SSD1306:1 ;
-    uint8_t   spare1:3 ;
+    uint8_t   TEZr90:1 ;
+    uint8_t   spare1:2 ;
 		uint8_t		stickReverse ;
 }) EEGeneral;
 
@@ -183,7 +184,7 @@ PACK(typedef struct t_MixData {
     uint8_t differential:1;
     int8_t  sOffset;
 		uint8_t modeControl:5 ;
-    uint8_t res:3 ;
+    uint8_t sw23pos:3 ;
 }) MixData;
 
 

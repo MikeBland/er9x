@@ -19,7 +19,7 @@
 //#define VARIO	1
 
 #define VERS 1
-//#define VERSION3	1
+#define VERSION3	1
 
 #define GVARS	1
 #define FIX_MODE		1
@@ -29,9 +29,9 @@
 #define MAH_LIMIT		1
 #define ALT_ALARM		1
 #define FMODE_TRIM	1
-#if defined(CPUM128) || defined(CPUM2561)
+//#if defined(CPUM128) || defined(CPUM2561)
 #define	SCALERS
-#endif
+//#endif
 
 
 /* Building an er9x hex for custom transmitter */
@@ -509,7 +509,8 @@ MenuFuncP lastPopMenu();
 void    popMenu(bool uppermost=false);
 /// Gibt Alarm Maske auf lcd aus.
 /// Die Maske wird so lange angezeigt bis eine beliebige Taste gedrueckt wird.
-void alert(const prog_char * s, bool defaults=false);
+void alert(const prog_char * s);
+void alertx(const prog_char * s, bool defaults );
 void message(const prog_char * s);
 /// periodisches Hauptprogramm
 void    perMain();
@@ -549,7 +550,7 @@ bool    getSwitch(int8_t swtch, bool nc, uint8_t level=0);
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t swtch,uint8_t att);
 void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t type);
 
-extern int16_t get_telemetry_value( int8_t channel ) ;
+extern int16_t get_telemetry_value( uint8_t channel ) ;
 
 extern uint8_t  s_timerState;
 #define TMR_OFF     0
@@ -726,7 +727,7 @@ void putsDblSizeName( uint8_t y ) ;
 #ifdef FRSKY
 void putsTelemetry(uint8_t x, uint8_t y, uint8_t val, uint8_t unit, uint8_t att);
 uint8_t putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t att, uint8_t scale) ;
-uint16_t scale_telem_value( uint16_t val, uint8_t channel, uint8_t times2, uint8_t *p_att ) ;
+uint16_t scale_telem_value( uint8_t val, uint8_t channel, uint8_t times2, uint8_t *p_att ) ;
 #endif
 
 extern int16_t calc100toRESX(int8_t x) ;
@@ -872,14 +873,14 @@ extern const prog_uchar APM s9xsplash[] ;
 
 extern const prog_char APM Str_telemItems[] ;
 extern const prog_int8_t APM TelemIndex[] ;
-extern int16_t convertTelemConstant( int8_t channel, int8_t value) ;
+extern int16_t convertTelemConstant( uint8_t channel, int8_t value) ;
 extern int16_t getValue(uint8_t i) ;
 
 #ifdef FRSKY
 #if defined(CPUM128) || defined(CPUM2561)
 #define NUM_TELEM_ITEMS 41
 #else
-#define NUM_TELEM_ITEMS 37
+#define NUM_TELEM_ITEMS 41
 #endif
 #else
 #define NUM_TELEM_ITEMS 10
@@ -914,7 +915,8 @@ extern void putVoiceQueue( uint8_t value ) ;
 extern void putVoiceQueueLong( uint16_t value ) ;
 extern void	putVoiceQueueUpper( uint8_t value ) ;
 void voice_numeric( int16_t value, uint8_t num_decimals, uint8_t units_index ) ;
-extern void voice_telem_item( int8_t index ) ;
+extern void voice_telem_item( uint8_t index ) ;
+extern void backlightKey(void) ;
 
 struct t_alarmControl
 {

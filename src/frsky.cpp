@@ -61,13 +61,13 @@ const prog_uint8_t APM Fr_indices[] =
 	FR_CELL_V,
 	HUBDATALENGTH-1,HUBDATALENGTH-1,
 	FR_GPS_ALTd,
-	HUBDATALENGTH-1,HUBDATALENGTH-1,
+	HUBDATALENGTH-1,HUBDATALENGTH-1,		// 10,11
 	HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,
 	FR_ALT_BARO | 0x80,
 	FR_GPS_SPEED | 0x80,
 	FR_GPS_LONG | 0x80,
 	FR_GPS_LAT | 0x80,
-	FR_COURSE,
+	FR_COURSE,			// 20
 	FR_GPS_DATMON,
 	FR_GPS_YEAR,
 	FR_GPS_HRMIN,
@@ -75,20 +75,20 @@ const prog_uint8_t APM Fr_indices[] =
 	FR_GPS_SPEEDd,
 	FR_GPS_LONGd,
 	FR_GPS_LATd,
-	FR_COURSEd,
+	FR_COURSEd,			// 28
 	HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,
-	FR_ALT_BAROd,
+	FR_ALT_BAROd,		// 33
 	FR_LONG_E_W,
 	FR_LAT_N_S,
 	FR_ACCX,
 	FR_ACCY,
 	FR_ACCZ,
 	FR_VSPD,
-	FR_CURRENT,
+	FR_CURRENT,			// 40
 	FR_V_AMP | 0x80,
 	FR_V_AMPd,
-	HUBDATALENGTH-1,
-	HUBDATALENGTH-1
+	FR_VOLTS,
+	HUBDATALENGTH-1,		// 44
 } ;
 
 uint8_t AltitudeDecimals ;
@@ -172,6 +172,22 @@ void store_hub_data( uint8_t index, uint16_t value ) ;
 
 void store_indexed_hub_data( uint8_t index, uint16_t value )
 {
+	if ( index > 57 )
+	{
+		index -= 17 ;		// Move voltage-amp sensors							
+	}									// 58->41, 59->42
+	if ( index == 48 )
+	{
+		index = 39 ;	//FR_VSPD ;		// Move Vario							
+	}
+	if ( index == 57 )
+	{
+		index = 43 ; // FR_VOLTS ;		// Move Oxsensor voltage
+	}
+	if ( index > sizeof(Fr_indices) )
+	{
+		index = 0 ;	// Use a discard item							
+	}
   index = pgm_read_byte( &Fr_indices[index] ) & 0x7F ;
 	store_hub_data( index, value ) ;
 }
@@ -212,6 +228,14 @@ void store_hub_data( uint8_t index, uint16_t value )
 		FrskyHubData[FR_ALT_BARO] = value ;
 	}
 	
+#if defined(CPUM128) || defined(CPUM2561)
+	if ( index == FR_SPORT_GALT )
+	{
+		index = FR_GPS_ALT ;         // For max and min
+		FrskyHubData[FR_GPS_ALT] = value ;
+	}
+#endif
+
 	if ( index < HUBDATALENGTH )
 	{
     if ( !g_model.FrSkyGpsAlt )         
@@ -346,22 +370,6 @@ void frsky_proc_user_byte( uint8_t byte )
 					}
   	      if ( fUserPtr->state == 1 )
 					{
-						if ( byte > 57 )
-						{
-							byte -= 17 ;		// Move voltage-amp sensors							
-						}									// 58->41, 59->42
-						if ( byte == 48 )
-						{
-							byte = FR_VSPD ;		// Move Vario							
-						}
-						if ( byte == 57 )
-						{
-							byte = FR_VOLTS ;		// Move Oxsensor voltage
-						}
-						if ( byte > sizeof(Fr_indices) )
-						{
-							byte = 0 ;	// Use a discard item							
-						}
 					  fUserPtr->id	= byte ;
 						fUserPtr->state = 2 ;
 					}
@@ -521,6 +529,7 @@ static bool checkSportPacket()
 void processSportPacket()
 {
 	uint8_t *packet = frskyRxBuffer ;
+	FORCE_INDIRECT(packet) ;
   uint8_t  prim   = packet[1];
 //  uint16_t appId  = *((uint16_t *)(packet+2)) ;
 	
@@ -619,9 +628,47 @@ void processSportPacket()
 				case VFAS_ID_8 :
 					store_hub_data( FR_VOLTS, value / 10 ) ;
 				break ;
+
+#if defined(CPUM128) || defined(CPUM2561)
+				case T1_ID_8 :
+					store_hub_data( FR_TEMP1, value ) ;
+				break ;
+				
+				case T2_ID_8 :
+					store_hub_data( FR_TEMP2, value ) ;
+				break ;
+
+				case RPM_ID_8 :
+					store_hub_data( FR_RPM, value ) ;
+				break ;
+				
+				case ACCX_ID_8 :
+					store_hub_data( FR_ACCX, value ) ;
+				break ;
+					
+				case ACCY_ID_8 :
+					store_hub_data( FR_ACCY, value ) ;
+				break ;
+				
+				case ACCZ_ID_8 :
+					store_hub_data( FR_ACCZ, value ) ;
+				break ;
+
+				case FUEL_ID_8 :
+					store_hub_data( FR_FUEL, value ) ;
+				break ;
+
+				case GPS_ALT_ID_8 :
+					value = (int32_t)value / 100 ;
+					store_hub_data( FR_SPORT_GALT, value ) ;
+				break ;
+
+#endif
+
 			}
 		}
 	}
+	asm("") ;
 }
 
 
@@ -657,6 +704,8 @@ uint8_t Private_position ;
 //uint8_t Uerror ;
 //uint8_t Uecount ;
 
+//uint8_t DebugCount = 0 ;
+//uint8_t DebugState = 0 ;
 
 #ifndef SIMU
 ISR(USART0_RX_vect)
@@ -789,10 +838,17 @@ ISR(USART0_RX_vect)
 						}
 					 	break ; // Remain in userDataStart if possible 0x7e,0x7e doublet found.
 					}
-
-          dataState = frskyDataInFrame;
-          if (numbytes < 19)
-            frskyRxBuffer[numbytes++] = data;
+					if (data != PRIVATE)
+					{
+          	dataState = frskyDataInFrame;
+          	if (numbytes < 19)
+          	  frskyRxBuffer[numbytes++] = data;
+					}
+					else // Out of sync so restart
+					{
+						dataState = frskyDataIdle;
+//						DebugCount += 1 ;
+					}
           break;
 
         case frskyDataInFrame:
@@ -862,6 +918,7 @@ ISR(USART0_RX_vect)
 					if ( Private_position == Private_count )
 					{
           	dataState = frskyDataIdle;
+    				FrskyAlarmSendState |= 0x80 ;		// Send ACK
 					}
         break;
 //---------------------------------------------------------------------------------
@@ -881,6 +938,8 @@ ISR(USART0_RX_vect)
 		}
 	}
   numPktBytes = numbytes ;
+	
+//DebugState = dataState ;
 
 	cli() ;
   UCSR0B |= (1 << RXCIE0); // enable Interrupt
@@ -943,7 +1002,7 @@ static void FRSKY10mspoll(void)
 		uint8_t i ;
 		uint8_t j = 1 ;
 
-		for ( i = 0 ; i < 7 ; i += 1, j <<= 1 )
+		for ( i = 0 ; i < 8 ; i += 1, j <<= 1 )
 		{
 			if ( FrskyAlarmSendState & j )
 			{
@@ -974,11 +1033,28 @@ static void FRSKY10mspoll(void)
 // Send packet requesting all RSSIalarm settings be sent back to us
 			FRSKY_setTxPacket( RSSI_REQUEST, 0, 0, 0 ) ;
 		}
+		else if (i == 7)
+		{
+  		FrskyTx.frskyTxBuffer[0] = PRIVATE ;		// Start of packet
+//			if ( g_eeGeneral.TEZr90 )
+//			{
+  			FrskyTx.frskyTxBuffer[3] = PRIVATE ;  // End of packet
+		  	FrskyTx.frskyTxBuffer[1] = 1 ;
+  			FrskyTx.frskyTxBuffer[2] = FrskyTelemetryType ;
+				FrskyTx.frskyTxBufferCount = 4 ;
+//			}
+//			else
+//			{
+//  			FrskyTx.frskyTxBuffer[2] = PRIVATE ;  // End of packet
+//		  	FrskyTx.frskyTxBuffer[1] = 0 ;
+//				FrskyTx.frskyTxBufferCount = 3 ;
+//			}
+		}
 		else
 		{
 			return ;
 		}
-    FrskyDelay = 5 ; // 50mS
+    FrskyDelay = (i == 7) ? 10 : 5 ; // 50mS
     frskyTransmitBuffer(); 
   }
 }
@@ -1145,7 +1221,9 @@ void FRSKY_disable()
 #endif
 
 #define UBRRH_57600		0
-#define UBRRL_57600		34
+//#define UBRRL_57600		34
+#define UBRRL_57600		16
+
 
 void FRSKY_Init( uint8_t brate)
 {
@@ -1168,6 +1246,11 @@ void FRSKY_Init( uint8_t brate)
 
 #include <util/setbaud.h>
 
+	if ( g_eeGeneral.TEZr90 )
+	{
+		brate = 1 ;
+	}
+
 	if ( brate == 0 )
 	{
   	UCSR0A &= ~(1 << U2X0); // disable double speed operation.
@@ -1176,7 +1259,8 @@ void FRSKY_Init( uint8_t brate)
 	}
 	else
 	{
-  	UCSR0A |= (1 << U2X0); // enable double speed operation.
+//  	UCSR0A |= (1 << U2X0); // enable double speed operation.
+  	UCSR0A &= ~(1 << U2X0); // disable double speed operation.
   	UBRR0L = UBRRL_57600 ;
   	UBRR0H = UBRRH_57600 ;
 	}
@@ -1421,9 +1505,14 @@ void check_frsky()
 		{
 			ah_temp -= 3600 ;
 			int16_t *ptr_hub = &FrskyHubData[FR_AMP_MAH] ;
+			FORCE_INDIRECT(ptr_hub) ;
 			*ptr_hub += 1 ;
-			FrskyHubData[FR_A1_MAH] += 1 ;
-			FrskyHubData[FR_A2_MAH] += 1 ;
+			ptr_hub += FR_A1_MAH-FR_AMP_MAH ;
+			*ptr_hub += 1 ;
+			ptr_hub += FR_A2_MAH-FR_A1_MAH ;
+			*ptr_hub += 1 ;
+//			FrskyHubData[FR_A1_MAH] += 1 ;
+//			FrskyHubData[FR_A2_MAH] += 1 ;
 		}
 		Frsky_Amp_hour_prescale = ah_temp ;
 	}

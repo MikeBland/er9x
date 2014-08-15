@@ -447,6 +447,7 @@ void voice_numeric( int16_t value, uint8_t num_decimals, uint8_t units_index )
 	{
 		putVoiceQueue( units_index ) ;
 	}
+	asm("") ;
 }
 
 //struct t_voice *voiceaddress()
