@@ -333,6 +333,7 @@ void eeLoadModel(uint8_t id)
 		}
 #endif
   }
+	asm("") ;
 }
 
 bool eeDuplicateModel(uint8_t id)
@@ -397,7 +398,7 @@ bool eeReadGeneral()
 
 void eeWriteGeneral()
 {
-  alert(PSTR(STR_BAD_EEPROM), true);
+  alertx(PSTR(STR_BAD_EEPROM), true);
   message(PSTR(STR_EE_FORMAT));
   EeFsFormat();
   //alert(PSTR("format ok"));

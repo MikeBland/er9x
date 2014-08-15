@@ -154,13 +154,30 @@ uint8_t modeFixValue( uint8_t value )
 }
 #endif
 
+const prog_uint8_t APM csTypeTable[] =
+#ifdef VERSION3
+{ CS_VOFS, CS_VOFS, CS_VOFS, CS_VOFS, CS_VBOOL, CS_VBOOL, CS_VBOOL,
+ CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VBOOL, CS_VBOOL, CS_TIMER
+} ;
+#else	
+{ CS_VOFS, CS_VOFS, CS_VOFS, CS_VOFS, CS_VBOOL, CS_VBOOL, CS_VBOOL,
+ CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_TIMER
+} ;
+#endif
+
+void nothing()
+{
+}
+
 uint8_t CS_STATE( uint8_t x)
 {
-#ifdef VERSION3
-	return ((x)<CS_AND ? CS_VOFS : ((((x)<CS_EQUAL) || ((x)==CS_LATCH)|| ((x)==CS_FLIP)) ? CS_VBOOL : ((x)<CS_TIME ? CS_VCOMP : CS_TIMER))) ;
-#else	
-	return ((x)<CS_AND ? CS_VOFS : ((x)<CS_EQUAL ? CS_VBOOL : ((x)<CS_TIME ? CS_VCOMP : CS_TIMER))) ;
-#endif
+	return pgm_read_byte(csTypeTable+x-1) ;
+	
+//#ifdef VERSION3
+//	return ((x)<CS_AND ? CS_VOFS : ((((x)<CS_EQUAL) || ((x)==CS_LATCH)|| ((x)==CS_FLIP)) ? CS_VBOOL : ((x)<CS_TIME ? CS_VCOMP : CS_TIMER))) ;
+//#else	
+//	return ((x)<CS_AND ? CS_VOFS : ((x)<CS_EQUAL ? CS_VBOOL : ((x)<CS_TIME ? CS_VCOMP : CS_TIMER))) ;
+//#endif
 }
 
 MixData *mixaddress( uint8_t idx )
@@ -204,12 +221,10 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
 #ifdef FRSKY
     else
 		{
-#if defined(CPUM128) || defined(CPUM2561)
 			if ( mix )
 			{
 				idx += TEL_ITEM_SC1-(chanLimit-NUM_XCHNRAW) ;
 			}
-#endif
   	  lcd_putsAttIdx(x,y,Str_telemItems,(idx-NUM_XCHNRAW),att);
 		}
 #endif
@@ -301,11 +316,12 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t type )
 	{
    	putsDrSwitches( x-1*FW, y, g_model.tmrModeB, attr );
 	}
+	asm("") ;
 }
 
 #ifdef FRSKY
 
-uint16_t scale_telem_value( uint16_t val, uint8_t channel, uint8_t times2, uint8_t *p_att )
+uint16_t scale_telem_value( uint8_t val, uint8_t channel, uint8_t times2, uint8_t *p_att )
 {
   uint32_t value ;
 	uint16_t ratio ;
@@ -1144,6 +1160,7 @@ void putsDblSizeName( uint8_t y )
 #if defined(CPUM128) || defined(CPUM2561)
 
 static uint8_t switches_states = 0 ;
+static uint8_t trainer_state = 0 ;
 
 // Can we save flash by using :
 // uint8_t getCurrentSwitchStates()
@@ -1193,10 +1210,12 @@ int8_t getMovedSwitch()
   }
 	if ( result == 0 )
 	{
-		if ( getSwitch( 9, 0, 0) )
+		mask = getSwitch( 9, 0, 0 ) ;
+		if ( mask && ( trainer_state == 0 ) )
 		{
 			result = 9 ;
 		}
+		trainer_state = mask ;
 	}
 
   if ( skipping )
@@ -1280,7 +1299,12 @@ void message(const prog_char * s)
 //	lcdSetContrast() ;
 }
 
-void alert(const prog_char * s, bool defaults)
+void alert(const prog_char * s)
+{
+	alertx( s, false ) ;
+}
+
+void alertx(const prog_char * s, bool defaults)
 {
 	if ( Main_running )
 	{
@@ -1446,7 +1470,8 @@ static uint8_t checkTrim(uint8_t event)
 
 // SORT idx for stickmode if FIX_MODE on
 #ifdef FIX_MODE
-				idx = pgm_read_byte(stickScramble+g_eeGeneral.stickMode*4+idx ) ;
+				idx = modeFixValue( idx ) - 1 ;
+//				pgm_read_byte(stickScramble+g_eeGeneral.stickMode*4+idx ) ;
 #endif
 				if ( g_eeGeneral.crosstrim )
 				{
@@ -1743,25 +1768,30 @@ void resetTimer2()
   tptr->Timer2_running = 0 ;   // Stop and clear throttle started flag
 }
 
+void backlightKey()
+{
+  uint8_t a = g_eeGeneral.lightAutoOff ;
+  uint16_t b = a * 250 ;
+	b <<= 1 ;				// b = a * 500, but less code
+	if(b>g_LightOffCounter) g_LightOffCounter = b;
+}
+
 void doBackLightVoice(uint8_t evt)
 {
     uint8_t a = 0;
     uint16_t b ;
     uint16_t lightoffctr ;
-		lightoffctr = g_LightOffCounter ;
+    if(evt) backlightKey() ; // on keypress turn the light on 5*100
 
+		lightoffctr = g_LightOffCounter ;
     if(lightoffctr) lightoffctr--;
-    if(evt) a = g_eeGeneral.lightAutoOff ; // on keypress turn the light on 5*100
     if(stickMoved)
 		{
-			if ( g_eeGeneral.lightOnStickMove > a )
-			{
-				a = g_eeGeneral.lightOnStickMove ;
-			}
+			a = g_eeGeneral.lightOnStickMove ;
+    	b = a * 250 ;
+			b <<= 1 ;				// b = a * 500, but less code
+			if(b>lightoffctr) lightoffctr = b;
 		}
-    b = a * 250 ;
-		b <<= 1 ;				// b = a * 500, but less code
-		if(b>lightoffctr) lightoffctr = b;
 		g_LightOffCounter = lightoffctr ;
     check_backlight_voice();
 }
@@ -2010,11 +2040,12 @@ uint8_t calcStickScroll( uint8_t index )
 	{
 		value = -value ;			// (abs)
 	}
-	if ( value > 7 )
+	uint8_t temp = value ;	// Makes the compiler save 4 bytes flash
+	if ( temp > 7 )
 	{
-		value = 7 ;			
+		temp = 7 ;			
 	}
-	value = pgm_read_byte(rate+(uint8_t)value) ;
+	value = pgm_read_byte(rate+temp) ;
 	if ( value )
 	{
 		StickScrollTimer = STICK_SCROLL_TIMEOUT ;		// Seconds
@@ -2038,6 +2069,8 @@ void perMain()
     //    tick10ms = (time10ms != lastTMR);
     //    lastTMR = time10ms;
 
+//  	UBRR0L = 17 ;
+//		UDR0 = 0 ;
     perOutPhase(g_chans512, 0);
 //		MixCounter += 1 ;
     if(tick10ms == 0) return ; //make sure the rest happen only every 10ms.
@@ -2894,7 +2927,7 @@ int main(void)
   
     
 #ifdef FRSKY
-    FRSKY_Init( 0 ) ;
+		FRSKY_Init( 0 ) ;	
 #endif
 		
 		checkQuickSelect();
@@ -3286,11 +3319,11 @@ void mainSequence()
 					{
 						x -= 1 ;
 					}
-					if ( x > 9+NUM_CSW )
+					if ( x > 9+NUM_CSW+EXTRA_CSW )
 					{
 						x = 9 ;			// Tag TRN on the end, keep EEPROM values
 					}
-					if ( x < -(9+NUM_CSW) )
+					if ( x < -(9+NUM_CSW+EXTRA_CSW) )
 					{
 						x = -9 ;			// Tag TRN on the end, keep EEPROM values
 					}
@@ -3471,7 +3504,9 @@ void mainSequence()
           }
 #endif
 					uint16_t total_volts = 0 ;
+#if VOLT_THRESHOLD
 					uint8_t audio_sounded = 0 ;
+#endif
 					uint8_t low_cell = 220 ;		// 4.4V
 				  for (uint8_t k=0; k<FrskyBattCells; k++)
 					{
@@ -3606,7 +3641,9 @@ void mainSequence()
 					{
 						if ( sd->opt.ss.swtch > MAX_DRSWITCH )
 						{
-							switch ( sd->opt.ss.swtch - MAX_DRSWITCH -1 )
+							uint8_t temp = sd->opt.ss.swtch ;
+							temp -= MAX_DRSWITCH +1 ;
+							switch ( temp )
 							{
 								case 0 :
 									if ( ( pCounter & 0x70 ) == 0 )

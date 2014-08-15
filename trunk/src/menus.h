@@ -88,7 +88,7 @@ mstate2.check(event,menu,tab,DIM(tab),mstate_tab,DIM(mstate_tab)-1,lines_count-1
 #define VARMENU(title, tab, menu, lines_count, cols ) \
 TITLE(title); \
 static MState2 mstate2; \
-event = mstate2.check(event,menu,tab,DIM(tab),cols,0,lines_count-1)
+mstate2.check(event,menu,tab,DIM(tab),cols,0,lines_count-1)
 
 #define SIMPLE_MENU(title, tab, menu, lines_count) \
 TITLE(title); \

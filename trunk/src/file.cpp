@@ -369,6 +369,7 @@ void EFile::closeTrunc()
   EeFsFlush(); //chained out
 
   if(fri) EeFsFree( fri );  //chain in
+	asm("") ;
 }
 
 uint16_t EFile::writeRlc(uint8_t i_fileId, uint8_t typ,uint8_t*buf,uint16_t i_len, uint8_t maxTme10ms){
