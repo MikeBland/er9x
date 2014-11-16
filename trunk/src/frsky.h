@@ -243,9 +243,26 @@ DataID Meaning       Unit   Range   Note
 #define GPS_SPEED_FIRST_ID 0x0830
 #define GPS_SPEED_LAST_ID  0x083f
 #define GPS_SPEED_ID_8		0x83
+#define GPS_LA_LO_FIRST_ID	0x0800
+#define GPS_LA_LO_LAST_ID	0x080F
+#define GPS_LA_LO_ID_8		0x80
 #define GPS_ALT_FIRST_ID 0x0820
 #define GPS_ALT_LAST_ID  0x082f
 #define GPS_ALT_ID_8		0x82
+#define GPS_HDG_FIRST_ID 0x0840
+#define GPS_HDG_LAST_ID  0x084f
+#define GPS_HDG_ID_8			0x84
+#define GPS_TIME_FIRST_ID 0x0850
+#define GPS_TIME_LAST_ID  0x085f
+#define GPS_TIME_ID_8			0x85
+
+#define A3_FIRST_ID      0x0900
+#define A3_LAST_ID       0x090f
+#define A3_ID_8						0x90
+#define A4_FIRST_ID      0x0910
+#define A4_LAST_ID       0x091f
+#define A4_ID_8						0x91
+
 
 
 #define BETA_VARIO_ID      0x8030
@@ -287,8 +304,10 @@ DataID Meaning       Unit   Range   Note
 //  alarm_red = (uint8_t)3
 //};
 
+#ifdef FRSKY_ALARMS
 #define ALARM_GREATER(channel, alarm) (((uint8_t)g_model.frsky.channels[channel].opt.alarm.alarms_greater >> (uint8_t)alarm) & (uint8_t)1)
 #define ALARM_LEVEL(channel, alarm) (((uint8_t)g_model.frsky.channels[channel].opt.alarm.alarms_level >> (uint8_t)(2*alarm)) & (uint8_t)3)
+#endif
 
 struct FrskyData {
   uint8_t value;

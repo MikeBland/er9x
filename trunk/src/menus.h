@@ -69,7 +69,8 @@ struct MState2
   void init(){m_posVert=0;};
   void check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8_t menuTabSize, const prog_uint8_t *subTab, uint8_t subTabMax, uint8_t maxrow);
   void check_simple(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8_t menuTabSize, uint8_t maxrow);
-  //void check_submenu_simple(uint8_t event, uint8_t maxrow);
+  void check_submenu_simple( uint8_t event, const prog_uint8_t *subTab, uint8_t subTabMax, uint8_t maxrow);
+//	void check_columns( uint8_t event, const prog_uint8_t *horTab, uint8_t maxrow) ;
 };
 
 uint8_t evalOffset(int8_t sub, uint8_t max) ;
@@ -107,9 +108,10 @@ static const prog_uint8_t APM mstate_tab[] = __VA_ARGS__; \
 mstate2.check(event,0,NULL,0,mstate_tab,DIM(mstate_tab)-1,lines_count-1)
 
 
-#define SIMPLE_SUBMENU_NOTITLE(lines_count) \
+#define SIMPLE_SUBMENU_NOTITLE(lines_count, ...) \
 static MState2 mstate2; \
-mstate2.check_submenu_simple(event,lines_count-1)
+const static prog_uint8_t APM mstate_tab[] = __VA_ARGS__; \
+mstate2.check_submenu_simple(event,mstate_tab,DIM(mstate_tab)-1,lines_count-1)
 
 #define SIMPLE_SUBMENU(title, lines_count) \
 TITLE(title); \

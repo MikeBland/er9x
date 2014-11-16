@@ -39,10 +39,11 @@ static void sendByteDsm2(uint8_t b) ;
 
 //uint16_t PulseTotal ;
 
+static uint8_t PulsePol;
+
 //ISR(TIMER1_OVF_vect)
 ISR(TIMER1_COMPA_vect) //2MHz pulse generation
 {
-    static uint8_t   pulsePol;
     static uint16_t *pulsePtr = pulses2MHz.pword;
 
     //    uint8_t i = 0;
@@ -50,13 +51,13 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
     //        ;
     uint16_t dt=TCNT1;//-OCR1A;
 
-    if(pulsePol)
+    if(PulsePol)
     {
         PORTB |=  (1<<OUT_B_PPM);
-        pulsePol = 0;
+        PulsePol = 0;
     }else{
         PORTB &= ~(1<<OUT_B_PPM);
-        pulsePol = 1;
+        PulsePol = 1;
     }
 
     //  if (g_model.protocol==PROTO_PPM)
@@ -94,7 +95,7 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
     if( *pulsePtr == 0) {
         //currpulse=0;
         pulsePtr = pulses2MHz.pword;
-        pulsePol = !g_model.pulsePol;//0;     // changed polarity
+        PulsePol = !g_model.pulsePol;//0;     // changed polarity
         //    channel = 0 ;
         //    PulseTotal = 0 ;
 
@@ -129,6 +130,11 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
 
 void startPulses()
 {
+  PulsePol = !g_model.pulsePol ;
+  if(!PulsePol)
+  {
+		PORTB |= (1<<OUT_B_PPM);
+  }
 	Current_protocol = g_model.protocol + 10 ;		// Not the same!
 	setupPulses() ;
 }
@@ -298,10 +304,10 @@ void setupPulsesPPM( uint8_t proto )
   uint16_t rest=22500u*2-q; //Minimum Framelen=22.5 ms
   rest += (int16_t(g_model.ppmFrameLength))*1000;
   //    if(p>9) rest=p*(1720u*2 + q) + 4000u*2; //for more than 9 channels, frame must be longer
-	if ( proto != PROTO_PPM )
-	{
+//	if ( proto != PROTO_PPM )
+//	{
 		*ptr++ = q ;
-	}
+//	}
   PPM_range = g_model.extendedLimits ? 640*2 : 512*2;   //range of 0.7..1.7msec
 	for( uint8_t i = (proto == PROTO_PPM16) ? p-8 : startChan ;i<p ; i++ )
   { //NUM_CHNOUT
@@ -330,10 +336,10 @@ void setupPulsesPPM( uint8_t proto )
 	{
 		B3_comp_value = rest - 1000 ;		// 500uS before end of sync pulse
 	}
-	if ( proto == PROTO_PPM )
-	{
-		*ptr++ = q ;
-	}
+//	if ( proto == PROTO_PPM )
+//	{
+//		*ptr++ = q ;
+//	}
     
 	*ptr=0;
 }

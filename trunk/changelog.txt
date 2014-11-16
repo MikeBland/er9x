@@ -10,6 +10,31 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 16-Nov-2014  MPB (r814)
+Process A3 and A4 telemetry values
+Flash saving
+Fix GVAR as volume bug
+Rotary Encoder improvements
+Initialise PPM polarity at start
+Handle SPort GPS data
+128/2561 add voice alarms
+128/2561 add timer1 reset switch
+mixer delay and slow improvements
+128/2561 add model index menu
+Add custom stick names option
+Add custom switch ~= option
+1. The hard coded VOLT_THRESHOLD, ALT ALARM and MAH ALARM have been removed, along with "FmodeTrim" in a mix.
+The alarms can be done with custom and audio/voice switches.
+FmodeTrim is now redundant as we have "real" flight modes.
+2. Add Throttle idle option at the centre as well as at -100%.
+3. New option in a mix to ignore any expo and dual rates on stick inputs.
+Add "expo" as a curve option.
+Modify A1/A2 scaling code (saves flash)
+Use scaled value of A1/A2 when used as source to scalers
+Scaler offset to -32000 to +32000, (MENU to edit in steps of 100)
+Move the stick mode setting to "Controls" from "General"
+
+******************************************
 CHANGELOG: 15-Aug-2014  MPB (r813)
 TeZ interface at 57600 baud (option)
 TeZ SPort support for XJT module (needs TeZ r90)

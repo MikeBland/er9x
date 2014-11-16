@@ -19,6 +19,8 @@
 
 //#define LCD_2_CS		1
 
+extern struct t_rotary Rotary ;
+
 #define DBL_FONT_SMALL	1
 
 #ifdef SIMU
@@ -67,9 +69,11 @@ void putsTime(uint8_t x,uint8_t y,int16_t tme,uint8_t att,uint8_t att2)
 
 	lcd_putcAtt(x, y, ':',att&att2);
 	qr = div( tme, 60 ) ;
-	lcd_outdezNAtt(x/*+ ((att&DBLSIZE) ? 2 : 0)*/, y, (uint16_t)qr.quot, LEADING0|att,2);
+	lcd_2_digits( x, y, (uint16_t)qr.quot, att ) ;
+//	lcd_outdezNAtt(x/*+ ((att&DBLSIZE) ? 2 : 0)*/, y, (uint16_t)qr.quot, LEADING0|att,2);
 	x += (att&DBLSIZE) ? FWNUM*6-4 : FW*3-3;
-	lcd_outdezNAtt(x, y, (uint16_t)qr.rem, LEADING0|att2,2);
+	lcd_2_digits( x, y, (uint16_t)qr.rem, att2 ) ;
+//	lcd_outdezNAtt(x, y, (uint16_t)qr.rem, LEADING0|att2,2);
 }
 
 void putsVolts(uint8_t x,uint8_t y, uint8_t volts, uint8_t att)
@@ -310,6 +314,11 @@ void lcd_outdez( uint8_t x, uint8_t y, int16_t val)
 void lcd_outdezAtt( uint8_t x, uint8_t y, int16_t val, uint8_t mode )
 {
   lcd_outdezNAtt( x,y,val,mode,5);
+}
+
+void lcd_2_digits( uint8_t x, uint8_t y, uint8_t value, uint8_t attr )
+{
+	lcd_outdezNAtt( x, y, value, attr + LEADING0, 2 ) ;
 }
 
 #define PREC(n) ((n&0x20) ? ((n&0x10) ? 2 : 1) : 0)
@@ -1044,6 +1053,8 @@ volatile uint8_t LcdLock ;
 
 void refreshDiplay()
 {
+//	lcd_putc( 20*FW, 0, RotaryState + 'A' ) ;
+//	lcd_putc( 19*FW, 0, s_editMode + '0' ) ;
 	if ( EepromActive && BLINK_ON_PHASE )
 	{
 		lcd_hline( 0, 0, EepromActive - '0' + 6 ) ;

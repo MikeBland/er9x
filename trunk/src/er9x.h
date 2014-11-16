@@ -24,11 +24,12 @@
 #define GVARS	1
 #define FIX_MODE		1
 #define STACK_TRACE				0
+//#define FRSKY_ALARMS	1
 
-#define VOLT_THRESHOLD 1
-#define MAH_LIMIT		1
-#define ALT_ALARM		1
-#define FMODE_TRIM	1
+//#define VOLT_THRESHOLD 1
+//#define MAH_LIMIT		1
+//#define ALT_ALARM		1
+//#define FMODE_TRIM	1
 //#if defined(CPUM128) || defined(CPUM2561)
 #define	SCALERS
 //#endif
@@ -211,6 +212,8 @@ typedef uint32_t  prog_uint32_t __attribute__((__progmem__));//,deprecated("prog
 
 extern uint8_t SlaveMode ;
 
+extern const prog_char APM Str_Chans_Gv[] ;
+
 #ifdef FIX_MODE
 extern const prog_uint8_t APM stickScramble[] ;
 //extern const prog_uint8_t APM modeFix[] ;
@@ -222,6 +225,7 @@ extern const prog_uint8_t APM modn12x3[] ;
 extern const prog_char APM Str_OFF[] ;
 extern const prog_char APM Str_ON[] ;
 extern const prog_char APM Str_Switch_warn[] ;
+extern const prog_char APM modi12x3[] ;
 
 //extern const prog_uint8_t APM chout_ar[] ;
 extern const prog_uint8_t APM bchout_ar[] ;
@@ -297,7 +301,9 @@ extern const prog_char APM Str_Switches[] ;
 #define CS_ELESS      (uint8_t)13
 #endif
 #define CS_TIME	     (uint8_t)14
+#define CS_EXEQUAL   (uint8_t)15
 #define CS_MAXF      14  //max function
+#define CS_XMAXF     15  //max function
 
 #define CS_VOFS       (uint8_t)0
 #define CS_VBOOL      (uint8_t)1
@@ -431,6 +437,7 @@ uint8_t IS_EXPO_THROTTLE( uint8_t x ) ;
 //#define EVT_KEY_DBL(key)   ((key)|0x10)
 #define EVT_ENTRY               (0xff - _MSK_KEY_REPT)
 #define EVT_ENTRY_UP            (0xfe - _MSK_KEY_REPT)
+#define EVT_ENTRY_BACK          (0xfd - _MSK_KEY_REPT)
 #define EVT_KEY_MASK             0x0f
 
 #define HEART_TIMER2Mhz 1;
@@ -726,8 +733,8 @@ void putsDblSizeName( uint8_t y ) ;
 
 #ifdef FRSKY
 void putsTelemetry(uint8_t x, uint8_t y, uint8_t val, uint8_t unit, uint8_t att);
-uint8_t putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t att, uint8_t scale) ;
-uint16_t scale_telem_value( uint8_t val, uint8_t channel, uint8_t times2, uint8_t *p_att ) ;
+uint8_t putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t att ) ;
+uint16_t scale_telem_value( uint8_t val, uint8_t channel, uint8_t *p_att ) ;
 #endif
 
 extern int16_t calc100toRESX(int8_t x) ;
@@ -752,14 +759,15 @@ extern int16_t calc1000toRESX(int16_t x) ;  // improve calc time by Pat MacKenzi
 extern volatile uint16_t g_tmr10ms;
 extern volatile uint8_t g8_tmr10ms;
 
-extern inline uint16_t get_tmr10ms()
-{
-    uint16_t time  ;
-    cli();
-    time = g_tmr10ms ;
-    sei();
-    return time ;
-}
+//extern inline uint16_t get_tmr10ms()
+extern uint16_t get_tmr10ms( void ) ;
+//{
+//    uint16_t time  ;
+//    cli();
+//    time = g_tmr10ms ;
+//    sei();
+//    return time ;
+//}
 
 
 
@@ -816,7 +824,7 @@ extern int16_t ex_chans[NUM_CHNOUT];
 void getADC_osmp();
 //void getADC_filt();
 
-//void checkTHR();
+void checkTHR();
 
 
 #ifdef JETI
@@ -970,7 +978,7 @@ extern int8_t REG100_100(int8_t x) ;
 #endif
 
 extern uint16_t evalChkSum( void ) ;
-
+extern int8_t isAgvar(uint8_t value) ;
 struct t_calib
 {
 	int16_t midVals[7];
@@ -1028,6 +1036,14 @@ struct t_latency
 	uint8_t g_tmr1Latency_max ;
 	uint16_t g_timeMain ;
 } ;
+
+extern uint16_t A1A2toScaledValue( uint8_t channel, uint8_t *dplaces ) ;
+
+#ifdef CPUM2561
+void arduinoSerialRx( void ) ;
+void arduinoSerialTx( void ) ;
+void arduinoDueSlave( void ) ;
+#endif
 
 
 #endif // er9x_h

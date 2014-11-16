@@ -167,6 +167,7 @@ extern audioQueue audio;
 
 void audioDefevent(uint8_t e);
 void audioVoiceDefevent(uint8_t e, uint8_t v) ;
+void audioEvent( uint8_t e, uint16_t f ) ;
 
 #define AUDIO_KEYPAD_UP()   audioDefevent(AU_KEYPAD_UP)
 #define AUDIO_KEYPAD_DOWN() audioDefevent(AU_KEYPAD_DOWN)

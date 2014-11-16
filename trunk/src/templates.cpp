@@ -77,6 +77,7 @@ static MixData* setDest(uint8_t dch)
     memset( md, 0, sizeof(MixData) ) ;
     md->destCh = dch;
 		md->weight = 100 ;
+		md->lateOffset = 1 ;
     return md ;
 }
 
