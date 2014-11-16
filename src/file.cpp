@@ -404,6 +404,7 @@ uint16_t EFile::writeRlc(uint8_t i_fileId, uint8_t typ,uint8_t*buf,uint16_t i_le
       state0 = nst0;
     }
     cnt++;
+    wdt_reset() ;		// Can take too long for the WD timeout.
   }
   if(0){
     error:

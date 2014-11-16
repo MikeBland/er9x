@@ -66,7 +66,7 @@
 // STR_PPMCHANNELS indexed 4 char each
 #define STR_PPMCHANNELS	   "\0044CH 6CH 8CH 10CH12CH14CH16CH"
 
-#define STR_MAH_ALARM      "mAh Alarm"
+#define STR_MAH_ALARM      "mAh Limit"
 
 
 // er9x.cpp
@@ -118,8 +118,8 @@
 #define STR_GV             "GV"
 #define STR_OFF_ON         "OFFON "
 #define STR_HYPH_INV       "\003---INV"
-#define STR_VERSION        "VERSION"
-#define STR_TRAINER        "TRAINER"
+#define STR_VERSION        "Version"
+#define STR_TRAINER        "Trainer"
 #define STR_SLAVE          "\007Slave" 
 #define STR_MENU_DONE      "[MENU] WHEN DONE"
 #define STR_CURVES         "CURVES"
@@ -147,6 +147,7 @@
 #define STR_GPS_ALTMAIN    "GpsAltMain"
 #define STR_CUSTOM_DISP    "Custom Display"
 #define STR_FAS_OFFSET     "FAS Offset"
+//#define STR_VARIO_SRC_IDX  "Vario: Source\000\132\002\004----vspdA2  "
 #define STR_VARIO_SRC      "Vario: Source"
 #define STR_VSPD_A2        "\004----vspdA2  "
 #define STR_2SWITCH        "\002Switch"
@@ -171,9 +172,10 @@
 #ifdef FMODE_TRIM
 #define STR_FMTRIMVAL      "FmTrimVal"
 #endif
-#define STR_OFFSET         "Offset"
+#define STR_OFFSET         "\002Offset"
 #define STR_2FIX_OFFSET    "\002Fix Offset"
 #define STR_FLMODETRIM     "\002FlModetrim"
+#define STR_ENABLEEXPO		 "\002EnableExpoDR"
 #define STR_2TRIM          "\002Trim"
 #define STR_15DIFF         "\015Diff"
 #define STR_Curve          "Curve"
@@ -260,7 +262,7 @@
 #define STR_MODELSEL       "MODELSEL"
 // STR_11_FREE after \011 max 4 chars
 #define STR_11_FREE        "\011free"
-#define STR_CALIBRATION    "CALIBRATION"
+#define STR_CALIBRATION    "Calibration"
 // STR_MENU_TO_START after \003 max 15 chars
 #define STR_MENU_TO_START  "\003[MENU] TO START"
 // STR_SET_MIDPOINT after \005 max 11 chars
@@ -300,8 +302,8 @@
 #define STR_FLASH_ON_BEEP  "Flash on beep"
 #define STR_LIGHT_SWITCH   "Light switch"
 #define STR_LIGHT_INVERT   "Backlight invert"
-#define STR_LIGHT_AFTER    "Light off after"
-#define STR_LIGHT_STICK    "Light on Stk Mv"
+#define STR_LIGHT_AFTER    "Light off after\023s"
+#define STR_LIGHT_STICK    "Light on Stk Mv\023s"
 #define STR_SPLASH_SCREEN  "Splash screen"
 #define STR_SPLASH_NAME    "Splash Name"
 #define STR_THR_WARNING    "Throttle Warning"
@@ -327,9 +329,9 @@
 #define CURV_STR           "\003---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
 // CSWITCH_STR indexed 7 chars each
 #ifdef VERSION3
-#define CSWITCH_STR        "\007----   v>ofs  v<ofs  |v|>ofs|v|<ofsAND    OR     XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""Latch  ""F-Flop TimeOff"
+#define CSWITCH_STR        "\007----   v>ofs  v<ofs  |v|>ofs|v|<ofsAND    OR     XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""Latch  ""F-Flop TimeOffv1\140=ofs"
 #else
-#define CSWITCH_STR        "\007----   v>ofs  v<ofs  |v|>ofs|v|<ofsAND    OR     XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""v1>=v2 ""v1<=v2 TimeOff"
+#define CSWITCH_STR        "\007----   v>ofs  v<ofs  |v|>ofs|v|<ofsAND    OR     XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""v1>=v2 ""v1<=v2 TimeOffv1\140=ofs"
 #endif
 
 #define SWASH_TYPE_STR     "\006---   ""120   ""120X  ""140   ""90    "
@@ -351,7 +353,7 @@
 
 #define STR_SINK_TONES		 "Sink Tones"
 #define STR_FRSKY_MOD      "Frsky Mod Done"
-#define STR_TEZ_R90				 "TelemetrEZ>r89"
+#define STR_TEZ_R90				 "TelemetrEZ>=r90"
 
 // ersky9x strings
 #define STR_ST_CARD_STAT   "SD CARD STAT"

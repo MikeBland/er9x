@@ -67,6 +67,7 @@
 #define MAX_GVARS 7
 
 #define MAX_MODES		4
+#define NUM_VOICE_ALARMS	8
 
 PACK(typedef struct t_TrainerMix {
     uint8_t srcChn:3; //0-7 = ch1-8
@@ -108,7 +109,7 @@ PACK(typedef struct t_EEGeneral {
     uint8_t   disableSplashScreen:1;
     uint8_t   disablePotScroll:1;
     uint8_t   disableBG:1;
-    uint8_t   frskyinternalalarm:1;
+    uint8_t   frskyinternalalarm:1;		// Not used if no FRSKY_ALARMS
     uint8_t   spare_filter ;		// No longer needed, left for eepe compatibility for now
     uint8_t   lightAutoOff;
     uint8_t   templateSetup;  //RETA order according to chout_ar array
@@ -135,6 +136,7 @@ PACK(typedef struct t_EEGeneral {
     uint8_t   TEZr90:1 ;
     uint8_t   spare1:2 ;
 		uint8_t		stickReverse ;
+		uint8_t		customStickNames[16] ;
 }) EEGeneral;
 
 
@@ -179,7 +181,7 @@ PACK(typedef struct t_MixData {
 #ifdef FMODE_TRIM
     uint8_t enableFmTrim:1;
 #else
-    uint8_t spareenableFmTrim:1;
+    uint8_t disableExpoDr:1;
 #endif
     uint8_t differential:1;
     int8_t  sOffset;
@@ -313,6 +315,26 @@ PACK(typedef struct t_scale
 	uint8_t name[4] ;
 }) ScaleData ;
 
+PACK(typedef struct t_voiceAlarm
+{
+  uint8_t source ;
+	uint8_t func;
+  int8_t  swtch ;
+	uint8_t rate ;
+	uint8_t fnameType:3 ;
+	uint8_t haptic:2 ;
+	uint8_t vsource:2 ;
+	uint8_t mute:1 ;
+//	uint8_t res1 ;			// Spare for expansion
+  int16_t  offset ;		//offset
+//	union
+//	{
+		int16_t vfile ;
+//		uint8_t name[8] ;
+//	} file ;
+}) VoiceAlarmData ;
+
+
 PACK(typedef struct t_ModelData {
     char      name[MODEL_NAME_LEN];             // 10 must be first for eeLoadModelName
 //    uint8_t   reserved_spare;  //used to be MDVERS - now depreciated
@@ -377,6 +399,18 @@ PACK(typedef struct t_ModelData {
 	uint8_t   altSource ;
 	uint8_t phaseNames[MAX_MODES][6] ;
 	ScaleData Scalers[NUM_SCALERS] ;
+	int8_t timer1RstSw ;
+	int8_t timer2RstSw ;
+	uint8_t timer1Cdown:1 ;
+	uint8_t timer2Cdown:1 ;
+	uint8_t timer1Mbeep:1 ;
+	uint8_t timer2Mbeep:1 ;
+	uint8_t useCustomStickNames:1 ;
+	uint8_t throttleIdle:2 ;
+	uint8_t tspare:1 ;
+	int8_t gvswitch[MAX_GVARS] ;
+	VoiceAlarmData vad[NUM_VOICE_ALARMS] ;
+
 
 //		uint8_t   altSource ;
 }) ModelData;

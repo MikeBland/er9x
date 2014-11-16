@@ -41,6 +41,8 @@ mode4 ail thr ele rud
 
 extern int16_t AltOffset ;
 
+#define read_keys() ((PINB) & 0x7E)
+
 #if defined(CPUM128) || defined(CPUM2561)
 uint8_t Last_switch[NUM_CSW+EXTRA_CSW] ;
 #else
@@ -48,7 +50,7 @@ uint8_t Last_switch[NUM_CSW] ;
 #endif
 
 static void checkMem( void );
-static void checkTHR( void );
+void checkTHR( void );
 ///   Pr�ft beim Einschalten ob alle Switches 'off' sind.
 static void checkSwitches( void );
 
@@ -66,6 +68,8 @@ uint8_t Main_running ;
 uint8_t SlaveMode ;
 #if defined(CPUM128) || defined(CPUM2561)
 uint8_t Vs_state[NUM_CHNOUT+EXTRA_VOICE_SW] ;
+uint8_t Nvs_state[NUM_VOICE_ALARMS] ;
+int16_t Nvs_timer[NUM_VOICE_ALARMS] ;
 #else
 uint8_t Vs_state[NUM_CHNOUT] ;
 #endif
@@ -147,6 +151,11 @@ const prog_uint8_t APM modn12x3[]= {
 //A=4
 #endif
 
+#ifdef CPUM2561
+uint8_t Arduino = 0 ;
+#endif
+
+
 #ifdef FIX_MODE
 uint8_t modeFixValue( uint8_t value )
 {
@@ -157,16 +166,25 @@ uint8_t modeFixValue( uint8_t value )
 const prog_uint8_t APM csTypeTable[] =
 #ifdef VERSION3
 { CS_VOFS, CS_VOFS, CS_VOFS, CS_VOFS, CS_VBOOL, CS_VBOOL, CS_VBOOL,
- CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VBOOL, CS_VBOOL, CS_TIMER
+ CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VBOOL, CS_VBOOL, CS_TIMER, CS_VOFS
 } ;
 #else	
 { CS_VOFS, CS_VOFS, CS_VOFS, CS_VOFS, CS_VBOOL, CS_VBOOL, CS_VBOOL,
- CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_TIMER
+ CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_TIMER, CS_VOFS
 } ;
 #endif
 
 void nothing()
 {
+}
+
+uint16_t get_tmr10ms()
+{
+    uint16_t time  ;
+    cli();
+    time = g_tmr10ms ;
+    sei();
+    return time ;
 }
 
 uint8_t CS_STATE( uint8_t x)
@@ -208,13 +226,22 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
         lcd_putsnAtt(x,y,PSTR("----"),4,att);
     else if(idx<=4)
 #ifdef FIX_MODE
+		{
+			if ( g_model.useCustomStickNames )
+			{
+				lcd_putsnAtt( x, y, ( char *)g_eeGeneral.customStickNames+4*(idx-1), 4, att|BSS ) ;
+			}
+			else
+			{
         lcd_putsAttIdx(x,y,modi12x3,(idx-1),att) ;
+			}
+		}
 #else
         lcd_putsnAtt(x,y,&modi12x3[(pgm_read_byte(modn12x3+g_eeGeneral.stickMode*4+(idx-1))-1)*4],4,att);
 #endif
     else if(idx<=chanLimit)
 #if GVARS
-        lcd_putsAttIdx(x,y,PSTR(STR_CHANS_GV),(idx-5),att);
+        lcd_putsAttIdx(x,y,Str_Chans_Gv,(idx-5),att);
 #else
         lcd_putsAttIdx(x,y,PSTR(STR_CHANS_RAW),(idx-5),att);
 #endif
@@ -232,6 +259,7 @@ void putsChnRaw(uint8_t x,uint8_t y,uint8_t idx,uint8_t att)
 
 void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 {
+#if defined(CPUM128) || defined(CPUM2561)
 	if ( idx1 == 0 )
 	{
     lcd_putsnAtt(x,y,PSTR("--- "),4,att);
@@ -244,19 +272,18 @@ void putsChn(uint8_t x,uint8_t y,uint8_t idx1,uint8_t att)
 		{
 			x1 -= FWNUM ;			
 		}
-//		lcd_outdezNAtt(uint8_t x,uint8_t y,int32_t val,uint8_t mode,int8_t len)
-//  	lcd_outdezNAtt(x+2*FW,y,idx1,LEFT|att,2);
-  	lcd_outdezAtt(x1,y,idx1,att);
+		lcd_2_digits( x1, y, idx1, att ) ;
     lcd_putsnAtt(x,y,PSTR(STR_CH),2,att);
 	}
-    // !! todo NUM_CHN !!
-//    lcd_putsnAtt(x,y,PSTR("--- CH1 CH2 CH3 CH4 CH5 CH6 CH7 CH8 CH9 CH10CH11CH12CH13CH14CH15CH16"
-//                          "CH17CH18CH19CH20CH21CH22CH23CH24CH25CH26CH27CH28CH29CH30")+4*idx1,4,att);
+#else
+	putsChnRaw( x, y, idx1 ? idx1+20 : idx1, att ) ;
+#endif
 }
 
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t idx1,uint8_t att)//, bool nc)
 {
-    switch(idx1){
+    
+		switch(idx1){
     case  0:            lcd_putsAtt(x+FW,y,PSTR("---"),att);return;
     case  MAX_DRSWITCH: lcd_putsAtt(x+FW,y,Str_ON,att);return;
     case -MAX_DRSWITCH: lcd_putsAtt(x+FW,y,Str_OFF,att);return;
@@ -321,93 +348,118 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t type )
 
 #ifdef FRSKY
 
-uint16_t scale_telem_value( uint8_t val, uint8_t channel, uint8_t times2, uint8_t *p_att )
+uint8_t Unit ;
+
+uint16_t scale_telem_value( uint8_t val, uint8_t channel, uint8_t *p_att )
 {
   uint32_t value ;
 	uint16_t ratio ;
 	FrSkyChannelData *fd ;
+  uint8_t unit = 'v' ;
+	uint8_t places = 1 ;
 	
 	fd = &g_model.frsky.channels[channel] ;
   value = val ;
   ratio = fd->opt.alarm.ratio ;
-  if ( times2 )
+  if (fd->opt.alarm.type == 2/*V*/)
   {
       ratio <<= 1 ;
   }
   value *= ratio ;
 	if ( fd->opt.alarm.type == 3/*A*/)
   {
-      value /= 100 ;
-      *p_att |= PREC1 ;
+		unit = 'A' ;
+    value /= 100 ;
   }
   else if ( ratio < 100 )
   {
       value *= 2 ;
       value /= 51 ;  // Same as *10 /255 but without overflow
-      *p_att |= PREC2 ;
+      places = 2 ;
   }
   else
   {
       value /= 255 ;
   }
+	if ( fd->opt.alarm.type == 1 )
+	{
+		unit = ' ' ;
+  	places = 0 ;
+	}
+	if ( p_att )
+	{
+  	*p_att = places ;
+	}
+	Unit = unit ;
 	return value ;
 }
 
-uint8_t putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t att, uint8_t scale)
+uint8_t putsTelemValue(uint8_t x, uint8_t y, uint8_t val, uint8_t channel, uint8_t att)
 {
-    uint32_t value ;
+    uint16_t value ;		// ??Can this be a uint16_t??
     //  uint8_t ratio ;
-    uint8_t times2 ;
-    uint8_t unit = ' ' ;
-		FrSkyChannelData *fd ;
+//    uint8_t times2 ;
+//    uint8_t unit = ' ' ;
+//		FrSkyChannelData *fd ;
+		uint8_t dplaces ;
+//		uint8_t ltype = g_model.frsky.channels[channel].opt.alarm.type ;
 
-		fd = &g_model.frsky.channels[channel] ;
-    value = val ;
-    if (fd->opt.alarm.type == 2/*V*/)
-    {
-        times2 = 1 ;
-    }
-    else
-    {
-        times2 = 0 ;
-    }
+//		fd = &g_model.frsky.channels[channel] ;
+//    value = val ;
+//    if (fd->opt.alarm.type == 2/*V*/)
+//    {
+//        times2 = 1 ;
+//    }
+//    else
+//    {
+//        times2 = 0 ;
+//    }
 
-    if ( scale )
-    {
-			value = scale_telem_value( val, channel, times2, &att ) ;
-    }
-    else
-    {
-        if ( times2 )
-        {
-            value <<= 1 ;
-        }
-		  	if (fd->opt.alarm.type == 3/*A*/)
-        {
-            value *= 255 ;
-            value /= 100 ;
-            att |= PREC1 ;
-        }
-    }
+//    if ( scale )
+//    {
+		value = scale_telem_value( val, channel, &dplaces ) ;
+		if ( dplaces == 1 )
+		{
+			att |= PREC1 ;
+		}
+		else if ( dplaces == 2 )
+		{
+			att |= PREC2 ;
+		}
+//    }
+//    else
+//    {
+//    		if (fd->opt.alarm.type == 2/*V*/)
+//        {
+//            value <<= 1 ;
+//        }
+//		  	if (fd->opt.alarm.type == 3/*A*/)
+//        {
+//            value *= 255 ;
+//            value /= 100 ;
+//            att |= PREC1 ;
+//        }
+//    }
     //              val = (uint16_t)staticTelemetry[i]*g_model.frsky.channels[i].ratio / 255;
     //              putsTelemetry(x0-2, 2*FH, val, g_model.frsky.channels[i].type, blink|DBLSIZE|LEFT);
     //  if (g_model.frsky.channels[channel].type == 0/*v*/)
-    if ( (fd->opt.alarm.type == 0/*v*/) || (fd->opt.alarm.type == 2/*v*/) )
+    if ( Unit == 'v' ) //ltype == 0/*v*/) || (ltype == 2/*v*/) )
     {
-      lcd_outdezNAtt(x, y, value, att|PREC1, 5) ;
-			unit = 'v' ;
-      if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, unit, att);
+      lcd_outdezNAtt(x, y, value, att, 5) ;
+//			unit = 'v' ;
+      if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, Unit, att);
     }
     else
     {
         lcd_outdezAtt(x, y, value, att);
-		    if (fd->opt.alarm.type == 3/*A*/)
+		    if ( Unit == 'A')
+//		    if (ltype == 3/*A*/)
 				{
-					unit = 'A' ;
-        	if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, unit, att);
+//					unit = 'A' ;
+        	if(!(att&NO_UNIT)) lcd_putcAtt(lcd_lastPos, y, Unit, att);
 				}
     }
-		return unit ;
+		return Unit ;
 }
 
 
@@ -539,6 +591,14 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
     	}
     	//      return swtch>0 ? (abs(x)<y) : !(abs(x)<y);
     	break;
+			case CS_EXEQUAL:
+				if ( isAgvar( cs->v1 ) )
+				{
+					x *= 10 ;
+					y *= 10 ;
+				}
+  		  ret_value = abs(x-y) < 32 ;
+  		break;
 
     	//  case (CS_AND):
     	//      return (getSwitch(a,0,level+1) && getSwitch(b,0,level+1));
@@ -929,7 +989,27 @@ int16_t tanaIn( uint8_t chan )
 	return  (g_eeGeneral.throttleReversed) ? -v : v ;
 }
 
-static void checkTHR()
+
+uint8_t checkThrottlePosition( int16_t v, uint8_t thrchn, int16_t lowLim )
+{
+	if ( g_model.throttleIdle )
+	{
+		if ( abs( v - g_eeGeneral.calibMid[thrchn] ) < THRCHK_DEADBAND )
+		{
+			return 1 ;
+		}
+	}
+	else
+	{
+  	if(v<=lowLim)
+  	{
+  		return 1 ;
+  	}
+	}
+	return 0 ;
+}
+
+void checkTHR()
 {
     if(g_eeGeneral.disableThrottleWarning) return;
 
@@ -944,9 +1024,10 @@ static void checkTHR()
 		lowLim = (g_eeGeneral.throttleReversed ? (- lowLim) - g_eeGeneral.calibSpanPos[thrchn] : lowLim - g_eeGeneral.calibSpanNeg[thrchn]);
 		lowLim += THRCHK_DEADBAND ;
  
- 	  int16_t v = tanaIn(thrchn);
- 
- 	  if(v<=lowLim) return;
+    if ( checkThrottlePosition( tanaIn(thrchn), thrchn, lowLim ) )
+		{
+			return ;
+		}
 
     // first - display warning
     alertMessages( PSTR(STR_THR_NOT_IDLE), PSTR(STR_RST_THROTTLE) ) ;
@@ -964,11 +1045,15 @@ static void checkTHR()
 #endif
         check_backlight_voice() ;
         
-				v = tanaIn(thrchn);
-        
-				if((v<=lowLim) || (keyDown()))
+        wdt_reset() ;
+				
+		    if ( checkThrottlePosition( tanaIn(thrchn), thrchn, lowLim ) )
+				{
+					return ;
+				}
+				if( keyDown() )
         {
-            return;
+          return ;
         }
     }
 }
@@ -1334,7 +1419,7 @@ void alertx(const prog_char * s, bool defaults)
             heartbeat = 0;
         }
 
-        if(getSwitch(g_eeGeneral.lightSw,0) || g_eeGeneral.lightAutoOff || defaults)
+        if(defaults)
         	BACKLIGHT_ON ;
 		    else
     	    BACKLIGHT_OFF ;
@@ -1524,7 +1609,14 @@ static uint8_t checkTrim(uint8_t event)
 #endif
             //if(event & _MSK_KEY_REPT) warble = true;
 //            if(x <= 125 && x >= -125){
-                audio.event(AU_TRIM_MOVE,(abs(x)/4)+60);
+            
+						int8_t t = x ;
+						if ( t < 0 )
+						{
+							t = -t ;
+						}
+						t /= 4 ;
+						audioEvent(AU_TRIM_MOVE,t+60) ;
 //            }
         }
         else
@@ -1539,8 +1631,15 @@ static uint8_t checkTrim(uint8_t event)
 #endif
             STORE_MODELVARS_TRIM;
 #endif
-            if(x <= 125 && x >= -125){
-                audio.event(AU_TRIM_MOVE,(-abs(x)/4)+60);
+            if(x <= 125 && x >= -125)
+						{
+							int8_t t = x ;
+							if ( t > 0 )
+							{
+								t = -t ;
+							}
+							t /= 4 ;
+              audioEvent(AU_TRIM_MOVE,(t+60));
             }
         }
 
@@ -1568,14 +1667,30 @@ int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flag
 //        kmi=hlp;
 //        event=EVT_KEY_FIRST(EVT_KEY_MASK & event);
 //    }
-    if(event==EVT_KEY_FIRST(kpl) || event== EVT_KEY_REPT(kpl) || (s_editMode && (event==EVT_KEY_FIRST(KEY_UP) || event== EVT_KEY_REPT(KEY_UP))) ) {
-        newval++;
+    if(event==EVT_KEY_FIRST(kpl) || event== EVT_KEY_REPT(kpl) || (s_editMode && (event==EVT_KEY_FIRST(KEY_UP) || event== EVT_KEY_REPT(KEY_UP))) )
+		{
+				if ( ( read_keys() & 2 ) == 0 )
+				{
+    			newval += 100 ;
+				}		 
+				else
+				{
+    			newval += 1 ;
+				}
 
         audioDefevent(AU_KEYPAD_UP);
 
         kother=kmi;
-    }else if(event==EVT_KEY_FIRST(kmi) || event== EVT_KEY_REPT(kmi) || (s_editMode && (event==EVT_KEY_FIRST(KEY_DOWN) || event== EVT_KEY_REPT(KEY_DOWN))) ) {
-        newval--;
+    }else if(event==EVT_KEY_FIRST(kmi) || event== EVT_KEY_REPT(kmi) || (s_editMode && (event==EVT_KEY_FIRST(KEY_DOWN) || event== EVT_KEY_REPT(KEY_DOWN))) )
+		{
+				if ( ( read_keys() & 2 ) == 0 )
+				{
+    			newval -= 100 ;
+				}		 
+				else
+				{
+    			newval -= 1 ;
+				}
 
         audioDefevent(AU_KEYPAD_DOWN);
 
@@ -1623,7 +1738,7 @@ int16_t checkIncDec16( int16_t val, int16_t i_min, int16_t i_max, uint8_t i_flag
 #endif
 		if ( RotaryState == ROTARY_VALUE )
 		{
-			newval += Rotary.Rotary_diff ;
+			newval += ( ( read_keys() & 2 ) == 0 ) ? 100 * Rotary.Rotary_diff : Rotary.Rotary_diff ;
 		}
     if(newval>i_max)
     {
@@ -2106,7 +2221,6 @@ void perMain()
     uint8_t evt=getEvent();
     evt = checkTrim(evt);
 
-
 #ifndef NOPOTSCROLL
 		int16_t p1d ;
 
@@ -2178,7 +2292,7 @@ void perMain()
 				}
 				else
 				{
-					v = g_model.gvars[g_model.anaVolume].gvar + 125 ;
+					v = g_model.gvars[g_model.anaVolume-1].gvar + 125 ;
 					divisor = 250 ;
 				}
 				requiredVolume = v * (NUM_VOL_LEVELS-1) / divisor ;
@@ -2423,7 +2537,7 @@ uint8_t ppmInState = 0; //0=unsync 1..8= wait for value i-1
 int16_t BandGap = 240 ;
 
 #ifndef SIMU
-static uint16_t s_anaFilt[8];
+uint16_t s_anaFilt[8] ;
 uint16_t anaIn(uint8_t chan)
 {
     //                     ana-in:   3 1 2 0 4 5 6 7
@@ -2922,6 +3036,17 @@ int main(void)
     lcd_init();         // initialize LCD module for ALERT box
     eeWriteGeneral();   // format/write back to eeprom
 	}
+
+#ifdef CPUM2561
+// Check for Arduine DUE slave mode
+  uint8_t in ;
+  in = ~PIND & 0x82 ;
+	if ( in == 0x82 )
+	{
+		arduinoDueSlave() ;
+	}
+#endif
+
 	uint8_t cModel = g_eeGeneral.currModel;
 	eeLoadModel( cModel ) ;
   
@@ -2983,8 +3108,9 @@ int main(void)
 //    BandGap = 240 ;
 		putVoiceQueueUpper( g_model.modelVoice ) ;
 	}
+		AlarmControl.VoiceCheckFlag |= 2 ;// Set switch current states
 		CurrentPhase = 0 ;
-    perOut(g_chans512, 0);
+    perOutPhase(g_chans512, 0 ) ;
 		startPulses() ;
     wdt_enable(WDTO_500MS);
 
@@ -3041,6 +3167,288 @@ NOINLINE int16_t getTelemetryValue( uint8_t index )
 int16_t getAltbaroWithOffset()
 {
  	return getTelemetryValue(FR_ALT_BARO) + AltOffset ;
+}
+#endif
+
+int8_t isAgvar(uint8_t value)
+{
+	if ( value >= 62 )
+	{
+		if ( value <= 68 )
+		{
+			return 1 ;
+		}
+	}
+	return 0 ;
+}
+
+
+#if defined(CPUM128) || defined(CPUM2561)
+
+void doVoiceAlarmSource( VoiceAlarmData *pvad )
+{
+	if ( pvad->source )
+	{
+		// SORT OTHER values here
+		if ( pvad->source >= NUM_XCHNRAW )
+		{
+			voice_telem_item( pvad->source - NUM_XCHNRAW - 1 ) ;
+		}
+		else
+		{
+			if ( pvad->source )
+			{
+				int16_t value ;
+				value = getValue( pvad->source - 1 ) ;
+				voice_numeric( value, 0, 0 ) ;
+			}
+		}
+	}
+}
+
+NOINLINE static void processVoiceAlarms()
+{
+	uint8_t i ;
+	uint8_t curent_state ;
+	VoiceAlarmData *pvad = &g_model.vad[0] ;
+	for ( i = 0 ; i < NUM_VOICE_ALARMS ; i += 1 )
+	{
+		uint8_t play = 0 ;
+		curent_state = 0 ;
+		int16_t ltimer = Nvs_timer[i] ;
+		
+		if ( pvad->func )		// Configured
+		{
+  		int16_t x ;
+			int16_t y = pvad->offset ;
+			x = getValue( pvad->source - 1 ) ;
+  		switch (pvad->func)
+			{
+				case 1 :
+					x = x > y ;
+				break ;
+				case 2 :
+					x = x < y ;
+				break ;
+				case 3 :
+					x = abs(x) > y ;
+				break ;
+				case 4 :
+					x = abs(x) < y ;
+				break ;
+				case 5 :
+				{
+					if ( isAgvar( pvad->source ) )
+					{
+						x *= 10 ;
+						y *= 10 ;
+					}
+    			x = abs(x-y) < 32 ;
+				}
+				break ;
+			}
+// Start of invalid telemetry detection
+//					if ( pvad->source > ( CHOUT_BASE - NUM_SKYCHNOUT ) )
+//					{ // Telemetry item
+//						if ( !telemItemValid( pvad->source - 1 - CHOUT_BASE - NUM_SKYCHNOUT ) )
+//						{
+//							x = 0 ;	// Treat as OFF
+//						}
+//					}
+// End of invalid telemetry detection
+			if ( pvad->swtch )
+			{
+				if ( getSwitch( pvad->swtch, 0 ) == 0 )
+				{
+					x = 0 ;
+				}
+			}
+			if ( x == 0 )
+			{
+				ltimer = 0 ;
+			}
+			else
+			{
+				play = 1 ;
+			}
+		}
+		else // No function
+		{
+			if ( pvad->swtch )
+			{
+				curent_state = getSwitch( pvad->swtch, 0 ) ;
+				if ( curent_state == 0 )
+				{
+//							Nvs_state[i] = 0 ;
+					ltimer = -1 ;
+				}
+			}
+			else// No switch, no function
+			{ // Check for source with numeric rate
+				if ( pvad->rate >= 3 )	// A time
+				{
+					if ( pvad->vsource )
+					{
+						play = 1 ;
+					}
+				}
+			}
+		}
+		play |= curent_state ;
+
+		if ( ( AlarmControl.VoiceCheckFlag & 2 ) == 0 )
+		{
+			if ( play == 1 )
+			{
+				if ( Nvs_state[i] == 0 )
+				{ // just turned ON
+					if ( ( pvad->rate == 0 ) || ( pvad->rate == 2 ) )
+					{ // ON
+						ltimer = 0 ;
+					}
+				}
+				Nvs_state[i] = 1 ;
+				if ( ( pvad->rate == 1 ) )
+				{
+					play = 0 ;
+				}
+			}
+			else
+			{
+				if ( Nvs_state[i] == 1 )
+				{
+					if ( ( pvad->rate == 1 ) || ( pvad->rate == 2 ) )
+					{
+						ltimer = 0 ;
+						play = 1 ;
+						if ( pvad->rate == 2 )
+						{
+							play = 2 ;
+						}
+					}
+				}
+				Nvs_state[i] = 0 ;
+			}
+		}
+		else
+		{
+			Nvs_state[i] = play ;
+			ltimer = -1 ;
+			play = 0 ;
+		}
+
+		if ( pvad->mute )
+		{
+			if ( pvad->source > ( CHOUT_BASE - NUM_CHNOUT ) )
+			{ // Telemetry item
+				if ( !telemItemValid( pvad->source - 1 - CHOUT_BASE - NUM_CHNOUT ) )
+				{
+					play = 0 ;	// Mute it
+				}
+			}
+		}
+
+		if ( play )
+		{
+			if ( ltimer < 0 )
+			{
+				if ( pvad->rate >= 3 )	// A time
+				{
+					ltimer = 0 ;
+				}
+			}
+			if ( ltimer == 0 )
+			{
+				if ( pvad->vsource == 1 )
+				{
+					doVoiceAlarmSource( pvad ) ;
+//					if ( pvad->source )
+//					{
+//						// SORT OTHER values here
+//						if ( pvad->source >= NUM_XCHNRAW )
+//						{
+//							voice_telem_item( pvad->source - NUM_XCHNRAW - 1 ) ;
+//						}
+//						else
+//						{
+//							if ( pvad->source )
+//							{
+//								int16_t value ;
+//								value = getValue( pvad->source - 1 ) ;
+//								voice_numeric( value, 0, 0 ) ;
+//							}
+//						}
+//					}
+				}
+				if ( pvad->fnameType == 0 )	// None
+				{
+					// Nothing!
+				}
+				else if ( pvad->fnameType == 1 )	// Name
+//				{
+//					char name[10] ;
+//					char *p ;
+//					p = (char *)cpystr( (uint8_t *)name, pvad->file.name ) ;
+//					if ( play == 2 )
+//					{
+//						*(p-1) += 1 ;
+//					}
+//					putUserVoice( name, 0 ) ;
+//				}
+//				else if ( pvad->fnameType == 2 )	// Number
+				{
+					putVoiceQueueLong( pvad->vfile +( play - 1 ) ) ;
+				}
+				else
+				{ // Audio
+					audioEvent( pvad->vfile, 0 ) ;
+				}
+				if ( pvad->vsource == 2 )
+				{
+					doVoiceAlarmSource( pvad ) ;
+//					if ( pvad->source )
+//					{
+//						// SORT OTHER values here
+//						if ( pvad->source >= NUM_XCHNRAW )
+//						{
+//							voice_telem_item( pvad->source - NUM_XCHNRAW - 1 ) ;
+//						}
+//						else
+//						{
+//							if ( pvad->source )
+//							{
+//								int16_t value ;
+//								value = getValue( pvad->source - 1 ) ;
+//								voice_numeric( value, 0, 0 ) ;
+//							}
+//						}
+//					}
+				}
+        if ( pvad->haptic )
+				{
+					audioDefevent( (pvad->haptic > 1) ? ( ( pvad->haptic == 3 ) ? AU_HAPTIC3 : AU_HAPTIC2 ) : AU_HAPTIC1 ) ;
+				}
+				if ( pvad->rate < 3 )	// ON/OFF/BOTH
+				{
+					ltimer = -1 ;
+				}
+				else
+				{
+					ltimer = 1 ;
+				}
+			}
+			else if ( ltimer > 0 )
+			{
+				ltimer += 1 ;
+				if ( ltimer > ( (pvad->rate-2) * 10 ) )
+				{
+					ltimer = 0 ;
+				}
+			}
+		}
+		pvad += 1 ;
+		Nvs_timer[i] = ltimer ;
+	}
 }
 #endif
 
@@ -3114,7 +3522,7 @@ void mainSequence()
 			if ( sd->opt.vs.vswtch )		// Configured
 			{
 				curent_state = getSwitch( sd->opt.vs.vswtch, 0 ) ;
-				if ( AlarmControl.VoiceCheckFlag != 2 )
+				if ( ( AlarmControl.VoiceCheckFlag & 2) == 0 )
 				{
 					if ( ( mode == 0 ) || ( mode == 2 ) )
 					{ // ON
@@ -3222,17 +3630,18 @@ void mainSequence()
 				CsTimer[i] = y ;
 			}
 #ifdef VERSION3
+			uint8_t lastSwitch = Last_switch[i] ;
 			if ( cs->func == CS_LATCH )
 			{
 		    if (getSwitch( cs->v1, 0, 0) )
 				{
-					Last_switch[i] = 1 ;
+					lastSwitch = 1 ;
 				}
 				else
 				{
 			    if (getSwitch( cs->v2, 0, 0) )
 					{
-						Last_switch[i] = 0 ;
+						lastSwitch = 0 ;
 					}
 				}
 			}
@@ -3240,24 +3649,26 @@ void mainSequence()
 			{
 		    if (getSwitch( cs->v1, 0, 0) )
 				{
-					if ( ( Last_switch[i] & 2 ) == 0 )
+					if ( ( lastSwitch & 2 ) == 0 )
 					{
 						// Clock it!
 			      if (getSwitch( cs->v2, 0, 0) )
 						{
-							Last_switch[i] = 3 ;
+							lastSwitch = 3 ;
 						}
 						else
 						{
-							Last_switch[i] = 2 ;
+							lastSwitch = 2 ;
 						}
 					}
 				}
 				else
 				{
-					Last_switch[i] &= ~2 ;
+					lastSwitch &= ~2 ;
 				}
 			}
+			Last_switch[i] = lastSwitch ;
+
 #endif
 		}
 
@@ -3374,6 +3785,9 @@ void mainSequence()
 #endif
 		}
 #endif
+#if defined(CPUM128) || defined(CPUM2561)
+		processVoiceAlarms() ;
+#endif
 		AlarmControl.VoiceCheckFlag = 0 ;
 		
 #ifdef FRSKY
@@ -3419,12 +3833,12 @@ void mainSequence()
 									vspd = -vspd ;
 									if (!g_model.varioData.sinkTones )
 									{
-          		    	audio.event( AU_VARIO_DOWN ) ;
+          		    	audioDefevent( AU_VARIO_DOWN ) ;
 									}
 								}
 								else
 								{
-          		    audio.event( AU_VARIO_UP ) ;
+          		    audioDefevent( AU_VARIO_UP ) ;
 								}
 								if ( vspd < 75 )
 								{
@@ -3449,7 +3863,7 @@ void mainSequence()
 							if (g_model.varioData.sinkTones == 0 )
 							{
 								new_rate = 20 ;
-         		    audio.event( AU_VARIO_UP ) ;
+         		    audioDefevent( AU_VARIO_UP ) ;
 							}
 						}
 						varioRepeatRate = new_rate ;
@@ -3576,9 +3990,13 @@ void mainSequence()
 								}
 								else
 								{
-									audio.event( g_model.frsky.frskyAlarmSound ) ;
+									audioDefevent( g_model.frsky.frskyAlarmSound ) ;
 								}
 							}
+							uint16_t value ;
+							value = g_model.frsky.frskyAlarmLimit ;
+							value = 100 - ( ((uint16_t)FrskyHubData[FR_AMP_MAH] >> 6) * 100 / value ) ;
+							FrskyHubData[FR_FUEL] = value ;
 						}
 					}
 #endif // MAH_LIMIT
@@ -3633,7 +4051,7 @@ void mainSequence()
 						{
 							if(getSwitch( sd->opt.ss.swtch,0))
 							{
-								audio.event( ((g_eeGeneral.speakerMode & 1) == 0) ? 1 : sd->opt.ss.val ) ;
+								audioDefevent( ((g_eeGeneral.speakerMode & 1) == 0) ? 1 : sd->opt.ss.val ) ;
 							}
 						}
 					}

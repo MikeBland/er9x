@@ -1,4 +1,4 @@
-/*
+ /*
  * Authors - Mike Blandford
  * Bertrand Songis <bsongis@gmail.com>, Bryan J.Rentoul (Gruvin) <gruvin@gmail.com> and Philip Moss
  *
@@ -116,12 +116,14 @@ Frsky_current_info Frsky_current[2] ;
 uint8_t frskyRSSIlevel[2] ;
 uint8_t frskyRSSItype[2] ;
 
+#ifdef FRSKY_ALARMS
 struct FrskyAlarm {
   uint8_t level;    // The alarm's 'urgency' level. 0=disabled, 1=yellow, 2=orange, 3=red
   uint8_t greater;  // 1 = 'if greater than'. 0 = 'if less than'
   uint8_t value;    // The threshold above or below which the alarm will sound
 };
 struct FrskyAlarm frskyAlarms[4];
+#endif
 
 struct t_frsky_user
 {
@@ -194,7 +196,10 @@ void store_indexed_hub_data( uint8_t index, uint16_t value )
 
 NOINLINE void store_cell_data( uint8_t battnumber, uint16_t cell )
 {
-	FrskyVolts[battnumber] = ( cell & 0x0FFF ) / 10 ;
+	if ( battnumber < 12 )
+	{
+		FrskyVolts[battnumber] = ( cell & 0x0FFF ) / 10 ;
+	}
 }
 
 void store_hub_data( uint8_t index, uint16_t value )
@@ -429,6 +434,7 @@ void processFrskyPacket(uint8_t *packet)
   // What type of packet?
   switch (packet[0])
   {
+#ifdef FRSKY_ALARMS
     case A22PKT:
     case A21PKT:
     case A12PKT:
@@ -441,6 +447,7 @@ void processFrskyPacket(uint8_t *packet)
         alarmptr->level = packet[3] & 0x03;
       }
       break;
+#endif
     case LINKPKT: // A1/A2/RSSI values
 			// From a scope, this seems to be sent every about every 35mS
 //			LinkAveCount += 1 ;
@@ -629,6 +636,14 @@ void processSportPacket()
 					store_hub_data( FR_VOLTS, value / 10 ) ;
 				break ;
 
+				case A3_ID_8 :
+					store_hub_data( FR_A3, value ) ;
+				break ;
+
+				case A4_ID_8 :
+					store_hub_data( FR_A4, value ) ;
+				break ;
+
 #if defined(CPUM128) || defined(CPUM2561)
 				case T1_ID_8 :
 					store_hub_data( FR_TEMP1, value ) ;
@@ -663,6 +678,42 @@ void processSportPacket()
 					store_hub_data( FR_SPORT_GALT, value ) ;
 				break ;
 
+				case GPS_LA_LO_ID_8 :
+				{	
+//					Bits 31-30 00 = LAT min/10000 N
+//					Bits 31-30 01 = LAT min/10000 S
+//					Bits 31-30 10 = LON min/10000 E
+//					Bits 31-30 11 = LON min/10000 W
+					uint8_t code = value >> 30 ;
+					value &= 0x3FFFFFFF ;
+					uint16_t bp ;
+					uint16_t ap ;
+					uint32_t temp ;
+					temp = value / 10000 ;
+					bp = (temp/ 60 * 100) + (temp % 60) ;
+		      ap = value % 10000;
+					if ( code & 2 )	// Long
+					{
+						store_hub_data( FR_GPS_LONG, bp ) ;
+						store_hub_data( FR_GPS_LONGd, ap ) ;
+						store_hub_data( FR_LONG_E_W, ( code & 1 ) ? 'W' : 'E' ) ;
+					}
+					else
+					{
+						store_hub_data( FR_GPS_LAT, bp ) ;
+						store_hub_data( FR_GPS_LATd, ap ) ;
+						store_hub_data( FR_LAT_N_S, ( code & 1 ) ? 'S' : 'N' ) ;
+					}
+				}
+				break ;
+				
+				case GPS_HDG_ID_8 :
+					store_hub_data( FR_COURSE, value / 100 ) ;
+				break ;
+
+				case GPS_SPEED_ID_8 :
+					store_hub_data( FR_GPS_SPEED, value/1000 ) ;
+				break ;
 #endif
 
 			}
@@ -707,6 +758,13 @@ uint8_t Private_position ;
 //uint8_t DebugCount = 0 ;
 //uint8_t DebugState = 0 ;
 
+//uint8_t TezDebug0 ;
+//uint8_t TezDebug1 ;
+
+#ifdef CPUM2561
+extern uint8_t Arduino ;
+#endif
+
 #ifndef SIMU
 ISR(USART0_RX_vect)
 {
@@ -718,6 +776,13 @@ ISR(USART0_RX_vect)
   
 	UCSR0B &= ~(1 << RXCIE0); // disable Interrupt
 	sei() ;
+#ifdef CPUM2561
+	if ( Arduino )
+	{
+		arduinoSerialRx() ;
+		return ;
+	}
+#endif
   stat = UCSR0A; // USART control and Status Register 0 A
 
     /*
@@ -764,6 +829,7 @@ ISR(USART0_RX_vect)
   {
 //    if (FrskyRxBufferReady == 0) // can't get more data if the buffer hasn't been cleared
 //    {
+//		TezDebug0 += 1 ;		
       switch (dataState) 
       {
         case frskyDataStart:
@@ -831,11 +897,11 @@ ISR(USART0_RX_vect)
 #else					// This is the original FrySky decoding
           if (data == START_STOP)
 					{
-						if ( FrskyTelemetryType )		// SPORT
-						{
-          		dataState = frskyDataInFrame ;
-            	numbytes = 0;
-						}
+//						if ( FrskyTelemetryType )		// SPORT
+//						{
+//          		dataState = frskyDataInFrame ;
+//            	numbytes = 0;
+//						}
 					 	break ; // Remain in userDataStart if possible 0x7e,0x7e doublet found.
 					}
 					if (data != PRIVATE)
@@ -885,10 +951,11 @@ ISR(USART0_RX_vect)
           if (data == START_STOP)
           {
             numbytes = 0;
-            dataState = frskyDataStart;
+            dataState = FrskyTelemetryType ? frskyDataInFrame : frskyDataStart ;
           }
           else if (data == PRIVATE)
 					{
+//						TezDebug1 += 1 ;
 						dataState = PRIVATE_COUNT ;
 					}
         break;
@@ -956,6 +1023,13 @@ ISR(USART0_UDRE_vect)
 {
 	struct t_frskyTx *pftx = &FrskyTx ;	
 	FORCE_INDIRECT(pftx) ;
+#ifdef CPUM2561
+	if ( Arduino )
+	{
+		arduinoSerialTx() ;
+		return ;
+	}
+#endif
   
 	if ( pftx->frskyTxBufferCount > 0) 
   {
@@ -1012,15 +1086,19 @@ static void FRSKY10mspoll(void)
     FrskyAlarmSendState &= ~j ;
 		if ( i < 4 )
 		{
+#ifdef FRSKY_ALARMS		 
 	    uint8_t channel = 1 - (i / 2);
   	  uint8_t alarm = 1 - (i % 2);
-    
+#endif    
 		//	FRSKY_setTxPacket( A22PKT + i, g_eeGeneral.frskyinternalalarm ? 0 :g_model.frsky.channels[channel].alarms_value[alarm],
 		//														 ALARM_GREATER(channel, alarm), ALARM_LEVEL(channel, alarm) ) ;					
-		
+
+#ifdef FRSKY_ALARMS		 
 			FRSKY_setTxPacket( A22PKT + i, g_model.frsky.channels[channel].opt.alarm.alarms_value[alarm],
                   ALARM_GREATER(channel, alarm), g_eeGeneral.frskyinternalalarm ? 0 :ALARM_LEVEL(channel, alarm) ) ;
-	
+#else
+			FRSKY_setTxPacket( A22PKT + i, 0, 0, 0 ) ;
+#endif	
 									 
 		}
 		else if( i < 6 )
@@ -1233,7 +1311,9 @@ void FRSKY_Init( uint8_t brate)
 	if ( g_eeGeneral.FrskyPins == 0 )
 		return ;
 #endif
+#ifdef FRSKY_ALARMS
   memset(frskyAlarms, 0, sizeof(frskyAlarms));
+#endif
   resetTelemetry();
 
   DDRE &= ~(1 << DDE0);    // set RXD0 pin as input

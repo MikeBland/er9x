@@ -77,6 +77,10 @@ ifeq ($(EXT), NMEA)
  CPPSRC += nmea.cpp
 endif
 
+ifeq ($(CPU), 2561)
+ CPPSRC += arduinoDue.cpp
+endif
+
 
 HELI = YES
 

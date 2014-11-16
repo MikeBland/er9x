@@ -342,6 +342,10 @@ void audioDefevent(uint8_t e)
   audio.event(e, BEEP_DEFAULT_FREQ);
 }
 
+void audioEvent( uint8_t e, uint16_t f )
+{
+  audio.event( e, f ) ;
+}
 
 void audioVoiceDefevent( uint8_t e, uint8_t v)
 {
