@@ -4850,7 +4850,11 @@ void menuProcModel(uint8_t event)
 	}
 uint8_t blink = InverseBlink ;
 
+#if defined(CPUM128) || defined(CPUM2561)
+  MENU(STR_SETUP, menuTabModel, e_Model, dataItems, {0,sizeof(g_model.name)-1,0,1,0,0,0,0,0,0,0,0,0,6,2,1,0/*repeated...*/});
+#else
   MENU(STR_SETUP, menuTabModel, e_Model, dataItems, {0,sizeof(g_model.name)-1,0,1,0,0,0,0,0,0,0,0,6,2,1,0/*repeated...*/});
+#endif
 
 	uint8_t  sub    = mstate2.m_posVert;
 	uint8_t subSub = g_posHorz;
@@ -8215,7 +8219,17 @@ void perOut(int16_t *chanOut, uint8_t att)
 						FORCE_INDIRECT(panas) ;
 
             if(g_model.swashCollectiveSource)
-                vc = panas[g_model.swashCollectiveSource-1];
+						{
+							uint8_t k = g_model.swashCollectiveSource - 1 ;
+							if ( k < CHOUT_BASE )
+							{
+              	vc = panas[k] ;
+							}
+							else
+							{
+								vc = ex_chans[k-CHOUT_BASE] ;
+							}
+						}
 
             if(g_model.swashInvertELE) vp = -vp;
             if(g_model.swashInvertAIL) vr = -vr;
@@ -8344,7 +8358,7 @@ void perOut(int16_t *chanOut, uint8_t att)
 						}
 						else if(k<CHOUT_BASE+NUM_CHNOUT)
 						{
-            	if(k<CHOUT_BASE+md->destCh)
+            	if(k<CHOUT_BASE+md->destCh-1)
 							{
 								v = chans[k-CHOUT_BASE] / 100 ; // if we've already calculated the value - take it instead // anas[i+CHOUT_BASE] = chans[i]
 							}

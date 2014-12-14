@@ -10,6 +10,12 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 14-Dec-2014  MPB (r815)
+Fix Beep Centre bug on '128/'2561
+Fix Mix not working when a channel source is itself
+Fix Collective bug in r814
+
+******************************************
 CHANGELOG: 16-Nov-2014  MPB (r814)
 Process A3 and A4 telemetry values
 Flash saving
