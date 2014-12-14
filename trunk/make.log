@@ -1,10 +1,10 @@
 ===== Starting build =====
 Timestamp
-Sun Nov 16 23:18:52 UTC 2014
+Sun Dec 14 11:11:09 UTC 2014
 ==========================
 
 ===== Updating from SVN =====
-At revision 813.
+At revision 814.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -91,7 +91,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   57748 bytes (88.1% Full)
+Program:   57760 bytes (88.1% Full)
 (.text + .data + .bootloader)
 
 Data:       3489 bytes (85.2% Full)
@@ -188,7 +188,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   63538 bytes (97.0% Full)
+Program:   63550 bytes (97.0% Full)
 (.text + .data + .bootloader)
 
 Data:       3691 bytes (90.1% Full)
@@ -285,7 +285,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   59498 bytes (90.8% Full)
+Program:   59510 bytes (90.8% Full)
 (.text + .data + .bootloader)
 
 Data:       3487 bytes (85.1% Full)
@@ -382,7 +382,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   63690 bytes (97.2% Full)
+Program:   63702 bytes (97.2% Full)
 (.text + .data + .bootloader)
 
 Data:       3644 bytes (89.0% Full)
@@ -476,7 +476,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   57188 bytes (87.3% Full)
+Program:   57200 bytes (87.3% Full)
 (.text + .data + .bootloader)
 
 Data:       3453 bytes (84.3% Full)
@@ -573,7 +573,7 @@ AVR Memory Usage
 ----------------
 Device: atmega128
 
-Program:   71390 bytes (54.5% Full)
+Program:   71402 bytes (54.5% Full)
 (.text + .data + .bootloader)
 
 Data:       3751 bytes (91.6% Full)
@@ -673,7 +673,7 @@ AVR Memory Usage
 ----------------
 Device: atmega2561
 
-Program:   73654 bytes (28.1% Full)
+Program:   73668 bytes (28.1% Full)
 (.text + .data + .bootloader)
 
 Data:       4231 bytes (51.6% Full)
@@ -770,7 +770,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   63622 bytes (97.1% Full)
+Program:   63634 bytes (97.1% Full)
 (.text + .data + .bootloader)
 
 Data:       3691 bytes (90.1% Full)
@@ -864,7 +864,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   57280 bytes (87.4% Full)
+Program:   57292 bytes (87.4% Full)
 (.text + .data + .bootloader)
 
 Data:       3453 bytes (84.3% Full)
@@ -961,7 +961,7 @@ AVR Memory Usage
 ----------------
 Device: atmega128
 
-Program:   71490 bytes (54.5% Full)
+Program:   71502 bytes (54.6% Full)
 (.text + .data + .bootloader)
 
 Data:       3751 bytes (91.6% Full)
@@ -1055,7 +1055,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   57238 bytes (87.3% Full)
+Program:   57250 bytes (87.4% Full)
 (.text + .data + .bootloader)
 
 Data:       3453 bytes (84.3% Full)
