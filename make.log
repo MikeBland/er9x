@@ -1,10 +1,10 @@
 ===== Starting build =====
 Timestamp
-Sun Dec 14 11:11:09 UTC 2014
+Sat Jan 10 20:06:15 UTC 2015
 ==========================
 
 ===== Updating from SVN =====
-At revision 814.
+At revision 815.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -70,7 +70,7 @@ Compiling C++: jeti.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DJETI -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/jeti.o.d jeti.cpp -o obj/jeti.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/jeti.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/jeti.o --output er9x.elf -Wl,-Map=er9x.map,--cref -Wl,--relax    -lm -Wl,--section-start=.boottext=0xFe00 -Wl,--section-start=.bootjump=0xFFFC
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -91,10 +91,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   57760 bytes (88.1% Full)
+Program:   57778 bytes (88.2% Full)
 (.text + .data + .bootloader)
 
-Data:       3489 bytes (85.2% Full)
+Data:       3422 bytes (83.5% Full)
 (.data + .bss + .noinit)
 
 
@@ -167,7 +167,7 @@ Compiling C++: frsky.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref -Wl,--relax    -lm -Wl,--section-start=.boottext=0xFe00 -Wl,--section-start=.bootjump=0xFFFC
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -188,10 +188,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   63550 bytes (97.0% Full)
+Program:   63862 bytes (97.4% Full)
 (.text + .data + .bootloader)
 
-Data:       3691 bytes (90.1% Full)
+Data:       3624 bytes (88.5% Full)
 (.data + .bss + .noinit)
 
 
@@ -264,7 +264,7 @@ Compiling C++: ardupilot.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DARDUPILOT -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/ardupilot.o.d ardupilot.cpp -o obj/ardupilot.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/ardupilot.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/ardupilot.o --output er9x.elf -Wl,-Map=er9x.map,--cref -Wl,--relax    -lm -Wl,--section-start=.boottext=0xFe00 -Wl,--section-start=.bootjump=0xFFFC
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -285,10 +285,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   59510 bytes (90.8% Full)
+Program:   59460 bytes (90.7% Full)
 (.text + .data + .bootloader)
 
-Data:       3487 bytes (85.1% Full)
+Data:       3420 bytes (83.5% Full)
 (.data + .bss + .noinit)
 
 
@@ -361,7 +361,7 @@ Compiling C++: nmea.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNMEA -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/nmea.o.d nmea.cpp -o obj/nmea.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/nmea.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/nmea.o --output er9x.elf -Wl,-Map=er9x.map,--cref -Wl,--relax    -lm -Wl,--section-start=.boottext=0xFe00 -Wl,--section-start=.bootjump=0xFFFC
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -382,10 +382,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   63702 bytes (97.2% Full)
+Program:   63548 bytes (97.0% Full)
 (.text + .data + .bootloader)
 
-Data:       3644 bytes (89.0% Full)
+Data:       3577 bytes (87.3% Full)
 (.data + .bss + .noinit)
 
 
@@ -455,7 +455,7 @@ Compiling C++: audio.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o --output er9x.elf -Wl,-Map=er9x.map,--cref -Wl,--relax    -lm -Wl,--section-start=.boottext=0xFe00 -Wl,--section-start=.bootjump=0xFFFC
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -476,10 +476,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   57200 bytes (87.3% Full)
+Program:   57222 bytes (87.3% Full)
 (.text + .data + .bootloader)
 
-Data:       3453 bytes (84.3% Full)
+Data:       3386 bytes (82.7% Full)
 (.data + .bss + .noinit)
 
 
@@ -519,40 +519,43 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: pulses.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
 
 Compiling C++: audio.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
+Compiling C++: optiboot.cpp
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/optiboot.o.d optiboot.cpp -o obj/optiboot.o
 
 Compiling C++: frsky.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega128 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega128 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/optiboot.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref -Wl,--relax    -lm -Wl,--section-start=.boottext=0x1Fd00 -Wl,--section-start=.bootjump=0x1FFFC
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -573,10 +576,10 @@ AVR Memory Usage
 ----------------
 Device: atmega128
 
-Program:   71402 bytes (54.5% Full)
+Program:   68346 bytes (52.1% Full)
 (.text + .data + .bootloader)
 
-Data:       3751 bytes (91.6% Full)
+Data:       3775 bytes (92.2% Full)
 (.data + .bss + .noinit)
 
 
@@ -652,7 +655,7 @@ Compiling C++: arduinoDue.cpp
 avr-gcc -c -mmcu=atmega2561 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM2561 -DPHASES -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/arduinoDue.o.d arduinoDue.cpp -o obj/arduinoDue.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega2561 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/frsky.o obj/arduinoDue.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega2561 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/frsky.o obj/arduinoDue.o --output er9x.elf -Wl,-Map=er9x.map,--cref -Wl,--relax    -lm
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -673,10 +676,10 @@ AVR Memory Usage
 ----------------
 Device: atmega2561
 
-Program:   73668 bytes (28.1% Full)
+Program:   69890 bytes (26.7% Full)
 (.text + .data + .bootloader)
 
-Data:       4231 bytes (51.6% Full)
+Data:       4254 bytes (51.9% Full)
 (.data + .bss + .noinit)
 
 
@@ -749,7 +752,7 @@ Compiling C++: frsky.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref -Wl,--relax    -lm -Wl,--section-start=.boottext=0xFe00 -Wl,--section-start=.bootjump=0xFFFC
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -770,10 +773,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   63634 bytes (97.1% Full)
+Program:   63948 bytes (97.6% Full)
 (.text + .data + .bootloader)
 
-Data:       3691 bytes (90.1% Full)
+Data:       3624 bytes (88.5% Full)
 (.data + .bss + .noinit)
 
 
@@ -843,7 +846,7 @@ Compiling C++: audio.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o --output er9x.elf -Wl,-Map=er9x.map,--cref -Wl,--relax    -lm -Wl,--section-start=.boottext=0xFe00 -Wl,--section-start=.bootjump=0xFFFC
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -864,10 +867,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   57292 bytes (87.4% Full)
+Program:   57316 bytes (87.5% Full)
 (.text + .data + .bootloader)
 
-Data:       3453 bytes (84.3% Full)
+Data:       3386 bytes (82.7% Full)
 (.data + .bss + .noinit)
 
 
@@ -907,40 +910,43 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 Generate Version-stamp:
 
 Compiling C++: er9x.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
 
 Compiling C++: stamp.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
 
 Compiling C++: menus.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
 
 Compiling C++: pers.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
 
 Compiling C++: file.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
 
 Compiling C++: lcd.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
 
 Compiling C++: drivers.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
 
 Compiling C++: templates.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
 
 Compiling C++: pulses.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
 
 Compiling C++: audio.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
+Compiling C++: optiboot.cpp
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/optiboot.o.d optiboot.cpp -o obj/optiboot.o
 
 Compiling C++: frsky.cpp
-avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
+avr-gcc -c -mmcu=atmega128 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DFRSKY -DPHASES -DBOOTL -DCPUM128 -DPHASES -DLANG_DE -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega128 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega128 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/optiboot.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref -Wl,--relax    -lm -Wl,--section-start=.boottext=0x1Fd00 -Wl,--section-start=.bootjump=0x1FFFC
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -961,10 +967,10 @@ AVR Memory Usage
 ----------------
 Device: atmega128
 
-Program:   71502 bytes (54.6% Full)
+Program:   68448 bytes (52.2% Full)
 (.text + .data + .bootloader)
 
-Data:       3751 bytes (91.6% Full)
+Data:       3775 bytes (92.2% Full)
 (.data + .bss + .noinit)
 
 
@@ -1034,7 +1040,7 @@ Compiling C++: audio.cpp
 avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DPHASES -DLANG_NO -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
 
 Linking: er9x.elf
-avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o --output er9x.elf -Wl,-Map=er9x.map,--cref    -lm
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o --output er9x.elf -Wl,-Map=er9x.map,--cref -Wl,--relax    -lm -Wl,--section-start=.boottext=0xFe00 -Wl,--section-start=.bootjump=0xFFFC
 
 Creating load file for Flash: er9x.hex
 avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
@@ -1055,10 +1061,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   57250 bytes (87.4% Full)
+Program:   57272 bytes (87.4% Full)
 (.text + .data + .bootloader)
 
-Data:       3453 bytes (84.3% Full)
+Data:       3386 bytes (82.7% Full)
 (.data + .bss + .noinit)
 
 

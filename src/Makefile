@@ -56,10 +56,16 @@ OBJDIR = obj
 EXT = STD
 
 
-
+ifeq ($(CPU), 128)
+BOOT = YES
+endif
 
 # List C++ source files here. (C dependencies are automatically generated.)
 CPPSRC = $(TARGET).cpp stamp.cpp menus.cpp pers.cpp file.cpp lcd.cpp drivers.cpp templates.cpp pulses.cpp audio.cpp
+ifeq ($(BOOT),YES)
+ CPPSRC += optiboot.cpp
+endif
+
 
 ifeq ($(EXT), JETI)
  CPPSRC += jeti.cpp
@@ -294,6 +300,10 @@ ifeq ($(PHASES),YES)
  CPPDEFS += -DPHASES
 endif
 
+ifeq ($(BOOT),YES)
+ CPPDEFS += -DBOOTL
+endif
+
 ifeq ($(CUSTOM9X),YES)
  CPPDEFS += -DCUSTOM9X
 endif
@@ -442,11 +452,18 @@ EXTMEMOPTS =
 #  -Wl,...:     tell GCC to pass this to linker.
 #    -Map:      create map file
 #    --cref:    add cross reference to  map file
-LDFLAGS = -Wl,-Map=$(TARGET).map,--cref
+LDFLAGS = -Wl,-Map=$(TARGET).map,--cref -Wl,--relax
 LDFLAGS += $(EXTMEMOPTS)
 LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
 #LDFLAGS += -T linker_script.x
 
+ifeq ($(CPU), 128)
+LDFLAGS += -Wl,--section-start=.boottext=0x1Fd00 -Wl,--section-start=.bootjump=0x1FFFC
+else
+ ifneq ($(CPU), 2561)
+LDFLAGS += -Wl,--section-start=.boottext=0xFe00 -Wl,--section-start=.bootjump=0xFFFC
+ endif
+endif
 
 
 #---------------- Programming Options (avrdude) ----------------

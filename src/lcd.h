@@ -68,11 +68,13 @@ extern unsigned char displayBuf[DISPLAY_W*DISPLAY_H/8];
 extern uint8_t lcd_putcAtt(unsigned char x,unsigned char y,const char c,uint8_t mode);
 extern unsigned char lcd_putsAtt(unsigned char x,unsigned char y,const prog_char * s,uint8_t mode);
 //extern uint8_t lcd_puts2Att(uint8_t x,uint8_t y,const prog_char * s,const prog_char * t ,uint8_t mode);
+//extern void lcd_putsAttIdx_right( uint8_t y,const prog_char * s,uint8_t idx,uint8_t att) ;
 extern void lcd_putsAttIdx(uint8_t x,uint8_t y,const prog_char * s,uint8_t idx,uint8_t att) ;
 extern void lcd_putsnAtt(unsigned char x,unsigned char y,const prog_char * s,unsigned char len,uint8_t mode);
 
 extern uint8_t lcd_putc(uint8_t x,uint8_t y,const char c);
 extern void lcd_puts_Pleft(uint8_t y,const prog_char * s) ;
+extern void lcd_puts_Pskip(uint8_t y,const prog_char * s, uint8_t skip) ;
 extern void lcd_puts_P(unsigned char x,unsigned char y,const prog_char * s);
 extern void lcd_putsn_P(unsigned char x,unsigned char y,const prog_char * s,unsigned char len);
 extern void lcd_outhex4(unsigned char x,unsigned char y,uint16_t val);

@@ -18,6 +18,7 @@
 #include "er9x.h"
 #include "frsky.h"
 #include "menus.h"
+#include <stdlib.h>
 
 // Enumerate FrSky packet codes
 #define LINKPKT         0xfe
@@ -90,6 +91,8 @@ const prog_uint8_t APM Fr_indices[] =
 	FR_VOLTS,
 	HUBDATALENGTH-1,		// 44
 } ;
+
+uint8_t TmOK ;
 
 uint8_t AltitudeDecimals ;
 int16_t WholeAltitude ;
@@ -233,13 +236,13 @@ void store_hub_data( uint8_t index, uint16_t value )
 		FrskyHubData[FR_ALT_BARO] = value ;
 	}
 	
-#if defined(CPUM128) || defined(CPUM2561)
+//#if defined(CPUM128) || defined(CPUM2561)
 	if ( index == FR_SPORT_GALT )
 	{
 		index = FR_GPS_ALT ;         // For max and min
 		FrskyHubData[FR_GPS_ALT] = value ;
 	}
-#endif
+//#endif
 
 	if ( index < HUBDATALENGTH )
 	{
@@ -672,6 +675,7 @@ void processSportPacket()
 				case FUEL_ID_8 :
 					store_hub_data( FR_FUEL, value ) ;
 				break ;
+#endif // 128/2561
 
 				case GPS_ALT_ID_8 :
 					value = (int32_t)value / 100 ;
@@ -689,6 +693,12 @@ void processSportPacket()
 					uint16_t bp ;
 					uint16_t ap ;
 					uint32_t temp ;
+
+//					ldiv_t qr ;
+//					qr = div( value, 10000UL ) ;
+//					ap = qr.rem ;
+//					bp = (qr.quot/ 60 * 100) + (qr.quot % 60) ;
+
 					temp = value / 10000 ;
 					bp = (temp/ 60 * 100) + (temp % 60) ;
 		      ap = value % 10000;
@@ -714,7 +724,6 @@ void processSportPacket()
 				case GPS_SPEED_ID_8 :
 					store_hub_data( FR_GPS_SPEED, value/1000 ) ;
 				break ;
-#endif
 
 			}
 		}
@@ -1113,13 +1122,16 @@ static void FRSKY10mspoll(void)
 		}
 		else if (i == 7)
 		{
-  		FrskyTx.frskyTxBuffer[0] = PRIVATE ;		// Start of packet
+			struct t_frskyTx *pfrskytx = &FrskyTx ;
+			FORCE_INDIRECT( pfrskytx ) ;
+			
+  		pfrskytx->frskyTxBuffer[0] = PRIVATE ;		// Start of packet
 //			if ( g_eeGeneral.TEZr90 )
 //			{
-  			FrskyTx.frskyTxBuffer[3] = PRIVATE ;  // End of packet
-		  	FrskyTx.frskyTxBuffer[1] = 1 ;
-  			FrskyTx.frskyTxBuffer[2] = FrskyTelemetryType ;
-				FrskyTx.frskyTxBufferCount = 4 ;
+  			pfrskytx->frskyTxBuffer[3] = PRIVATE ;  // End of packet
+		  	pfrskytx->frskyTxBuffer[1] = 1 ;
+  			pfrskytx->frskyTxBuffer[2] = FrskyTelemetryType ;
+				pfrskytx->frskyTxBufferCount = 4 ;
 //			}
 //			else
 //			{
@@ -1261,20 +1273,6 @@ void FRSKY_setTxPacket( uint8_t type, uint8_t value, uint8_t p1, uint8_t p2 )
 
 
 
-inline void FRSKY_EnableTXD(void)
-{
-  FrskyTx.frskyTxBufferCount = 0;
-  UCSR0B |= (1 << TXEN0) ; // enable TX
-  UCSR0B |= (1 << UDRIE0) ; // enable TX interrupt
-}
-
-inline void FRSKY_EnableRXD(void)
-{
-
-  UCSR0B |= (1 << RXEN0);  // enable RX
-  UCSR0B |= (1 << RXCIE0); // enable Interrupt
-}
-
 #if defined(CPUM128) || defined(CPUM2561)
 void FRSKY_DisableTXD(void)
 {
@@ -1355,11 +1353,10 @@ void FRSKY_Init( uint8_t brate)
 #endif
 
   // These should be running right from power up on a FrSky enabled '9X.
-  FRSKY_EnableTXD(); // enable FrSky-Telemetry reception
-  FRSKY_EnableRXD(); // enable FrSky-Telemetry reception
 
-//	FrskyHubData[FR_ALT_BARO] = 48 ;
-
+  FrskyTx.frskyTxBufferCount = 0;
+  UCSR0B = (1 << TXEN0) | (1 << UDRIE0) | (1 << RXEN0) | (1 << RXCIE0) ;
+	// enable TX, enable TX interrupt, enable RX, enable Interrupt
 }
 
 //#if 0
@@ -1510,14 +1507,29 @@ void check_frsky()
 	}
 	 
 #ifndef SIMU
+	uint8_t lTmOK ;
 	if (frskyStreaming > 0)
 	{
 		if ( --frskyStreaming == 0 )
 		{
  			FrskyHubData[FR_TXRSI_COPY] = 0 ;
 		}
+		lTmOK = 1 ;
 	}
-  if (frskyUsrStreaming > 0) frskyUsrStreaming--;
+	else
+	{
+		lTmOK = 0 ;
+	}
+
+  if (frskyUsrStreaming > 0)
+	{
+		if ( lTmOK )
+		{
+			lTmOK = 2 ;
+		}
+		frskyUsrStreaming--;
+	}
+	TmOK = lTmOK ;
 
   if ( FrskyAlarmSendState )
   {

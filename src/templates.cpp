@@ -134,13 +134,23 @@ const prog_int8_t heli_ar5[] PROGMEM = {-100, -50, 0, 50, 100};
 #endif
 
 
+void setMix( uint8_t dch, uint8_t stick )
+{
+  MixData *md ;
+	md=setDest( dch ) ;
+	md->srcRaw=CM( stick ) ;
+}
+
+
 #ifdef NO_TEMPLATES
 void applyTemplate()
 #else
 void applyTemplate(uint8_t idx)
 #endif
 {
+#ifndef NO_TEMPLATES
     MixData *md = &g_model.mixData[0];
+#endif
 
     //CC(STK)   -> vSTK
     //ICC(vSTK) -> STK
@@ -158,10 +168,10 @@ void applyTemplate(uint8_t idx)
     {
 #endif
         clearMixes();
-        md=setDest(ICC(STK_RUD));  md->srcRaw=CM(STK_RUD);
-        md=setDest(ICC(STK_ELE));  md->srcRaw=CM(STK_ELE);
-        md=setDest(ICC(STK_THR));  md->srcRaw=CM(STK_THR);
-        md=setDest(ICC(STK_AIL));  md->srcRaw=CM(STK_AIL);
+        setMix(ICC(STK_RUD), STK_RUD ) ;
+        setMix(ICC(STK_ELE), STK_ELE ) ;
+        setMix(ICC(STK_THR), STK_THR ) ;
+        setMix(ICC(STK_AIL), STK_AIL ) ;
 
 #ifndef NO_TEMPLATES
     }
@@ -169,38 +179,47 @@ void applyTemplate(uint8_t idx)
     //T-Cut
     if(idx==j++)
     {
-        md=setDest(ICC(STK_THR));  md->srcRaw=MIX_MAX;  md->weight=-100;  md->swtch=DSW_THR;  md->mltpx=MLTPX_REP;
+//        md=setDest(ICC(STK_THR));  md->srcRaw=MIX_MAX;  md->weight=-100;  md->swtch=DSW_THR;  md->mltpx=MLTPX_REP;
+    	SafetySwData *sd = &g_model.safetySw[ICC(STK_THR)-1] ;
+			sd->opt.ss.mode = 0 ;
+			sd->opt.ss.swtch = DSW_THR ;
+			sd->opt.ss.val = -100 ;
     }
 
     //sticky t-cut
     if(idx==j++)
     {
-        md=setDest(ICC(STK_THR));  md->srcRaw=MIX_MAX;  md->weight=-100;  md->swtch=DSW_SWC;  md->mltpx=MLTPX_REP;
-        md=setDest(14);            md->srcRaw=CH(14);
-        md=setDest(14);            md->srcRaw=MIX_MAX;  md->weight=-100;  md->swtch=DSW_SWB;  md->mltpx=MLTPX_REP;
-        md=setDest(14);            md->srcRaw=MIX_MAX;  md->swtch=DSW_THR;  md->mltpx=MLTPX_REP;
+//        md=setDest(ICC(STK_THR));  md->srcRaw=MIX_MAX;  md->weight=-100;  md->swtch=DSW_SWC;  md->mltpx=MLTPX_REP;
+//        md=setDest(14);            md->srcRaw=CH(14);
+//        md=setDest(14);            md->srcRaw=MIX_MAX;  md->weight=-100;  md->swtch=DSW_SWB;  md->mltpx=MLTPX_REP;
+//        md=setDest(14);            md->srcRaw=MIX_MAX;  md->swtch=DSW_THR;  md->mltpx=MLTPX_REP;
 
-        setSwitch(0xB,CS_VNEG, CM(STK_THR), -99);
-        setSwitch(0xC,CS_VPOS, CH(14), 0);
+//        setSwitch(0xB,CS_VNEG, CM(STK_THR), -99);
+//        setSwitch(0xC,CS_VPOS, CH(14), 0);
+
+    	SafetySwData *sd = &g_model.safetySw[ICC(STK_THR)-1] ;
+			sd->opt.ss.mode = 3 ;
+			sd->opt.ss.swtch = DSW_THR ;
+			sd->opt.ss.val = -100 ;
     }
 
     //V-Tail
     if(idx==j++) 
     {
         clearMixes();
-        md=setDest(ICC(STK_RUD));  md->srcRaw=CM(STK_RUD);
+        setMix(ICC(STK_RUD), STK_RUD ) ;
         md=setDest(ICC(STK_RUD));  md->srcRaw=CM(STK_ELE);  md->weight=-100;
-        md=setDest(ICC(STK_ELE));  md->srcRaw=CM(STK_RUD);
-        md=setDest(ICC(STK_ELE));  md->srcRaw=CM(STK_ELE);
+        setMix(ICC(STK_ELE), STK_RUD ) ;
+        setMix(ICC(STK_ELE), STK_ELE ) ;
     }
 
     //Elevon\\Delta
     if(idx==j++)
     {
         clearMixes();
-        md=setDest(ICC(STK_ELE));  md->srcRaw=CM(STK_ELE);
-        md=setDest(ICC(STK_ELE));  md->srcRaw=CM(STK_AIL);
-        md=setDest(ICC(STK_AIL));  md->srcRaw=CM(STK_ELE);
+        setMix(ICC(STK_ELE), STK_ELE ) ;
+        setMix(ICC(STK_ELE), STK_AIL ) ;
+        setMix(ICC(STK_AIL), STK_ELE ) ;
         md=setDest(ICC(STK_AIL));  md->srcRaw=CM(STK_AIL);  md->weight=-100;
     }
 
@@ -218,7 +237,7 @@ void applyTemplate(uint8_t idx)
         md=setDest(3);  md->srcRaw=MIX_CYC3;
 
         //rudder
-        md=setDest(4);  md->srcRaw=CM(STK_RUD);
+        setMix(4, STK_RUD ) ;
 
         //Throttle
         md=setDest(5);  md->srcRaw=CM(STK_THR); md->swtch= DSW_ID0; md->curve=CV(1); md->carryTrim=TRIM_OFF;

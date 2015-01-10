@@ -10,6 +10,27 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 10-Jan-2015  MPB (r816)
+New menu system completed.
+Voice alarms added to M64.
+Improve editing of mix source when a switch is the source.
+Both timers fully configurable
+Popup menus for navigation
+Use lower case for stick names (Rud not RUD)
+Change ofs to val in custom switches
+Fix TELEMETRY menu editing when accessed from "index" menu
+Custom Switches renamed to Logical switches SW1->L1 SWA->LA
+TX RSSI name changed to SWR when using PXX protocol
+Add TmOK telemetry value
+PPMSIM was inverted compared to normal PPM output
+Add SPort GPS processing to M64
+Remove throttle trace from M64 to make flash space
+Add 8 extra voice switches to M64
+Various flash savings
+Add stop output PPM/PXX pulses when changing models
+MENU HOLD allows fast value editing
+
+******************************************
 CHANGELOG: 14-Dec-2014  MPB (r815)
 Fix Beep Centre bug on '128/'2561
 Fix Mix not working when a channel source is itself
