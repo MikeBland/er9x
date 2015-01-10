@@ -17,6 +17,7 @@ uint8_t *pulses2MHzptr = pulses2MHz.pbyte ;
 uint8_t heartbeat;
 uint8_t Current_protocol;
 uint8_t pxxFlag = 0;
+uint8_t PausePulses = 0 ;
 
 #define CTRL_END 0
 #define CTRL_CNT 1
@@ -39,7 +40,8 @@ static void sendByteDsm2(uint8_t b) ;
 
 //uint16_t PulseTotal ;
 
-static uint8_t PulsePol;
+static uint8_t PulsePol ;
+static uint8_t PulsePol16 ;
 
 //ISR(TIMER1_OVF_vect)
 ISR(TIMER1_COMPA_vect) //2MHz pulse generation
@@ -130,13 +132,26 @@ ISR(TIMER1_COMPA_vect) //2MHz pulse generation
 
 void startPulses()
 {
-  PulsePol = !g_model.pulsePol ;
+  PulsePol16 = PulsePol = !g_model.pulsePol ;
   if(!PulsePol)
   {
 		PORTB |= (1<<OUT_B_PPM);
   }
 	Current_protocol = g_model.protocol + 10 ;		// Not the same!
+	PausePulses = 0 ;
 	setupPulses() ;
+}
+
+void setPpmTimers()
+{
+  OCR1A = 40000 ;		// Next frame starts in 20 mS
+#ifdef CPUM2561
+  TIMSK1 |= (1<<OCIE1A) ;		// Enable COMPA
+#else
+  TIMSK |= (1<<OCIE1A) ;		// Enable COMPA
+#endif
+  TCCR1A = (0<<WGM10) ;
+  TCCR1B = (1 << WGM12) | (2<<CS10) ; // CTC OCRA, 16MHz / 8
 }
 
 void setupPulses()
@@ -151,6 +166,10 @@ void setupPulses()
 		{
 			required_protocol = PROTO_PPMSIM ;			
 		}		
+	}
+	if ( PausePulses )
+	{
+		required_protocol = PROTO_NONE ;
 	}
 
     //	SPY_ON;
@@ -174,17 +193,9 @@ void setupPulses()
 
         switch(required_protocol)
         {
-				default:
         case PROTO_PPM:
             set_timer3_capture() ;
-            OCR1A = 40000 ;		// Next frame starts in 20 mS
-#ifdef CPUM2561
-            TIMSK1 |= (1<<OCIE1A) ;		// Enable COMPA
-#else
-            TIMSK |= (1<<OCIE1A) ;		// Enable COMPA
-#endif
-            TCCR1A = (0<<WGM10) ;
-            TCCR1B = (1 << WGM12) | (2<<CS10) ; // CTC OCRA, 16MHz / 8
+						setPpmTimers() ;
             break;
         case PROTO_PXX:
             set_timer3_capture() ;
@@ -227,14 +238,7 @@ void setupPulses()
 					}
 					else
 					{
-            OCR1A = 40000 ;		// Next frame starts in 20 mS
-#ifdef CPUM2561
-            TIMSK1 |= (1<<OCIE1A) ;		// Enable COMPA
-#else
-            TIMSK |= (1<<OCIE1A) ;		// Enable COMPA
-#endif
-            TCCR1A = (0<<WGM10) ;
-            TCCR1B = (1 << WGM12) | (2<<CS10) ; // CTC OCRA, 16MHz / 8
+						setPpmTimers() ;
             setupPulsesPPM(PROTO_PPM16);
 					}
 					OCR3A = 50000 ;
@@ -443,11 +447,15 @@ void setupPulsesDsm2(uint8_t chns)
 
 //    dsmDat[1]=g_eeGeneral.currModel+1;  //DSM2 Header second byte for model match
     dsmDat[1] = g_model.ppmNCH ;  //DSM2 Header second byte for model match
-    for(uint8_t i=0; i<chns; i++)
+//    uint8_t *p = &dsmDat[2] ;
+//		FORCE_INDIRECT(p) ;
+		for(uint8_t i=0; i<chns; i++)
     {
 		    uint16_t pulse = limit(0, ((g_chans512[i]*13)>>5)+512,1023);
         dsmDat[2+2*i] = (i<<2) | ((pulse>>8)&0x03);
         dsmDat[3+2*i] = pulse & 0xff;
+//        *p++ = (i<<2) | ((pulse>>8)&0x03);
+//        *p++ = pulse & 0xff;
     }
 
     for ( counter = 0 ; counter < 14 ; counter += 1 )
@@ -583,17 +591,16 @@ void set_timer3_ppm()
 
 ISR(TIMER3_COMPA_vect) //2MHz pulse generation
 {
-    static uint8_t   pulsePol;
     static uint16_t *pulsePtr = &pulses2MHz.pword[PULSES_WORD_SIZE/2];
     uint16_t *xpulsePtr ;
 
-    if(pulsePol)
+    if(PulsePol16)
     {
         PORTE |= 0x80 ; // (1<<OUT_B_PPM);
-        pulsePol = 0;
+        PulsePol16 = 0;
     }else{
         PORTE &= ~0x80 ;		// (1<<OUT_B_PPM);
-        pulsePol = 1;
+        PulsePol16 = 1;
     }
 
 		xpulsePtr = pulsePtr ;	// read memory once
@@ -604,7 +611,7 @@ ISR(TIMER3_COMPA_vect) //2MHz pulse generation
     if( *xpulsePtr == 0)
     {
         xpulsePtr = &pulses2MHz.pword[PULSES_WORD_SIZE/2];
-        pulsePol = g_model.pulsePol;//0;     // changed polarity
+        PulsePol16 = !g_model.pulsePol;//0;     // changed polarity
     }
 		pulsePtr = xpulsePtr ;	// write memory back
     heartbeat |= HEART_TIMER2Mhz;

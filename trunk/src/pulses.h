@@ -17,6 +17,7 @@ typedef struct t_PXXData {
     uint8_t   crc;
 } __attribute__((packed)) PXXData;
 
+extern uint8_t PausePulses ;
 
 void startPulses( void ) ;
 void setupPulsesPPM( uint8_t proto ) ;

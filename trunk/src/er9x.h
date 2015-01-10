@@ -20,10 +20,19 @@
 
 #define VERS 1
 #define VERSION3	1
+#define VERSION4	1
 
 #define GVARS	1
 #define FIX_MODE		1
 #define STACK_TRACE				0
+
+#define TWO_TIMERS	1
+
+//#define NOPOTSCROLL	1
+//#define NOSAFETY_A_OR_V
+//#define NOSAFETY_VOICE
+#define M64VOICE	1
+
 //#define FRSKY_ALARMS	1
 
 //#define VOLT_THRESHOLD 1
@@ -34,6 +43,13 @@
 #define	SCALERS
 //#endif
 
+#if defined(CPUM128) || defined(CPUM2561)
+#define	VOICE_ALARMS	1
+#else
+#ifdef M64VOICE
+#define	VOICE_ALARMS	1
+#endif
+#endif
 
 /* Building an er9x hex for custom transmitter */
 #ifdef CUSTOM9X
@@ -209,6 +225,9 @@ typedef uint32_t  prog_uint32_t __attribute__((__progmem__));//,deprecated("prog
 #define INP_G_RuddDR   0
 
 #define SLAVE_MODE (PING & (1<<INP_G_RF_POW))
+
+#define read_keys() ((PINB) & 0x7E)
+#define menuPressed() ( ( read_keys() & 2 ) == 0 )
 
 extern uint8_t SlaveMode ;
 
@@ -437,7 +456,8 @@ uint8_t IS_EXPO_THROTTLE( uint8_t x ) ;
 //#define EVT_KEY_DBL(key)   ((key)|0x10)
 #define EVT_ENTRY               (0xff - _MSK_KEY_REPT)
 #define EVT_ENTRY_UP            (0xfe - _MSK_KEY_REPT)
-#define EVT_ENTRY_BACK          (0xfd - _MSK_KEY_REPT)
+//#define EVT_ENTRY_BACK          (0xfd - _MSK_KEY_REPT)
+#define EVT_TOGGLE_GVAR         (0xfd - _MSK_KEY_REPT)
 #define EVT_KEY_MASK             0x0f
 
 #define HEART_TIMER2Mhz 1;
@@ -449,6 +469,7 @@ uint8_t IS_EXPO_THROTTLE( uint8_t x ) ;
 #define TMRMODE_THR_REL  3
 #define MAX_ALERT_TIME   60
 
+#define PROTO_NONE       0xFF
 #define PROTO_PPM        0
 #define PROTO_PXX        1
 #define PROTO_DSM2       2
@@ -555,6 +576,7 @@ bool    getSwitch(int8_t swtch, bool nc, uint8_t level=0);
 ///   \param att   NO_INV,INVERS,BLINK
 ///
 void putsDrSwitches(uint8_t x,uint8_t y,int8_t swtch,uint8_t att);
+void putsMomentDrSwitches(uint8_t x,uint8_t y,int8_t swtch,uint8_t att);
 void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t type);
 
 extern int16_t get_telemetry_value( uint8_t channel ) ;
@@ -588,6 +610,23 @@ struct t_timerg
 
 extern struct t_timerg TimerG ;
 void resetTimer2() ;
+
+struct t_timer
+{
+	uint16_t s_sum ;
+	uint8_t lastSwPos ;
+	uint8_t sw_toggled ;
+	uint16_t s_timeCumSw ;  //laufzeit in 1/16 sec
+	uint8_t  s_timerState ;
+	uint8_t lastResetSwPos;
+	uint16_t s_timeCumThr ;  //gewichtete laufzeit in 1/16 sec
+	uint16_t s_timeCum16ThrP ; //gewichtete laufzeit in 1/16 sec
+	int16_t  s_timerVal ;
+	int16_t last_tmr ;
+} ;
+
+extern struct t_timer s_timer[] ;
+
 
 extern uint8_t heartbeat;
 
@@ -771,14 +810,14 @@ extern uint16_t get_tmr10ms( void ) ;
 
 
 
-#define TMR_VAROFS  16
+#define TMR_VAROFS  4
 
 #define SUB_MODE_V     1
 #define SUB_MODE_H     2
 #define SUB_MODE_H_DBL 3
 //uint8_t checkSubGen(uint8_t event,uint8_t num, uint8_t sub, uint8_t mode);
 
-void menuProcLimits(uint8_t event);
+//void menuProcLimits(uint8_t event);
 void menuProcMixOne(uint8_t event);
 void menuProcMix(uint8_t event);
 void menuProcCurve(uint8_t event);
@@ -797,8 +836,8 @@ void menuProcSetup(uint8_t event);
 void menuProcMain(uint8_t event);
 void menuProcModelSelect(uint8_t event);
 void menuProcTemplates(uint8_t event);
-void menuProcSwitches(uint8_t event);
-void menuProcSafetySwitches(uint8_t event);
+//void menuProcSwitches(uint8_t event);
+//void menuProcSafetySwitches(uint8_t event);
 #ifdef FRSKY
 void menuProcTelemetry(uint8_t event);
 void menuProcTelemetry2(uint8_t event);
@@ -825,6 +864,7 @@ void getADC_osmp();
 //void getADC_filt();
 
 void checkTHR();
+void checkSwitches();
 
 
 #ifdef JETI
@@ -874,6 +914,7 @@ extern const char stamp2[];
 extern const char stamp3[];
 extern const char stamp4[];
 extern const char stamp5[];
+extern const char Stamps[];
 #include "myeeprom.h"
 
 extern const prog_uchar APM s9xsplashMarker[] ;
@@ -886,9 +927,9 @@ extern int16_t getValue(uint8_t i) ;
 
 #ifdef FRSKY
 #if defined(CPUM128) || defined(CPUM2561)
-#define NUM_TELEM_ITEMS 41
+#define NUM_TELEM_ITEMS 42
 #else
-#define NUM_TELEM_ITEMS 41
+#define NUM_TELEM_ITEMS 42
 #endif
 #else
 #define NUM_TELEM_ITEMS 10
@@ -963,10 +1004,10 @@ extern int16_t m_to_ft( int16_t metres ) ;
 uint8_t getCurrentSwitchStates( void ) ;
 
 // Rotary encoder movement states
-#define	ROTARY_MENU_LR		0
-#define	ROTARY_MENU_UD		1
-#define	ROTARY_SUBMENU_LR	2
-#define	ROTARY_VALUE			3
+//#define	ROTARY_MENU_LR		0
+#define	ROTARY_MENU_UD		0
+//#define	ROTARY_SUBMENU_LR	1
+#define	ROTARY_VALUE			1
 
 extern uint8_t RotaryState ;		// Defaults to ROTARY_MENU_LR
 
@@ -1045,6 +1086,11 @@ void arduinoSerialTx( void ) ;
 void arduinoDueSlave( void ) ;
 #endif
 
+extern uint8_t TmOK ;
+extern uint8_t StepSize ;
+
+extern TimerMode TimerConfig[2] ;
+//extern uint16_t MenuTimer ;
 
 #endif // er9x_h
 /*eof*/

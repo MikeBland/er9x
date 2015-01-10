@@ -276,6 +276,7 @@ PACK(typedef struct t_PhaseData {
   int8_t swtch;        // Try 0-5 use trim of phase 0-5, 1000-2000, trim + 1500 ???
   uint8_t fadeIn:4;
   uint8_t fadeOut:4;
+//	uint8_t name[6] ;
 }) PhaseData;
 	 
 PACK(typedef struct t_FunctionData { // Function data
@@ -334,15 +335,26 @@ PACK(typedef struct t_voiceAlarm
 //	} file ;
 }) VoiceAlarmData ;
 
+typedef struct t_TimerMode
+{
+  uint16_t  tmrVal ;
+	uint8_t   tmrModeA ;          // timer trigger source -> off, abs, stk, stk%, cx%
+  int8_t    tmrModeB ;           // timer trigger source -> !sw, none, sw, m_sw
+//	int8_t		tmrRstSw ;
+  uint8_t   tmrDir ;					// Timer direction
+//  uint8_t   tmrDir:1 ;					// Timer direction
+//	uint8_t 	tmrCdown:1 ;
+//	uint8_t 	tmrMbeep:1 ;
+} __attribute__((packed)) TimerMode ;
 
 PACK(typedef struct t_ModelData {
     char      name[MODEL_NAME_LEN];             // 10 must be first for eeLoadModelName
 //    uint8_t   reserved_spare;  //used to be MDVERS - now depreciated
     uint8_t   modelVoice ;		// Index to model name voice (260+value)
-    int8_t    tmrMode;              // timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
+    uint8_t   tmrMode;              // timer trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
     uint8_t   tmrDir:1;    //0=>Count Down, 1=>Count Up
     uint8_t   traineron:1;  // 0 disable trainer, 1 allow trainer
-    uint8_t   t2throttle:1 ;  // Start timer2 using throttle
+    uint8_t   xt2throttle:1 ;  // Start timer2 using throttle
     uint8_t   FrSkyUsrProto:1 ;  // Protocol in FrSky User Data, 0=FrSky Hub, 1=WS HowHigh
     uint8_t   FrSkyGpsAlt:1 ;  	// Use Gps Altitude as main altitude reading
     uint8_t   FrSkyImperial:1 ;  // Convert FrSky values to imperial units
@@ -385,7 +397,11 @@ PACK(typedef struct t_ModelData {
     FrSkyData frsky;
 		uint8_t numBlades ;
 		uint8_t frskyoffset[2] ;		// Offsets for A1 and A2 (pending)
-		uint8_t unused1[5] ;
+    uint16_t  tmr2Val;
+    uint8_t   tmr2Mode;              // timer2 trigger source -> off, abs, stk, stk%, sw/!sw, !m_sw/!m_sw
+    int8_t		tmr2ModeB;
+//    uint8_t   tmr2dir:1;    //0=>Count Down, 1=>Count Up
+		uint8_t switchWarningStates ;
 		uint8_t sub_trim_limit ;
 		uint8_t CustomDisplayIndex[6] ;
 		GvarData gvars[MAX_GVARS] ;
@@ -407,7 +423,8 @@ PACK(typedef struct t_ModelData {
 	uint8_t timer2Mbeep:1 ;
 	uint8_t useCustomStickNames:1 ;
 	uint8_t throttleIdle:2 ;
-	uint8_t tspare:1 ;
+  uint8_t   tmr2Dir:1;    //0=>Count Down, 1=>Count Up
+//	uint8_t tspare:1 ;
 	int8_t gvswitch[MAX_GVARS] ;
 	VoiceAlarmData vad[NUM_VOICE_ALARMS] ;
 

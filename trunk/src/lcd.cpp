@@ -243,6 +243,11 @@ void lcd_putsAttIdx(uint8_t x,uint8_t y,const prog_char * s,uint8_t idx,uint8_t 
   lcd_putsnAtt(x,y,s+length*idx,length,att) ;
 }
 
+//void lcd_putsAttIdx_right( uint8_t y,const prog_char * s,uint8_t idx,uint8_t att)
+//{
+//	uint8_t x = 20 - pgm_read_byte(s) ;
+//	lcd_putsAttIdx( x, y, s, idx, att ) ;
+//}
 
 //uint8_t lcd_putsnAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t len,uint8_t mode)
 void lcd_putsnAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t len,uint8_t mode)
@@ -267,6 +272,7 @@ void lcd_putsn_P(uint8_t x,uint8_t y,const prog_char * s,uint8_t len)
   lcd_putsnAtt( x,y,s,len,0);
 }
 
+
 uint8_t lcd_putsAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t mode)
 {
 	uint8_t source ;
@@ -275,7 +281,18 @@ uint8_t lcd_putsAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t mode)
 	{
     char c = (source) ? *s++ : pgm_read_byte(s++);
     if(!c) break;
-    x = lcd_putcAtt(x,y,c,mode);
+		if ( c == 31 )
+		{
+			if ( (y += FH) >= DISPLAY_H )	// Screen height
+			{
+				break ;
+			}	
+			x = 0 ;
+		}
+		else
+		{
+    	x = lcd_putcAtt(x,y,c,mode) ;
+		}
 //    x+=FW;
 //		if ((size)&& (c!=0x2E)) x+=FW; //check for decimal point
   }
@@ -284,6 +301,21 @@ uint8_t lcd_putsAtt(uint8_t x,uint8_t y,const prog_char * s,uint8_t mode)
 
 void lcd_puts_Pleft(uint8_t y,const prog_char * s)
 {
+  lcd_putsAtt( 0, y, s, 0);
+}
+
+// This routine skips 'skip' strings, then displays the rest
+void lcd_puts_Pskip(uint8_t y,const prog_char * s, uint8_t skip)
+{
+	while ( skip )
+	{
+    char c = pgm_read_byte(s++);
+    if(!c) return ;
+		if ( c == 31 )
+		{
+			skip -= 1 ;
+		}
+	}
   lcd_putsAtt( 0, y, s, 0);
 }
 

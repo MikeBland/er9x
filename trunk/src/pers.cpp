@@ -40,6 +40,16 @@ EFile theWriteFile; //separate write file
       memset (pDst+(sizeSrc), 0,  (sizeDst)-(sizeSrc));
 #define fullCopy(size) partCopy(size,size)
 */
+
+void setNameP( char *dest, const prog_char *pstr )
+{
+	uint8_t i ;
+	for ( i = 10 ; i ; i -= 1 )
+	{
+		*dest++ = pgm_read_byte(pstr++) ;		
+	}
+}
+
 void eeGeneralDefault()
 {
   memset(&g_eeGeneral,0,sizeof(g_eeGeneral));
@@ -53,7 +63,8 @@ void eeGeneralDefault()
     g_eeGeneral.calibSpanNeg[i] = 0x300;
     g_eeGeneral.calibSpanPos[i] = 0x300;
   }
-  strncpy_P(g_eeGeneral.ownerName,PSTR(STR_ME),10);
+	setNameP(g_eeGeneral.ownerName,PSTR(STR_ME));
+//	strncpy_P(g_eeGeneral.ownerName,PSTR(STR_ME),10);
   g_eeGeneral.chkSum = evalChkSum() ;
 }
 
@@ -99,7 +110,8 @@ static bool eeLoadGeneral()
 void modelDefaultWrite(uint8_t id)
 {
   memset(&g_model, 0, sizeof(ModelData));
-  strncpy_P(g_model.name,PSTR(STR_MODEL), 10);
+	setNameP(g_model.name,PSTR(STR_MODEL));
+//  strncpy_P(g_model.name,PSTR(STR_MODEL), 10);
 	div_t qr ;
 	qr = div( id+1, 10 ) ;
   g_model.name[5]='0'+qr.quot;
@@ -191,8 +203,6 @@ void eeLoadModel(uint8_t id)
 			g_model.numBlades = g_model.xnumBlades + 2 ;				
 		}
 
-        resetTimer1();
-        resetTimer2();
 
 #ifdef FRSKY
   FrskyAlarmSendState |= 0x40 ;		// Get RSSI Alarms
@@ -332,7 +342,34 @@ void eeLoadModel(uint8_t id)
 			eeWaitComplete() ;
 		}
 #endif
+#ifdef VERSION4
+		if ( g_model.modelVersion < 4 )
+		{
+			g_model.switchWarningStates = g_eeGeneral.switchWarningStates ;
+			alert(PSTR("CHECK MODEL TIMERS"));
+			g_model.modelVersion = 4 ;
+      eeDirty( EE_MODEL ) ;
+			eeWaitComplete() ;
+		}
+#endif	// VERSION4
   }
+
+	TimerMode *ptConfig = TimerConfig ;
+	FORCE_INDIRECT(ptConfig) ;
+
+	ptConfig->tmrModeA = g_model.tmrMode ;
+	ptConfig->tmrModeB = g_model.tmrModeB ;
+	ptConfig->tmrVal = g_model.tmrVal ;
+	ptConfig->tmrDir = g_model.tmrDir ;
+	ptConfig += 1 ;
+	ptConfig->tmrModeA = g_model.tmr2Mode ;
+	ptConfig->tmrModeB = g_model.tmr2ModeB ;
+	ptConfig->tmrVal = g_model.tmr2Val ;
+	ptConfig->tmrDir = g_model.tmr2Dir ;
+
+  resetTimer1() ;
+  resetTimer2() ;
+
 	asm("") ;
 }
 
