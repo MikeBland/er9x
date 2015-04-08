@@ -50,9 +50,10 @@ const static prog_char APM string_4[] = STR_T_V_TAIL    ;
 const static prog_char APM string_5[] = STR_T_ELEVON    ;
 const static prog_char APM string_6[] = STR_T_HELI_SETUP;
 const static prog_char APM string_7[] = STR_T_GYRO      ;
-const static prog_char APM string_8[] = STR_T_SERVO_TEST;
+const static prog_char APM string_8[] = STR_T_SERVO_TEST16;
+const static prog_char APM string_9[] = STR_T_SERVO_TEST8;
 
-const prog_char *const n_Templates[8] PROGMEM = {
+const prog_char *const n_Templates[9] PROGMEM = {
     string_1,
     string_2,
     string_3,
@@ -60,7 +61,8 @@ const prog_char *const n_Templates[8] PROGMEM = {
     string_5,
     string_6,
     string_7,
-    string_8
+    string_8,
+    string_9
 };
 
 #endif
@@ -81,9 +83,9 @@ static MixData* setDest(uint8_t dch)
     return md ;
 }
 
-#ifdef NO_TEMPLATES
-inline
-#endif 
+//#ifdef NO_TEMPLATES
+//inline
+//#endif 
 void clearMixes()
 {
     memset(g_model.mixData,0,sizeof(g_model.mixData)); //clear all mixes
@@ -118,12 +120,6 @@ void setSwitch(uint8_t idx, uint8_t func, int8_t v1, int8_t v2)
 
 #endif
 
-#ifndef FIX_MODE
-NOINLINE uint8_t convert_mode_helper(uint8_t x)
-{
-    return pgm_read_byte(modn12x3 + g_eeGeneral.stickMode*4 + (x) - 1) ;
-}
-#endif
 
 #ifndef NO_TEMPLATES
 const prog_int8_t heli_ar1[] PROGMEM = {-100, 20, 30, 70, 90};
@@ -155,10 +151,19 @@ void applyTemplate(uint8_t idx)
     //CC(STK)   -> vSTK
     //ICC(vSTK) -> STK
 #define ICC(x) icc[(x)-1]
-    uint8_t icc[4] = {0};
-    for(uint8_t i=1; i<=4; i++) //generate inverse array
-        for(uint8_t j=1; j<=4; j++) if(CC(i)==j) icc[j-1]=i;
+    uint8_t icc[4] ;
+//    for(uint8_t i=1; i<=4; i++) //generate inverse array
+//		{
+////        for(uint8_t j=1; j<=4; j++) if(CC(i)==j) icc[j-1]=i;
+//			icc[CC(i)-1] = i ;
+//		}
 
+		uint8_t bch = pgm_read_byte(bchout_ar + g_eeGeneral.templateSetup) ;
+    for ( uint8_t i = 4 ; i > 0 ; i -= 1 )
+		{
+			icc[bch & 3] = i ;
+			bch >>= 2 ;
+		}
 
 #ifndef NO_TEMPLATES
     uint8_t j = 0;
@@ -183,7 +188,7 @@ void applyTemplate(uint8_t idx)
     	SafetySwData *sd = &g_model.safetySw[ICC(STK_THR)-1] ;
 			sd->opt.ss.mode = 0 ;
 			sd->opt.ss.swtch = DSW_THR ;
-			sd->opt.ss.val = -100 ;
+			sd->opt.ss.val = g_model.throttleIdle ? 0 : -100 ;
     }
 
     //sticky t-cut
@@ -200,7 +205,7 @@ void applyTemplate(uint8_t idx)
     	SafetySwData *sd = &g_model.safetySw[ICC(STK_THR)-1] ;
 			sd->opt.ss.mode = 3 ;
 			sd->opt.ss.swtch = DSW_THR ;
-			sd->opt.ss.val = -100 ;
+			sd->opt.ss.val = g_model.throttleIdle ? 0 : -100 ;
     }
 
     //V-Tail
@@ -268,25 +273,21 @@ void applyTemplate(uint8_t idx)
     //Gyro Gain
     if(idx==j++)
     {
-        md=setDest(6);  md->srcRaw=STK_P2; md->weight= 50; md->swtch=-DSW_GEA; md->sOffset=100;
-        md=setDest(6);  md->srcRaw=STK_P2; md->weight=-50; md->swtch= DSW_GEA; md->sOffset=100;
+        md=setDest(6);  md->srcRaw=STK_P2; md->weight= 50; md->swtch=-DSW_GEA; md->sOffset=50;
+        md=setDest(6);  md->srcRaw=STK_P2; md->weight=-50; md->swtch= DSW_GEA; md->sOffset=-50;
     }
 
     //Servo Test
-    if(idx==j++)
+    if( (idx==j) || ( idx == j+1) )
     {
-        md=setDest(15); md->srcRaw=CH(16);   md->speedUp = 8; md->speedDown = 8;
-        md=setDest(16); md->srcRaw=MIX_FULL; md->weight= 110; md->swtch=DSW_SW1;
-        md=setDest(16); md->srcRaw=MIX_MAX;  md->weight=-110; md->swtch=DSW_SW2; md->mltpx=MLTPX_REP;
-        md=setDest(16); md->srcRaw=MIX_MAX;  md->weight= 110; md->swtch=DSW_SW3; md->mltpx=MLTPX_REP;
+        md=setDest( (idx==j) ? 16 : 8 ) ;
+				md->srcRaw=MIX_FULL; md->weight= 100; md->swtch=DSW_SWB;
+        md->speedUp = 7; md->speedDown = 7 ;
 
-        setSwitch(1,CS_LESS,CH(15),CH(16));
-        setSwitch(2,CS_VPOS,CH(15),   105);
-        setSwitch(3,CS_VNEG,CH(15),  -105);
+        setSwitch(11,CS_TIME, 8, 8) ;
+
     }
-
-
-
+//		j += 2 ;
     STORE_MODELVARS;
     eeWaitComplete() ;
 

@@ -22,34 +22,29 @@
 #define VERSION3	1
 #define VERSION4	1
 
-#define GVARS	1
-#define FIX_MODE		1
-#define STACK_TRACE				0
+//#define STACK_TRACE				1
 
-#define TWO_TIMERS	1
+// Remove features from M64-FrSky version
+#if ( defined(CPUM64) && defined(FRSKY) )
+#define NOPOTSCROLL					1
+#define NOSAFETY_A_OR_V			1
+#define MINIMISE_CODE				1
+#define	SWITCH_MAPPING			1
+#ifdef SERVOICEONLY
+#define	SERIAL_VOICE_ONLY		1
+#define	SERIAL_VOICE				1
+#endif
+#define	REMOVE_FROM_64FRSKY	1
+#else
+#define QUICK_SELECT		1
+#define	SERIAL_VOICE		1
+#define	SWITCH_MAPPING		1
+#endif
+//#define NOGPSALT	1
 
-//#define NOPOTSCROLL	1
 //#define NOSAFETY_A_OR_V
 //#define NOSAFETY_VOICE
-#define M64VOICE	1
 
-//#define FRSKY_ALARMS	1
-
-//#define VOLT_THRESHOLD 1
-//#define MAH_LIMIT		1
-//#define ALT_ALARM		1
-//#define FMODE_TRIM	1
-//#if defined(CPUM128) || defined(CPUM2561)
-#define	SCALERS
-//#endif
-
-#if defined(CPUM128) || defined(CPUM2561)
-#define	VOICE_ALARMS	1
-#else
-#ifdef M64VOICE
-#define	VOICE_ALARMS	1
-#endif
-#endif
 
 /* Building an er9x hex for custom transmitter */
 #ifdef CUSTOM9X
@@ -73,6 +68,8 @@
 #ifndef NOINLINE
 #define NOINLINE __attribute__ ((noinline))
 #endif
+
+#define CPU_UINT	uint8_t
 
 #ifndef SIMU
 
@@ -230,16 +227,12 @@ typedef uint32_t  prog_uint32_t __attribute__((__progmem__));//,deprecated("prog
 #define menuPressed() ( ( read_keys() & 2 ) == 0 )
 
 extern uint8_t SlaveMode ;
+extern uint8_t Backup_RestoreRunning ;
 
 extern const prog_char APM Str_Chans_Gv[] ;
 
-#ifdef FIX_MODE
 extern const prog_uint8_t APM stickScramble[] ;
-//extern const prog_uint8_t APM modeFix[] ;
 uint8_t modeFixValue( uint8_t value ) ;
-#else
-extern const prog_uint8_t APM modn12x3[] ;
-#endif
 
 extern const prog_char APM Str_OFF[] ;
 extern const prog_char APM Str_ON[] ;
@@ -289,6 +282,69 @@ enum EnumKeys {
     SW_Gear   ,
     SW_Trainer
 }; 
+
+// Hardware switch mappings:
+#define HSW_ThrCt			1
+#define HSW_RuddDR		2
+#define HSW_ElevDR		3
+#define HSW_ID0				4
+#define HSW_ID1				5
+#define HSW_ID2				6
+#define HSW_AileDR		7
+#define HSW_Gear			8
+#define HSW_Trainer		9
+
+#define HSW_Ele3pos0	31
+#define HSW_Ele3pos1	32
+#define HSW_Ele3pos2	33
+#define HSW_Rud3pos0	34
+#define HSW_Rud3pos1	35
+#define HSW_Rud3pos2	36
+#define HSW_Ail3pos0	37
+#define HSW_Ail3pos1	38
+#define HSW_Ail3pos2	39
+#define HSW_Gear3pos0	40
+#define HSW_Gear3pos1	41
+#define HSW_Gear3pos2	42
+#define HSW_Pb1				43
+#define HSW_Pb2				44
+#define HSW_MAX				44
+
+#if defined(CPUM128) || defined(CPUM2561)
+#define HSW_OFFSET ( HSW_Ele3pos0 - ( HSW_Trainer + NUM_CSW + EXTRA_CSW + 1 ) )
+#else
+#define HSW_OFFSET ( HSW_Ele3pos0 - ( HSW_Trainer + NUM_CSW + 1 ) )
+#endif
+
+#ifdef SWITCH_MAPPING
+extern uint8_t MaxSwitchIndex ;		// For ON and OFF
+#define TOGGLE_INDEX		HSW_MAX
+#else
+#define MaxSwitchIndex		MAX_DRSWITCH
+#define TOGGLE_INDEX		( MAX_DRSWITCH - 1 )
+#endif
+
+//Bitfield for hardware switch mapping
+#define	USE_THR_3POS	0x01
+#define	USE_RUD_3POS	0x02
+#define	USE_ELE_3POS	0x04
+#define	USE_ELE_6POS	0x08
+#define	USE_AIL_3POS	0x10
+#define	USE_GEA_3POS	0x20
+#define	USE_PB1				0x40
+#define	USE_PB2				0x80
+
+#ifdef SWITCH_MAPPING
+//uint16_t oneSwitchText( uint8_t swtch, uint16_t state ) ;
+uint8_t switchPosition( uint8_t swtch ) ;
+//extern uint8_t Sw3PosList[] ;
+//extern uint8_t Sw3PosCount[] ;
+
+//uint8_t numSwitchpositions( uint8_t swtch ) ;
+void createSwitchMapping( void ) ;
+int8_t switchUnMap( int8_t x ) ;
+int8_t switchMap( int8_t x ) ;
+#endif
 
 #define NUM_CSW  12 //number of custom switches
 #define EXTRA_CSW	6
@@ -433,11 +489,7 @@ const prog_char APM s_charTab[]=" ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrst
 #define THRCHK_DEADBAND 16
 #define SPLASH_TIMEOUT  (4*100)  //400 msec - 4 seconds
 
-#ifdef FIX_MODE
 #define IS_THROTTLE(x)  ((x) == 2) // (((2-(g_eeGeneral.stickMode&1)) == x) && (x<4))
-#else
-uint8_t IS_THROTTLE( uint8_t x ) ;
-#endif
 uint8_t IS_EXPO_THROTTLE( uint8_t x ) ;
 
 #define NUM_KEYS BTN_RE+1
@@ -460,6 +512,8 @@ uint8_t IS_EXPO_THROTTLE( uint8_t x ) ;
 #define EVT_TOGGLE_GVAR         (0xfd - _MSK_KEY_REPT)
 #define EVT_KEY_MASK             0x0f
 
+#define RESX    (1<<10) // 1024
+
 #define HEART_TIMER2Mhz 1;
 #define HEART_TIMER10ms 2;
 
@@ -467,7 +521,7 @@ uint8_t IS_EXPO_THROTTLE( uint8_t x ) ;
 #define TMRMODE_ABS      1
 #define TMRMODE_THR      2
 #define TMRMODE_THR_REL  3
-#define MAX_ALERT_TIME   60
+#define MAX_ALERT_TIME   10
 
 #define PROTO_NONE       0xFF
 #define PROTO_PPM        0
@@ -517,6 +571,9 @@ uint8_t getEventDbl(uint8_t event);
 void    killEvents(uint8_t enuk);
 /// liefert den Wert einer beliebigen Taste KEY_MENU..SW_Trainer
 bool    keyState(EnumKeys enuk);
+#ifdef SWITCH_MAPPING
+uint8_t hwKeyState( uint8_t key ) ;
+#endif
 /// Liefert das naechste Tasten-Event, auch trim-Tasten.
 /// Das Ergebnis hat die Form:
 /// EVT_KEY_BREAK(key), EVT_KEY_FIRST(key), EVT_KEY_REPT(key) oder EVT_KEY_LONG(key)
@@ -531,7 +588,7 @@ void    chainMenu(MenuFuncP newMenu);
 /// goto given Menu, store current menu in menuStack
 void    pushMenu(MenuFuncP newMenu);
 ///deliver address of last menu which was popped from
-MenuFuncP lastPopMenu();
+//MenuFuncP lastPopMenu();
 /// return to last menu in menustack
 /// if uppermost is set true, thenmenu return to uppermost menu in menustack
 void    popMenu(bool uppermost=false);
@@ -568,6 +625,7 @@ void perOut(int16_t *chanOut, uint8_t att);
 ///     1.. MAX_DRSWITCH : SW_ON .. SW_Trainer
 ///    -1..-MAX_DRSWITCH : negierte Werte
 ///   \param nc Wert, der bei swtch==0 geliefert wird.
+bool    getSwitch00(int8_t swtch) ;
 bool    getSwitch(int8_t swtch, bool nc, uint8_t level=0);
 /// Zeigt den Namen des Switches 'swtch' im display an
 ///   \param x     x-koordinate 0..127
@@ -581,7 +639,7 @@ void putsTmrMode(uint8_t x, uint8_t y, uint8_t attr, uint8_t type);
 
 extern int16_t get_telemetry_value( uint8_t channel ) ;
 
-extern uint8_t  s_timerState;
+//extern uint8_t  s_timerState;
 #define TMR_OFF     0
 #define TMR_RUNNING 1
 #define TMR_BEEPING 2
@@ -595,7 +653,7 @@ struct t_timerg
 	uint16_t s_timeCumSw;  //laufzeit in 1/16 sec
 	uint16_t s_timeCumThr;  //gewichtete laufzeit in 1/16 sec
 	uint16_t s_timeCum16ThrP; //gewichtete laufzeit in 1/16 sec
-	uint8_t  s_timerState;
+//	uint8_t  s_timerState;
   // Statics
 	uint16_t s_time;
   uint16_t s_cnt;
@@ -617,7 +675,7 @@ struct t_timer
 	uint8_t lastSwPos ;
 	uint8_t sw_toggled ;
 	uint16_t s_timeCumSw ;  //laufzeit in 1/16 sec
-	uint8_t  s_timerState ;
+//	uint8_t  s_timerState ;
 	uint8_t lastResetSwPos;
 	uint16_t s_timeCumThr ;  //gewichtete laufzeit in 1/16 sec
 	uint16_t s_timeCum16ThrP ; //gewichtete laufzeit in 1/16 sec
@@ -653,37 +711,40 @@ extern uint8_t s_editMode;     //global editmode
 /// Als Bestaetigung wird beep() aufgerufen bzw. audio.warn() wenn die Stellgrenze erreicht wird.
 int16_t checkIncDec16( int16_t i_pval, int16_t i_min, int16_t i_max, uint8_t i_flags);
 int8_t checkIncDec( int8_t i_val, int8_t i_min, int8_t i_max, uint8_t i_flags);
-int8_t checkIncDec_hm( int8_t i_val, int8_t i_min, int8_t i_max);
+int8_t checkIncDec_i8( int8_t i_val, int8_t i_min, int8_t i_max);
 //int8_t checkIncDec_vm(uint8_t event, int8_t i_val, int8_t i_min, int8_t i_max);
-int8_t checkIncDec_hg( int8_t i_val, int8_t i_min, int8_t i_max);
-int8_t checkIncDec_hg0( int8_t i_val, int8_t i_max) ;
-int8_t checkIncDec_hm0(int8_t i_val, int8_t i_max) ;
-int16_t checkIncDec_hmu0(int16_t i_val, uint8_t i_max) ;
+//int8_t checkIncDec_hg( int8_t i_val, int8_t i_min, int8_t i_max);
+//int8_t checkIncDec_hg0( int8_t i_val, int8_t i_max) ;
+int8_t checkIncDec_0(int8_t i_val, int8_t i_max) ;
+int16_t checkIncDec_u0(int16_t i_val, uint8_t i_max) ;
+#if defined(CPUM128) || defined(CPUM2561)
+int8_t checkIncDecSwitch( int8_t i_val, int8_t i_min, int8_t i_max, uint8_t i_flags) ;
+#endif
 
 #define CHECK_INCDEC_H_GENVAR( var, min, max)     \
-    var = checkIncDec_hg(var,min,max)
+    var = checkIncDec_i8(var,min,max)
 
 #define CHECK_INCDEC_H_GENVAR_0( var, max)     \
-    var = checkIncDec_hg0( var, max )
+    var = checkIncDec_0( var, max )
 
 #define CHECK_INCDEC_H_MODELVAR( var, min, max)     \
-    var = checkIncDec_hm(var,min,max)
+    var = checkIncDec_i8(var,min,max)
 
 #define CHECK_INCDEC_H_MODELVAR_0( var, max)     \
-    var = checkIncDec_hm0(var,max)
+    var = checkIncDec_0(var,max)
 
 #if defined(CPUM128) || defined(CPUM2561)
 #define CHECK_INCDEC_MODELSWITCH( var, min, max) \
-  var = checkIncDec(var,min,max,EE_MODEL|INCDEC_SWITCH)
+  var = checkIncDecSwitch(var,min,max,EE_MODEL|INCDEC_SWITCH)
 
 #define CHECK_INCDEC_GENERALSWITCH( var, min, max) \
-  var = checkIncDec(var,min,max,EE_GENERAL|INCDEC_SWITCH)
+  var = checkIncDecSwitch(var,min,max,EE_GENERAL|INCDEC_SWITCH)
 #else
 #define CHECK_INCDEC_MODELSWITCH( var, min, max) \
-    var = checkIncDec_hm(var,min,max)
+    var = checkIncDec_i8(var,min,max)
 
 #define CHECK_INCDEC_GENERALSWITCH( var, min, max) \
-    var = checkIncDec_hg(var,min,max)
+    var = checkIncDec_i8(var,min,max)
 #endif
 #define STORE_MODELVARS_TRIM   eeDirty(EE_MODEL|EE_TRIM)
 #define STORE_MODELVARS   eeDirty(EE_MODEL)
@@ -735,10 +796,12 @@ void eeWriteGeneral();
 //void eeReadAll();
 void eeLoadModelName(uint8_t id,char*buf,uint8_t len);
 //uint16_t eeFileSize(uint8_t id);
+uint16_t eeLoadModelForBackup(uint8_t id) ;
 void eeLoadModel(uint8_t id);
 //void eeSaveModel(uint8_t id);
 bool eeDuplicateModel(uint8_t id);
 bool eeModelExists(uint8_t id);
+uint8_t modelSave( uint8_t id ) ;
 
 #define NUM_PPM     8
 //number of real outputchannels CH1-CH16
@@ -987,12 +1050,10 @@ NOINLINE int16_t getTelemetryValue( uint8_t index ) ;
 #define FORCE_INDIRECT(ptr)
 #endif
 
-#ifdef PHASES		
 extern uint8_t getFlightPhase( void ) ; 
 extern int16_t getRawTrimValue( uint8_t phase, uint8_t idx ) ;
 extern int16_t getTrimValue( uint8_t phase, uint8_t idx ) ;
 extern void setTrimValue(uint8_t phase, uint8_t idx, int16_t trim) ;
-#endif
 
 extern uint8_t StickScrollAllowed ;
 
@@ -1013,10 +1074,8 @@ extern uint8_t RotaryState ;		// Defaults to ROTARY_MENU_LR
 
 extern uint8_t Tevent ;
 
-#if GVARS
 extern int8_t REG(int8_t x, int8_t min, int8_t max) ;
 extern int8_t REG100_100(int8_t x) ;
-#endif
 
 extern uint16_t evalChkSum( void ) ;
 extern int8_t isAgvar(uint8_t value) ;
@@ -1039,12 +1098,26 @@ struct t_p1
 
 extern struct t_p1 P1values ;
 
+struct t_backup_restore
+{
+	uint8_t byteCount ;
+	uint8_t dirOffset ;
+	uint8_t dirIndex ;
+	uint8_t gpCount ;
+	uint8_t type ;
+	uint8_t subState ;
+	uint16_t size ;
+	uint8_t modelIndex ;
+	uint8_t restoreDirBuffer[8][12] ;
+} ;
+
 union t_xmem
 {
 //	struct MixTab s_mixTab[MAX_MIXERS+NUM_XCHNOUT+1] ;	
 	struct t_calib Cal_data ;
 	char buf[sizeof(g_model.name)+5];
 	ExpoData texpoData[4] ;
+	struct t_backup_restore restoreData ;
 //#if defined(CPUM128) || defined(CPUM2561)
 //  uint8_t file_buffer[256];
 //#else
@@ -1091,6 +1164,14 @@ extern uint8_t StepSize ;
 
 extern TimerMode TimerConfig[2] ;
 //extern uint16_t MenuTimer ;
+
+void serialVoiceInit( void ) ;
+void startSerialVoice( void ) ;
+void stopSerialVoice( void ) ;
+int16_t getSvFifo( void ) ;
+void serialVoiceTx( uint8_t byte ) ;
+uint8_t throttleReversed( void ) ;
+void displayOneSwitch( uint8_t x, uint8_t y, uint8_t index ) ;
 
 #endif // er9x_h
 /*eof*/

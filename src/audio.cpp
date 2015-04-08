@@ -16,6 +16,22 @@
 
 #define SPEAKER_OFF  PORTE &= ~(1 << OUT_E_BUZZER) // speaker output 'low'
 
+static void HAPTIC_ON()
+{
+	if ( g_eeGeneral.pg2Input == 0)
+	{
+		PORTG |= (1<<2) ;
+	}
+}
+
+static void HAPTIC_OFF()
+{
+	if ( g_eeGeneral.pg2Input == 0)
+	{
+		PORTG &= ~(1<<2) ;
+	}
+}
+
 
 struct t_voice Voice ;
 
@@ -28,7 +44,7 @@ audioQueue::audioQueue()
 void audioQueue::aqinit()
 {
   //make sure haptic off by default
-  HAPTIC_OFF;
+  HAPTIC_OFF();
 
   toneTimeLeft = 0;
   tonePause = 0;
@@ -70,17 +86,17 @@ void audioQueue::heartbeat()
     toneFreq += toneFreqIncr;
     if (toneHaptic){
       if (hapticTick-- > 0) {
-        HAPTIC_ON; // haptic output 'high'
+        HAPTIC_ON(); // haptic output 'high'
       }
       else {
-        HAPTIC_OFF; // haptic output 'low'
+        HAPTIC_OFF(); // haptic output 'low'
         hapticTick = g_eeGeneral.hapticStrength;
       }
     }
   }
   else {
     SPEAKER_OFF;
-    HAPTIC_OFF;
+    HAPTIC_OFF();
 
     //if (tonePause-- <= 0) {
     if (tonePause > 0) {

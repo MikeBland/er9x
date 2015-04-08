@@ -58,6 +58,7 @@ void eeGeneralDefault()
   g_eeGeneral.contrast = LCD_NOMCONTRAST;
   g_eeGeneral.vBatWarn = 90;
   g_eeGeneral.stickMode=  1;
+	g_eeGeneral.lightSw = MAX_DRSWITCH ;	// ON
   for (uint8_t i = 0; i < 7; ++i) {
     g_eeGeneral.calibMid[i]     = 0x200;
     g_eeGeneral.calibSpanNeg[i] = 0x300;
@@ -107,6 +108,11 @@ static bool eeLoadGeneral()
   return g_eeGeneral.chkSum == evalChkSum() ;
 }
 
+uint8_t modelSave( uint8_t id )
+{
+  return theFile.writeRlc(FILE_MODEL(id),FILE_TYP_MODEL,(uint8_t*)&g_model,sizeof(g_model),200) == sizeof(g_model) ;
+}
+
 void modelDefaultWrite(uint8_t id)
 {
   memset(&g_model, 0, sizeof(ModelData));
@@ -116,10 +122,14 @@ void modelDefaultWrite(uint8_t id)
 	qr = div( id+1, 10 ) ;
   g_model.name[5]='0'+qr.quot;
   g_model.name[6]='0'+qr.rem;
-#ifdef VERSION3
-  g_model.modelVersion = 3 ;
+#ifdef VERSION4
+  g_model.modelVersion = 4 ;
 #else
+ #ifdef VERSION3
+  g_model.modelVersion = 3 ;
+ #else
   g_model.modelVersion = 2 ;
+ #endif
 #endif
 	g_model.trimInc = 2 ;
 
@@ -128,7 +138,8 @@ void modelDefaultWrite(uint8_t id)
 #else
   applyTemplate(0); //default 4 channel template
 #endif
-  theFile.writeRlc(FILE_MODEL(id),FILE_TYP_MODEL,(uint8_t*)&g_model,sizeof(g_model),200);
+	modelSave( id ) ;
+//  theFile.writeRlc(FILE_MODEL(id),FILE_TYP_MODEL,(uint8_t*)&g_model,sizeof(g_model),200);
 }
 
 void eeLoadModelName(uint8_t id,char*buf,uint8_t len)
@@ -175,23 +186,27 @@ bool eeModelExists(uint8_t id)
     return EFile::exists(FILE_MODEL(id));
 }
 
-#ifdef FIX_MODE
 extern MixData *mixaddress( uint8_t idx ) ;
-#endif
+
+
+uint16_t eeLoadModelForBackup(uint8_t id)
+{
+  theFile.openRd(FILE_MODEL(id));
+  memset(&g_model, 0, sizeof(ModelData));
+  return theFile.readRlc((uint8_t*)&g_model, sizeof(g_model));
+}
 
 void eeLoadModel(uint8_t id)
 {
   if(id<MAX_MODELS)
   {
-        theFile.openRd(FILE_MODEL(id));
-        memset(&g_model, 0, sizeof(ModelData));
-        uint16_t sz = theFile.readRlc((uint8_t*)&g_model, sizeof(g_model));
-
-        if(sz<256) // if not loaded a fair amount
-        {
-            modelDefaultWrite(id);
-        }
-				validateName( g_model.name, sizeof(g_model.name) ) ;
+    uint16_t sz = eeLoadModelForBackup( id ) ;
+		
+    if(sz<256) // if not loaded a fair amount
+    {
+        modelDefaultWrite(id);
+    }
+		validateName( g_model.name, sizeof(g_model.name) ) ;
 
 //        for(uint8_t i=0; i<sizeof(g_model.name);i++) // makes sure name is valid
 //        {
@@ -208,8 +223,8 @@ void eeLoadModel(uint8_t id)
   FrskyAlarmSendState |= 0x40 ;		// Get RSSI Alarms
         FRSKY_setModelAlarms();
 #endif
-#ifdef FIX_MODE
 
+//#ifndef REMOVE_FROM_64FRSKY
 // check for updating mix sources
 		if ( g_model.modelVersion < 2 )
 		{
@@ -305,7 +320,6 @@ void eeLoadModel(uint8_t id)
       eeDirty( EE_MODEL ) ;
 			eeWaitComplete() ;
 		}
-#endif	// FIX_MODE
 
 #ifdef VERSION3
 		if ( g_model.modelVersion < 3 )
@@ -352,6 +366,12 @@ void eeLoadModel(uint8_t id)
 			eeWaitComplete() ;
 		}
 #endif	// VERSION4
+//#else // ndef REMOVE_FROM_64FRSKY
+//		if ( g_model.modelVersion < 4 )
+//		{
+//			alert(PSTR("\004UPDATE MODEL\037\005USING EEPE"));
+//		}
+//#endif // ndef REMOVE_FROM_64FRSKY
   }
 
 	TimerMode *ptConfig = TimerConfig ;

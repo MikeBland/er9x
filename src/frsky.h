@@ -304,11 +304,6 @@ DataID Meaning       Unit   Range   Note
 //  alarm_red = (uint8_t)3
 //};
 
-#ifdef FRSKY_ALARMS
-#define ALARM_GREATER(channel, alarm) (((uint8_t)g_model.frsky.channels[channel].opt.alarm.alarms_greater >> (uint8_t)alarm) & (uint8_t)1)
-#define ALARM_LEVEL(channel, alarm) (((uint8_t)g_model.frsky.channels[channel].opt.alarm.alarms_level >> (uint8_t)(2*alarm)) & (uint8_t)3)
-#endif
-
 struct FrskyData {
   uint8_t value;
   uint8_t raw;
@@ -344,7 +339,7 @@ struct FrSky_Q_t
 extern void put_frsky_q( uint8_t index, uint16_t value ) ;
 extern void process_frsky_q( void ) ;
  
-extern Frsky_current_info Frsky_current[2] ;
+//extern Frsky_current_info Frsky_current[2] ;
 
 extern uint8_t AltitudeDecimals ;
 

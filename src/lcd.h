@@ -54,7 +54,7 @@
 /* time & telemetry flags */
 #define NO_UNIT       0x80
 
-extern uint8_t lcd_lastPos;
+extern uint8_t Lcd_lastPos;
 
 #define PLOT_XOR		0
 #define PLOT_BLACK	1
@@ -90,6 +90,7 @@ extern void lcd_hline(unsigned char x,unsigned char y, signed char w);
 extern void lcd_hlineStip(unsigned char x,unsigned char y, signed char w,uint8_t pat);
 extern void lcd_vline(unsigned char x,unsigned char y, signed char h);
 extern void lcd_rect(uint8_t x, uint8_t y, uint8_t w, uint8_t h ) ;
+extern void lcd_rect_xor(uint8_t x, uint8_t y, uint8_t w, uint8_t h ) ;
 extern void lcd_char_inverse( uint8_t x, uint8_t y, uint8_t w, uint8_t blink ) ;
 
 //extern void lcd_img_f(unsigned char x,unsigned char y);

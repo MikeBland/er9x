@@ -10,6 +10,35 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 08-Apr-2015  MPB (r817)
+Properly fix missing templates option
+Fix erroneous display of 9th voice alarm
+Two servo test templates (channels 16 or 8).
+Clear ALL mixes available in the MIX POPUP.
+Fix moving mix bug.
+Fix gyro template.
+Save some more flash!
+Add BACKUP and RESTORE on Megasound SD card
+  Needs update to Megasound firmware
+Remove the +100% stick idle option.
+Make throttle reverse set on a per-model basis.
+Add templates to the model index (on top line)
+Fix Voice Alarm play/mute option bug 
+Fix the formatting of the .eepm file so it reads properly in eepe.
+Throttle reverse and throttle idle changes cause a "check throttle" warning.
+Some flash saving.
+Throttle reverse available on both general setup and on a per model basis.
+Throttle reverse displays "Throttle Open" with an arrow
+Fix bug where SLOW and DELAY on a mix didn't work properly.
+Add GVAR incrementing/resetting option
+Remove "Quick Select" from M64 FrSky version
+Allow GVARS and Scalers as voice file number
+128/2561 - Add extra 3-pos switches and push buttons
+Remove safety switch A and V from '64-frsky version
+Remove throttle trace from '128 version to save RAM
+'64-FrSky version - two builds parallel voice and serial voice
+
+******************************************
 CHANGELOG: 10-Jan-2015  MPB (r816)
 New menu system completed.
 Voice alarms added to M64.
@@ -444,7 +473,7 @@ Compile with later compiler, saves 1500 flash bytes
 
 
 ******************************************
-CHANGELOG: 15-MAR-2012  MPB
+CHANGELOG: 15-MAY-2012  MPB
 New method of processing and storing Hub data
 New method of averaging analog (A1,A2,RSSI,TSSI) data
 Fix a bug or two with Current measurement offset and zeroing

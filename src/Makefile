@@ -94,8 +94,6 @@ TEMPLATES = YES
 
 NOPOTSCROLL =
 
-PHASES = YES
-
 CUSTOM9X = NO
 
 N2F = NO
@@ -188,10 +186,6 @@ ifeq ($(NOPOTSCROLL),YES)
 	SC_MOD=NPS
 endif
 
-#ifeq ($(PHASES),YES)
-#	PH_MOD=PH
-#endif
-
 #--------------------------------------------------------------------------------
 
 # List Assembler source files here.
@@ -261,6 +255,11 @@ ifeq ($(EXT), FRSKY)
  CPPDEFS += -DFRSKY
 endif
 
+ifeq ($(SERVOICE), YES)
+ CPPDEFS += -DSERVOICEONLY
+endif
+
+
 # gruvin: If buzzer speaker replacment supported - ported by rob.thomson
 ifeq ($(BEEPER), SPEAKER)
  CPPDEFS += -DBEEPSPKR
@@ -296,10 +295,6 @@ ifeq ($(NOPOTSCROLL),YES)
  CPPDEFS += -DNOPOTSCROLL
 endif
 
-ifeq ($(PHASES),YES)
- CPPDEFS += -DPHASES
-endif
-
 ifeq ($(BOOT),YES)
  CPPDEFS += -DBOOTL
 endif
@@ -310,13 +305,14 @@ endif
 
 ifeq ($(CPU), 2561)
  CPPDEFS += -DCPUM2561
- CPPDEFS += -DPHASES
+else
+ ifeq ($(CPU), 128)
+  CPPDEFS += -DCPUM128
+ else
+  CPPDEFS += -DCPUM64
+ endif
 endif
 
-ifeq ($(CPU), 128)
- CPPDEFS += -DCPUM128
- CPPDEFS += -DPHASES
-endif
 
 ifeq ($(LANG), FR)
  CPPDEFS += -DLANG_FR
@@ -391,6 +387,7 @@ CPPFLAGS += -Wall
 #CPPFLAGS += -Wsign-compare
 #CPPFLAGS += -Wa,-adhlns=$(<:%.cpp=$(OBJDIR)/%.lst)
 CPPFLAGS += $(patsubst %,-I%,$(EXTRAINCDIRS))
+#CPPFLAGS += -ffunction-sections -fdata-sections 
 #CPPFLAGS += $(CSTANDARD)
 
 
@@ -455,6 +452,7 @@ EXTMEMOPTS =
 LDFLAGS = -Wl,-Map=$(TARGET).map,--cref -Wl,--relax
 LDFLAGS += $(EXTMEMOPTS)
 LDFLAGS += $(PRINTF_LIB) $(SCANF_LIB) $(MATH_LIB)
+#LDFLAGS += -Wl,--gc-sections
 #LDFLAGS += -T linker_script.x
 
 ifeq ($(CPU), 128)
