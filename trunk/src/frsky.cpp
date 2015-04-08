@@ -51,10 +51,14 @@
 // When top bit found, just save index(with top bit) and value
 // When next value received, if saved value has top bit set, stoore the value and clear top bit
 //   then process latest values, saving them if necessary.
+
+// To allow either 0 or 0x80
+#define FR_INDEX_FLAG		0
+
 const prog_uint8_t APM Fr_indices[] = 
 {
 	HUBDATALENGTH-1,
-	FR_GPS_ALT | 0x80,
+	FR_GPS_ALT | FR_INDEX_FLAG,
 	FR_TEMP1,
 	FR_RPM,
 	FR_FUEL,
@@ -64,10 +68,10 @@ const prog_uint8_t APM Fr_indices[] =
 	FR_GPS_ALTd,
 	HUBDATALENGTH-1,HUBDATALENGTH-1,		// 10,11
 	HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,HUBDATALENGTH-1,
-	FR_ALT_BARO | 0x80,
-	FR_GPS_SPEED | 0x80,
-	FR_GPS_LONG | 0x80,
-	FR_GPS_LAT | 0x80,
+	FR_ALT_BARO | FR_INDEX_FLAG,
+	FR_GPS_SPEED | FR_INDEX_FLAG,
+	FR_GPS_LONG | FR_INDEX_FLAG,
+	FR_GPS_LAT | FR_INDEX_FLAG,
 	FR_COURSE,			// 20
 	FR_GPS_DATMON,
 	FR_GPS_YEAR,
@@ -86,7 +90,7 @@ const prog_uint8_t APM Fr_indices[] =
 	FR_ACCZ,
 	FR_VSPD,
 	FR_CURRENT,			// 40
-	FR_V_AMP | 0x80,
+	FR_V_AMP | FR_INDEX_FLAG,
 	FR_V_AMPd,
 	FR_VOLTS,
 	HUBDATALENGTH-1,		// 44
@@ -103,7 +107,7 @@ uint8_t frskyRxBuffer[19];   // Receive buffer. 9 bytes (full packet), worst cas
 
 struct t_frskyTx
 {
-	uint8_t frskyTxBuffer[19];   // Ditto for transmit buffer
+	uint8_t frskyTxBuffer[13];   // Ditto for transmit buffer
 	uint8_t frskyTxBufferCount ;
 	uint8_t frskyTxISRIndex ;
 } FrskyTx ;
@@ -114,19 +118,10 @@ uint8_t frskyUsrStreaming = 0;
 
 FrskyData frskyTelemetry[4];
 //FrskyData frskyRSSI[2];
-Frsky_current_info Frsky_current[2] ;
+//Frsky_current_info Frsky_current[2] ;
 
 uint8_t frskyRSSIlevel[2] ;
 uint8_t frskyRSSItype[2] ;
-
-#ifdef FRSKY_ALARMS
-struct FrskyAlarm {
-  uint8_t level;    // The alarm's 'urgency' level. 0=disabled, 1=yellow, 2=orange, 3=red
-  uint8_t greater;  // 1 = 'if greater than'. 0 = 'if less than'
-  uint8_t value;    // The threshold above or below which the alarm will sound
-};
-struct FrskyAlarm frskyAlarms[4];
-#endif
 
 struct t_frsky_user
 {
@@ -193,7 +188,11 @@ void store_indexed_hub_data( uint8_t index, uint16_t value )
 	{
 		index = 0 ;	// Use a discard item							
 	}
+#if FR_INDEX_FLAG
   index = pgm_read_byte( &Fr_indices[index] ) & 0x7F ;
+#else
+  index = pgm_read_byte( &Fr_indices[index] ) ;
+#endif
 	store_hub_data( index, value ) ;
 }
 
@@ -246,6 +245,7 @@ void store_hub_data( uint8_t index, uint16_t value )
 
 	if ( index < HUBDATALENGTH )
 	{
+#ifndef NOGPSALT
     if ( !g_model.FrSkyGpsAlt )         
     {
 			FrskyHubData[index] = value ;
@@ -262,6 +262,9 @@ void store_hub_data( uint8_t index, uint16_t value )
          index = FR_ALT_BARO ;         // For max and min
       }
 		}
+#else
+		FrskyHubData[index] = value ;
+#endif
     
 #if defined(VARIO)
 		if ( index == FR_ALT_BARO )
@@ -437,20 +440,6 @@ void processFrskyPacket(uint8_t *packet)
   // What type of packet?
   switch (packet[0])
   {
-#ifdef FRSKY_ALARMS
-    case A22PKT:
-    case A21PKT:
-    case A12PKT:
-    case A11PKT:
-      {
-        struct FrskyAlarm *alarmptr ;
-        alarmptr = &frskyAlarms[(packet[0]-A22PKT)] ;
-        alarmptr->value = packet[1];
-        alarmptr->greater = packet[2] & 0x01;
-        alarmptr->level = packet[3] & 0x03;
-      }
-      break;
-#endif
     case LINKPKT: // A1/A2/RSSI values
 			// From a scope, this seems to be sent every about every 35mS
 //			LinkAveCount += 1 ;
@@ -984,10 +973,10 @@ ISR(USART0_RX_vect)
 							PORTC = ( PORTC & 0x3F ) | ( data & 0xC0 ) ;		// update outputs						
 						}
 					}
-					if(Private_position==1) {
+					else if(Private_position==1) {
 						Rotary.TrotCount = data;
 					}
-					if(Private_position==2) { // rotary encoder switch
+					else if(Private_position==2) { // rotary encoder switch
 						Rotary.TezRotary = data;
 					}
 					Private_position++;
@@ -1095,19 +1084,10 @@ static void FRSKY10mspoll(void)
     FrskyAlarmSendState &= ~j ;
 		if ( i < 4 )
 		{
-#ifdef FRSKY_ALARMS		 
-	    uint8_t channel = 1 - (i / 2);
-  	  uint8_t alarm = 1 - (i % 2);
-#endif    
 		//	FRSKY_setTxPacket( A22PKT + i, g_eeGeneral.frskyinternalalarm ? 0 :g_model.frsky.channels[channel].alarms_value[alarm],
 		//														 ALARM_GREATER(channel, alarm), ALARM_LEVEL(channel, alarm) ) ;					
 
-#ifdef FRSKY_ALARMS		 
-			FRSKY_setTxPacket( A22PKT + i, g_model.frsky.channels[channel].opt.alarm.alarms_value[alarm],
-                  ALARM_GREATER(channel, alarm), g_eeGeneral.frskyinternalalarm ? 0 :ALARM_LEVEL(channel, alarm) ) ;
-#else
 			FRSKY_setTxPacket( A22PKT + i, 0, 0, 0 ) ;
-#endif	
 									 
 		}
 		else if( i < 6 )
@@ -1308,9 +1288,6 @@ void FRSKY_Init( uint8_t brate)
 #if defined(CPUM128) || defined(CPUM2561)
 	if ( g_eeGeneral.FrskyPins == 0 )
 		return ;
-#endif
-#ifdef FRSKY_ALARMS
-  memset(frskyAlarms, 0, sizeof(frskyAlarms));
 #endif
   resetTelemetry();
 
@@ -1562,7 +1539,6 @@ void check_frsky()
 				current = FrskyHubData[FR_CURRENT] ;
 			}
 		}
-#ifdef SCALERS
 		else	// Scaler
 		{
 			uint8_t num_decimals ;
@@ -1582,7 +1558,6 @@ void check_frsky()
 				}
 			}
 		}
-#endif
 
 		int16_t ah_temp ;
 		ah_temp = current ;

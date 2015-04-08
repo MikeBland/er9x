@@ -28,7 +28,14 @@ make EXT=FRSKY TEMPLATES=NO PHASES=YES
 echo ">>>  moving"
 mv er9x.hex ../er9x-frsky.hex
 
-
+echo
+echo "===== Making FRSKY SerialSound Version ====="
+echo ">>> cleaning"
+make clean
+echo ">>>  making"
+make EXT=FRSKY TEMPLATES=NO PHASES=YES SERVOICE=YES
+echo ">>>  moving"
+mv er9x.hex ../er9x-frsky-sv.hex
 
 #echo
 #echo "===== Making FRSKY - NOHELI/NOTEMPLATE Version ====="

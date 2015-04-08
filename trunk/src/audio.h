@@ -15,8 +15,8 @@
 #ifndef audio_h
 #define audio_h
 
-#define HAPTIC_OFF  PORTG &= ~(1<<2)
-#define HAPTIC_ON   PORTG |=  (1<<2)
+//#define HAPTIC_OFF  PORTG &= ~(1<<2)
+//#define HAPTIC_ON   PORTG |=  (1<<2)
 
 //audio
 #define AUDIO_QUEUE_LENGTH (8)  //8 seems to suit most alerts
@@ -215,6 +215,9 @@ void audioEvent( uint8_t e, uint16_t f ) ;
 #define V_WAIT_BUSY_DELAY	5
 #define V_WAIT_START_BUSY_OFF		6
 
+#define V_WAIT_RX						0
+#define V_RECEIVING_COUNT		1
+#define V_RECEIVING_VALUE		2
 
 struct t_voice
 {
@@ -229,7 +232,13 @@ struct t_voice
 	uint8_t VoiceQueueCount ;
 	uint8_t VoiceQueueInIndex ;
 	uint8_t VoiceQueueOutIndex ;
-  
+	uint8_t VoiceSerialData[5] ;
+	uint8_t VoiceSerialCount ;
+	uint8_t VoiceSerialIndex ;
+	uint8_t VoiceSerialRxState ;
+	uint8_t VoiceSerialValue ;
+	uint8_t VoiceBacklightCount ;
+//	uint8_t VoiceDebug ;
 	void voice_process( void ) ;
 } ;
 
@@ -284,6 +293,8 @@ extern struct t_voice Voice ;
 #define	V_NOTELEM				58
 #define	V_WATTS					59
 
+#define	V_THR_WARN			74
+#define	V_SW_WARN				75
 
 #define V_HUNDRED			 100
 #define V_THOUSAND		 110

@@ -67,25 +67,19 @@ struct MState2
   uint8_t m_posVert;
 //  uint8_t m_posHorz;
   void init(){m_posVert=0;};
-#ifdef INDEX_MENU
-  void check(uint8_t event, const prog_uint8_t *subTab, uint8_t subTabMax, uint8_t maxrow);
-#else
-  void check(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8_t menuTabSize, const prog_uint8_t *subTab, uint8_t subTabMax, uint8_t maxrow);
-#endif
+//  void check(uint8_t event, const prog_uint8_t *subTab, uint8_t subTabMax, uint8_t maxrow);
 	void check_columns( uint8_t event, uint8_t maxrow) ;
 
 //  void check_simple(uint8_t event, uint8_t curr, const MenuFuncP *menuTab, uint8_t menuTabSize, uint8_t maxrow);
 //  void check_submenu_simple( uint8_t event, const prog_uint8_t *subTab, uint8_t subTabMax, uint8_t maxrow);
 };
 
-uint8_t evalOffset(int8_t sub, uint8_t max) ;
+uint8_t evalOffset(int8_t sub) ;
 
 typedef PROGMEM void (*MenuFuncP_PROGMEM)(uint8_t event);
 
 //#define TITLEP(pstr) lcd_putsAtt(0,0,pstr,INVERS)
 #define TITLE(str)   TITLEP(PSTR(str))
-
-#ifdef INDEX_MENU
 
 #define MENU(title, lines_count, ...) \
 TITLE(title); \
@@ -118,40 +112,6 @@ mstate2.check(event,mstate_tab,DIM(mstate_tab)-1,lines_count-1)
 TITLE(title); \
 SIMPLE_SUBMENU_NOTITLE(lines_count-1, {0})
 
-#else
-#define MENU(title, tab, menu, lines_count, ...) \
-TITLE(title); \
-static MState2 mstate2; \
-const static prog_uint8_t APM mstate_tab[] = __VA_ARGS__; \
-mstate2.check(event,menu,tab,DIM(tab),mstate_tab,DIM(mstate_tab)-1,lines_count-1)
-
-#define VARMENU(title, tab, menu, lines_count, cols ) \
-TITLE(title); \
-static MState2 mstate2; \
-mstate2.check(event,menu,tab,DIM(tab),cols,0,lines_count-1)
-
-#define SIMPLE_MENU(title, tab, menu, lines_count) \
-TITLE(title); \
-static MState2 mstate2; \
-mstate2.check_simple(event,menu,tab,DIM(tab),lines_count-1)
-
-#define SUBMENU(title, lines_count, ...) \
-TITLE(title); \
-static MState2 mstate2; \
-const static prog_uint8_t APM mstate_tab[] = __VA_ARGS__; \
-mstate2.check(event,0,NULL,0,mstate_tab,DIM(mstate_tab)-1,lines_count-1)
-
-#define SUBMENU_NOTITLE(lines_count, ...) \
-static MState2 mstate2; \
-static const prog_uint8_t APM mstate_tab[] = __VA_ARGS__; \
-mstate2.check(event,0,NULL,0,mstate_tab,DIM(mstate_tab)-1,lines_count-1)
-
-#define SIMPLE_SUBMENU(title, lines_count) \
-TITLE(title); \
-SIMPLE_SUBMENU_NOTITLE(lines_count-1, {0})
-
-#endif
-
 //#if defined(GVARS)
 //void displayGVar(uint8_t x, uint8_t y, int8_t value);
 //#else
@@ -170,6 +130,7 @@ extern struct t_popupData PopupData ;
 
 extern uint8_t CalcScaleNest ;
 extern int16_t calc_scaler( uint8_t index, uint8_t *unit, uint8_t *num_decimals) ;
+extern int16_t scaleAnalog( int16_t v, uint8_t channel ) ;
 
 //const prog_char *get_curve_string() ;
 extern const prog_char APM Curve_Str[] ;

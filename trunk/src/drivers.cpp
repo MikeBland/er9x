@@ -16,6 +16,8 @@
 
 
 #include "er9x.h"
+#include "pulses.h"
+#include "audio.h"
 
 #ifndef SIMU
 #include "avr/interrupt.h"
@@ -73,7 +75,7 @@ void eeWriteBlockCmp(const void *i_pointer_ram, uint16_t i_pointer_eeprom, size_
 //}
 
 
-
+uint8_t ExtraInputs ;
 uint8_t s_evt;
 
 uint8_t getEvent()
@@ -187,41 +189,145 @@ void Key::input(bool val, EnumKeys enuk)
   }
 }
 
+static uint8_t readAilIp()
+{
+#if defined(CPUM128) || defined(CPUM2561)
+	if ( g_eeGeneral.FrskyPins )
+	{
+		return PINC & (1<<INP_C_AileDR) ;
+	}
+	else
+	{
+		return PINE & (1<<INP_E_AileDR) ;
+	}
+#else
+ #if (!(defined(JETI) || defined(FRSKY) || defined(ARDUPILOT) || defined(NMEA)))
+ 	return PINE & (1<<INP_E_AileDR);
+ #else
+ 	return PINC & (1<<INP_C_AileDR);
+ #endif
+#endif
+}
+
+
+#ifdef SWITCH_MAPPING
+uint8_t hwKeyState( uint8_t key )
+{
+  CPU_UINT xxx = 0 ;
+  if( key > HSW_MAX )  return 0 ;
+
+	if ( ( key >= HSW_ThrCt ) && ( key <= HSW_Trainer ) )
+	{
+		return keyState( (EnumKeys)(key + ( SW_ThrCt - HSW_ThrCt ) ) ) ;
+	}
+
+  CPU_UINT yyy = key - HSW_Ele3pos0 ;
+  CPU_UINT zzz ;
+	
+	if ( yyy <= 2 )	// 31-33
+	{
+		xxx = ~PINE & (1<<INP_E_ElevDR) ;
+		if ( yyy )
+		{
+			zzz = ExtraInputs & (1<<(g_eeGeneral.ele2source-1)) ; 
+			if ( yyy == 2 )
+			{
+				xxx = zzz ;
+			}
+			else
+			{
+				xxx |= zzz ;
+				xxx = !xxx ;
+			}
+		}
+	}
+	yyy -= 6 ;
+	if ( yyy <= 2 )	// 37-39
+	{
+		xxx = !readAilIp() ;
+		if ( yyy )
+		{
+			zzz = ExtraInputs & (1<<(g_eeGeneral.ail2source-1)) ;
+			if ( yyy == 2 )
+			{
+				xxx = zzz ;
+			}
+			else
+			{
+				xxx |= zzz ;
+				xxx = !xxx ;
+			}
+		}
+	}
+	if ( yyy == 6 )	// 43
+	{
+		xxx = ExtraInputs & (1<<(g_eeGeneral.pb1source-1)) ;
+	}
+	if ( yyy == 7 )	// 44
+	{
+		xxx = ExtraInputs & (1<<(g_eeGeneral.pb2source-1)) ;
+	}
+	
+  if ( xxx )
+  {
+    return 1 ;
+  }
+  return 0;
+	
+}
+
+// Returns 0, 1 or 2 (or 3,4,5) for ^ - or v (or 6pos)
+uint8_t switchPosition( uint8_t swtch )
+{
+	if ( hwKeyState( swtch ) )
+	{
+		return 0 ;
+	}
+	swtch += 1 ;
+	if ( hwKeyState( swtch ) )
+	{
+		return 1 ;			
+	}
+//	if ( swtch == HSW_Ele6pos1 )
+//	{
+//		swtch += 2 ;
+//		if ( hwKeyState( swtch ) )
+//		{
+//			return 3 ;
+//		}
+//		swtch += 1 ;
+//		if ( hwKeyState( swtch ) )
+//		{
+//			return 4 ;
+//		}
+//		swtch += 1 ;
+//		if ( hwKeyState( swtch ) )
+//		{
+//			return 5 ;
+//		}
+//	}
+	return 2 ;
+}
+
+
+
+
+#endif
+
 bool keyState(EnumKeys enuk)
 {
   uint8_t xxx = 0 ;
 	uint8_t ping = PING ;
+	uint8_t pine = PINE ;
   if(enuk < (int)DIM(keys))  return keys[enuk].state() ? 1 : 0;
 
   switch((uint8_t)enuk){
-    case SW_ElevDR : xxx = PINE & (1<<INP_E_ElevDR);
+    case SW_ElevDR : xxx = pine & (1<<INP_E_ElevDR);
     break ;
 
-#if defined(CPUM128) || defined(CPUM2561)
     case SW_AileDR :
-			if ( g_eeGeneral.FrskyPins )
-			{
-				xxx = PINC & (1<<INP_C_AileDR) ;
-			}
-			else
-			{
-				xxx = PINE & (1<<INP_E_AileDR) ;
-			}
-#else
-    //case SW_AileDR : return PINE & (1<<INP_E_AileDR);
- #if (!(defined(JETI) || defined(FRSKY) || defined(ARDUPILOT) || defined(NMEA)))
-    case SW_AileDR : xxx = PINE & (1<<INP_E_AileDR);
- #else
-    case SW_AileDR : xxx = PINC & (1<<INP_C_AileDR); //shad974: rerouted inputs to free up UART0
-			// Test bit 0 of PINC as well, temp fix for reacher10 broken pin on PINC bit 7
-//    								if ( ( PINC & 0x01 ) == 0 )
-//										{
-//											xxx = 0 ;											
-//										}
- #endif
-#endif
+			xxx = readAilIp() ;
     break ;
-
 
     case SW_RuddDR : xxx = ping & (1<<INP_G_RuddDR);
     break ;
@@ -233,9 +339,9 @@ bool keyState(EnumKeys enuk)
     break ;
     case SW_ID1    : xxx = (ping & (1<<INP_G_ID1)) ; if ( xxx ) xxx = (PINE & (1<<INP_E_ID2));
     break ;
-    case SW_ID2    : xxx = ~PINE & (1<<INP_E_ID2);
+    case SW_ID2    : xxx = ~pine & (1<<INP_E_ID2);
     break ;
-    case SW_Gear   : xxx = PINE & (1<<INP_E_Gear);
+    case SW_Gear   : xxx = pine & (1<<INP_E_Gear);
     break ;
     //case SW_ThrCt  : return PINE & (1<<INP_E_ThrCt);
 
@@ -247,18 +353,18 @@ bool keyState(EnumKeys enuk)
 			}
 			else
 			{
-				xxx = PINE & (1<<INP_E_ThrCt) ;
+				xxx = pine & (1<<INP_E_ThrCt) ;
 			}
 #else
  #if (!(defined(JETI) || defined(FRSKY) || defined(ARDUPILOT) || defined(NMEA)))
-     case SW_ThrCt  : xxx = PINE & (1<<INP_E_ThrCt);
+     case SW_ThrCt  : xxx = pine & (1<<INP_E_ThrCt);
  #else
     case SW_ThrCt  : xxx = PINC & (1<<INP_C_ThrCt); //shad974: rerouted inputs to free up UART0
  #endif
 #endif
 		break ;
 
-    case SW_Trainer: xxx = PINE & (1<<INP_E_Trainer);
+    case SW_Trainer: xxx = pine & (1<<INP_E_Trainer);
     break ;
     default:;
   }
@@ -362,7 +468,24 @@ void per10ms()
     1<<INP_D_TRM_RH_DWN,
     1<<INP_D_TRM_RH_UP
   };
-  in = ~PIND;
+  
+	if ( Backup_RestoreRunning )
+	{
+		in = 0 ;
+	}
+	else
+	{
+		in = ~PIND ;
+#ifdef SERIAL_VOICE
+#ifndef SERIAL_VOICE_ONLY
+		if ( g_eeGeneral.MegasoundSerial )
+#endif
+		{
+			in &= 0xF3 ;
+			in |= Voice.VoiceSerialValue & 0x0C ;
+		}
+#endif
+	}
 
 	for(int i=0; i<8; i++)
   {
@@ -379,6 +502,147 @@ void per10ms()
 	{
 		StickScrollTimer = STICK_SCROLL_TIMEOUT ;
 	}
+
+// Read all "extra" inputs to ExtraInputs
+// Bit0											 BIT6
+// EXT1 EXT2 PC0 PG2 PB7 PG5 L-WR
+	value = Voice.VoiceSerialValue & 0x41 ;
+	if ( value & 0x40 )
+	{
+		value |= 2 ;
+		value &= 3 ;
+	}
+	if ( ( PING & 4 ) == 0 )	// PG2
+	{
+		value |= 8 ;
+	}
+	if ( ( PING & 0x20 ) == 0 )	// PG5
+	{
+		value |= 0x20 ;
+	}
+	if ( ( PINC & 1 ) == 0 )	// PC0
+	{
+		value |= 4 ;
+	}
+	if ( ( PINC & 0x10 ) == 0 )	// PC4 (LCD_WR)
+	{
+		value |= 0x40 ;
+	}
+	if ( ( PINB & 0x80 ) == 0 )	// PB7
+	{
+		value |= 0x10 ;
+	}
+	ExtraInputs = value ;
 }
+
+
+#ifndef SIMU
+
+void serialVoiceInit()
+{
+#undef BAUD
+#define BAUD 38400
+#include <util/setbaud.h>
+
+//	DDRD |= 0x08 ;
+	PORTD |= 0x04 ;		// Pullup on RXD1
+
+  UBRR1H = UBRRH_VALUE;
+  UBRR1L = UBRRL_VALUE;
+  UCSR1A &= ~(1 << U2X1); // disable double speed operation.
+
+  // set 8 N1
+  UCSR1C = 0 | (1 << UCSZ11) | (1 << UCSZ10);
+  
+  while (UCSR1A & (1 << RXC1)) UDR1; // flush receive buffer
+  
+  UCSR1B = (1 << RXCIE1) | (0 << TXCIE1) | (0 << UDRIE1) | (1 << RXEN1) | (1 << TXEN1) | (0 << UCSZ12) ;
+//  UCSR1B |= (1 << TXEN1) | (1 << RXEN1) ; // enable TX & Rx
+//	UCSR1B |= (1 << RXCIE1); // enable Interrupt
+}
+
+void startSerialVoice()
+{
+	PausePulses = 1 ;
+	Backup_RestoreRunning = 1 ;
+
+#ifndef SERIAL_VOICE_ONLY
+	if ( g_eeGeneral.MegasoundSerial == 0 )
+#endif
+	{
+		serialVoiceInit() ;
+	}
+
+}
+
+void stopSerialVoice()
+{
+//	DDRD &= ~0x08 ;
+#ifdef SERIAL_VOICE
+#ifndef SERIAL_VOICE_ONLY
+	if ( g_eeGeneral.MegasoundSerial == 0 )
+#endif
+	{
+		UCSR1B = 0 ; // disable Interrupt, TX, RX
+	}
+#else	
+#ifndef SERIAL_VOICE
+	UCSR1B = 0 ; // disable Interrupt, TX, RX
+#endif
+#endif
+	
+	Backup_RestoreRunning = 0 ;
+	startPulses() ;
+}
+
+void serialVoiceTx( uint8_t byte )
+{
+	while ( ( UCSR1A & ( 1 << UDRE1 ) ) == 0 )
+		/*wait*/ ;
+	UDR1 = byte ;
+}
+
+struct t_fifo16
+{
+	uint8_t fifo[16] ;
+	uint8_t in ;
+	uint8_t out ;
+} SvFifo ;
+
+int16_t getSvFifo()
+{
+	struct t_fifo16 *pfifo = &SvFifo ;
+	FORCE_INDIRECT( pfifo ) ;
+
+	int16_t rxbyte ;
+	if ( pfifo->in != pfifo->out )				// Look for char available
+	{
+		rxbyte = pfifo->fifo[pfifo->out] ;
+		pfifo->out = ( pfifo->out + 1 ) & 0x0F ;
+		return rxbyte ;
+	}
+	return -1 ;
+}
+
+//uint16_t SerialVoiceDebug ;
+
+ISR(USART1_RX_vect)
+{
+	UCSR1B &= ~(1 << RXCIE1); // disable Interrupt
+	sei() ;
+//SerialVoiceDebug += 1 ;
+	struct t_fifo16 *pfifo = &SvFifo ;
+  uint8_t next = (pfifo->in + 1) & 0x0f ;
+	uint8_t data = UDR1 ;
+	if ( next != pfifo->out )
+	{
+		pfifo->fifo[pfifo->in] = data ;
+		pfifo->in = next ;
+	}
+	cli() ;
+  UCSR1B |= (1 << RXCIE1); // enable Interrupt
+}
+
+#endif
 
 

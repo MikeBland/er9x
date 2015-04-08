@@ -440,7 +440,7 @@ void setupPulsesDsm2(uint8_t chns)
 			}
     }
     if((dsmdat0copy&BindBit)&&(!keyState(SW_Trainer)))  dsmdat0copy&=~BindBit;		//clear bind bit if trainer not pulled
-    if ((!(dsmdat0copy&BindBit))&&getSwitch(MAX_DRSWITCH-1,0,0)) dsmdat0copy|=RangeCheckBit;   //range check function
+    if ((!(dsmdat0copy&BindBit))&&getSwitch00(MAX_DRSWITCH-1)) dsmdat0copy|=RangeCheckBit;   //range check function
     else dsmdat0copy&=~RangeCheckBit;
 
 		dsmDat[0] = dsmdat0copy ;		// Put byte back

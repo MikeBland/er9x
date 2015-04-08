@@ -55,7 +55,7 @@
 #define STR_TXEQ		       "\003Sn=Swr"
 #define STR_RXEQ		       "Em="
 #define STR_RX  		       "Em"
-#define STR_TRE012AG	     "TRE012AG"
+#define STR_TRE012AG	     "TRE012AGG"
 
 // STR_YELORGRED je genau 3 Zeichen lang
 #define STR_YELORGRED	     "\003---GelOrgRot"
@@ -112,7 +112,8 @@
 #define STR_T_ELEVON       "Delta\\Nurfluegler"
 #define STR_T_HELI_SETUP   "Heli Einst"
 #define STR_T_GYRO         "Gyro Einst"
-#define STR_T_SERVO_TEST   "Servo Test"
+#define STR_T_SERVO_TEST16 "Servo Test(16)"
+#define STR_T_SERVO_TEST8  "Servo Test(8)"
 
 // menus.cpp
 // ***********
@@ -159,7 +160,7 @@
 #define STR_GLOBAL_VARS    "GLOBALE VARS"
 #define STR_GV_SOURCE      "\003---StmHtmGtmQtmRENSeiHoeGasQueP1 P2 P3 " // xtm=Trim for channel "x" REN=Rotary Encoder  ... = Variablennamen
 #define STR_TEMPLATES      "VORLAGEN"
-#define STR_CHAN_ORDER     "\001Kanal Reihenfolge"
+#define STR_CHAN_ORDER     "Kanal Reihenfolge"
 #define STR_SP_RETA        " SHGQ" // Seitenleitwerk=Rud Höhenleitwerk=Ele Gas=Thr Querruder=Ail
 #define STR_CLEAR_MIXES    "LOESCHE MISCHER [MENU]"
 #define STR_SAFETY_SW      "SICHERHEITS SCH"
@@ -173,9 +174,6 @@
 #define STR_EDIT_MIX       "Bearb MISCHER " // Bearbeite Mischer
 #define STR_2SOURCE        "\001Quelle"
 #define STR_2WEIGHT        "\001Dual Rate"
-#ifdef FMODE_TRIM
-#define STR_FMTRIMVAL      "FmTrimVal"
-#endif
 #define STR_OFFSET         "Offset"
 #define STR_2FIX_OFFSET    "\001Fix Offset"
 #define STR_FLMODETRIM     "\001FlModustrim"
@@ -197,7 +195,7 @@
 #define STR_YES_NO_MENU_EXIT         "\003JA \013NEIN\037\003[MENU]\013[EXIT]"
 #define STR_MENU_EXIT      "\003[MENU]\013[EXIT]"
 #define STR_DELETE_MIX     "LOESCHE MISCHER?"
-#define STR_MIX_POPUP      "BEARBEI\0EINFUEG\0KOPIER\0BEWEGE\0LOESCH"
+#define STR_MIX_POPUP      "BEARBEI\0EINFUEG\0KOPIER\0BEWEGE\0LOESCH\0CLEAR ALL"
 #define STR_MIXER          "MISCHER"
 // CHR_S S for Slow / Langsam
 #define CHR_S              'L'
@@ -226,11 +224,11 @@
 //STR_COUNT_DOWN_UP indexed, 10 chars each
 #define STR_COUNT_DOWN_UP  "\012Zaehl runtZaehl hoch"
 #define STR_T_TRIM         "G-Trim"
-#define STR_T_EXPO         "G-Expo"
+#define STR_T_EXPO         "G-Expo-Dr"
 #define STR_TRIM_INC       "Trim Ink"
 // STR_TRIM_OPTIONS indexed 6 chars each
 #define STR_TRIM_OPTIONS   "\006Expon ExFeinFein  MittelGrob  "
-#define STR_TRIM_PAGE			 "Trim Sch\037Hi.Res Slow/Delay\037Piep Cen"
+#define STR_TRIM_PAGE			 STR_TRIM_INC"\037"STR_TRIM_SWITCH"\037Hi.Res Slow/Delay\037"STR_TRAINER"\037"STR_BEEP_CENTRE
 #define STR_TRIM_SWITCH    "Trim Sch"
 #define STR_BEEP_CENTRE    "Piep Cen" // Zentrum
 #define STR_RETA123        "SHGQ123"
@@ -248,7 +246,7 @@
 #define STR_PPM_1ST_CHAN   "1. Kanal"
 #define STR_SHIFT_SEL      "Signalart" // Signalart
 // STR_POS_NEG indexed 3 chars each
-#define STR_VOL_PAGE				"Volume Control\037E. Grenze\037Trainer\037G-Trim\037G-Expo\037Trim Ink"
+#define STR_VOL_PAGE				STR_E_LIMITS"\037""Thr. Default\037"STR_THR_REVERSE"\037""Throttle Open""\037"STR_T_TRIM"\037"STR_T_EXPO
 #define STR_POS_NEG        "\003POSNEG"
 #define STR_E_LIMITS       "E. Grenze" //Erweiterte Grenze
 #define STR_Trainer        "Trainer"
@@ -271,7 +269,7 @@
 #define STR_ELE_DIRECTION  "HOE Umkehr"
 #define STR_AIL_DIRECTION  "QUE Umkehr"
 #define STR_COL_DIRECTION  "KOL Umkehr" //Kollektiv
-#define STR_MODEL_POPUP    "EDIT\0BEARBEI\0SEL/EDIT\0KOPIER\0BEWEGE\0LOESCH"
+#define STR_MODEL_POPUP    "EDIT\0BEARBEI\0SEL/EDIT\0KOPIER\0BEWEGE\0LOESCH\0BACKUP\0RESTORE"
 #define STR_MODELSEL       "MODELWAHL"
 // STR_11_FREE after \011 max 4 chars
 #define STR_11_FREE        "\011frei"
@@ -334,7 +332,7 @@
 
 // SWITCHES_STR 3 chars each
 #if defined(CPUM128) || defined(CPUM2561)
-#define SWITCHES_STR       "\003GASSEIHOEID0ID1ID2QUEFWKTRNL1 L2 L3 L4 L5 L6 L7 L8 L9 LA LB LC LD LE LF LG LH LI "
+#define SWITCHES_STR       "\003GASSEIHOEID0ID1ID2QUEFWKTRNL1 L2 L3 L4 L5 L6 L7 L8 L9 LA LB LC LD LE LF LG LH LI EL\200EL-EL\201RU\200RU-RU\201AI\200AI-AI\201GE\200GE-GE\201PB1PB2"
 #else
 #define SWITCHES_STR       "\003GASSEIHOEID0ID1ID2QUEFWKTRNL1 L2 L3 L4 L5 L6 L7 L8 L9 LA LB LC "
 #endif

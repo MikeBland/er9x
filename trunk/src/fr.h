@@ -51,7 +51,7 @@
 #define STR_ALTEQ	         "Alt=" 
 #define STR_TXEQ		       "\003Tx=Swr"
 #define STR_RXEQ		       "Rx="
-#define STR_TRE012AG	     "TRE012AG"
+#define STR_TRE012AG	     "TRE012AGG"
 #define STR_YELORGRED	     "\003---YelOrgRed"
 #define STR_A_EQ		       "A ="
 #define STR_SOUNDS	       "\006Warn1 ""Warn2 ""Cheap ""Ring  ""SciFi ""Robot ""Chirp ""Tada  ""Crickt""Siren ""AlmClk""Ratata""Tick  ""Haptc1""Haptc2""Haptc3"
@@ -104,7 +104,8 @@
 #define STR_T_ELEVON       "Elevon\\Delta"
 #define STR_T_HELI_SETUP   "Heli Setup"
 #define STR_T_GYRO         "Gyro Setup"
-#define STR_T_SERVO_TEST   "Servo Test"
+#define STR_T_SERVO_TEST16 "Servo Test(16)"
+#define STR_T_SERVO_TEST8  "Servo Test(8)"
 
 // menus.cpp
 // ***********
@@ -151,7 +152,7 @@
 #define STR_GLOBAL_VARS    "GLOBAL VARS"
 #define STR_GV_SOURCE      "\003---RtmEtmTtmAtmRENRudEleThrAilP1 P2 P3 "
 #define STR_TEMPLATES      "TEMPLATES"
-#define STR_CHAN_ORDER     "\001Channel Order"
+#define STR_CHAN_ORDER     "Channel Order"
 #define STR_SP_RETA        " RETA"
 #define STR_CLEAR_MIXES    "CLEAR MIXES [MENU]"
 #define STR_SAFETY_SW      "Safety Switches"
@@ -165,9 +166,6 @@
 #define STR_EDIT_MIX       "EDIT MIX "
 #define STR_2SOURCE        "\001Source"
 #define STR_2WEIGHT        "\001Weight"
-#ifdef FMODE_TRIM
-#define STR_FMTRIMVAL      "FmTrimVal"
-#endif
 #define STR_OFFSET         "Offset"
 #define STR_2FIX_OFFSET    "\001Fix Offset"
 #define STR_FLMODETRIM     "\001FlModetrim"
@@ -189,7 +187,7 @@
 #define STR_YES_NO_MENU_EXIT         "\003YES\013NO\037\003[MENU]\013[EXIT]"
 #define STR_MENU_EXIT      "\003[MENU]\013[EXIT]"
 #define STR_DELETE_MIX     "DELETE MIX?"
-#define STR_MIX_POPUP      "EDIT\0INSERT\0COPY\0MOVE\0DELETE"
+#define STR_MIX_POPUP      "EDIT\0INSERT\0COPY\0MOVE\0DELETE\0CLEAR ALL"
 #define STR_MIXER          "MIXER"
 // CHR_S S for Slow
 #define CHR_S              'S'
@@ -218,11 +216,11 @@
 //STR_COUNT_DOWN_UP indexed, 10 chars each
 #define STR_COUNT_DOWN_UP  "\012Count DownCount Up  "
 #define STR_T_TRIM         "T-Trim"
-#define STR_T_EXPO         "T-Expo"
+#define STR_T_EXPO         "T-Expo-Dr"
 #define STR_TRIM_INC       "Trim Inc"
 // STR_TRIM_OPTIONS indexed 6 chars each
 #define STR_TRIM_OPTIONS   "\006Exp   ExFineFine  MediumCoarse"
-#define STR_TRIM_PAGE			 "Trim Sw\037Hi.Res Slow/Delay\037Beep Cnt"
+#define STR_TRIM_PAGE			 STR_TRIM_INC"\037"STR_TRIM_SWITCH"\037Hi.Res Slow/Delay\037"STR_TRAINER"\037"STR_BEEP_CENTRE
 #define STR_TRIM_SWITCH    "Trim Sw"
 #define STR_BEEP_CENTRE    "Beep Cnt"
 #define STR_RETA123        "RETA123"
@@ -241,7 +239,7 @@
 #define STR_SHIFT_SEL      "Shift Sel"
 // STR_POS_NEG indexed 3 chars each
 #define STR_POS_NEG        "\003POSNEG"
-#define STR_VOL_PAGE				"Volume Control\037E. Limits\037Trainer\037T-Trim\037T-Expo\037Trim Inc"
+#define STR_VOL_PAGE				STR_E_LIMITS"\037""Thr. Default\037"STR_THR_REVERSE"\037""Throttle Open""\037"STR_T_TRIM"\037"STR_T_EXPO
 #define STR_E_LIMITS       "E. Limits"
 #define STR_Trainer        "Trainer"
 #define STR_T2THTRIG       "T2ThTrig"
@@ -326,7 +324,7 @@
 
 // SWITCHES_STR 3 chars each
 #if defined(CPUM128) || defined(CPUM2561)
-#define SWITCHES_STR       "\003THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN""L1 ""L2 ""L3 ""L4 ""L5 ""L6 ""L7 ""L8 ""L9 ""LA ""LB ""LC LD LE LF LG LH LI "
+#define SWITCHES_STR       "\003THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN""L1 ""L2 ""L3 ""L4 ""L5 ""L6 ""L7 ""L8 ""L9 ""LA ""LB ""LC LD LE LF LG LH LI EL\200EL-EL\201RU\200RU-RU\201AI\200AI-AI\201GE\200GE-GE\201PB1PB2"
 #else
 #define SWITCHES_STR       "\003THR""RUD""ELE""ID0""ID1""ID2""AIL""GEA""TRN""L1 ""L2 ""L3 ""L4 ""L5 ""L6 ""L7 ""L8 ""L9 ""LA ""LB ""LC "
 #endif

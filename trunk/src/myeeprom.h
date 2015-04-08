@@ -134,9 +134,21 @@ PACK(typedef struct t_EEGeneral {
     uint8_t   serialLCD:1 ;
     uint8_t   SSD1306:1 ;
     uint8_t   TEZr90:1 ;
-    uint8_t   spare1:2 ;
+    uint8_t   MegasoundSerial:1 ;
+    uint8_t   spare1:1 ;
 		uint8_t		stickReverse ;
 		uint8_t		customStickNames[16] ;
+    uint8_t   switchMapping ;
+		uint8_t	ele2source:4 ;
+		uint8_t	ail2source:4 ;
+		uint8_t	rud2source:4 ;
+		uint8_t	gea2source:4 ;
+		uint8_t pb1source:4 ;
+		uint8_t pb2source:4 ;
+    uint8_t pg2Input:1 ;
+    uint8_t pb7Input:1 ;
+    uint8_t lcd_wrInput:1 ;
+    uint8_t  spare5:5 ;
 }) EEGeneral;
 
 
@@ -178,11 +190,7 @@ PACK(typedef struct t_MixData {
     uint8_t mltpx:2;           // multiplex method 0=+ 1=* 2=replace
     uint8_t lateOffset:1;      // Add offset later
     uint8_t mixWarn:2;         // mixer warning
-#ifdef FMODE_TRIM
-    uint8_t enableFmTrim:1;
-#else
     uint8_t disableExpoDr:1;
-#endif
     uint8_t differential:1;
     int8_t  sOffset;
 		uint8_t modeControl:5 ;
@@ -335,6 +343,14 @@ PACK(typedef struct t_voiceAlarm
 //	} file ;
 }) VoiceAlarmData ;
 
+typedef struct t_gvarAdjust
+{
+	uint8_t function:4 ;
+	uint8_t gvarIndex:4 ;
+	int8_t swtch ;
+	int8_t switch_value ;
+} GvarAdjust ;
+
 typedef struct t_TimerMode
 {
   uint16_t  tmrVal ;
@@ -408,11 +424,11 @@ PACK(typedef struct t_ModelData {
 		PhaseData phaseData[MAX_MODES] ;
 		VarioData varioData ;
 		uint8_t modelVersion ;
-		int8_t pxxFailsafe[16] ;
+		int8_t pxxFailsafe[16] ;	// Currently unused
 		SafetySwData xvoiceSw[EXTRA_VOICE_SW] ;
     CxSwData xcustomSw[EXTRA_CSW];
 	uint8_t   currentSource ;
-	uint8_t   altSource ;
+	uint8_t   altSource ;		// Currently unused
 	uint8_t phaseNames[MAX_MODES][6] ;
 	ScaleData Scalers[NUM_SCALERS] ;
 	int8_t timer1RstSw ;
@@ -422,11 +438,13 @@ PACK(typedef struct t_ModelData {
 	uint8_t timer1Mbeep:1 ;
 	uint8_t timer2Mbeep:1 ;
 	uint8_t useCustomStickNames:1 ;
-	uint8_t throttleIdle:2 ;
+	uint8_t throttleIdle:1 ;
+  uint8_t throttleReversed:1;
   uint8_t   tmr2Dir:1;    //0=>Count Down, 1=>Count Up
 //	uint8_t tspare:1 ;
 	int8_t gvswitch[MAX_GVARS] ;
 	VoiceAlarmData vad[NUM_VOICE_ALARMS] ;
+  uint8_t  exSwitchWarningStates ;
 
 
 //		uint8_t   altSource ;
