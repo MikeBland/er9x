@@ -23,6 +23,6 @@ void startPulses( void ) ;
 void setupPulsesPPM( uint8_t proto ) ;
 //void setupPulsesPXX();
 
-void setupPulsesDsm2(uint8_t chns);
+void setupPulsesSerial( void ) ;
 
 #endif // PULSES_H

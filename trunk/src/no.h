@@ -162,6 +162,7 @@
 #define STR_SP_RETA        " RETA"
 #define STR_CLEAR_MIXES    "Fjern Mixer [MENU]"
 #define STR_SAFETY_SW      "SIKKERHETS BRYTERE"
+#define STR_SAFETY_SW2     "Safety Sws"
 #define STR_NUM_VOICE_SW   "Tall stemme SW"
 #define STR_V_OPT1         "\007 8 Secs12 Secs16 Secs"
 #define STR_VS             "VS"
@@ -240,9 +241,13 @@
 #define STR_PPMFRAME_MSEC  "PPM FrLen\015mSec"
 #define STR_SEND_RX_NUM    "Bind  Range"
 #define STR_DSM_TYPE       "DSM Type"
+#ifdef MULTI_PROTOCOL
+#define STR_MULTI_TYPE     "Protocol\037\037Bind\037Range"
+#define STR_14_OPTION       "\014Option"
+#endif // MULTI_PROTOCOL
 #define STR_1ST_CHAN_PROTO "1st Kanal\037Proto"
 #define STR_PPM_1ST_CHAN   "1st Kanal"
-#define STR_SHIFT_SEL      "Shift Sel"
+#define STR_SHIFT_SEL      "Polarity"
 // STR_POS_NEG indexed 3 chars each
 #define STR_POS_NEG        "\003POSNEG"
 #define STR_VOL_PAGE				STR_E_LIMITS"\037""Thr. Default\037"STR_THR_REVERSE"\037""Throttle Open""\037"STR_T_TRIM"\037"STR_T_EXPO
@@ -339,14 +344,22 @@
 #define CURV_STR           "\003---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
 // CSWITCH_STR indexed 7 chars each
 #ifdef VERSION3
-#define CSWITCH_STR        "\007----   v>val  v<val  |v|>val|v|<valAND    OR     XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""Latch  ""F-Flop TimeOffv1\140=val"
+#if defined(CPUM128) || defined(CPUM2561)
+#define CSWITCH_STR        "\007----   v>val  v<val  |v|>val|v|<valAND    OR     XOR    v1==v2 v1!=v2 v1>v2  v1<v2  Latch  F-Flop TimeOffv\140=val 1-Shot 1-ShotR"
+#else
+#define CSWITCH_STR        "\007----   v>val  v<val  |v|>val|v|<valAND    OR     XOR    v1==v2 v1!=v2 v1>v2  v1<v2  Latch  F-Flop TimeOffv\140=val "
+#endif
 #else
 #define CSWITCH_STR        "\007----   v>val  v<val  |v|>val|v|<valAND    OR     XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""v1>=v2 ""v1<=v2 TimeOffv1\140=val"
 #endif
 
 #define SWASH_TYPE_STR     "\004----""120 ""120X""140 ""90  "
 
+#if defined(CPUM128) || defined(CPUM2561)
+#define STR_STICK_NAMES    "Rud \0Ele \0Thr \0Ail "
+#else
 #define STR_STICK_NAMES    "Rud Ele Thr Ail "
+#endif
 
 #define STR_STAT           "STAT"
 #define STR_STAT2          "STAT2"
@@ -403,6 +416,18 @@
 #define STR_STICK_RH_GAIN  "Stick RH Gain"
 
 #define STR_DISPLAY					"Display"
+#define STR_HARDWARE				"Hardware" ;
+#define STR_ALARMS					"Alarms" ;
+#define STR_CONTROLS				"Controls" ;
+#define STR_AUDIOHAPTIC			"AudioHaptic" ;
+#define STR_DIAGSWTCH				"DiagSwtch" ;
+#define STR_DIAGANA					"DiagAna" ;
+
+#define STR_PROTOCOL				"Protocol"
+#define STR_MIXER2  	   		"Mixer"
+#define STR_CSWITCHES 	   	"L.Switches"
+#define STR_VOICE   	   		"Voice"
+#define STR_VOICEALA   	   	"Voice Alarms"
 
 #define STR_MAIN_POPUP			"Model Select\0Model Setup\0Last Menu\0Radio Setup\0Statistics"
 #define MODEL_SETUP_OFFSET	13

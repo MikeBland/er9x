@@ -122,6 +122,16 @@ echo ">>>  moving"
 mv er9x.hex ../er9x-frsky-de.hex
 
 echo
+echo "===== Making FRSKY FR Version ====="
+echo ">>> cleaning"
+make clean
+echo ">>>  making"
+make EXT=FRSKY TEMPLATES=NO PHASES=YES LANG=FR
+echo ">>>  moving"
+mv er9x.hex ../er9x-frsky-fr.hex
+
+
+echo
 echo "===== Making MAIN DE Version ====="
 echo ">>> cleaning"
 make clean

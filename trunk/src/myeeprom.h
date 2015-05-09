@@ -378,7 +378,11 @@ PACK(typedef struct t_ModelData {
     uint16_t  tmrVal;
     uint8_t   protocol:4 ;
     uint8_t   country:2 ;
-    uint8_t   sub_protocol:2 ;
+#ifdef MULTI_PROTOCOL
+    uint8_t   xsub_protocol:2 ;		// sub_protocol is the extended version
+#else
+    uint8_t   sub_protocol:2 ;		// sub_protocol
+#endif // MULTI_PROTOCOL
     int8_t    ppmNCH;
     uint8_t   thrTrim:1;            // Enable Throttle Trim
 		uint8_t   xnumBlades:2;					// RPM scaling
@@ -424,7 +428,13 @@ PACK(typedef struct t_ModelData {
 		PhaseData phaseData[MAX_MODES] ;
 		VarioData varioData ;
 		uint8_t modelVersion ;
+#ifdef MULTI_PROTOCOL
+		int8_t sub_protocol;		// Extending sub_protocol values for MULTI protocol
+		int8_t option_protocol;		// Option byte for MULTI protocol
+		int8_t pxxFailsafe[14];		// Currently unused
+#else
 		int8_t pxxFailsafe[16] ;	// Currently unused
+#endif // MULTI_PROTOCOL
 		SafetySwData xvoiceSw[EXTRA_VOICE_SW] ;
     CxSwData xcustomSw[EXTRA_CSW];
 	uint8_t   currentSource ;

@@ -127,6 +127,7 @@ static uint8_t *dispBufAddress( uint8_t x, uint8_t y )
 // invers: 0 no 1=yes 2=blink
 uint8_t lcd_putcAtt(uint8_t x,uint8_t y,const char d,uint8_t mode)
 {
+	uint8_t i ;
 	uint8_t c = d ;
 	uint8_t *p = dispBufAddress( x, y ) ;
 
@@ -228,18 +229,40 @@ uint8_t lcd_putcAtt(uint8_t x,uint8_t y,const char d,uint8_t mode)
 			condense=1;
 			x += FWNUM-FW ;
 		}
-
-        for(char i=5; i!=0; i--){
-            uint8_t b = pgm_read_byte(q++);
-    	    if (condense && i==4) {
-                /*condense the letter by skipping column 4 */
-                continue;
-            }
-            if(p<DISPLAY_END) {*p = inv ? ~b : b; p += 1 ; }
+		
+#if defined(CPUM128) || defined(CPUM2561)
+		y &= 7 ;
+		if ( y )
+		{ // off grid
+    	for( i=5 ; i!=0 ; i-- )
+			{
+        uint16_t b = pgm_read_byte(q++);
+				b <<= y ;
+      	if(p<DISPLAY_END) *p ^= b ;
+      	if(&p[DISPLAY_W] < DISPLAY_END)
+				{
+	        p[DISPLAY_W] ^= b >> 8 ;
+				}
+				p += 1 ;
+			}
+		}
+		else
+#endif
+		{
+			for( i=5; i!=0; i--)
+			{
+        uint8_t b = pgm_read_byte(q++);
+  	    if (condense && i==4)
+				{
+        	/*condense the letter by skipping column 4 */
+           continue;
         }
-        if(p<DISPLAY_END) *p++ = inv ? ~0 : 0;
-    }
-		return x ;
+        if(p<DISPLAY_END)	*p = inv ? ~b : b; p += 1 ;
+  	  }
+    	if(p<DISPLAY_END) *p++ = inv ? ~0 : 0;
+		}
+	}
+	return x ;
 }
 
 // Puts sub-string from string options
@@ -547,10 +570,28 @@ void lcd_char_inverse( uint8_t x, uint8_t y, uint8_t w, uint8_t blink )
 //	uint8_t *p  = &DisplayBuf[ y / 8 * DISPLAY_W + x ];
 //#endif
 
-	while ( x < end )
+#if defined(CPUM128) || defined(CPUM2561)
+	y &= 7 ;
+	if ( y )
+	{ // off grid
+		while ( x < end )
+		{
+     	uint16_t b = 0xFF ;
+			b <<= y ;
+			if(p<DISPLAY_END) *p ^= b ;
+	    if(&p[DISPLAY_W] < DISPLAY_END) p[DISPLAY_W] ^= b >> 8 ;
+			p += 1 ;
+			x += 1 ;
+		}
+	}
+	else
+#endif
 	{
-		*p++ ^= 0xFF ;
-		x += 1 ;
+		while ( x < end )
+		{
+			*p++ ^= 0xFF ;
+			x += 1 ;
+		}
 	}
 }
 

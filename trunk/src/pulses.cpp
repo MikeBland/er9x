@@ -4,19 +4,19 @@
 
 extern struct t_latency g_latency ;
 
-#define PULSES_WORD_SIZE	72
+#define PULSES_WORD_SIZE	72		// 72=((2+2*6)*10)/2+2
 #define PULSES_BYTE_SIZE	(PULSES_WORD_SIZE * 2)
 
 union p2mhz_t 
 {
-    uint16_t pword[PULSES_WORD_SIZE] ;   //72
-    uint8_t pbyte[PULSES_BYTE_SIZE] ;   //144
+    uint16_t pword[PULSES_WORD_SIZE] ;   // 72
+    uint8_t pbyte[PULSES_BYTE_SIZE] ;   // 144
 } pulses2MHz ;
 
 uint8_t *pulses2MHzptr = pulses2MHz.pbyte ;
 uint8_t heartbeat;
 uint8_t Current_protocol;
-uint8_t pxxFlag = 0;
+uint8_t pxxFlag = 0;					// also used for MULTI_PROTOCOL for bind flag
 uint8_t PausePulses = 0 ;
 
 #define CTRL_END 0
@@ -28,7 +28,7 @@ uint8_t PausePulses = 0 ;
 #define RangeCheckBit 0x20
 #define FranceBit 0x10
 #define DsmxBit  0x08
-#define BadData 0x47
+#define BadData 0x40
 
 
 void set_timer3_capture( void ) ;
@@ -36,7 +36,7 @@ void set_timer3_ppm( void ) ;
 //void setupPulsesPPM16( uint8_t proto ) ;
 void setupPulsesPPM( uint8_t proto ) ;
 static void setupPulsesPXX( void ) ;
-static void sendByteDsm2(uint8_t b) ;
+static void sendByteSerial(uint8_t b) ;
 
 //uint16_t PulseTotal ;
 
@@ -210,6 +210,9 @@ void setupPulses()
             TCCR1A  = 0;
             TCCR1B  = (2<<CS10);      //ICNC3 16MHz / 8
             break;
+#ifdef MULTI_PROTOCOL
+        case PROTO_MULTI:
+#endif // MULTI_PROTOCOL
         case PROTO_DSM2:
             set_timer3_capture() ;
             OCR1C = 200 ;			// 100 uS
@@ -265,9 +268,12 @@ void setupPulses()
         sei() ;							// Interrupts allowed here
         setupPulsesPXX();
         break;
+#ifdef MULTI_PROTOCOL
+    case PROTO_MULTI:
+#endif // MULTI_PROTOCOL
     case PROTO_DSM2:
         sei() ;							// Interrupts allowed here
-        setupPulsesDsm2(6); 
+        setupPulsesSerial(); 
         break;
     case PROTO_PPM16 :
         setupPulsesPPM( PROTO_PPM );		// Don't enable interrupts through here
@@ -349,139 +355,14 @@ void setupPulsesPPM( uint8_t proto )
 }
 
 
-// DSM2 protocol pulled from th9x - Thanks thus!!!
-
-//http://www.rclineforum.de/forum/board49-zubeh-r-elektronik-usw/fernsteuerungen-sender-und-emp/neuer-9-kanal-sender-f-r-70-au/Beitrag_3897736#post3897736
-//(dsm2( LP4DSM aus den RTF ( Ready To Fly ) Sendern von Spektrum.
-//http://www.rcgroups.com/forums/showpost.php?p=18554028&postcount=237
-// /home/thus/txt/flieger/PPMtoDSM.c
-/*
-  125000 Baud 8n1      _ xxxx xxxx - ---
-#define DSM2_CHANNELS      6                // Max number of DSM2 Channels transmitted
-#define DSM2_BIT (8*2)
-bind:
-  DSM2_Header = 0x80,0
-static byte DSM2_Channel[DSM2_CHANNELS*2] = {
-                ch
-  0x00,0xAA,     0 0aa
-  0x05,0xFF,     1 1ff
-  0x09,0xFF,     2 1ff
-  0x0D,0xFF,     3 1ff
-  0x13,0x54,     4 354
-  0x14,0xAA      5 0aa
-};
-
-normal:
-  DSM2_Header = 0,0;
-  DSM2_Channel[i*2]   = (byte)(i<<2) | highByte(pulse);
-  DSM2_Channel[i*2+1] = lowByte(pulse);
-
-
- */
-
-//static inline void _send_1(uint16_t v)
-//{
-//	uint8_t *ptr ;
-//	ptr = pulses2MHzptr ;
-//	*ptr++ = v ;
-//  pulses2MHzptr = ptr ;
-//}
-
-#define BITLEN_DSM2 (8*2) //125000 Baud
-static void sendByteDsm2(uint8_t b) //max 10changes 0 10 10 10 10 1
-{
-    bool    lev = 0;
-    uint8_t len = BITLEN_DSM2; //max val: 9*16 < 256
-		uint8_t *ptr ;
-
-		ptr = pulses2MHzptr ;
-    for( uint8_t i=0; i<=8; i++){ //8Bits + Stop=1
-        bool nlev = b & 1; //lsb first
-        if(lev == nlev){
-            len += BITLEN_DSM2;
-        }else{
-						*ptr++ = len -1 ;
-            len  = BITLEN_DSM2;
-            lev  = nlev;
-        }
-        b = (b>>1) | 0x80; //shift in stop bit
-    }
-    *ptr++ = len+BITLEN_DSM2-1 ; // 2 stop bits
-	  pulses2MHzptr = ptr ;
-}
-
-
-static uint8_t *Dsm2_pulsePtr = pulses2MHz.pbyte ;
-void setupPulsesDsm2(uint8_t chns)
-{
-    static uint8_t dsmDat[2+6*2]={0xFF,0x00,  0x00,0xAA,  0x05,0xFF,  0x09,0xFF,  0x0D,0xFF,  0x13,0x54,  0x14,0xAA};
-    uint8_t counter ;
-    uint8_t dsmdat0copy ;
-    //	CSwData &cs = g_model.customSw[NUM_CSW-1];
-
-    pulses2MHzptr = pulses2MHz.pbyte ;
-    
-    // If more channels needed make sure the pulses union/array is large enough
-
-		dsmdat0copy = dsmDat[0] ;		// Fetch byte once, saves flash
-    if (dsmdat0copy&BadData)  //first time through, setup header
-    {
-			if ( g_model.sub_protocol == LPXDSM2 )
-			{
-        dsmdat0copy= 0x80;
-			}
-			else if ( g_model.sub_protocol == DSM2only )
-			{
-        dsmdat0copy= 0x90;
-			}
-			else
-			{
-        dsmdat0copy=0x98;  //dsmx, bind mode
-			}
-    }
-    if((dsmdat0copy&BindBit)&&(!keyState(SW_Trainer)))  dsmdat0copy&=~BindBit;		//clear bind bit if trainer not pulled
-    if ((!(dsmdat0copy&BindBit))&&getSwitch00(MAX_DRSWITCH-1)) dsmdat0copy|=RangeCheckBit;   //range check function
-    else dsmdat0copy&=~RangeCheckBit;
-
-		dsmDat[0] = dsmdat0copy ;		// Put byte back
-
-//    dsmDat[1]=g_eeGeneral.currModel+1;  //DSM2 Header second byte for model match
-    dsmDat[1] = g_model.ppmNCH ;  //DSM2 Header second byte for model match
-//    uint8_t *p = &dsmDat[2] ;
-//		FORCE_INDIRECT(p) ;
-		for(uint8_t i=0; i<chns; i++)
-    {
-		    uint16_t pulse = limit(0, ((g_chans512[i]*13)>>5)+512,1023);
-        dsmDat[2+2*i] = (i<<2) | ((pulse>>8)&0x03);
-        dsmDat[3+2*i] = pulse & 0xff;
-//        *p++ = (i<<2) | ((pulse>>8)&0x03);
-//        *p++ = pulse & 0xff;
-    }
-
-    for ( counter = 0 ; counter < 14 ; counter += 1 )
-    {
-    	sendByteDsm2(dsmDat[counter]);
-    }
-		uint8_t *ptr ;
-
-		ptr = pulses2MHzptr ;
-
-//    pulses2MHzptr-=1 ; //remove last stopbits and
-//    _send_1( 255 ) ;	 //prolong them
-		*ptr = 0 ;
-		*(ptr-1) = 255 ;
-//    _send_1(0);        //end of pulse stream
-    Dsm2_pulsePtr = pulses2MHz.pbyte ;
-}
-
-
+static uint8_t *Serial_pulsePtr = pulses2MHz.pbyte ;
 ISR(TIMER1_CAPT_vect) //2MHz pulse generation
 {
     //      static uint8_t  pulsePol;
     uint8_t x ;
     PORTB ^=  (1<<OUT_B_PPM);
-    x = *Dsm2_pulsePtr;      // Byte size
-    Dsm2_pulsePtr += 1 ;
+    x = *Serial_pulsePtr;      // Byte size
+    Serial_pulsePtr += 1 ;
     ICR1 = x ;
     if ( x > 200 )
     {
@@ -491,10 +372,14 @@ ISR(TIMER1_CAPT_vect) //2MHz pulse generation
 }
 
 
-ISR(TIMER1_COMPC_vect) // DSM2 or PXX end of frame
+ISR(TIMER1_COMPC_vect) // DSM2&MULTI or PXX end of frame
 {
 
-    if ( g_model.protocol == PROTO_DSM2 )
+#ifdef MULTI_PROTOCOL
+    if ( (g_model.protocol == PROTO_DSM2) || (g_model.protocol == PROTO_MULTI) )
+#else
+    if (g_model.protocol == PROTO_DSM2)
+#endif // MULTI_PROTOCOL
     {
       // DSM2
       ICR1 = 41536 ; //next frame starts in 22 msec 41536 = 2*(22000 - 14*11*8)
@@ -897,6 +782,200 @@ static void setupPulsesPXX()
 		pass = lpass ;
 //		PxxTime = TCNT1 - PxxStart ;
 	asm("") ;
+}
+
+
+// DSM2 protocol pulled from th9x - Thanks thus!!!
+
+//http://www.rclineforum.de/forum/board49-zubeh-r-elektronik-usw/fernsteuerungen-sender-und-emp/neuer-9-kanal-sender-f-r-70-au/Beitrag_3897736#post3897736
+//(dsm2( LP4DSM aus den RTF ( Ready To Fly ) Sendern von Spektrum.
+//http://www.rcgroups.com/forums/showpost.php?p=18554028&postcount=237
+// /home/thus/txt/flieger/PPMtoDSM.c
+/*
+  125000 Baud 8n1      _ xxxx xxxx - ---
+#define DSM2_CHANNELS      6                // Max number of DSM2 Channels transmitted
+#define DSM2_BIT (8*2)
+bind:
+  DSM2_Header = 0x80,0
+static byte DSM2_Channel[DSM2_CHANNELS*2] = {
+                ch
+  0x00,0xAA,     0 0aa
+  0x05,0xFF,     1 1ff
+  0x09,0xFF,     2 1ff
+  0x0D,0xFF,     3 1ff
+  0x13,0x54,     4 354
+  0x14,0xAA      5 0aa
+};
+
+normal:
+  DSM2_Header = 0,0;
+  DSM2_Channel[i*2]   = (byte)(i<<2) | highByte(pulse);
+  DSM2_Channel[i*2+1] = lowByte(pulse);
+
+
+ */
+
+//static inline void _send_1(uint16_t v)
+//{
+//	uint8_t *ptr ;
+//	ptr = pulses2MHzptr ;
+//	*ptr++ = v ;
+//  pulses2MHzptr = ptr ;
+//}
+
+// MULTI protocol definition
+/*
+  Serial: 125000 Baud 8n1      _ xxxx xxxx - ---
+  Channels: Nbr=8, 10bits=0..1023
+  Stream[0]   = sub_protocol|BindBit|RangeCheckBit;
+   sub_protocol=>	Reserved	0
+					Flysky		1
+					Hubsan		2
+					Frsky		3
+					Hisky		4
+					V2x2		5
+					DSM2		6
+					Devo		7
+					Skwlkr		8
+					KN			9
+					SymaX		10
+					SymaX4		11
+					SymaX5C		12
+   BindBit=>		0x80
+   RangeCheckBit=>  0x20
+  Stream[1]   = RxNum;
+   RxNum value is 0-124
+  Stream[2]   = option_protocol;
+   option_protocol value is 0-255
+  Stream[i+3] = lowByte(channel[i])		// with i[0..7]
+  Stream[11]  = highByte(channel[0])<<6 | highByte(channel[1])<<4 | highByte(channel[2])<<2 | highByte(channel[3])
+  Stream[12]  = highByte(channel[4])<<6 | highByte(channel[5])<<4 | highByte(channel[6])<<2 | highByte(channel[7])
+  Stream[13]  = lowByte(CRC16(Stream[0..12])
+*/
+#define BITLEN_SERIAL (8*2) //125000 Baud
+static void sendByteSerial(uint8_t b) //max 10changes 0 10 10 10 10 1
+{
+    bool    lev = 0;
+    uint8_t len = BITLEN_SERIAL; //max val: 9*16 < 256
+		uint8_t *ptr ;
+
+		ptr = pulses2MHzptr ;
+    for( uint8_t i=0; i<=8; i++){ //8Bits + Stop=1
+        bool nlev = b & 1; //lsb first
+        if(lev == nlev){
+            len += BITLEN_SERIAL;
+        }else{
+						*ptr++ = len -1 ;
+            len  = BITLEN_SERIAL;
+            lev  = nlev;
+        }
+        b = (b>>1) | 0x80; //shift in stop bit
+    }
+    *ptr++ = len+BITLEN_SERIAL-1 ; // 2 stop bits
+	  pulses2MHzptr = ptr ;
+}
+
+
+//static uint8_t *Dsm2_pulsePtr = pulses2MHz.pbyte ;
+uint8_t serialDat[2+6*2] ;//={0xFF,0x00,  0x00,0x00,  0x00,0x00,  0x00,0x00,  0x00,0x00,  0x00,0x00,  0x00,0x00};
+
+void setupPulsesSerial(void)
+{
+    uint8_t counter ;
+    uint8_t serialdat0copy;
+	//	CSwData &cs = g_model.customSw[NUM_CSW-1];
+
+    pulses2MHzptr = pulses2MHz.pbyte ;
+    
+    // If more channels needed make sure the pulses union/array is large enough
+
+	serialdat0copy = serialDat[0] ;		// Fetch byte once, saves flash
+#ifdef MULTI_PROTOCOL
+	if(g_model.protocol == PROTO_DSM2)
+	{
+#endif // MULTI_PROTOCOL
+    if (serialdat0copy&BadData)  //first time through, setup header
+    {
+			if ( g_model.sub_protocol == LPXDSM2 )
+			{
+				serialdat0copy= 0x80;
+			}
+			else if ( g_model.sub_protocol == DSM2only )
+			{
+				serialdat0copy= 0x90;
+			}
+			else
+			{
+				serialdat0copy=0x98;  //dsmx, bind mode
+			}
+    }
+    if((serialdat0copy&BindBit)&&(!keyState(SW_Trainer)))  serialdat0copy&=~BindBit;		//clear bind bit if trainer not pulled
+    if ((!(serialdat0copy&BindBit))&&getSwitch00(MAX_DRSWITCH-1)) serialdat0copy|=RangeCheckBit;	//range check function
+    else serialdat0copy&=~RangeCheckBit;
+#ifdef MULTI_PROTOCOL
+	}
+	else
+	{
+		serialdat0copy= g_model.sub_protocol+1;
+		if (pxxFlag & PXX_BIND)	serialdat0copy|=BindBit;		//set bind bit if bind menu is pressed
+		if (pxxFlag & PXX_RANGE_CHECK)	serialdat0copy|=RangeCheckBit;		//set bind bit if bind menu is pressed
+	}
+#endif // MULTI_PROTOCOL
+	
+	serialDat[0] = serialdat0copy ;		// Put byte back
+
+//    dsmDat[1]=g_eeGeneral.currModel+1;  //DSM2 Header second byte for model match
+    serialDat[1] = g_model.ppmNCH ;  //DSM2&MULTI Header second byte for model match
+//    uint8_t *p = &dsmDat[2] ;
+//		FORCE_INDIRECT(p) ;
+#ifdef MULTI_PROTOCOL
+	if(g_model.protocol == PROTO_MULTI)
+	{
+		PcmControl.PcmCrc=0;
+		crc(serialdat0copy);
+		crc(g_model.ppmNCH);
+		serialDat[2] = g_model.option_protocol ;  //MULTI Header third byte for protocol option
+		crc(g_model.option_protocol);
+		uint16_t serialH = 0;
+		for(uint8_t i=0; i<8; i++)
+		{
+			uint16_t pulse = limit(0, ((g_chans512[i]*13)>>5)+512,1023);
+			serialDat[3+i] = pulse & 0xff;
+			crc(pulse & 0xff);
+			serialH<<=2;
+			serialH|=((pulse>>8)&0x03);
+		}
+		serialDat[11]=(serialH>>8)&0xff;
+		crc((serialH>>8)&0xff);
+		serialDat[12]=serialH&0xff;
+		crc(serialH&0xff);
+		serialDat[13]=PcmControl.PcmCrc&0xff;
+	}
+	else
+#endif // MULTI_PROTOCOL
+	for(uint8_t i=0; i<6; i++)
+    {
+		uint16_t pulse = limit(0, ((g_chans512[i]*13)>>5)+512,1023);
+        serialDat[2+2*i] = (i<<2) | ((pulse>>8)&0x03);
+        serialDat[3+2*i] = pulse & 0xff;
+//        *p++ = (i<<2) | ((pulse>>8)&0x03);
+//        *p++ = pulse & 0xff;
+    }
+
+    for ( counter = 0 ; counter < 2*6+2 ; counter += 1 )
+    {
+    	sendByteSerial(serialDat[counter]);
+    }
+		uint8_t *ptr ;
+
+		ptr = pulses2MHzptr ;
+
+//    pulses2MHzptr-=1 ; //remove last stopbits and
+//    _send_1( 255 ) ;	 //prolong them
+		*ptr = 0 ;
+		*(ptr-1) = 255 ;
+//    _send_1(0);        //end of pulse stream
+    Serial_pulsePtr = pulses2MHz.pbyte ;
 }
 
 
