@@ -119,7 +119,11 @@ const prog_char APM Str_Switches[] = SWITCHES_STR ;
 const prog_char APM Str_OFF[] =  STR_OFF ;
 const prog_char APM Str_ON[] = STR_ON ;
 
+#if defined(CPUM128) || defined(CPUM2561)
+const prog_char APM modi12x3[]= "\005"STR_STICK_NAMES ;
+#else
 const prog_char APM modi12x3[]= "\004"STR_STICK_NAMES ;
+#endif
 const prog_uint8_t APM stickScramble[]= {
     0, 1, 2, 3,
     0, 2, 1, 3,
@@ -138,9 +142,15 @@ uint8_t modeFixValue( uint8_t value )
 
 const prog_uint8_t APM csTypeTable[] =
 #ifdef VERSION3
+#if defined(CPUM128) || defined(CPUM2561)
+{ CS_VOFS, CS_VOFS, CS_VOFS, CS_VOFS, CS_VBOOL, CS_VBOOL, CS_VBOOL,
+ CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VBOOL, CS_VBOOL, CS_TIMER, CS_VOFS, CS_TMONO, CS_TMONO
+} ;
+#else
 { CS_VOFS, CS_VOFS, CS_VOFS, CS_VOFS, CS_VBOOL, CS_VBOOL, CS_VBOOL,
  CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VBOOL, CS_VBOOL, CS_TIMER, CS_VOFS
 } ;
+#endif
 #else	
 { CS_VOFS, CS_VOFS, CS_VOFS, CS_VOFS, CS_VBOOL, CS_VBOOL, CS_VBOOL,
  CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_VCOMP, CS_TIMER, CS_VOFS
@@ -757,6 +767,10 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
     	    ret_value = CsTimer[cs_index] >= 0 ;
     	    break;
 #ifdef VERSION3
+			case (CS_MONO):
+		  case (CS_RMONO):
+		    ret_value = CsTimer[cs_index] > 0 ;
+		  break ;
 		  case (CS_LATCH) :
   		case (CS_FLIP) :
   		  ret_value = Last_switch[cs_index] & 1 ;
@@ -910,7 +924,7 @@ bool getSwitch(int8_t swtch, bool nc, uint8_t level)
         ret_value = CsTimer[cs_index] >= 0 ;
         break;
 #ifdef VERSION3
-  	case (CS_LATCH) :
+		case (CS_LATCH) :
   	case (CS_FLIP) :
     	ret_value = Last_switch[cs_index] & 1 ;
 	  break ;
@@ -2660,7 +2674,7 @@ void perMain()
 								g_model.gvars[i].gvar = validatePlusMinus125( value + protary->Rotary_diff ) ; //							 limit( (int16_t)-125, value + protary->Rotary_diff, (int16_t)125 ) ;
 								if ( (int8_t) value != g_model.gvars[i].gvar )
 								{
-    	    				eeDirty(EE_MODEL | 0xF0 ) ;
+    	    				eeDirty(EE_MODEL | EE_TRIM | 0xF0 ) ;
 								}
 							}
 					  }
@@ -3353,6 +3367,9 @@ int main(void)
     //DDRG = 0x10;  PORTG = 0xff; //pullups + SIM_CTL=1 = phonejack = ppm_in
     DDRG = 0x14; PORTG = 0xfB; //pullups + SIM_CTL=1 = phonejack = ppm_in, Haptic output and off (0)
 
+extern uint8_t serialDat[] ;
+	serialDat[0] = 0xFF ;
+
 #ifdef CPUM2561
   uint8_t mcusr = MCUSR; // save the WDT (etc) flags
 	SaveMcusr = mcusr ;
@@ -3678,12 +3695,9 @@ void doVoiceAlarmSource( VoiceAlarmData *pvad )
 		}
 		else
 		{
-			if ( pvad->source )
-			{
-				int16_t value ;
-				value = getValue( pvad->source - 1 ) ;
-				voice_numeric( value, 0, 0 ) ;
-			}
+			int16_t value ;
+			value = getValue( pvad->source - 1 ) ;
+			voice_numeric( value, 0, 0 ) ;
 		}
 	}
 }
@@ -3779,6 +3793,22 @@ void procOneVoiceAlarm( VoiceAlarmData *pvad, uint8_t i )
 
 	if ( ( AlarmControl.VoiceCheckFlag & 2 ) == 0 )
 	{
+	 if ( pvad->rate == 3 )	// All
+	 {
+	 		uint8_t pos = switchPosition( pvad->swtch ) ;
+			if ( Nvs_state[i] != pos )
+			{
+				Nvs_state[i] = pos ;
+				ltimer = 0 ;
+				play = pos + 1 ;
+			}
+			else
+			{
+				play = 0 ;
+			}
+	 }
+	 else
+	 {
 		if ( play == 1 )
 		{
 			if ( Nvs_state[i] == 0 )
@@ -3810,12 +3840,18 @@ void procOneVoiceAlarm( VoiceAlarmData *pvad, uint8_t i )
 			}
 			Nvs_state[i] = 0 ;
 		}
+		if ( pvad->rate == 33 )
+		{
+			play = 0 ;
+			ltimer = -1 ;
+		}
+		 }
 	}
 	else
 	{
 		Nvs_state[i] = play ;
+		play = ( pvad->rate == 33 ) ? 1 : 0 ;
 		ltimer = -1 ;
-		play = 0 ;
 	}
 
 	if ( pvad->mute )
@@ -3833,7 +3869,7 @@ void procOneVoiceAlarm( VoiceAlarmData *pvad, uint8_t i )
 	{
 		if ( ltimer < 0 )
 		{
-			if ( pvad->rate >= 3 )	// A time
+			if ( pvad->rate >= 3 )	// A time or ONCE
 			{
 				ltimer = 0 ;
 			}
@@ -3885,7 +3921,7 @@ void procOneVoiceAlarm( VoiceAlarmData *pvad, uint8_t i )
 			{
 				audioDefevent( (pvad->haptic > 1) ? ( ( pvad->haptic == 3 ) ? AU_HAPTIC3 : AU_HAPTIC2 ) : AU_HAPTIC1 ) ;
 			}
-			if ( pvad->rate < 3 )	// ON/OFF/BOTH
+			if ( ( pvad->rate < 3 ) || ( pvad->rate > 32 ) )	// Not a time
 			{
 				ltimer = -1 ;
 			}
@@ -4250,6 +4286,98 @@ void mainSequence()
 				else
 				{
 					Last_switch[i] &= ~2 ;
+				}
+			}
+			if ( ( cs->func == CS_MONO ) || ( cs->func == CS_RMONO ) )
+			{
+				if ( AlarmControl.VoiceCheckFlag & 2 )
+				{
+					// Resetting, retrigger any monostables
+					Last_switch[i] &= ~2 ;
+				}
+				int8_t andSwOn = 1 ;
+				if ( ( cs->func == CS_RMONO ) )
+				{
+					int8_t x ;
+					x = cs->andsw ;
+					if ( ( x > 8 ) && ( x <= 9+NUM_CSW+EXTRA_CSW ) )
+					{
+						x += 1 ;
+					}
+					if ( ( x < -8 ) && ( x >= -(9+NUM_CSW+EXTRA_CSW) ) )
+					{
+						x -= 1 ;
+					}
+					if ( x == 9+NUM_CSW+EXTRA_CSW+1 )
+					{
+						x = 9 ;			// Tag TRN on the end, keep EEPROM values
+					}
+					if ( x == -(9+NUM_CSW+EXTRA_CSW+1) )
+					{
+						x = -9 ;			// Tag TRN on the end, keep EEPROM values
+					}
+					andSwOn = x ;
+					if ( andSwOn )
+					{
+						andSwOn = getSwitch00( andSwOn) ;
+					}
+					else
+					{
+						andSwOn = 1 ;
+					}
+				}
+					
+		    if (getSwitch00( cs->v1) )
+				{
+					if ( ( Last_switch[i] & 2 ) == 0 )
+					{
+						// Trigger monostable
+						uint8_t trigger = 1 ;
+						if ( ( cs->func == CS_RMONO ) )
+						{
+							if ( ! andSwOn )
+							{
+								trigger = 0 ;
+							}
+						}
+						if ( trigger )
+						{
+							Last_switch[i] = 3 ;
+							int16_t x ;
+							x = cs->v2 ;
+							if ( x < 0 )
+							{
+								x = -x ;
+							}
+							else
+							{
+								x += 1 ;
+								x *= 10 ;
+							}
+							CsTimer[i] = x ;							
+						}
+					}
+				}
+				else
+				{
+					Last_switch[i] &= ~2 ;
+				}
+				int16_t y ;
+				y = CsTimer[i] ;
+				if ( y )
+				{
+					if ( ( cs->func == CS_RMONO ) )
+					{
+						if ( ! andSwOn )
+						{
+							y = 1 ;
+						}	
+					}
+					if ( --y == 0 )
+					{
+						Last_switch[i] &= ~1 ;
+					}
+					CsTimer[i] = y ;
 				}
 			}
 #endif

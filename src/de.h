@@ -159,11 +159,12 @@
 #define STR_2SENSITIVITY   "\001Empfindlichkt"
 #define STR_GLOBAL_VARS    "GLOBALE VARS"
 #define STR_GV_SOURCE      "\003---StmHtmGtmQtmRENSeiHoeGasQueP1 P2 P3 " // xtm=Trim for channel "x" REN=Rotary Encoder  ... = Variablennamen
-#define STR_TEMPLATES      "VORLAGEN"
+#define STR_TEMPLATES      "Vorlagen"
 #define STR_CHAN_ORDER     "Kanal Reihenfolge"
 #define STR_SP_RETA        " SHGQ" // Seitenleitwerk=Rud Höhenleitwerk=Ele Gas=Thr Querruder=Ail
 #define STR_CLEAR_MIXES    "LOESCHE MISCHER [MENU]"
 #define STR_SAFETY_SW      "SICHERHEITS SCH"
+#define STR_SAFETY_SW2     "Safety Sws"
 #define STR_NUM_VOICE_SW   "Nummer Ton Sch"
 #define STR_V_OPT1         "\007 8 Sek 12 Sek 16 Sek "
 #define STR_VS             "VS" // ?
@@ -242,6 +243,10 @@
 #define STR_PPMFRAME_MSEC  "PPM Laenge\015mSek" // Puls Pausen Modulation
 #define STR_SEND_RX_NUM    "Bind  Range"
 #define STR_DSM_TYPE       "DSM Typ" 
+#ifdef MULTI_PROTOCOL
+#define STR_MULTI_TYPE     "Protocol\037\037Bind\037Range"
+#define STR_14_OPTION       "\014Option"
+#endif // MULTI_PROTOCOL
 #define STR_1ST_CHAN_PROTO "1. Kanal\037Proto"
 #define STR_PPM_1ST_CHAN   "1. Kanal"
 #define STR_SHIFT_SEL      "Signalart" // Signalart
@@ -341,14 +346,22 @@
 #define CURV_STR           "\003---x>0x<0|x|f>0f<0|f|c1 c2 c3 c4 c5 c6 c7 c8 c9 c10c11c12c13c14c15c16"
 // CSWITCH_STR indexed 7 chars each
 #ifdef VERSION3
-#define CSWITCH_STR        "\007----   v>val  v<val  |v|>val|v|<valUND    ODER   XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""Latch  ""F-Flop ZeitAusv1\140=val"
+#if defined(CPUM128) || defined(CPUM2561)
+#define CSWITCH_STR        "\007----   v>val  v<val  |v|>val|v|<valAND    OR     XOR    v1==v2 v1!=v2 v1>v2  v1<v2  Latch  F-Flop TimeOffv\140=val 1-Shot 1-ShotR"
+#else
+#define CSWITCH_STR        "\007----   v>val  v<val  |v|>val|v|<valAND    OR     XOR    v1==v2 v1!=v2 v1>v2  v1<v2  Latch  F-Flop TimeOffv\140=val "
+#endif
 #else
 #define CSWITCH_STR        "\007----   v>val  v<val  |v|>val|v|<valUND    ODER   XOR    ""v1==v2 ""v1!=v2 ""v1>v2  ""v1<v2  ""v1>=v2 ""v1<=v2 ZeitAusv1\140=val"
 #endif
 
 #define SWASH_TYPE_STR     "\004----""120 ""120X""140 ""90  "
 
+#if defined(CPUM128) || defined(CPUM2561)
+#define STR_STICK_NAMES    "Sei \0Hoe \0Gas \0Que "
+#else
 #define STR_STICK_NAMES    "Sei Hoe Gas Que "
+#endif
 
 #define STR_STAT           "STAT"
 #define STR_STAT2          "STAT2"
@@ -406,6 +419,18 @@
 #define STR_STICK_RH_GAIN  "Stick RH Anstieg"
 
 #define STR_DISPLAY					"Display"
+#define STR_HARDWARE				"Hardware" ;
+#define STR_ALARMS					"Alarms" ;
+#define STR_CONTROLS				"Controls" ;
+#define STR_AUDIOHAPTIC			"AudioHaptic" ;
+#define STR_DIAGSWTCH				"DiagSwtch" ;
+#define STR_DIAGANA					"DiagAna" ;
+
+#define STR_PROTOCOL				"Protocol"
+#define STR_MIXER2  	   		"Mixer"
+#define STR_CSWITCHES 	   	"L.Switches"
+#define STR_VOICE   	   		"Voice"
+#define STR_VOICEALA   	   	"Voice Alarms"
 
 #define STR_MAIN_POPUP			"Model Select\0Model Setup\0Last Menu\0Radio Setup\0Statistics"
 #define MODEL_SETUP_OFFSET	13

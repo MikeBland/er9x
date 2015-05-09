@@ -22,6 +22,9 @@
 #define VERSION3	1
 #define VERSION4	1
 
+// Multi protocol feature
+//#define MULTI_PROTOCOL	1
+
 //#define STACK_TRACE				1
 
 // Remove features from M64-FrSky version
@@ -377,13 +380,16 @@ extern const prog_char APM Str_Switches[] ;
 #endif
 #define CS_TIME	     (uint8_t)14
 #define CS_EXEQUAL   (uint8_t)15
+#define CS_MONO		   16	// Monostable
+#define CS_RMONO	   17	// Monostable with reset
 #define CS_MAXF      14  //max function
-#define CS_XMAXF     15  //max function
+#define CS_XMAXF     17  //max function
 
 #define CS_VOFS       (uint8_t)0
 #define CS_VBOOL      (uint8_t)1
 #define CS_VCOMP      (uint8_t)2
 #define CS_TIMER			(uint8_t)3
+#define CS_TMONO      4
 uint8_t CS_STATE( uint8_t x) ;
 //#define CS_STATE(x)   (((uint8_t)x)<CS_AND ? CS_VOFS : (((uint8_t)x)<CS_EQUAL ? CS_VBOOL : (((uint8_t)x)<CS_TIME ? CS_VCOMP : CS_TIMER)))
 
@@ -528,15 +534,42 @@ uint8_t IS_EXPO_THROTTLE( uint8_t x ) ;
 #define PROTO_PXX        1
 #define PROTO_DSM2       2
 #define PROTO_PPM16	     3
-#define PROTO_PPMSIM     4		// Always make this the last protocol
+#ifdef MULTI_PROTOCOL
+#define PROTO_PPMSIM     4
+#define PROTO_MULTI      5
+#define PROT_MAX         5
+#else
+#define PROTO_PPMSIM     4
 #define PROT_MAX         4
+#endif // MULTI_PROTOCOL
+#ifdef MULTI_PROTOCOL
+#define PROT_STR "\006PPM   PXX   DSM2  PPM16 PPMSIMMULTI "
+#else
 #define PROT_STR "\006PPM   PXX   DSM2  PPM16 PPMSIM"
+#endif // MULTI_PROTOCOL
 //#define PROT_STR_LEN     6
 #define DSM2_STR "\011LP4/LP5  DSM2only DSM2/DSMX"
 //#define DSM2_STR_LEN     9
 #define LPXDSM2          0
 #define DSM2only         1
 #define DSM2_DSMX        2
+
+#ifdef MULTI_PROTOCOL
+#define MULTI_STR "\007Flysky Hubsan Frsky  Hisky  V2x2   DSM2   Devo   Skwlkr KN     SymaX  SymaX4 Symax5C"
+//#define MULTI_STR_LEN    7
+#define M_Flysky           0
+#define M_Hubsan           1
+#define M_Frsky            2
+#define M_Hisky            3
+#define M_V2x2             4
+#define M_DSM2             5
+#define M_Devo  	       6
+#define M_Skwlkr           7
+#define M_KN	           8
+#define M_SymaX	           9
+#define M_SymaX4	       10
+#define M_SymaX5C	       11
+#endif // MULTI_PROTOCOL
 
 #define PXX_BIND					 0x01
 #define PXX_SEND_FAILSAFE  0x10
@@ -1111,6 +1144,15 @@ struct t_backup_restore
 	uint8_t restoreDirBuffer[8][12] ;
 } ;
 
+struct t_alpha
+{
+	uint8_t AlphaIndex ;
+	uint8_t lastSub ;
+	uint8_t AlphaLength ;
+	uint8_t *PalphaText ;
+	const char *PalphaHeading ;
+} ;
+
 union t_xmem
 {
 //	struct MixTab s_mixTab[MAX_MIXERS+NUM_XCHNOUT+1] ;	
@@ -1118,7 +1160,9 @@ union t_xmem
 	char buf[sizeof(g_model.name)+5];
 	ExpoData texpoData[4] ;
 	struct t_backup_restore restoreData ;
-//#if defined(CPUM128) || defined(CPUM2561)
+#if defined(CPUM128) || defined(CPUM2561)
+	struct t_alpha Alpha ;
+#endif
 //  uint8_t file_buffer[256];
 //#else
 //  uint8_t file_buffer[128];

@@ -99,7 +99,7 @@ static bool eeLoadGeneral()
 
   if(g_eeGeneral.myVers<MDVERS)
 	{
-    sysFlags |= sysFLAG_OLD_EEPROM; // if old EEPROM - Raise flag
+    sysFlags = sysFLAG_OLD_EEPROM ; // if old EEPROM - Raise flag
 
   	g_eeGeneral.myVers   =  MDVERS; // update myvers
 		STORE_GENERALVARS;
@@ -217,6 +217,14 @@ void eeLoadModel(uint8_t id)
 		{
 			g_model.numBlades = g_model.xnumBlades + 2 ;				
 		}
+
+#ifdef MULTI_PROTOCOL
+		if ( g_model.xsub_protocol < 3 )	// if a valid value is stored in xsub_protocol 2bits, load it in the extended sub_protocol 8bits
+		{
+			g_model.sub_protocol = g_model.xsub_protocol;
+			g_model.xsub_protocol = 3 ;
+		}
+#endif // MULTI_PROTOCOL
 
 
 #ifdef FRSKY

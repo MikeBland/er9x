@@ -10,6 +10,18 @@ description here
 ====================================================================================
 
 ******************************************
+CHANGELOG: 06-May-2015  MPB (r818)
+Save some flash and RAM
+Commit missing source files
+128/2561 Add "keyboard" text entry
+Rename PPM "Shift Sel" to "Polarity"
+Add ALL and ONCE rate options to voice alarms
+128/2561 add Monostable to custom switches
+On disabling extended limits, channel limits reduced to +/-100
+French translation, thank you "willhac"
+Source file addition of "Multi" protocol
+
+******************************************
 CHANGELOG: 08-Apr-2015  MPB (r817)
 Properly fix missing templates option
 Fix erroneous display of 9th voice alarm

@@ -25,10 +25,10 @@
 #define FR_RXRSI_COPY	2
 #define FR_TXRSI_COPY	3
 #define FR_ALT_BARO		4
-#define FR_ALT_BAROd	5
-#define FR_GPS_ALT		6
-#define FR_GPS_ALTd		7
-#define FR_GPS_SPEED	8 
+#define FR_GPS_ALT		5
+#define FR_GPS_SPEED	6 
+#define FR_ALT_BAROd	7
+#define FR_GPS_ALTd		8
 #define FR_GPS_SPEEDd	9 
 #define FR_TEMP1			10
 #define FR_TEMP2			11
@@ -70,8 +70,8 @@
 #define FR_SPORT_GALT	0xFE
 
 #define HUBDATALENGTH 44
-#define HUBMINMAXLEN	9			// Items with a min and max field
-#define HUBOFFSETLEN	7			// Items with an offset field
+#define HUBMINMAXLEN	7			// Items with a min and max field
+//#define HUBOFFSETLEN	7			// Items with an offset field
 
 #if defined(VARIO)
 #define VARIO_QUEUE_LENGTH          5

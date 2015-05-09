@@ -137,7 +137,8 @@ struct t_frsky_user
 int16_t FrskyHubData[HUBDATALENGTH] ;  // All 38 words
 struct t_hub_max_min FrskyHubMaxMin ;
 
-uint8_t FrskyVolts[12];
+#define FRSKY_VOLTS_SIZE	6
+uint8_t FrskyVolts[FRSKY_VOLTS_SIZE];
 uint8_t FrskyBattCells=0;
 int16_t Frsky_Amp_hour_prescale ;
 
@@ -198,7 +199,7 @@ void store_indexed_hub_data( uint8_t index, uint16_t value )
 
 NOINLINE void store_cell_data( uint8_t battnumber, uint16_t cell )
 {
-	if ( battnumber < 12 )
+	if ( battnumber < FRSKY_VOLTS_SIZE )
 	{
 		FrskyVolts[battnumber] = ( cell & 0x0FFF ) / 10 ;
 	}
@@ -305,15 +306,16 @@ void store_hub_data( uint8_t index, uint16_t value )
 			// It appears the cell voltage bytes are in the wrong order
 //  							uint8_t battnumber = ( FrskyHubData[6] >> 12 ) & 0x000F ;
   		uint8_t battnumber = ((uint8_t)value >> 4 ) & 0x000F ;
-  		if (FrskyBattCells < battnumber+1)
+			uint8_t tempCells = battnumber+1 ;
+  		if (FrskyBattCells < tempCells)
 			{
- 				if (battnumber+1>=6)
+ 				if (tempCells>=FRSKY_VOLTS_SIZE)
 				{
-  				FrskyBattCells=6;
+  				FrskyBattCells=FRSKY_VOLTS_SIZE;
   			}
 				else
 				{
-  				FrskyBattCells=battnumber+1;
+  				FrskyBattCells=tempCells;
   			}
   		}
 			store_cell_data( battnumber, ( ( value & 0x0F ) << 8 ) + (value >> 8) ) ;
@@ -1306,18 +1308,29 @@ void FRSKY_Init( uint8_t brate)
 		brate = 1 ;
 	}
 
-	if ( brate == 0 )
+  	if ( brate == 0 ) // 9600
 	{
-  	UCSR0A &= ~(1 << U2X0); // disable double speed operation.
-  	UBRR0L = UBRRL_VALUE;
-  	UBRR0H = UBRRH_VALUE;
+#ifdef MULTI_PROTOCOL
+		if ( g_model.protocol == PROTO_MULTI ) // 125000
+		{
+			UCSR0A &= (1 << U2X0); // enable double speed operation.
+			UBRR0L = 16;			// if double speed is not allowed value is 8
+			UBRR0H = 0;
+		}
+		else
+#endif // MULTI_PROTOCOL
+		{
+			UCSR0A &= ~(1 << U2X0); // disable double speed operation.
+			UBRR0L = UBRRL_VALUE;
+			UBRR0H = UBRRH_VALUE;
+		}
 	}
-	else
+	else // 57600
 	{
 //  	UCSR0A |= (1 << U2X0); // enable double speed operation.
-  	UCSR0A &= ~(1 << U2X0); // disable double speed operation.
-  	UBRR0L = UBRRL_57600 ;
-  	UBRR0H = UBRRH_57600 ;
+		UCSR0A &= ~(1 << U2X0); // disable double speed operation.
+		UBRR0L = UBRRL_57600 ;
+		UBRR0H = UBRRH_57600 ;
 	}
 
   // set 8 N1

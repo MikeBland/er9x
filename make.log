@@ -1,10 +1,10 @@
 ===== Starting build =====
 Timestamp
-Wed Apr  8 13:13:52 UTC 2015
+Sat May  9 21:23:05 UTC 2015
 ==========================
 
 ===== Updating from SVN =====
-At revision 816.
+At revision 817.
 
 ===== Making JETI Version =====
 >>> cleaning
@@ -91,7 +91,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   61170 bytes (93.3% Full)
+Program:   61276 bytes (93.5% Full)
 (.text + .data + .bootloader)
 
 Data:       3605 bytes (88.0% Full)
@@ -188,10 +188,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   64410 bytes (98.3% Full)
+Program:   64492 bytes (98.4% Full)
 (.text + .data + .bootloader)
 
-Data:       3779 bytes (92.3% Full)
+Data:       3765 bytes (91.9% Full)
 (.data + .bss + .noinit)
 
 
@@ -285,10 +285,10 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   64466 bytes (98.4% Full)
+Program:   64548 bytes (98.5% Full)
 (.text + .data + .bootloader)
 
-Data:       3779 bytes (92.3% Full)
+Data:       3765 bytes (91.9% Full)
 (.data + .bss + .noinit)
 
 
@@ -382,7 +382,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   62856 bytes (95.9% Full)
+Program:   62964 bytes (96.1% Full)
 (.text + .data + .bootloader)
 
 Data:       3603 bytes (88.0% Full)
@@ -479,7 +479,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   66942 bytes (102.1% Full)
+Program:   67050 bytes (102.3% Full)
 (.text + .data + .bootloader)
 
 Data:       3760 bytes (91.8% Full)
@@ -573,7 +573,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   60616 bytes (92.5% Full)
+Program:   60724 bytes (92.7% Full)
 (.text + .data + .bootloader)
 
 Data:       3569 bytes (87.1% Full)
@@ -673,10 +673,10 @@ AVR Memory Usage
 ----------------
 Device: atmega128
 
-Program:   71810 bytes (54.8% Full)
+Program:   73720 bytes (56.2% Full)
 (.text + .data + .bootloader)
 
-Data:       3817 bytes (93.2% Full)
+Data:       3806 bytes (92.9% Full)
 (.data + .bss + .noinit)
 
 
@@ -773,10 +773,10 @@ AVR Memory Usage
 ----------------
 Device: atmega2561
 
-Program:   73452 bytes (28.0% Full)
+Program:   75370 bytes (28.8% Full)
 (.text + .data + .bootloader)
 
-Data:       4222 bytes (51.5% Full)
+Data:       4211 bytes (51.4% Full)
 (.data + .bss + .noinit)
 
 
@@ -870,10 +870,107 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   64500 bytes (98.4% Full)
+Program:   64584 bytes (98.5% Full)
 (.text + .data + .bootloader)
 
-Data:       3779 bytes (92.3% Full)
+Data:       3765 bytes (91.9% Full)
+(.data + .bss + .noinit)
+
+
+
+-------- end --------
+
+>>>  moving
+
+===== Making FRSKY FR Version =====
+>>> cleaning
+
+-------- begin --------
+
+Cleaning project:
+rm -f er9x.hex
+rm -f er9x.eep
+rm -f er9x.cof
+rm -f er9x.elf
+rm -f er9x.map
+rm -f er9x.sym
+rm -f er9x.lss
+rm -rf obj
+rm -f 
+rm -f 
+rm -rf .dep
+-------- end --------
+
+>>>  making
+
+-------- begin --------
+avr-gcc (GCC) 4.8.0 20130306 (experimental)
+Copyright (C) 2013 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+
+Generate Version-stamp:
+
+Compiling C++: er9x.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DCPUM64 -DLANG_FR -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/er9x.o.d er9x.cpp -o obj/er9x.o
+
+Compiling C++: stamp.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DCPUM64 -DLANG_FR -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/stamp.o.d stamp.cpp -o obj/stamp.o
+
+Compiling C++: menus.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DCPUM64 -DLANG_FR -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/menus.o.d menus.cpp -o obj/menus.o
+
+Compiling C++: pers.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DCPUM64 -DLANG_FR -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/pers.o.d pers.cpp -o obj/pers.o
+
+Compiling C++: file.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DCPUM64 -DLANG_FR -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/file.o.d file.cpp -o obj/file.o
+
+Compiling C++: lcd.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DCPUM64 -DLANG_FR -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/lcd.o.d lcd.cpp -o obj/lcd.o
+
+Compiling C++: drivers.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DCPUM64 -DLANG_FR -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/drivers.o.d drivers.cpp -o obj/drivers.o
+
+Compiling C++: templates.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DCPUM64 -DLANG_FR -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/templates.o.d templates.cpp -o obj/templates.o
+
+Compiling C++: pulses.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DCPUM64 -DLANG_FR -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/pulses.o.d pulses.cpp -o obj/pulses.o
+
+Compiling C++: audio.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DCPUM64 -DLANG_FR -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/audio.o.d audio.cpp -o obj/audio.o
+
+Compiling C++: frsky.cpp
+avr-gcc -c -mmcu=atmega64 -I. -x c++ -gdwarf-2 -DF_CPU=16000000UL -DNO_TEMPLATES -DFRSKY -DCPUM64 -DLANG_FR -Os -mrelax -mstrict-X -fshort-enums -Wall  -MD -MP -MF .dep/frsky.o.d frsky.cpp -o obj/frsky.o
+
+Linking: er9x.elf
+avr-gcc -mmcu=atmega64 -I. -gdwarf-2 -DF_CPU=16000000UL -Os -funsigned-char -funsigned-bitfields -fpack-struct -fshort-enums -Wall -Wstrict-prototypes -Wundef -Wa,-adhlns=obj/er9x.o  -std=gnu99 -fwhole-program -MD -MP -MF .dep/er9x.elf.d obj/er9x.o obj/stamp.o obj/menus.o obj/pers.o obj/file.o obj/lcd.o obj/drivers.o obj/templates.o obj/pulses.o obj/audio.o obj/frsky.o --output er9x.elf -Wl,-Map=er9x.map,--cref -Wl,--relax    -lm -Wl,--section-start=.boottext=0xFe00 -Wl,--section-start=.bootjump=0xFFFC
+
+Creating load file for Flash: er9x.hex
+avr-objcopy -O ihex -R .eeprom er9x.elf er9x.hex
+
+Creating load file for EEPROM: er9x.eep
+avr-objcopy -j .eeprom --set-section-flags=.eeprom="alloc,load" \
+--change-section-lma .eeprom=0 -O ihex er9x.elf er9x.eep
+c:\WinAVR-20100110\bin\avr-objcopy.exe: --change-section-lma .eeprom=0x00000000 never used
+
+Creating Extended Listing: er9x.lss
+avr-objdump -h -S er9x.elf > er9x.lss
+
+Creating Symbol Table: er9x.sym
+avr-nm -n er9x.elf > er9x.sym
+
+Size after:
+AVR Memory Usage
+----------------
+Device: atmega64
+
+Program:   64582 bytes (98.5% Full)
+(.text + .data + .bootloader)
+
+Data:       3765 bytes (91.9% Full)
 (.data + .bss + .noinit)
 
 
@@ -964,7 +1061,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   60708 bytes (92.6% Full)
+Program:   60816 bytes (92.8% Full)
 (.text + .data + .bootloader)
 
 Data:       3569 bytes (87.1% Full)
@@ -1064,10 +1161,10 @@ AVR Memory Usage
 ----------------
 Device: atmega128
 
-Program:   71910 bytes (54.9% Full)
+Program:   73820 bytes (56.3% Full)
 (.text + .data + .bootloader)
 
-Data:       3817 bytes (93.2% Full)
+Data:       3806 bytes (92.9% Full)
 (.data + .bss + .noinit)
 
 
@@ -1158,7 +1255,7 @@ AVR Memory Usage
 ----------------
 Device: atmega64
 
-Program:   60662 bytes (92.6% Full)
+Program:   60766 bytes (92.7% Full)
 (.text + .data + .bootloader)
 
 Data:       3569 bytes (87.1% Full)
