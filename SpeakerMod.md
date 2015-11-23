@@ -1,0 +1,3 @@
+This content has been moved here...
+
+http://9xforums.com/wiki/index.php/Speaker_Mod#Speaker_Mod
